@@ -1,24 +1,21 @@
-import {BodyParams, Controller, Get, Post, Req} from "@tsed/common";
+import {Controller, Post, Req} from "@tsed/common";
 import { Authenticate } from "@tsed/passport";
-import { APIRoutes } from '../../../../common/api';
+import { APIRoutes } from 'common/api';
 
 @Controller('/users')
 export class UsersController {
-  
-    @Get('/test')
-    async test(): Promise<string> {
-        return 'hellow world'
-    }
 
     @Post(APIRoutes.signIn())
     @Authenticate("login")
-    login(
-        @Req() req: Req, 
-        @BodyParams("email") email: string, 
-        @BodyParams("password") password: string
-    ) {
+    login() {
         // FACADE
-        return req.user;
+        // sets up session cookie and returns user json
+    }
+
+    @Post(APIRoutes.signOut())
+    logout(@Req() req: Req) {
+        req.logout();
+        req.session.destroy(() => {});
     }
 
 }

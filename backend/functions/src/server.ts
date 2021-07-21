@@ -4,8 +4,12 @@ import compress from "compression";
 import cookieParser from "cookie-parser";
 import methodOverride from "method-override";
 import session from 'express-session';
+import * as uuid from 'uuid';
+import {SessionCookieName} from 'common/constants'
+import "@tsed/ajv"; // sets up schema validation
 
 const rootDir = __dirname;
+
 
 @Configuration({
   rootDir,
@@ -37,6 +41,9 @@ export class Server {
       .use(bodyParser.urlencoded({
         extended: true
       }))
-      .use(session());
+      .use(session({
+          secret: uuid.v1(), // this will create a session on each restart...this should come from config
+          name: SessionCookieName
+      }));
   }
 }

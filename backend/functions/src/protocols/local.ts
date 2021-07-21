@@ -6,7 +6,7 @@ import {Protocol, OnInstall, OnVerify} from "@tsed/passport";
 // import {Inject} from "@tsed/di";
 // import {UserService} from "../services/UserService"
 
-import { User, UserRole } from '../../../../common/models';
+import { User, UserRole } from 'common/models';
 
 const dummyUser: User = {
     id: '1234',
@@ -14,7 +14,7 @@ const dummyUser: User = {
     roles: [UserRole.Dispatcher, UserRole.Responder]
 };
 
-export class Credentials {
+export class LocalCredentials {
   @Required()
   @Format('email')
   email: string;
@@ -35,7 +35,10 @@ export class LocalProtocol implements OnVerify, OnInstall {
 //   @Inject(UserService)
 //   private userService: UserService;
 
-  async $onVerify(@Req() request: Req, @BodyParams() credentials: Credentials) {
+  async $onVerify(
+      @Req() request: Req, 
+      @BodyParams() credentials: LocalCredentials
+  ) {
     // const user = await this.userService.find(credentials);
 
     // if (!user) {
