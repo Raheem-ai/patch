@@ -7,9 +7,25 @@ import session from 'express-session';
 import * as uuid from 'uuid';
 import {SessionCookieName} from 'common/constants'
 import "@tsed/ajv"; // sets up schema validation
+import "@tsed/mongoose"; // db connecting
+import config from './config';
+import { EnvironmentId } from "infra/src/environment";
+import dotenv from 'dotenv';
+import { resolve } from "path";
 
 const rootDir = __dirname;
 
+if (process.env.PATCH_LOCAL_ENV) {
+  const dotEnvPath = resolve(rootDir, `../../../../env/.env.${process.env.PATCH_LOCAL_ENV}`);
+  
+  dotenv.config( {
+    path: dotEnvPath
+  })
+}
+
+const isProd = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.prod];
+const sessionSecret = config.SESSION.get().secrets;
+const mongoConnectionString = config.MONGO.get().connectionString;
 
 @Configuration({
   rootDir,
@@ -19,7 +35,10 @@ const rootDir = __dirname;
   mount: {
     "/api": `${rootDir}/controllers/**/*.ts`
   },
-  acceptMimes: ["application/json"]
+  acceptMimes: ["application/json"],
+  mongoose: {
+    url: mongoConnectionString,
+  }
 })
 export class Server {
   @Inject()
@@ -42,7 +61,7 @@ export class Server {
         extended: true
       }))
       .use(session({
-          secret: uuid.v1(), // this will create a session on each restart...this should come from config
+          secret: sessionSecret,
           name: SessionCookieName
       }));
   }
