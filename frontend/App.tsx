@@ -9,6 +9,7 @@ import "react-native-gesture-handler";
 import SignInForm from './components/SignInForm';
 import WelcomePage from './components/WelcomePage';
 import SignUpForm from './components/SignUpForm';
+import UserHomePage from './components/userside/UserHomePage';
 
 // navigating imports
 import { NavigationContainer } from '@react-navigation/native';
@@ -23,6 +24,7 @@ export default function App() {
         <Stack.Screen name="Home" component={WelcomePage} />
         <Stack.Screen name="SignIn" component={SignInForm} />
         <Stack.Screen name="SignUp" component={SignUpForm} />
+        <Stack.Screen name="UserHomePage" component={UserHomePage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
