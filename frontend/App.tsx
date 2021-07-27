@@ -6,10 +6,10 @@ import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router
 import "react-native-gesture-handler";
 
 // component imports
-import SignInForm from './components/SignInForm';
-import WelcomePage from './components/WelcomePage';
-import SignUpForm from './components/SignUpForm';
-import UserHomePage from './components/userside/UserHomePage';
+import SignInForm from './src/components/SignInForm';
+import WelcomePage from './src/components/WelcomePage';
+import SignUpForm from './src/components/SignUpForm';
+import UserHomePage from './src/components/userside/UserHomePage';
 
 // navigating imports
 import { NavigationContainer } from '@react-navigation/native';
