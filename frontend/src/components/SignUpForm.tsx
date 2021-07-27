@@ -2,10 +2,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
-import { RootStackParamList, routerNames } from '../types';
+import { RootStackParamList, routerNames, UserHomeNavigationProp } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-export default function SignUpForm({ navigation }) {
+type Props = {
+    navigation: UserHomeNavigationProp;
+};
+
+export default function SignUpForm({ navigation }: Props) {
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [email, setEmail] = React.useState('');

@@ -2,9 +2,15 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 import * as React from "react";
 import { NavigationContainer } from '@react-navigation/native';
-import { routerNames } from "../types";
+import { routerNames, SignInNavigationProp, SignUpNavigationProp } from "../types";
 
-export default function WelcomePage({ navigation }) {
+
+// IMPORTANT NOTE: what should the type of navigation be when there are multiple routes?
+type Props = {
+    navigation: SignInNavigationProp;
+};
+
+export default function WelcomePage({ navigation }: Props) {
     return (
         <View style={styles.container}>
             <Text>Welcome to Patch by Raheem!</Text>
