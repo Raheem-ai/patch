@@ -1,3 +1,5 @@
+import { StackNavigationProp } from "@react-navigation/stack";
+
 export type RootStackParamList = {
     Home: undefined;
     SignIn: undefined;
@@ -11,3 +13,5 @@ export const routerNames = {
     signUp: "SignUp",
     userHome: "UserHomePage",
 };
+
+export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
