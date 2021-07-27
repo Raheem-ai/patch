@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
-import { RootStackParamList } from '../types';
+import { RootStackParamList, routerNames } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 export default function SignUpForm({ navigation }) {
@@ -17,7 +17,7 @@ export default function SignUpForm({ navigation }) {
             <TextInput label="Last Name" value={lastName} onChangeText={lastName => setLastName(lastName)}/>
             <TextInput label="Email" value={email} onChangeText={email => setEmail(email)}/>
             <TextInput label="Password" value={password} onChangeText={password => setPassword(password)}/>
-            <Button mode="contained" onPress={() => navigation.navigate('UserHomePage')}>Create Account</Button>
+            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Create Account</Button>
         </View>
     );
 };
