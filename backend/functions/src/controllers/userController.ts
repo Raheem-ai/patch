@@ -2,15 +2,15 @@ import { BodyParams, Controller, Inject, Post, Req } from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
-import { APIRoutes } from 'common/api';
+import API from 'common/api';
 import { UserModel } from "../models/user";
 import { LocalCredentials } from "../protocols/local";
 
-@Controller('/users')
+@Controller(API.namespaces.users)
 export class UsersController {
     @Inject(UserModel) users: MongooseModel<UserModel>;
 
-    @Post(APIRoutes.signUp())
+    @Post(API.server.signUp())
     async signup(
         @Required() @BodyParams() credentials: LocalCredentials
     ) {
@@ -26,14 +26,14 @@ export class UsersController {
         }
     }
 
-    @Post(APIRoutes.signIn())
+    @Post(API.server.signIn())
     @Authenticate("login")
     login() {
         // FACADE
         // sets up session cookie and returns user json
     }
 
-    @Post(APIRoutes.signOut())
+    @Post(API.server.signOut())
     logout(@Req() req: Req) {
         req.logout();
         req.session.destroy(() => {});

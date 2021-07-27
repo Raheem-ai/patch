@@ -6,6 +6,7 @@ import methodOverride from "method-override";
 import session from 'express-session';
 import * as uuid from 'uuid';
 import {SessionCookieName} from 'common/constants'
+import API from 'common/api';
 import "@tsed/ajv"; // sets up schema validation
 import "@tsed/mongoose"; // db connecting
 import config from './config';
@@ -33,12 +34,13 @@ const mongoConnectionString = config.MONGO.get().connectionString;
     `${rootDir}/protocols/**/*.ts` // scan protocols directory
   ],
   mount: {
-    "/api": `${rootDir}/controllers/**/*.ts`
+    [API.base]: `${rootDir}/controllers/**/*.ts`
   },
   acceptMimes: ["application/json"],
   mongoose: {
     url: mongoConnectionString,
-  }
+  },
+  port: 9000
 })
 export class Server {
   @Inject()
