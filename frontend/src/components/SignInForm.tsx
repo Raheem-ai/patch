@@ -5,21 +5,13 @@ import { Header } from 'react-native/Libraries/NewAppScreen';
 import { NavigationStackProp } from 'react-navigation-stack';
 
 export default function SignInForm({ navigation }) {
-    const [textUser, setTextUser] = React.useState('');
+    const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
-
-    const onChangeText = (parameter: string) => {
-        if (parameter === 'user') {
-            setTextUser(textUser);
-        } else if (parameter === "password") {
-            setPassword(password);
-        }
-    };
 
     return(
         <View>
-            <TextInput label="Username" onChangeText={() => onChangeText('user')}/>
-            <TextInput label="Passwsord" onChangeText={() => onChangeText('password')}/>
+            <TextInput label="Username" value={username} onChangeText={username => setTextUser(username)}/>
+            <TextInput label="Passwsord" value={password} onChangeText={password =>setPassword(password)}/>
             <Button mode="contained" onPress={() => navigation.navigate('UserHomePage')}>Sign In</Button>
         </View>
     );

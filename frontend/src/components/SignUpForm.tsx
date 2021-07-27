@@ -11,24 +11,12 @@ export default function SignUpForm({ navigation }) {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
 
-    const onChangeText = (parameter: string) => {
-        if (parameter === 'firstname') {
-            setFirstName(firstName);
-        } else if (parameter === 'lastname') {
-            setLastName(lastName);
-        } else if (parameter === "email") {
-            setEmail(email);
-        } else if (parameter == "password") {
-            setPassword(password);
-        }
-    };
-
     return(
         <View>
-            <TextInput label="First Name" onChangeText={() => onChangeText('firstname')}/>
-            <TextInput label="Last Name" onChangeText={() => onChangeText('lastname')}/>
-            <TextInput label="Email" onChangeText={() => onChangeText('email')}/>
-            <TextInput label="Password" onChangeText={() => onChangeText('password')}/>
+            <TextInput label="First Name" value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
+            <TextInput label="Last Name" value={lastName} onChangeText={lastName => setLastName(lastName)}/>
+            <TextInput label="Email" value={email} onChangeText={email => setEmail(email)}/>
+            <TextInput label="Password" value={password} onChangeText={password => setPassword(password)}/>
             <Button mode="contained" onPress={() => navigation.navigate('UserHomePage')}>Create Account</Button>
         </View>
     );
