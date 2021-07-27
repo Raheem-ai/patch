@@ -14,7 +14,7 @@ import UserHomePage from './src/components/userside/UserHomePage';
 // navigating imports
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { RootStackParamList } from './src/types';
+import { RootStackParamList, routerNames } from './src/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -22,10 +22,10 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={WelcomePage} />
-        <Stack.Screen name="SignIn" component={SignInForm} />
-        <Stack.Screen name="SignUp" component={SignUpForm} />
-        <Stack.Screen name="UserHomePage" component={UserHomePage} />
+        <Stack.Screen name={routerNames.home} component={WelcomePage} />
+        <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+        <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
+        <Stack.Screen name={routerNames.userHome} component={UserHomePage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
