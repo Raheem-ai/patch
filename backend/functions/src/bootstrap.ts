@@ -1,3 +1,5 @@
+require('module-alias/register');
+
 import {Server} from "./server";
 import {PlatformExpress} from "@tsed/platform-express";
 import {$log} from "@tsed/common";
