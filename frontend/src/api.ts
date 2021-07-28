@@ -22,6 +22,23 @@ export class APIClient {
 
         return user || null;
     }
+
+    async signUp(email: string, password: string): Promise<User> {
+        const url = `${host}${API.client.signUp()}`;
+
+        const user = (await axios.post<User>(url, {            
+            email: email,
+            password: password
+        })).data
+
+        return user;
+    }
+
+    async signOut() {
+        const url = `${host}${API.client.signOut()}`;
+
+        await axios.post(url)
+    }
 }
 
 export default new APIClient();
