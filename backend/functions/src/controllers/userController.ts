@@ -17,6 +17,7 @@ export class UsersController {
         const existingUsers = await this.users.find({ email: credentials.email });
 
         if (existingUsers && existingUsers.length) {
+            // TODO: should this throw for a notification in the ui?
             return existingUsers[0].toJSON()
         } else {
             const user = new this.users(credentials);

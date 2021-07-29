@@ -4,6 +4,8 @@ import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { labelNames, RootStackParamList, routerNames, UserHomeNavigationProp } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getStore } from '../di';
+import { IUserStore } from '../interfaces';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -16,6 +18,13 @@ export default function SignUpForm({ navigation }: Props) {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
 
+    const userStore = getStore<IUserStore>(IUserStore);
+
+    const signup = async () => {
+        await userStore.signUp(email, password);
+        navigation.navigate(routerNames.userHome);
+    }
+
     return(
         <View>
             <TextInput label={labelNames.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
@@ -23,7 +32,7 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput label={labelNames.email} value={email} onChangeText={email => setEmail(email)}/>
             <TextInput label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
             <TextInput label={labelNames.firstname} value={password} onChangeText={password => setPassword(password)}/>
-            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Create Account</Button>
+            <Button mode="contained" onPress={signup}>Create Account</Button>
         </View>
     );
 };
