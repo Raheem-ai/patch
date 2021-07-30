@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { Button, Menu, Provider } from "react-native-paper";
 import { getStore } from "../../di";
-import { IUserStore } from "../../interfaces";
+import { ILocationStore, IUserStore } from "../../interfaces";
 import { routerNames, UserHomeNavigationProp } from "../../types";
+import * as Location from 'expo-location';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -17,6 +18,14 @@ export default function UserHomePage({ navigation }: Props) {
     const closeMenu = () => setVisible(false);
 
     const userStore = getStore<IUserStore>(IUserStore);
+    const locationStore = getStore<ILocationStore>(ILocationStore);
+
+    useEffect(() => {
+        (async () => {
+          locationStore.askForPermission()
+        })();
+      }, []);
+
 
     const signout = async () => {
         await userStore.signOut();

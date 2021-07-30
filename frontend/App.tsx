@@ -17,15 +17,19 @@ import UserHomePage from './src/components/userside/UserHomePage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { IUserStore } from './src/interfaces';
-import UserStore from './src/stores/UserStore';
+import { ILocationStore, IUserStore } from './src/interfaces';
+import UserStore from './src/stores/userStore';
+import LocationStore from './src/stores/locationStore';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 container.bind(IUserStore.id).to(UserStore);
+container.bind(ILocationStore.id).to(LocationStore);
 
 export default function App() {
   return (
+    // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
+    // unless we want an ergonomic way to switch out components in the future
     <Provider container={container} >
       <NavigationContainer>
         <Stack.Navigator>

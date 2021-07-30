@@ -17,7 +17,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationAlwaysUsageDescription": "testing"
+      },
+      "bundleIdentifier": "patch"
     },
     "android": {
       "adaptiveIcon": {
