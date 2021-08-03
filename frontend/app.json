@@ -19,7 +19,11 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationAlwaysUsageDescription": "testing"
+        "NSLocationAlwaysUsageDescription": "testing",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
       },
       "bundleIdentifier": "patch"
     },

@@ -1,8 +1,9 @@
 import * as Location from 'expo-location';
-import { makeObservable, observable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { getStore, Store } from '../di';
 import { ILocationStore } from '../interfaces';
 import * as TaskManager from 'expo-task-manager';
+import { TaskManagerTaskBody } from 'expo-task-manager';
 
 @Store()
 export default class LocationStore implements ILocationStore {
@@ -13,7 +14,7 @@ export default class LocationStore implements ILocationStore {
     private locationDestructor: () => Promise<void> = null;
 
     constructor() {
-        makeObservable(this);
+        makeAutoObservable(this);
 
         Location.getForegroundPermissionsAsync()
             .then((r) => {
@@ -42,7 +43,7 @@ export default class LocationStore implements ILocationStore {
         try {
             let { status } = await Location.requestForegroundPermissionsAsync();
             
-            if (status !== 'granted') {
+            if (status !== Location.PermissionStatus.GRANTED) {
                 console.log('Permission to access foreground location was denied');
                 runInAction(() => this.hasForegroundPermission = false)
                 return false;
@@ -57,10 +58,11 @@ export default class LocationStore implements ILocationStore {
         }
 
         try {
+            console.log('asking for baclground')
             let { status : backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
             
-            if (backgroundStatus !== 'granted') {
-                console.log('Permission to access foreground location was denied');
+            if (backgroundStatus !== Location.PermissionStatus.GRANTED) {
+                console.log('Permission to access background location was denied');
                 runInAction(() => this.hasBackgroundPermission = false)
                 return false;
             } else {
@@ -113,8 +115,9 @@ export default class LocationStore implements ILocationStore {
     }
 }
 
-TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, ({ data, error }) => {
+TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, ({ data, error }: TaskManagerTaskBody<{ locations: Location.LocationObject[] }>) => {
     const locationStore = getStore<ILocationStore>(ILocationStore);
+    console.log("BACKGROUND LOCATION")
     
     if (error) {
       // Error occurred - check `error.message` for more details.
@@ -122,7 +125,7 @@ TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, ({ data, error }
       return;
     }
     if (data) {
-        console.log(data)
+        console.log(data.locations)
     //   const { locations } = data;
       // do something with the locations captured in the background
     }

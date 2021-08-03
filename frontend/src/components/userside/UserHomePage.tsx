@@ -22,7 +22,8 @@ export default function UserHomePage({ navigation }: Props) {
 
     useEffect(() => {
         (async () => {
-          locationStore.askForPermission()
+          await locationStore.askForPermission()
+          await locationStore.watchLocation((l) => console.log('FOREGROUND LOCATION:', l))
         })();
       }, []);
 
