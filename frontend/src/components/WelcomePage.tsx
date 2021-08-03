@@ -13,10 +13,12 @@ type Props = {
 
 export default function WelcomePage({ navigation }: Props) {
     return (
-        <View>
+        <View style={styles.container}>
             <Text style={styles.title}>Welcome to Patch by Raheem!</Text>
-            <Button style={styles.fitToText} mode="contained" onPress={() => navigation.navigate(routerNames.signIn)}>Sign In</Button> 
-            <Button style={styles.fitToText} mode="contained" onPress={() => navigation.navigate(routerNames.signUp)}>Sign Up</Button>
-        </View> 
+            <View style={styles.fitToText}>
+                <Button mode="contained" onPress={() => navigation.navigate(routerNames.signIn)}>Sign In</Button>
+                <Button mode="contained" onPress={() => navigation.navigate(routerNames.signUp)}>Sign Up</Button>
+            </View>
+        </View>
     );
 };

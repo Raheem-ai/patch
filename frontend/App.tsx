@@ -18,6 +18,8 @@ import { RootStackParamList, routerNames } from './src/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+const theme = {};
+
 export default function App() {
   return (
     <NavigationContainer>

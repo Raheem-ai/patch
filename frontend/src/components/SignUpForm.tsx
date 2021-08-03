@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { labelNames, RootStackParamList, routerNames, UserHomeNavigationProp } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { styles } from '../style';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -17,13 +18,14 @@ export default function SignUpForm({ navigation }: Props) {
     const [password, setPassword] = React.useState('');
 
     return(
-        <View>
-            <TextInput label={labelNames.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
-            <TextInput label={labelNames.lastname} value={lastName} onChangeText={lastName => setLastName(lastName)}/>
-            <TextInput label={labelNames.email} value={email} onChangeText={email => setEmail(email)}/>
-            <TextInput label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
-            <TextInput label={labelNames.firstname} value={password} onChangeText={password => setPassword(password)}/>
-            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Create Account</Button>
+        <View style={styles.container}>
+            <Text style={styles.title}>Create your account</Text>
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
+            <TextInput style={styles.spacing} mode="outlined"label={labelNames.lastname} value={lastName} onChangeText={lastName => setLastName(lastName)}/>
+            <TextInput style={styles.spacing} mode="outlined"label={labelNames.email} value={email} onChangeText={email => setEmail(email)}/>
+            <TextInput style={styles.spacing} mode="outlined"label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
+            <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
+            <Button style={styles.spacing} mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Create Account</Button>
         </View>
     );
 };
