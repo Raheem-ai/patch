@@ -2,9 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 import * as React from "react";
 import { NavigationContainer } from '@react-navigation/native';
-import { routerNames, SignInNavigationProp, SignUpNavigationProp } from "../types";
-import { styles } from "/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/style";
-
+import { routerNames, SignInNavigationProp, SignUpNavigationProp, styleVals } from "../types";
 
 // IMPORTANT NOTE: what should the type of navigation be when there are multiple routes?
 type Props = {
@@ -22,3 +20,19 @@ export default function WelcomePage({ navigation }: Props) {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    title: {
+        fontSize: styleVals.fontSizes.title,
+        fontWeight: "bold",
+        textAlign: 'center',
+    },
+    fitToText: {
+        flexDirection: "row",
+        justifyContent: "space-evenly",
+    },
+});

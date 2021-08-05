@@ -26,3 +26,18 @@ export const labelNames = {
     lastname: 'Last Name',
     email: 'Email',
 };
+
+// style constants
+export const styleVals = {
+    fontSizes: {
+        title: 25,
+    },
+    fontWeights: {
+        title: 'bold',
+        regular: "normal",
+    },
+    paddingVals: {
+        bottom: 15,
+        horizontal: 10,
+    },
+};

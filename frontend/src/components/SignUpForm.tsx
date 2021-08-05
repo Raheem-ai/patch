@@ -2,9 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
-import { labelNames, RootStackParamList, routerNames, UserHomeNavigationProp } from '../types';
+import { labelNames, RootStackParamList, routerNames, styleVals, UserHomeNavigationProp } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { styles } from '../style';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -29,3 +28,19 @@ export default function SignUpForm({ navigation }: Props) {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    title: {
+        fontSize: styleVals.fontSizes.title,
+        fontWeight: "bold",
+        textAlign: 'center',
+    },
+    spacing: {
+        paddingHorizontal: styleVals.paddingVals.horizontal,
+        paddingBottom: styleVals.paddingVals.bottom,
+    },
+});
