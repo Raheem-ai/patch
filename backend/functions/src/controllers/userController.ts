@@ -3,6 +3,8 @@ import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
+import { UserRole } from "common/models";
+import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserModel } from "../models/user";
 import { LocalCredentials } from "../protocols/local";
 
@@ -34,10 +36,12 @@ export class UsersController {
         // sets up session cookie and returns user json
     }
 
-    @Post(API.server.signOut())
-    logout(@Req() req: Req) {
-        req.logout();
-        req.session.destroy(() => {});
+    @Post(API.server.reportLocation())
+    @RequireRoles([UserRole.Responder])
+    reportLocation(
+        @Required() @BodyParams('locations') locations: Location[]
+    ) {
+        console.log(locations)
     }
 
 }

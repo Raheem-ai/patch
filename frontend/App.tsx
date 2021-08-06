@@ -1,3 +1,5 @@
+// needed for uuid to work in react native env
+import 'react-native-get-random-values';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';

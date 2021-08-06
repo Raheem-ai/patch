@@ -5,6 +5,7 @@ import { getStore } from "../../di";
 import { ILocationStore, IUserStore } from "../../interfaces";
 import { routerNames, UserHomeNavigationProp } from "../../types";
 import * as Location from 'expo-location';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -22,8 +23,11 @@ export default function UserHomePage({ navigation }: Props) {
 
     useEffect(() => {
         (async () => {
-          await locationStore.askForPermission()
-          await locationStore.watchLocation((l) => console.log('FOREGROUND LOCATION:', l))
+
+            const fgHandle = locationStore.addForegroundCallback((loc) => {
+                console.log('FOREGROUND: ', `${loc.coords.latitude}, ${loc.coords.longitude}`)
+            })
+
         })();
       }, []);
 
@@ -31,6 +35,19 @@ export default function UserHomePage({ navigation }: Props) {
     const signout = async () => {
         await userStore.signOut();
         navigation.navigate(routerNames.signIn);
+    }
+
+    const startShift = async () => {
+        await locationStore.startWatchingLocation();
+
+        const tenSecondsFromNow = new Date();
+        tenSecondsFromNow.setSeconds(new Date().getSeconds() + 10);
+
+        await AsyncStorage.setItem(ILocationStore.SHIFT_END_TIME, JSON.stringify(tenSecondsFromNow.getTime()));
+    }
+
+    const endShift = async () => {
+        await locationStore.stopWatchingLocation();
     }
 
     return (
@@ -46,6 +63,8 @@ export default function UserHomePage({ navigation }: Props) {
                     <Menu.Item title="Schedule" />
                     <Menu.Item title="Sign Out" onPress={signout}/>
                 </Menu>
+                <Button onPress={startShift}>Start Shift</Button>
+                <Button onPress={endShift}>End Shift</Button>
             </View>
         </Provider>
     );

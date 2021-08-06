@@ -8,17 +8,17 @@ import { User, UserRole } from "common/models";
 export class RequireRoleMiddleware {
   use(@Req() req: Req, @EndpointInfo() endpoint: EndpointInfo) {
     const user = req.user as User;
-    const params =  endpoint.get(RequireRoleMiddleware);
+    const { roles }: { roles: UserRole[] } =  endpoint.get(RequireRoleMiddleware);
 
     if (!user) {
       throw new Unauthorized('You must be signed in to call this api');
-    } else if ((!params.roles) || (!params.roles.length)) {
+    } else if ((!roles) || (!roles.length)) {
       // api not restriced to allow access
       return;
     } else {
       const unmetRoles = [];
 
-      for (const role of params.roles) {
+      for (const role of roles) {
         if (!user.roles.includes(role)) {
           unmetRoles.push(role);
         }
