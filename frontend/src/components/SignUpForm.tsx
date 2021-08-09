@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: styleVals.fontSizes.title,
+        fontSize: styleVals.fontSizes.large,
         fontWeight: "bold",
         textAlign: 'center',
     },
     spacing: {
-        paddingHorizontal: styleVals.paddingVals.horizontal,
-        paddingBottom: styleVals.paddingVals.bottom,
+        paddingHorizontal: styleVals.paddingVals.medium,
+        paddingBottom: styleVals.paddingVals.large,
     },
 });

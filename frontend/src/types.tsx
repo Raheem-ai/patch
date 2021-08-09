@@ -30,14 +30,14 @@ export const labelNames = {
 // style constants
 export const styleVals = {
     fontSizes: {
-        title: 25,
+        large: 25,
     },
     fontWeights: {
-        title: 'bold',
+        heavy: "bold",
         regular: "normal",
     },
     paddingVals: {
-        bottom: 15,
-        horizontal: 10,
+        large: 15,
+        medium: 10,
     },
 };

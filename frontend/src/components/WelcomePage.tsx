@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: styleVals.fontSizes.title,
+        fontSize: styleVals.fontSizes.large,
         fontWeight: "bold",
         textAlign: 'center',
     },
