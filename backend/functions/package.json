@@ -7,41 +7,54 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "dev": "npm run build && node lib/index.js"
+    "dev": "npm run build && PATCH_LOCAL_ENV=local node lib/backend/functions/src/index.js"
   },
   "engines": {
     "node": "12"
   },
-  "main": "lib/firebase.js",
+  "main": "lib/backend/functions/src/firebase.js",
   "dependencies": {
+    "@tsed/ajv": "^6.59.9",
     "@tsed/common": "^6.59.9",
     "@tsed/core": "^6.59.9",
     "@tsed/di": "^6.59.9",
     "@tsed/exceptions": "^6.59.9",
     "@tsed/json-mapper": "^6.59.9",
-    "@tsed/passport": "^6.60.1",
+    "@tsed/mongoose": "^6.59.9",
+    "@tsed/passport": "^6.59.9",
     "@tsed/platform-express": "^6.59.9",
     "@tsed/schema": "^6.59.9",
     "@types/express": "^4.17.13",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.3.3",
+    "ajv": "^8.6.2",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.11.0",
+    "infra": "file:infra",
     "method-override": "^3.0.0",
+    "module-alias": "^2.2.2",
+    "mongoose": "^5.13.3",
     "passport": "^0.4.1",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/express-session": "^1.17.4",
     "@types/passport": "^1.0.7",
     "@types/passport-local": "^1.0.34",
+    "@types/uuid": "^8.3.1",
     "firebase-functions-test": "^0.2.0",
     "typescript": "^4.0.2"
   },
-  "private": true
+  "private": true,
+  "_moduleAliases": {
+    "common": "./lib/common",
+    "infra/src": "./infra/lib/src"
+  }
 }

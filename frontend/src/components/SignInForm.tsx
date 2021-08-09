@@ -5,6 +5,9 @@ import { Header } from 'react-native/Libraries/NewAppScreen';
 import { NavigationStackProp } from 'react-navigation-stack';
 import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import API from '../api';
+import { getStore } from '../di';
+import { IUserStore } from '../interfaces';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -13,6 +16,13 @@ type Props = {
 export default function SignInForm( { navigation } : Props) {
     const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
+
+    const userStore = getStore<IUserStore>(IUserStore);
+
+    const signIn = async () => {
+        await userStore.signIn(username, password)
+        navigation.navigate(routerNames.userHome)
+    }
 
     return(
         <View style={styles.container}>

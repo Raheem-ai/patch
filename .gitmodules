@@ -1,0 +1,3 @@
+[submodule "backend/functions/infra"]
+	path = backend/functions/infra
+	url = https://github.com/Raheem-ai/raheem-infra.git

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "outDir": "lib",
     "sourceMap": true,
     "target": "es2017",
@@ -16,7 +16,10 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "common/*": ["../../common/*"]
+    }
   },
   "compileOnSave": true,
   "include": [
@@ -26,5 +29,8 @@
     "node_modules",
     "./public",
     "lib"
+  ],
+  "references": [
+    { "path": "./infra" }
   ]
 }

@@ -1,11 +1,15 @@
 import { User } from '../../common/models'
 
-export type UserStore = {
+export interface IUserStore {
     user: User;
-    loading: boolean;
-    signIn(): Promise<void>
-    signUp(): Promise<void>
+    signedIn: boolean;
+    signIn(email: string, password: string): Promise<void>
+    signUp(email: string, password: string): Promise<void>
     signOut(): Promise<void>
+}
+
+export namespace IUserStore {
+    export const id = Symbol('IUserStore');
 }
 
 export type Notifications = {
