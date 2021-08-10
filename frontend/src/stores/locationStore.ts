@@ -15,8 +15,8 @@ import API from '../api';
 @Store()
 export default class LocationStore implements ILocationStore {
 
-    public hasForegroundPermission: boolean = false;
-    public hasBackgroundPermission: boolean = false;
+    public hasForegroundPermission = false;
+    public hasBackgroundPermission = false;
 
     public foregroundCallbacksMap: Map<string, (loc: LocationObject) => void> = new Map();
     

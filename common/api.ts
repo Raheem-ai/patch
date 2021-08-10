@@ -17,6 +17,7 @@ interface ApiRoutes {
     signOut: () => string
     dispatch: () => string
     reportLocation: () => string
+    reportPushToken: () => string
 }
 
  class API {
@@ -43,6 +44,9 @@ interface ApiRoutes {
         },
         reportLocation: () => {
             return '/reportLocation'
+        }, 
+        reportPushToken: () => {
+            return '/reportPushToken'
         }
     }
 
@@ -59,6 +63,9 @@ interface ApiRoutes {
         },
         reportLocation: () => {
             return `${this.base}${this.namespaces.users}${this.server.reportLocation()}`
+        },
+        reportPushToken: () => {
+            return `${this.base}${this.namespaces.users}${this.server.reportPushToken()}`
         },
 
         // dispatch

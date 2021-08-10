@@ -19,14 +19,16 @@ import UserHomePage from './src/components/userside/UserHomePage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { ILocationStore, IUserStore } from './src/interfaces';
+import { ILocationStore, INotificationStore, IUserStore } from './src/interfaces';
 import UserStore from './src/stores/userStore';
 import LocationStore from './src/stores/locationStore';
+import NotificationStore from './src/stores/notificationStore';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 container.bind(IUserStore.id).to(UserStore);
 container.bind(ILocationStore.id).to(LocationStore);
+container.bind(INotificationStore.id).to(NotificationStore);
 
 export default function App() {
   return (

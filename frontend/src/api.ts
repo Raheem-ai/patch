@@ -47,6 +47,14 @@ export class APIClient {
             locations
         })
     }
+
+    async reportPushToken(token: string) {
+        const url = `${host}${API.client.reportPushToken()}`;
+
+        await axios.post<void>(url, {            
+            token
+        })
+    }
 } 
 
 export default new APIClient();

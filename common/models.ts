@@ -27,3 +27,15 @@ export type Location = {
     };
     timestamp: number;
 };
+
+export enum NotificationType {
+    AssignedIncident
+}
+
+export type NotificationPayloads = {
+    [NotificationType.AssignedIncident] : {
+        id: string,
+    }
+}
+
+export type NotificationPayload<T extends NotificationType> = NotificationPayloads[T];

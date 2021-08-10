@@ -42,6 +42,11 @@ export default class UserStore implements IUserStore {
     }
 
     async signOut() {
-        await API.signOut();
+        try {
+            await API.signOut();
+            runInAction(() => this.user = null)
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

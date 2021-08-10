@@ -1,4 +1,5 @@
-import { User, Location } from '../../common/models'
+import { Notification, NotificationResponse } from 'expo-notifications';
+import { User, Location, NotificationPayload, NotificationType } from '../../common/models'
 
 export interface IUserStore {
     user: User;
@@ -31,4 +32,18 @@ export namespace ILocationStore {
     export const id = Symbol('ILocationStore')
     export const BACKGROUND_LOCATION_TASK = 'BACKGROUND_LOCATION_TASK'
     export const SHIFT_END_TIME = 'SHIFT_END_TIME'
+}
+
+
+export interface INotificationStore {
+    hasPermission: boolean;
+    askForPermission(): Promise<boolean> 
+    updatePushToken(): Promise<void>;
+    onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void): void;
+    onNotificationResponse<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, res: NotificationResponse) => void): void;
+    startListeningForNotifications(): Promise<void>
+}
+
+export namespace INotificationStore {
+    export const id = Symbol('INotificationStore');
 }

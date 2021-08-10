@@ -5,6 +5,7 @@ import config, {
 } from 'infra/src/config';
 
 import {
+    ExpoCredentials,
     PatchMongoDBCredentials,
     PatchSessionSecret
 } from 'infra/src/secrets';
@@ -12,7 +13,8 @@ import {
 const environmentConfig = {
     RAHEEM: new RaheemConfig(),
     SESSION: new PatchSessionSecret(),
-    MONGO: new PatchMongoDBCredentials()
+    MONGO: new PatchMongoDBCredentials(),
+    EXPO: new ExpoCredentials()
 }
 
 export { environmentConfig };

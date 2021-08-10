@@ -24,6 +24,9 @@ PODS:
     - ExpoModulesCore
     - UMCore
     - UMTaskManagerInterface
+  - EXNotifications (0.12.3):
+    - ExpoModulesCore
+    - UMCore
   - ExpoModulesCore (0.2.0):
     - ExpoModulesCore/Core (= 0.2.0)
     - ExpoModulesCore/Interfaces (= 0.2.0)
@@ -357,6 +360,7 @@ DEPENDENCIES:
   - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
   - EXKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - EXLocation (from `../node_modules/expo-location/ios`)
+  - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
@@ -426,6 +430,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-keep-awake/ios"
   EXLocation:
     :path: "../node_modules/expo-location/ios"
+  EXNotifications:
+    :path: "../node_modules/expo-notifications/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core/ios"
   EXSplashScreen:
@@ -524,6 +530,7 @@ SPEC CHECKSUMS:
   EXImageLoader: 6494524ac2b99af4edcacada0e19c71600423e59
   EXKeepAwake: db7607300383508b9ccf1da5bed4eab541f53e25
   EXLocation: bcb40b8b420a77c45f6cbcc93f80da9d84776c7c
+  EXNotifications: 57f2250b183b10bb3ee8c91b26cbd4758dd30cda
   ExpoModulesCore: 730c7158b2fb179ba5921230e56a083a2304974d
   EXSplashScreen: f9928db64cf96e1e69beebbc3610cc3b2db2d38f
   EXStructuredHeaders: 5c1dfd030edc0128927fe3cb7ec73bec84b73ab4
