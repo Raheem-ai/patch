@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, HelperText, TextInput } from 'react-native-paper';
+import { Button, HelperText, TextInput, Title } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { NavigationStackProp } from 'react-navigation-stack';
-import { labelNames, routerNames, SignInNavigationProp } from '../types';
+import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import API from '../api';
 import { getStore } from '../di';
@@ -25,10 +25,24 @@ export default function SignInForm( { navigation } : Props) {
     }
 
     return(
-        <View>
-            <TextInput label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
-            <TextInput label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
-            <Button mode="contained" onPress={signIn}>Sign In</Button>
+        <View style={styles.container}>
+            <Text style={styles.title}>Sign In</Text>
+            <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
+            <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
+            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Sign In</Button>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: styleVals.paddingVals.medium,
+    },
+    title: {
+        fontSize: styleVals.fontSizes.large,
+        fontWeight: "bold",
+        textAlign: 'center',
+    },
+});

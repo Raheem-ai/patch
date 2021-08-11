@@ -20,9 +20,24 @@ export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>
 export type UserHomeNavigationProp = StackNavigationProp<RootStackParamList, 'UserHomePage'>;
 
 export const labelNames = {
-    username: 'username',
-    password: 'password',
-    firstname: 'firstname',
-    lastname: 'lastname',
-    email: 'email',
+    username: 'Username',
+    password: 'Password',
+    firstname: 'First Name',
+    lastname: 'Last Name',
+    email: 'Email',
+};
+
+// style constants
+export const styleVals = {
+    fontSizes: {
+        large: 25,
+    },
+    fontWeights: {
+        heavy: "bold",
+        regular: "normal",
+    },
+    paddingVals: {
+        large: 15,
+        medium: 10,
+    },
 };
