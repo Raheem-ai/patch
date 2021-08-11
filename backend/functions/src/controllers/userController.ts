@@ -3,12 +3,10 @@ import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { NotificationType, UserRole } from "common/models";
-import { expo } from "../expo";
+import { User, UserRole } from "common/models";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserModel } from "../models/user";
 import { LocalCredentials } from "../protocols/local";
-import { ExpoPushErrorReceipt } from "expo-server-sdk";
 
 @Controller(API.namespaces.users)
 export class UsersController {
@@ -55,51 +53,18 @@ export class UsersController {
     @Post(API.server.reportPushToken())
     @Authorize()
     async reportPushToken(
-        @Required() @BodyParams('token') token: string
+        @Required() @BodyParams('token') token: string,
+        @Req() request: Req
     ) {
-            const chunks = expo.chunkPushNotifications([{
-                to: token,
-                sound: 'default',
-                body: 'This is a test notification',
-                data: { 
-                    type: NotificationType.AssignedIncident,
-                    withSome: 'data' 
-                },
-            }]);
 
-            const tickets = [];
+        const user = request.user as User;
 
-            for (const chunk of chunks) {
-                tickets.push(...await expo.sendPushNotificationsAsync(chunk));
-            }   
+        const fullUser = await this.users.findOne({ email: user.email });
 
-            const receiptChunks = expo.chunkPushNotificationReceiptIds(tickets.filter(t => !!t.id).map(t => t.id))
-
-            for (const receiptChunk of receiptChunks) {
-                const receipts = await expo.getPushNotificationReceiptsAsync(receiptChunk);
-
-                for (let receiptId in receipts) {
-                    const receipt = receipts[receiptId];
-                    let { status } = receipt;
-
-                    if (status === 'ok') {
-                        continue;
-                    } else if (status === 'error') {
-                        let { details, message } = receipt as ExpoPushErrorReceipt;
-
-                        console.error(
-                            `There was an error sending a notification: ${message}`
-                        );
-
-                        if (details && details.error) {
-                            // The error codes are listed in the Expo documentation:
-                            // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
-                            // You must handle the errors appropriately.
-                            console.error(`The error code is ${details.error}`);
-                        }
-                    }
-                }
-            }
+        if (fullUser.push_token != token) {
+            fullUser.push_token = token;
+            await fullUser.save();
+        }
     }
 
 }

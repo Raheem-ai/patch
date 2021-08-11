@@ -31,7 +31,8 @@ export class LocalProtocol implements OnVerify, OnInstall {
         @Req() request: Req, 
         @BodyParams() credentials: LocalCredentials,
     ) {
-        const user = await this.model.findOne({ email: credentials.email })
+        // don't expose private properties of the user to the app
+        const user = await this.model.findOne({ email: credentials.email }).select(UserModel.privateProperties)
 
         if (!user) {
         throw new Unauthorized("Unauthorized user")

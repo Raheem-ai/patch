@@ -55,6 +55,18 @@ export class APIClient {
             token
         })
     }
+
+    async dispatch() {
+        const url = `${host}${API.client.dispatch()}`;
+
+        await axios.post<void>(url);
+    }
+
+    async assignIncident() {
+        const url = `${host}${API.client.assignIncident()}`;
+
+        await axios.post<void>(url);
+    }
 } 
 
 export default new APIClient();

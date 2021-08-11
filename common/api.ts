@@ -18,6 +18,7 @@ interface ApiRoutes {
     dispatch: () => string
     reportLocation: () => string
     reportPushToken: () => string
+    assignIncident: () => string
 }
 
  class API {
@@ -47,6 +48,9 @@ interface ApiRoutes {
         }, 
         reportPushToken: () => {
             return '/reportPushToken'
+        },
+        assignIncident: () => {
+            return '/assignIncident'
         }
     }
 
@@ -71,6 +75,9 @@ interface ApiRoutes {
         // dispatch
         dispatch: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.dispatch()}`
+        },
+        assignIncident: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.assignIncident()}`
         }
     }
 }

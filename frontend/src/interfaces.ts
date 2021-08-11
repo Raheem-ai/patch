@@ -47,3 +47,12 @@ export interface INotificationStore {
 export namespace INotificationStore {
     export const id = Symbol('INotificationStore');
 }
+
+export namespace IDispatchStore {
+    export const id = Symbol('IDispatchStore');
+}
+
+export interface IDispatchStore {
+    dispatch(): Promise<void>
+    assignIncident(): Promise<void>
+}

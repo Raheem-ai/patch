@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { Button, Menu, Provider } from "react-native-paper";
 import { getStore } from "../../di";
-import { ILocationStore, INotificationStore, IUserStore } from "../../interfaces";
+import { IDispatchStore, ILocationStore, INotificationStore, IUserStore } from "../../interfaces";
 import { routerNames, UserHomeNavigationProp } from "../../types";
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +22,7 @@ export default function UserHomePage({ navigation }: Props) {
     const userStore = getStore<IUserStore>(IUserStore);
     const locationStore = getStore<ILocationStore>(ILocationStore);
     const notificationStore = getStore<INotificationStore>(INotificationStore);
+    const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
 
     useEffect(() => {
         (async () => {
@@ -57,6 +58,10 @@ export default function UserHomePage({ navigation }: Props) {
         await locationStore.stopWatchingLocation();
     }
 
+    const assignIncident = async () => {
+        await dispatchStore.assignIncident();
+    }
+
     return (
         <Provider>
             <View>
@@ -72,6 +77,7 @@ export default function UserHomePage({ navigation }: Props) {
                 </Menu>
                 <Button onPress={startShift}>Start Shift</Button>
                 <Button onPress={endShift}>End Shift</Button>
+                <Button onPress={assignIncident}>Assign Incident</Button>
             </View>
         </Provider>
     );
