@@ -42,6 +42,12 @@ export class UsersController {
         req.session.destroy(() => {});
     }
 
+    @Post(API.server.signOut())
+    logout(@Req() req: Req) {
+        req.logout();
+        req.session.destroy(() => {});
+    }
+
     @Post(API.server.reportLocation())
     @RequireRoles([UserRole.Responder])
     reportLocation(
