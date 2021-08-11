@@ -1,4 +1,4 @@
-import { User } from '../../common/models'
+import { User, Location } from '../../common/models'
 
 export interface IUserStore {
     user: User;
@@ -12,6 +12,23 @@ export namespace IUserStore {
     export const id = Symbol('IUserStore');
 }
 
-export type Notifications = {
-    
+export interface ILocationStore {
+    hasForegroundPermission: boolean
+    hasBackgroundPermission: boolean 
+    hasFullPermission: boolean 
+    foregroundCallbacks: ((loc: Location) => void)[]
+
+    askForPermission(): Promise<boolean>
+    getCurrentLocation(): Promise<Location>
+    startWatchingLocation(): Promise<void>
+    stopWatchingLocation(): Promise<void>
+    addForegroundCallback(cb: (loc: Location) => Promise<void> | void): string;
+    removeForegroundCallback(handle: string): void;
+    reportLocation(locations: Location[]): Promise<void>;
+}
+
+export namespace ILocationStore {
+    export const id = Symbol('ILocationStore')
+    export const BACKGROUND_LOCATION_TASK = 'BACKGROUND_LOCATION_TASK'
+    export const SHIFT_END_TIME = 'SHIFT_END_TIME'
 }

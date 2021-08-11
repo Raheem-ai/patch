@@ -15,6 +15,8 @@ interface ApiRoutes {
     signUp: () => string
     signIn: () => string   
     signOut: () => string
+    dispatch: () => string
+    reportLocation: () => string
 }
 
  class API {
@@ -22,7 +24,8 @@ interface ApiRoutes {
     base = `/api`
 
     namespaces = {
-        users: `/users`
+        users: `/users`,
+        dispatch: `/dispatch`
     }
 
     server: ApiRoutes = {
@@ -34,10 +37,17 @@ interface ApiRoutes {
         },
         signOut: () => {
             return `/signout`
+        },
+        dispatch: () => {
+            return '/dispatch'
+        },
+        reportLocation: () => {
+            return '/reportLocation'
         }
     }
 
     client: ApiRoutes = {
+        // users
         signUp: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUp()}`
         },
@@ -46,6 +56,14 @@ interface ApiRoutes {
         },
         signOut: () => {
             return `${this.base}${this.namespaces.users}${this.server.signOut()}`
+        },
+        reportLocation: () => {
+            return `${this.base}${this.namespaces.users}${this.server.reportLocation()}`
+        },
+
+        // dispatch
+        dispatch: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.dispatch()}`
         }
     }
 }
