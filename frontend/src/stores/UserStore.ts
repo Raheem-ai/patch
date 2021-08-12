@@ -27,6 +27,8 @@ export default class UserStore implements IUserStore {
                 runInAction(() => this.user = user)
             }
         } catch (e) {
+            // try to handle it here
+            // display a pop up error and then make sure to stay on the same component
             console.error(e);
         }
     }

@@ -4,7 +4,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router-dom';
 import "react-native-gesture-handler";
-import { Provider } from 'inversify-react';
 import container from './src/di';
 
 // component imports

@@ -20,16 +20,25 @@ export default function SignInForm( { navigation } : Props) {
     const userStore = getStore<IUserStore>(IUserStore);
 
     const signIn = async () => {
-        await userStore.signIn(username, password)
-        navigation.navigate(routerNames.userHome)
-    }
+        await userStore.signIn(username, password);
+        navigation.navigate(routerNames.userHome);
+    };
+
+    // make sure the user exists in the store before attempting to sign in -- not sure if i even need this?
+    const authenticate = () => {
+        if (userStore) {
+
+        } else {
+
+        }
+    };
 
     return(
         <View style={styles.container}>
             <Text style={styles.title}>Sign In</Text>
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
-            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Sign In</Button>
+            <Button mode="contained" onPress={() => signIn()}>Sign In</Button>
         </View>
     );
 };
