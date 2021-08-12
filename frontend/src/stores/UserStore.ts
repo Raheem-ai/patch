@@ -38,8 +38,10 @@ export default class UserStore implements IUserStore {
             const user = await API.signUp(email, password)
             
             runInAction(() => this.user = user)
+            return true;
         } catch (e) {
             console.error(e);
+            return false;
         }
     }
 
