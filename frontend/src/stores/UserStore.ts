@@ -26,10 +26,10 @@ export default class UserStore implements IUserStore {
                 // if already signed in this will not return a user so check to be sure
                 runInAction(() => this.user = user)
             }
+            return true;
         } catch (e) {
-            // try to handle it here
-            // display a pop up error and then make sure to stay on the same component
             console.error(e);
+            return false;
         }
     }
 

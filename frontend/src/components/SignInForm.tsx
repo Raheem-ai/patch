@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, HelperText, TextInput, Title } from 'react-native-paper';
+import { Button, Dialog, HelperText, Paragraph, Portal, TextInput, Title } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { NavigationStackProp } from 'react-navigation-stack';
@@ -8,6 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import API from '../api';
 import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
+import PopUpMessage from './PopUpMessage';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -19,8 +20,17 @@ export default function SignInForm( { navigation } : Props) {
 
     const userStore = getStore<IUserStore>(IUserStore);
 
+    const [visible, setVisible] = React.useState(false);
+
+    const showDialog = () => setVisible(true);
+  
+    const hideDialog = () => setVisible(false);
+
     const signIn = async () => {
-        await userStore.signIn(username, password);
+        let success = await userStore.signIn(username, password);
+        if (!success) {
+            showDialog();
+        }
         navigation.navigate(routerNames.userHome);
     };
 
@@ -39,6 +49,17 @@ export default function SignInForm( { navigation } : Props) {
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
             <Button mode="contained" onPress={() => signIn()}>Sign In</Button>
+            <Portal>
+            <Dialog visible={visible} onDismiss={hideDialog}>
+              <Dialog.Title>Sign In Error</Dialog.Title>
+              <Dialog.Content>
+                <Paragraph>Your email and/or password was incorrect.</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideDialog}>Try Again</Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
         </View>
     );
 };
