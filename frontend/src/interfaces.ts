@@ -3,8 +3,8 @@ import { User } from '../../common/models'
 export interface IUserStore {
     user: User;
     signedIn: boolean;
-    signIn(email: string, password: string): Promise<boolean>
-    signUp(email: string, password: string): Promise<boolean>
+    signIn(email: string, password: string): Promise<void>
+    signUp(email: string, password: string): Promise<void>
     signOut(): Promise<void>
 }
 

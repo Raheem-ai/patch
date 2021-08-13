@@ -17,32 +17,20 @@ export default class UserStore implements IUserStore {
     get signedIn() {
         return !!this.user;
     }
-    
-    async signIn(email: string, password: string) {
-        try {
-            const user = await API.signIn(email, password)
 
-            if (user) {
-                // if already signed in this will not return a user so check to be sure
-                runInAction(() => this.user = user)
-            }
-            return true;
-        } catch (e) {
-            console.error(e);
-            return false;
+    async signIn(email: string, password: string) {
+        const user = await API.signIn(email, password)
+
+        if (user) {
+            // if already signed in this will not return a user so check to be sure
+            runInAction(() => this.user = user)
         }
     }
 
     async signUp(email: string, password: string) {
-        try {
-            const user = await API.signUp(email, password)
-            
-            runInAction(() => this.user = user)
-            return true;
-        } catch (e) {
-            console.error(e);
-            return false;
-        }
+        const user = await API.signUp(email, password)
+
+        runInAction(() => this.user = user)
     }
 
     async signOut() {

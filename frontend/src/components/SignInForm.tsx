@@ -27,19 +27,11 @@ export default function SignInForm({ navigation }: Props) {
     const hideDialog = () => setVisible(false);
 
     const signIn = async () => {
-        let success = await userStore.signIn(username, password);
-        if (!success) {
+        try {
+            await userStore.signIn(username, password);
+            navigation.navigate(routerNames.userHome);
+        } catch(e) {
             showDialog();
-        }
-        navigation.navigate(routerNames.userHome);
-    };
-
-    // make sure the user exists in the store before attempting to sign in -- not sure if i even need this?
-    const authenticate = () => {
-        if (userStore) {
-
-        } else {
-
         }
     };
 

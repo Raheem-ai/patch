@@ -40,12 +40,14 @@ export default function SignUpForm({ navigation }: Props) {
 
     const signup = async () => {
         let valid = validate();
+
         if (valid) {
-            let success = await userStore.signUp(email, password);
-            if (!success) {
+            try {
+                await userStore.signUp(email, password);
+                navigation.navigate(routerNames.userHome);
+            } catch(e) {
                 showDialog();
             }
-            navigation.navigate(routerNames.userHome);
         } else {
             showDialog();
         }
