@@ -9,6 +9,7 @@ import {SessionCookieName} from 'common/constants'
 import API from 'common/api';
 import "@tsed/ajv"; // sets up schema validation
 import "@tsed/mongoose"; // db connecting
+import '@tsed/agenda';
 import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
@@ -39,6 +40,13 @@ const mongoConnectionString = config.MONGO.get().connectionString;
   acceptMimes: ["application/json"],
   mongoose: {
     url: mongoConnectionString,
+  },
+  agenda: { 
+    enabled: true,
+    db: { 
+      address: mongoConnectionString, 
+      collection: 'jobsManager' 
+    } 
   },
   port: 9000
 })

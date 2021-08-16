@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { Store } from "../di";
 import * as Notifications from 'expo-notifications';
-import {Notification, NotificationResponse} from 'expo-notifications';
+import {Notification, NotificationResponse, NotificationAction} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import API from "../api";
 import { Constants } from "react-native-unimodules";
@@ -34,6 +34,21 @@ export default class NotificationStore implements INotificationStore {
                 console.error(e)
                 runInAction(() => this.hasPermission = false)
             })
+
+        this.registerInteractiveNotifications()
+            .then(() => console.log('categories initialized'))
+            .catch(console.error)
+    }
+
+    // TODO: this should be static so it can be done in the background as well
+    async registerInteractiveNotifications() {
+        for (const notificationType in interactiveNotifications) {
+            const actions = interactiveNotifications[notificationType] || [];
+
+            if (actions.length) {
+                await Notifications.setNotificationCategoryAsync(notificationType, actions)       
+            } 
+        }
     }
 
     async askForPermission(): Promise<boolean> {
@@ -90,10 +105,7 @@ export default class NotificationStore implements INotificationStore {
 
         if (callbacks && callbacks.length) {
             for (const cb of callbacks) {
-                cb(
-                    data,
-                    notification
-                )
+                cb(data, notification)
             }
         }
     }
@@ -106,10 +118,7 @@ export default class NotificationStore implements INotificationStore {
 
         if (callbacks && callbacks.length) {
             for (const cb of callbacks) {
-                cb(
-                    data,
-                    res
-                )
+                cb(data, res)
             }
         }
     }
@@ -127,7 +136,6 @@ export default class NotificationStore implements INotificationStore {
             this.notificationsSub = Notifications.addNotificationReceivedListener(this.notificationCallback);
             this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(this.notificationResponseCallback);
 
-            // TODO: shouldn't have to do this every time?...or do we?
             await this.updatePushToken();
 
             if (Platform.OS === 'android') {
@@ -151,4 +159,36 @@ Notifications.setNotificationHandler({
             shouldSetBadge: true,
         }
     }
-  });
+});
+
+const interactiveNotifications: { [notificationType in NotificationType]?: NotificationAction[] } = {
+    [NotificationType.AssignedIncident]: [
+        {
+            identifier: 'AcceptIncident',
+            buttonTitle: 'Confirm',
+            options: {
+                isDestructive: false,
+                isAuthenticationRequired: false,
+                opensAppToForeground: false,
+            },
+        },
+        {
+            identifier: 'DeclineIncident',
+            buttonTitle: 'Decline',
+            options: {
+                isDestructive: true,
+                isAuthenticationRequired: false,
+                opensAppToForeground: false,
+            },
+        },
+        {
+            identifier: 'ViewIncident',
+            buttonTitle: 'View Incident',
+            options: {
+                isDestructive: false,
+                isAuthenticationRequired: true,
+                opensAppToForeground: true,
+            }
+        }
+    ]
+}

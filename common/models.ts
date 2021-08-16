@@ -31,7 +31,7 @@ export type Location = {
 };
 
 export enum NotificationType {
-    AssignedIncident
+    AssignedIncident = 'assignedIncident'
 }
 
 export type NotificationPayloads = {

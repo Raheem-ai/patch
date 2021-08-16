@@ -29,7 +29,7 @@ export default function SignInForm( { navigation } : Props) {
             <Text style={styles.title}>Sign In</Text>
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
-            <Button mode="contained" onPress={() => navigation.navigate(routerNames.userHome)}>Sign In</Button>
+            <Button mode="contained" onPress={signIn}>Sign In</Button>
         </View>
     );
 };
