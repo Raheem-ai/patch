@@ -6,6 +6,8 @@ import { labelNames, RootStackParamList, routerNames, styleVals, UserHomeNavigat
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
+import { render } from 'enzyme';
+import PopUpMessage from './PopUpMessage';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -49,7 +51,10 @@ export default function SignUpForm({ navigation }: Props) {
                 showDialog();
             }
         } else {
-            showDialog();
+            render(
+                <PopUpMessage error="You have unfilled information that is required." />
+            );
+            //showDialog();
         }
     }
 
@@ -62,17 +67,6 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
             <Button style={styles.spacing} mode="contained" onPress={() => signup()}>Create Account</Button>
-            <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
-                    <Dialog.Title>Sign Up Error</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph>There was an error processing yoiur sign up request. Please try again.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={hideDialog}>Try Again</Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
         </View>
     );
 };
