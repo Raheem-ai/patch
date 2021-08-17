@@ -3,7 +3,7 @@ import { expo } from "../expo";
 import { ExpoPushMessage, ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from 'expo-server-sdk';
 import { NotificationModel } from "../models/notification";
 import { Inject, Service } from "@tsed/di";
-import { MongooseDocumentMethods, MongooseMergedDocument, MongooseModel } from "@tsed/mongoose";
+import { MongooseDocumentMethods, MongooseMergedDocument, MongooseModel, MongooseDocument } from "@tsed/mongoose";
 import * as uuid from 'uuid';
 import { UserModel } from "../models/user";
 import { Document } from "mongoose";
@@ -12,8 +12,11 @@ import {Job} from "agenda";
 import { JobNames } from "../jobs";
 
 type BulkSaver<T> = {
-    bulkSave(docs: T[]): Promise<any>;
+    // mongoose supports this but their typings are messed up
+    bulkSave(docs: MongooseDocument<T>[]): Promise<any>;
 }
+
+export type NotificationMetadata<T extends NotificationType> = Omit<NotificationModel<T>, 'id' | 'sent_count'>
 
 @Agenda()
 @Service()
@@ -22,17 +25,22 @@ export default class Notifications {
     @Inject(NotificationModel) notifications: MongooseModel<NotificationModel> & BulkSaver<NotificationModel>;
     @Inject(UserModel) users: MongooseModel<UserModel> & BulkSaver<NotificationModel>;
 
-    async send<T extends NotificationType>(notification: Omit<NotificationModel<T>, 'id'>): Promise<void> {
+    // TODO: this should come from config
+    // ((4) + (16) + (4^3) + (4^4) +(4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
+    // stale job
+    private backOffIncrementInMins = 4;
+
+    async send<T extends NotificationType>(notification: NotificationMetadata<T>): Promise<void> {
         await this.sendBulk([notification])
     }
 
-    async sendBulk<T extends NotificationType>(notifications: Omit<NotificationModel<T>, 'id'>[]): Promise<void> {
+    async sendBulk<T extends NotificationType>(notifications: NotificationMetadata<T>[]): Promise<void> {
         // convert json obj to mongoose document before sending bulk
         const { successfulSends, failedSends } = await this.sendBulkInternal(notifications.map(n => new this.notifications(n)));
 
         if (failedSends.length) {
             // handle resolvable errors
-            const { transientErrors } = await this.handleNonTransientFailures(failedSends);
+            const { transientErrors } = await this.handleNonTransientTicketErrors(failedSends);
             
             // save only transient errors for exponential backoff
             await this.notifications.bulkSave(transientErrors);
@@ -42,6 +50,15 @@ export default class Notifications {
             // save success tickets to check receipts async (every 15 min so this is essentially an enqueue where it checks at longtest 15 min)
             await this.notifications.bulkSave(successfulSends);
         }
+    }
+
+    nextSendDate(sentCount: number): Date {
+        let nextDate = new Date();
+        
+        const minsFromLastSend = Math.pow(this.backOffIncrementInMins, sentCount);
+        nextDate.setMinutes(nextDate.getMinutes() + minsFromLastSend);
+
+        return nextDate;
     }
 
     // only deals with documents
@@ -56,13 +73,19 @@ export default class Notifications {
         for (const chunk of chunks) {
             (await expo.sendPushNotificationsAsync(chunk)).forEach(ticket => {
                 const notification = notifications[i] as N & { id: string };
-                // notification.id =  notification.id || uuid.v1();
+
+                // every time this notification is sent this needs to be updated in case either the ticket or recepit
+                // comes back with an error
+                notification.sent_count = notification.sent_count ? notification.sent_count + 1 : 1;
+                notification.next_send = this.nextSendDate(notification.sent_count);
             
                 if (ticket.status == 'ok') {
                     notification.success_ticket = ticket;
+                    notification.error_ticket = null;
                     successNotifications.push(notification)
                 } else {
                     notification.error_ticket = ticket;
+                    notification.success_ticket = null;
                     errorNotifications.push(notification)
                 }
             });
@@ -74,7 +97,7 @@ export default class Notifications {
         }
     }
 
-    metadataToExpoMessage<T extends NotificationType>(notification: Omit<NotificationModel<T>, 'id'>): ExpoPushMessage {
+    metadataToExpoMessage<T extends NotificationType>(notification: NotificationMetadata<T>): ExpoPushMessage {
         return {
             to: notification.to,
             sound: 'default',
@@ -87,13 +110,22 @@ export default class Notifications {
         } as any; // expo allows for category id but their types arent up to date
     }
 
-    async handleNonTransientFailures<N extends NotificationModel>(failedNotifications: N[]): Promise<{ transientErrors: N[], nonTransientErrors: N[] }> {
+    async logUnknownTicketError(notification: NotificationModel) {
+        // TODO: set this up when we have logging/alerts
+    }
+
+    async logUnknownReceiptError(notification: NotificationModel, recepit: ExpoPushErrorReceipt) {
+        // TODO: set this up when we have logging/alerts
+    }
+
+    async handleNonTransientTicketErrors<N extends MongooseDocument<NotificationModel>>(failedNotifications: N[]): Promise<{ transientErrors: N[], nonTransientErrors: N[] }> {
         // handle resolveable errors ie. user turned off notifications
         const transientErrors = [];
         const nonTransientErrors = [];
 
         const unregisteredUsers = new Set<string>();
 
+        // only known error we can handle with tickets is when the user unregisters for notifications
         for (const failure of failedNotifications) {
             switch (failure.error_ticket.details.error) {
                 case "DeviceNotRegistered":
@@ -108,14 +140,9 @@ export default class Notifications {
 
                     unregisteredUsers.add(failure.to);
                     nonTransientErrors.push(failure);
-                case "InvalidCredentials":
-                    // TODO: what shoulg go here?!?!
-                    nonTransientErrors.push(failure);
-                case "MessageRateExceeded":
+                default:
+                    await this.logUnknownTicketError(failure.toJSON())
                     transientErrors.push(failure);
-                case "MessageTooBig":
-                    // TODO: what shoulg go here?!?!
-                    nonTransientErrors.push(failure);
             }
         }
 
@@ -125,34 +152,70 @@ export default class Notifications {
         }
     }
 
+
+    async handleRecepitError(notification: MongooseDocument<NotificationModel>, receipt: ExpoPushErrorReceipt): Promise<boolean> {
+        // handle resolveable errors ie. user turned off notifications
+            switch (receipt.details.error) {
+                case "DeviceNotRegistered":
+
+                    const fullUser = await this.users.findOne({ push_token: notification.to });
+                    fullUser.push_token = null;
+                    await fullUser.save();
+
+                    return false;
+                case "MessageRateExceeded":
+                    return true;
+                default:
+                    await this.logUnknownReceiptError(notification.toJSON(), receipt)
+                    return false;
+            }
+    }
+
     // TODO: how to schedule exponential backoff for notifications being sent at different times?
     // Answer: add a nextRetry field and change query to only process notifications whos nextRetry is before now
     @Define({ name: JobNames.RetryTransientNotificationFailures })
     async retryTransientFailures(job: Job) {
-        // get any notification with an error ticket that isn't null
+        // get any notification with an error ticket or receipt that isn't null
+        // and who's next scheduled send is before (or) now
         const transientFailures = await this.notifications.find({
-            error_ticket: {
-                $exists: true,
-                $ne: null
-            }
+            $and: [
+                {
+                    $or: [
+                        {
+                            error_ticket: {
+                                $exists: true,
+                                $ne: null
+                            },
+                        },
+                        {
+                            error_receipt: {
+                                $exists: true,
+                                $ne: null
+                            }
+                        }
+                    ]
+                },
+                {
+                    next_send: {
+                        $lte: new Date()
+                    }
+                }
+            ]    
         });
 
         // new failure/success tickets will be set on the model
         const { successfulSends, failedSends } = await this.sendBulkInternal(transientFailures)
 
-        const { transientErrors, nonTransientErrors } = await this.handleNonTransientFailures(failedSends);
+        const { transientErrors, nonTransientErrors } = await this.handleNonTransientTicketErrors(failedSends);
 
-        // update notifications that were successfully sent
-        for (const success of successfulSends) {
-            success.error_ticket = null;
-            await success.save();
-        }
+        await this.notifications.bulkSave([
+            // remove notifications that were successfully sent from being sent again
+            ...successfulSends,
+            // update notifications that still have transient errors
+            ...transientErrors
+        ])
 
-        // update notifications that still have transient errors
-        for (const transientError of transientErrors) {
-            await transientError.save();
-        }
-
+        // TODO: figoure out bulk delete
         // delete non transient errors that have been handled 
         for (const nonTransientError of nonTransientErrors) {
             await nonTransientError.delete()
@@ -179,7 +242,7 @@ export default class Notifications {
             }
         });
 
-        const receiptToNotificationsMap = new Map<string, Document<NotificationModel>>();
+        const receiptToNotificationsMap = new Map<string, MongooseDocument<NotificationModel>>();
 
         // keep mapping of ticket id and db object
         pendingNotifications.forEach(n => receiptToNotificationsMap.set(n.success_ticket.id, n));
@@ -187,34 +250,43 @@ export default class Notifications {
         // should all have an id since these are only the success tickets
         const receiptChunks = expo.chunkPushNotificationReceiptIds(Array.from(receiptToNotificationsMap.keys()))
 
+        const transientErrors: MongooseDocument<NotificationModel>[] = [];
+        const notificationsToDelete: MongooseDocument<NotificationModel>[] = [];
+
         for (const receiptChunk of receiptChunks) {
             const receipts = await expo.getPushNotificationReceiptsAsync(receiptChunk);
 
             for (let receiptId in receipts) {
                 const receipt = receipts[receiptId];
                 let { status } = receipt;
+                const notification = receiptToNotificationsMap.get(receiptId)
 
                 if (status === 'ok') {
                     // remove ticket from db
-                    const notification = receiptToNotificationsMap.get(receiptId);
                     console.log(`notification ${receiptId} recieved!: `, notification)
-                    await notification.delete();
+                    notificationsToDelete.push(notification)
+
                     continue;
                 } else if (status === 'error') {
-                    let { details, message } = receipt as ExpoPushErrorReceipt;
+                    const errorReceipt = receipt as ExpoPushErrorReceipt;
+                    const isTransient = await this.handleRecepitError(notification, errorReceipt);
 
-                    console.error(
-                        `There was an error sending a notification: ${message}`
-                    );
-
-                    if (details && details.error) {
-                        // The error codes are listed in the Expo documentation:
-                        // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
-                        // You must handle the errors appropriately.
-                        console.error(`The error code is ${details.error}`);
+                    if (isTransient) {
+                        // mark as needing to retry
+                        notification.error_receipt = errorReceipt;
+                        transientErrors.push(notification);
+                    } else {
+                        notificationsToDelete.push(notification);
                     }
                 }
             }
+        }
+
+        await this.notifications.bulkSave(transientErrors);
+        
+        // TODO: figure out bulk delete
+        for (const n of notificationsToDelete) {
+            await n.delete();
         }
     }
 }
