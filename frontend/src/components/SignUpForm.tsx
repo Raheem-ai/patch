@@ -8,6 +8,7 @@ import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
 import { render } from 'enzyme';
 import PopUpMessage from './PopUpMessage';
+import Container from './Container';
 
 type Props = {
     navigation: UserHomeNavigationProp;
@@ -26,7 +27,7 @@ export default function SignUpForm({ navigation }: Props) {
 
     const showDialog = () => setVisible(true);
   
-    const hideDialog = () => setVisible(false);
+    //const hideDialog = () => setVisible(false);
 
     // this is to make sure they entered valid information
     const validate = () => {
@@ -51,10 +52,7 @@ export default function SignUpForm({ navigation }: Props) {
                 showDialog();
             }
         } else {
-            render(
-                <PopUpMessage error="You have unfilled information that is required." />
-            );
-            //showDialog();
+            showDialog();
         }
     }
 
@@ -67,6 +65,9 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
             <Button style={styles.spacing} mode="contained" onPress={() => signup()}>Create Account</Button>
+            <View>
+                { visible ? <PopUpMessage display={true} error={"hey bro hey"}/> : null }
+            </View>
         </View>
     );
 };

@@ -9,6 +9,7 @@ import API from '../api';
 import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
 import PopUpMessage from './PopUpMessage';
+import { render } from 'enzyme';
 
 type Props = {
     navigation: SignInNavigationProp;

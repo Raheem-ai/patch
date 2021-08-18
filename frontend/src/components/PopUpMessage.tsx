@@ -1,32 +1,40 @@
 import React from "react";
 import { View } from "react-native";
-import { Provider, Portal, Dialog, Paragraph, Button } from "react-native-paper";
+import { Text, Provider, Portal, Dialog, Paragraph, Button } from "react-native-paper";
 
 /* We want this component to be generalizable and flexible enough to display dynamic messages */
 // the peop will include the error message
 export default function PopUpMessage(props) {
     // we assume that if we're here there is already an error
-    const [visible, setVisible] = React.useState(true);
+    const [visible, setVisible] = React.useState(props.display);
+    // this does show true, so the pop up should definitely display no?
+    console.log(visible);
 
-    const showDialog = () => setVisible(true);
-  
+    //const showDialog = () => setVisible(true);
+
     const hideDialog = () => setVisible(false);
-  
+
     return (
-      <Provider>
+        /* Just displaying the text by itself works, the actual pop up doesn't, and i think it's because
+        of the way that i am 
         <View>
-          <Portal>
-            <Dialog visible={visible} onDismiss={hideDialog}>
-              <Dialog.Title>Error</Dialog.Title>
-              <Dialog.Content>
-                <Paragraph>{props.error}</Paragraph>
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button onPress={hideDialog}>Try Again</Button>
-              </Dialog.Actions>
-            </Dialog>
-          </Portal>
-        </View>
-      </Provider>
+            <Text>Hey there!</Text>
+        </View>*/
+        
+        <Provider>
+            <View>
+                <Portal>
+                    <Dialog visible={visible} onDismiss={hideDialog}>
+                        <Dialog.Title>Error</Dialog.Title>
+                        <Dialog.Content>
+                            <Paragraph>{props.error}</Paragraph>
+                        </Dialog.Content>
+                        <Dialog.Actions>
+                            <Button onPress={hideDialog}>Try Again</Button>
+                        </Dialog.Actions>
+                    </Dialog>
+                </Portal>
+            </View>
+        </Provider>
     );
 };
