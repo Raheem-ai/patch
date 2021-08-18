@@ -27,7 +27,7 @@ export default function SignUpForm({ navigation }: Props) {
 
     const showDialog = () => setVisible(true);
   
-    //const hideDialog = () => setVisible(false);
+    const hideDialog = () => setVisible(false);
 
     // this is to make sure they entered valid information
     const validate = () => {
@@ -66,7 +66,7 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
             <Button style={styles.spacing} mode="contained" onPress={() => signup()}>Create Account</Button>
             <View>
-                { visible ? <PopUpMessage display={true} error={"hey bro hey"}/> : null }
+                { visible ? <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog}/> : null }
             </View>
         </View>
     );
