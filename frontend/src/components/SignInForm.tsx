@@ -42,17 +42,7 @@ export default function SignInForm({ navigation }: Props) {
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)} />
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password => setPassword(password)} />
             <Button mode="contained" onPress={() => signIn()}>Sign In</Button>
-            <Portal>
-                <Dialog visible={visible} onDismiss={hideDialog}>
-                    <Dialog.Title>Sign In Error</Dialog.Title>
-                    <Dialog.Content>
-                        <Paragraph>Your email and/or password was incorrect.</Paragraph>
-                    </Dialog.Content>
-                    <Dialog.Actions>
-                        <Button onPress={hideDialog}>Try Again</Button>
-                    </Dialog.Actions>
-                </Dialog>
-            </Portal>
+            <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog} />
         </View>
     );
 };

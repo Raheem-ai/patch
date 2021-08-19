@@ -26,7 +26,7 @@ export default function SignUpForm({ navigation }: Props) {
     const [visible, setVisible] = React.useState(false);
 
     const showDialog = () => setVisible(true);
-  
+
     const hideDialog = () => setVisible(false);
 
     // this is to make sure they entered valid information
@@ -34,7 +34,7 @@ export default function SignUpForm({ navigation }: Props) {
         let validEmail = new RegExp('^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$');
 
         if (firstName === '' || lastName === '' || email === '' || username === '' || password === '') {
-                return false;
+            return false;
         } else if (!validEmail.test(email)) {
             return false;
         }
@@ -48,7 +48,7 @@ export default function SignUpForm({ navigation }: Props) {
             try {
                 await userStore.signUp(email, password);
                 navigation.navigate(routerNames.userHome);
-            } catch(e) {
+            } catch (e) {
                 showDialog();
             }
         } else {
@@ -56,18 +56,16 @@ export default function SignUpForm({ navigation }: Props) {
         }
     }
 
-    return(
+    return (
         <View style={styles.container}>
             <Text style={styles.title}>Create your account</Text>
-            <TextInput style={styles.spacing} mode="outlined" label={labelNames.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
-            <TextInput style={styles.spacing} mode="outlined"label={labelNames.lastname} value={lastName} onChangeText={lastName => setLastName(lastName)}/>
-            <TextInput style={styles.spacing} mode="outlined"label={labelNames.email} value={email} onChangeText={email => setEmail(email)}/>
-            <TextInput style={styles.spacing} mode="outlined"label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
-            <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)} />
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.lastname} value={lastName} onChangeText={lastName => setLastName(lastName)} />
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.email} value={email} onChangeText={email => setEmail(email)} />
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.username} value={username} onChangeText={username => setUsername(username)} />
+            <TextInput style={styles.spacing} mode="outlined" label={labelNames.password} value={password} onChangeText={password => setPassword(password)} />
             <Button style={styles.spacing} mode="contained" onPress={() => signup()}>Create Account</Button>
-            <View>
-                { visible ? <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog}/> : null }
-            </View>
+            <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog} />
         </View>
     );
 };
