@@ -8,13 +8,14 @@ import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
 import { render } from 'enzyme';
 import PopUpMessage from './PopUpMessage';
-import Container from './Container';
 
 type Props = {
     navigation: UserHomeNavigationProp;
 };
 
 export default function SignUpForm({ navigation }: Props) {
+    let error = null;
+
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -34,8 +35,10 @@ export default function SignUpForm({ navigation }: Props) {
         let validEmail = new RegExp('^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$');
 
         if (firstName === '' || lastName === '' || email === '' || username === '' || password === '') {
+            error = "You are missing required information.";
             return false;
         } else if (!validEmail.test(email)) {
+            error = "You entered an invalid email.";
             return false;
         }
         return true;
@@ -49,6 +52,7 @@ export default function SignUpForm({ navigation }: Props) {
                 await userStore.signUp(email, password);
                 navigation.navigate(routerNames.userHome);
             } catch (e) {
+                error = "There was an error processing your sign up attempt. Please try again.";
                 showDialog();
             }
         } else {
@@ -65,7 +69,7 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput style={styles.spacing} mode="outlined" label={labelNames.username} value={username} onChangeText={username => setUsername(username)} />
             <TextInput style={styles.spacing} mode="outlined" label={labelNames.password} value={password} onChangeText={password => setPassword(password)} />
             <Button style={styles.spacing} mode="contained" onPress={() => signup()}>Create Account</Button>
-            <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog} />
+            <PopUpMessage display={visible} error={error} hideDialog={hideDialog} />
         </View>
     );
 };

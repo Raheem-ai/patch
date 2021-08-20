@@ -16,6 +16,8 @@ type Props = {
 };
 
 export default function SignInForm({ navigation }: Props) {
+    let error = null;
+
     const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
 
@@ -32,6 +34,7 @@ export default function SignInForm({ navigation }: Props) {
             await userStore.signIn(username, password);
             navigation.navigate(routerNames.userHome);
         } catch(e) {
+            error = "Your username or password was incorrect.";
             showDialog();
         }
     };
@@ -42,7 +45,7 @@ export default function SignInForm({ navigation }: Props) {
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)} />
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password => setPassword(password)} />
             <Button mode="contained" onPress={() => signIn()}>Sign In</Button>
-            <PopUpMessage display={visible} error={"hey bro hey"} hideDialog={hideDialog} />
+            <PopUpMessage display={visible} error={error} hideDialog={hideDialog} />
         </View>
     );
 };
