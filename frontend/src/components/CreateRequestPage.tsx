@@ -2,6 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { Divider, Title, Text } from "react-native-paper";
 
+// we will use List.AccordionGroup for our beginning implementation
 export default function CreateRequestPage() {
     return (
         <View>
