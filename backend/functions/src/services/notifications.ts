@@ -11,24 +11,20 @@ import {Agenda, Every, Define} from "@tsed/agenda";
 import {Job} from "agenda";
 import { JobNames } from "../jobs";
 
-type BulkSaver<T> = {
-    // mongoose supports this but their typings are messed up
-    bulkSave(docs: MongooseDocument<T>[]): Promise<any>;
-}
-
-export type NotificationMetadata<T extends NotificationType> = Omit<NotificationModel<T>, 'id' | 'sent_count'>
+export type NotificationMetadata<T extends NotificationType> = Omit<NotificationModel<T>, 'sent_count'>
 
 @Agenda()
 @Service()
 export default class Notifications {
 
-    @Inject(NotificationModel) notifications: MongooseModel<NotificationModel> & BulkSaver<NotificationModel>;
-    @Inject(UserModel) users: MongooseModel<UserModel> & BulkSaver<NotificationModel>;
+    @Inject(NotificationModel) notifications: MongooseModel<NotificationModel>;
+    @Inject(UserModel) users: MongooseModel<UserModel>;
 
     // TODO: this should come from config
     // ((4) + (16) + (4^3) + (4^4) +(4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
     // stale job
-    private backOffIncrementInMins = 4;
+    // private backOffIncrementInMins = 4;
+    private backOffIncrementInMins = 1;
 
     async send<T extends NotificationType>(notification: NotificationMetadata<T>): Promise<void> {
         await this.sendBulk([notification])
@@ -43,12 +39,12 @@ export default class Notifications {
             const { transientErrors } = await this.handleNonTransientTicketErrors(failedSends);
             
             // save only transient errors for exponential backoff
-            await this.notifications.bulkSave(transientErrors);
+            await this.bulkUpsert(transientErrors);
         }
 
         if (successfulSends.length) {
             // save success tickets to check receipts async (every 15 min so this is essentially an enqueue where it checks at longtest 15 min)
-            await this.notifications.bulkSave(successfulSends);
+            await this.bulkUpsert(successfulSends);
         }
     }
 
@@ -62,17 +58,17 @@ export default class Notifications {
     }
 
     // only deals with documents
-    private async sendBulkInternal<T extends NotificationType, N extends Omit<NotificationModel<T>, 'id'>>(notifications: N[]): Promise<{ successfulSends: (N & { id: string })[], failedSends: (N & { id: string })[] }> {
+    private async sendBulkInternal<T extends NotificationType, N extends NotificationModel<T>>(notifications: N[]): Promise<{ successfulSends: N[], failedSends: N[] }> {
         const chunks = expo.chunkPushNotifications(notifications.map(this.metadataToExpoMessage));
 
-        const successNotifications: (N & { id: string })[] = [];
-        const errorNotifications: (N & { id: string })[] = [];
+        const successNotifications: N[] = [];
+        const errorNotifications: N[] = [];
 
         let i = 0;
 
         for (const chunk of chunks) {
             (await expo.sendPushNotificationsAsync(chunk)).forEach(ticket => {
-                const notification = notifications[i] as N & { id: string };
+                const notification = notifications[i];
 
                 // every time this notification is sent this needs to be updated in case either the ticket or recepit
                 // comes back with an error
@@ -81,7 +77,10 @@ export default class Notifications {
             
                 if (ticket.status == 'ok') {
                     notification.success_ticket = ticket;
+                    // make sure this doesn't retry because of old error ticket
                     notification.error_ticket = null;
+                    // make sure this doesn't retry because of old error_receipt
+                    notification.error_receipt = null;
                     successNotifications.push(notification)
                 } else {
                     notification.error_ticket = ticket;
@@ -98,24 +97,29 @@ export default class Notifications {
     }
 
     metadataToExpoMessage<T extends NotificationType>(notification: NotificationMetadata<T>): ExpoPushMessage {
+        // TODO: test which one of these is right when we can actually test background notifs
         return {
             to: notification.to,
             sound: 'default',
             body: notification.body,
             data: {
                 ...notification.payload,
-                type: notification.type
+                type: notification.type,
+                "content-available": 1
             },
-            categoryId: notification.type
+            categoryId: notification.type,
+            "content-available": 1
         } as any; // expo allows for category id but their types arent up to date
     }
 
     async logUnknownTicketError(notification: NotificationModel) {
         // TODO: set this up when we have logging/alerts
+        console.error(notification);
     }
 
     async logUnknownReceiptError(notification: NotificationModel, recepit: ExpoPushErrorReceipt) {
         // TODO: set this up when we have logging/alerts
+        console.error(notification)
     }
 
     async handleNonTransientTicketErrors<N extends MongooseDocument<NotificationModel>>(failedNotifications: N[]): Promise<{ transientErrors: N[], nonTransientErrors: N[] }> {
@@ -140,6 +144,10 @@ export default class Notifications {
 
                     unregisteredUsers.add(failure.to);
                     nonTransientErrors.push(failure);
+                // TODO:
+                // the docs only mention DeviceNotRegistered for tickets 
+                // but the typings have ticket/receipt errors having the same type so they may not all be transient
+                // will have to investigate when we can force failed tickets
                 default:
                     await this.logUnknownTicketError(failure.toJSON())
                     transientErrors.push(failure);
@@ -171,9 +179,29 @@ export default class Notifications {
             }
     }
 
-    // TODO: how to schedule exponential backoff for notifications being sent at different times?
-    // Answer: add a nextRetry field and change query to only process notifications whos nextRetry is before now
-    @Define({ name: JobNames.RetryTransientNotificationFailures })
+    async bulkUpsert(docs: MongooseDocument<NotificationModel>[]) {
+        const bulkOps = docs.map(doc => ({
+            updateOne: {
+                filter: { _id: doc._id },
+                update: doc.toJSON(),
+                upsert: true,
+            }
+        }))
+
+        await this.notifications.bulkWrite(bulkOps);
+    }
+
+    async bulkDelete(docs: MongooseDocument<NotificationModel>[]) {
+        const bulkOps = docs.map(doc => ({
+            deleteOne: {
+                filter: { _id: doc._id },
+            }
+        }))
+
+        await this.notifications.bulkWrite(bulkOps);
+    }
+
+    @Every('30 seconds', { name: JobNames.RetryTransientNotificationFailures })
     async retryTransientFailures(job: Job) {
         // get any notification with an error ticket or receipt that isn't null
         // and who's next scheduled send is before (or) now
@@ -203,23 +231,25 @@ export default class Notifications {
             ]    
         });
 
+        if (!transientFailures.length) {
+            console.log('No new transient errors to retry')
+            return;
+        }
+
         // new failure/success tickets will be set on the model
         const { successfulSends, failedSends } = await this.sendBulkInternal(transientFailures)
 
         const { transientErrors, nonTransientErrors } = await this.handleNonTransientTicketErrors(failedSends);
 
-        await this.notifications.bulkSave([
+        await this.bulkUpsert([
             // remove notifications that were successfully sent from being sent again
             ...successfulSends,
             // update notifications that still have transient errors
             ...transientErrors
         ])
 
-        // TODO: figoure out bulk delete
         // delete non transient errors that have been handled 
-        for (const nonTransientError of nonTransientErrors) {
-            await nonTransientError.delete()
-        }
+        await this.bulkDelete(nonTransientErrors);
     }
 
     @Every('24 hours', { name: JobNames.CleanupStaleNotifications })
@@ -241,6 +271,11 @@ export default class Notifications {
                 $ne: null
             }
         });
+
+        if (!pendingNotifications.length) {
+            console.log('no new pending notifications to check')
+            return;
+        }
 
         const receiptToNotificationsMap = new Map<string, MongooseDocument<NotificationModel>>();
 
@@ -282,11 +317,101 @@ export default class Notifications {
             }
         }
 
-        await this.notifications.bulkSave(transientErrors);
+        await this.bulkUpsert(transientErrors);
         
-        // TODO: figure out bulk delete
-        for (const n of notificationsToDelete) {
-            await n.delete();
-        }
+        await this.bulkDelete(notificationsToDelete);
     }
+
+    @Every('30 seconds')
+    async sendBackgroundNotification(job: Job) {
+        const user = await this.users.findOne({ email: 'Test@test.com' });
+        await this.send({
+            type: NotificationType.AssignedIncident,
+            to: user.push_token,
+            body: `You've been assigned to Incident #1234`,
+            payload: {
+                id: '1234'
+            }
+        })
+    }
+
+    // TODO: use this as a basis for testing down the line 
+    // async populateFailedNotifications() {
+    //     const user = await this.users.findOne({ email: 'Test@test.com' });
+
+    //     const notifications: NotificationModel[] = [{
+    //         // should retry sending on first round of job
+    //     //     type: NotificationType.AssignedIncident,
+    //     //     to: user.push_token,
+    //     //     body: `TRANSIENT TICKET: should retry sending on first round of job`,
+    //     //     payload: {
+    //     //         id: '1234'
+    //     //     },
+    //     //     sent_count: 1, 
+    //     //     next_send: this.nextSendDate(1),
+    //     //     error_ticket: {
+    //     //         message: '',
+    //     //         status: 'error',
+    //     //         details: {
+    //     //             error: 'MessageRateExceeded'
+    //     //         }
+    //     //     }
+    //     // }, 
+    //     // {
+    //     //     // should retry sending on second round of job
+    //     //     type: NotificationType.AssignedIncident,
+    //     //     to: user.push_token,
+    //     //     body: `TRANSIENT TICKET: should retry sending on second round of job`,
+    //     //     payload: {
+    //     //         id: '2345'
+    //     //     },
+    //     //     sent_count: 2, 
+    //     //     next_send: this.nextSendDate(2),
+    //     //     error_ticket: {
+    //     //         message: '',
+    //     //         status: 'error',
+    //     //         details: {
+    //     //             error: 'MessageRateExceeded'
+    //     //         }
+    //     //     }
+    //     // },
+    //     // {
+    //         // should retry sending on first round of job
+            // type: NotificationType.AssignedIncident,
+            // to: user.push_token,
+            // body: `TRANSIENT RECEIPT: should retry sending on first round of job`,
+            // payload: {
+            //     id: '3456'
+            // },
+            // sent_count: 1, 
+            // next_send: this.nextSendDate(1),
+            // error_receipt: {
+            //     message: '',
+            //     status: 'error',
+            //     details: {
+            //         error: 'MessageRateExceeded'
+            //     }
+            // }
+    //     // },  
+    //     // {
+    //     //     // should log and delete
+    //     //     type: NotificationType.AssignedIncident,
+    //     //     to: user.push_token,
+    //     //     body: `should log and delete`,
+    //     //     payload: {
+    //     //         id: '5678'
+    //     //     },
+    //     //     sent_count: 1, 
+    //     //     next_send: this.nextSendDate(1),
+    //     //     error_ticket: {
+    //     //         message: '',
+    //     //         status: 'error',
+    //     //         details: {
+    //     //             error: 'MessageTooBig'
+    //     //         }
+    //     //     }
+        // }];
+
+        // await this.bulkUpsert(notifications.map(n => new this.notifications(n)));
+    // }
 }

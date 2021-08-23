@@ -7,7 +7,7 @@ import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvi
 import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router-dom';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
-import container from './src/di';
+import container, { getStore } from './src/di';
 
 // component imports
 import SignInForm from './src/components/SignInForm';
@@ -24,6 +24,9 @@ import UserStore from './src/stores/userStore';
 import LocationStore from './src/stores/locationStore';
 import NotificationStore from './src/stores/notificationStore';
 import DispatchStore from './src/stores/dispatchStore';
+import { navigationRef } from './src/navigation';
+import { useEffect } from 'react';
+import IncidentDetails from './src/screens/incidentDetails';
 
 
 
@@ -57,17 +60,28 @@ const theme = {
 };
 
 export default function App() {
+
+  useEffect(() => {
+    const notificationStore = getStore<INotificationStore>(INotificationStore);
+    notificationStore.setup();
+
+    return () => {
+      notificationStore.teardown();
+    }
+  })
+
   return (
     // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
     // unless we want an ergonomic way to switch out components in the future
     <Provider container={container}>
       <PaperProvider theme={theme}>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator>
             <Stack.Screen name={routerNames.home} component={WelcomePage} />
             <Stack.Screen name={routerNames.signIn} component={SignInForm} />
             <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
-            <Stack.Screen name={routerNames.userHome} component={UserHomePage} />
+            <Stack.Screen name={routerNames.userHomePage} component={UserHomePage} />
+            <Stack.Screen name={routerNames.incidentDetails} component={IncidentDetails}/>
           </Stack.Navigator>
         </NavigationContainer>
       </PaperProvider>

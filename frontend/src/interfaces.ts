@@ -36,16 +36,21 @@ export namespace ILocationStore {
 
 
 export interface INotificationStore {
-    hasPermission: boolean;
+    // hasPermission: boolean;
+    setup(): void;
+    teardown(): void;
     askForPermission(): Promise<boolean> 
     updatePushToken(): Promise<void>;
-    onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void): void;
-    onNotificationResponse<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, res: NotificationResponse) => void): void;
-    startListeningForNotifications(): Promise<void>
+    onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void): [T, string];
+    offNotification<T extends NotificationType>(params: [T,string]);
+    onNotificationResponse<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, res: NotificationResponse) => void): [T, string];
+    offNotificationResponse<T extends NotificationType>(params: [T, string]);
+    handlePermissions(): Promise<void>
 }
 
 export namespace INotificationStore {
     export const id = Symbol('INotificationStore');
+    export const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND_NOTIFICATION_TASK'
 }
 
 export namespace IDispatchStore {

@@ -67,6 +67,18 @@ export class APIClient {
 
         await axios.post<void>(url);
     }
+
+    async confirmIncidentAssignment() {
+        const url = `${host}${API.client.confirmIncidentAssignment()}`;
+
+        await axios.post<void>(url);
+    }
+
+    async declineIncidentAssignment() {
+        const url = `${host}${API.client.declineIncidentAssignment()}`;
+
+        await axios.post<void>(url);
+    }
 } 
 
 export default new APIClient();

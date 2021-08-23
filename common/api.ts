@@ -19,6 +19,8 @@ interface ApiRoutes {
     reportLocation: () => string
     reportPushToken: () => string
     assignIncident: () => string
+    confirmIncidentAssignment: () => string
+    declineIncidentAssignment: () => string
 }
 
  class API {
@@ -27,7 +29,8 @@ interface ApiRoutes {
 
     namespaces = {
         users: `/users`,
-        dispatch: `/dispatch`
+        dispatch: `/dispatch`,
+        responder: '/responder'
     }
 
     server: ApiRoutes = {
@@ -51,6 +54,12 @@ interface ApiRoutes {
         },
         assignIncident: () => {
             return '/assignIncident'
+        },
+        confirmIncidentAssignment: () => {
+            return '/confirmIncidentAssignment'
+        },
+        declineIncidentAssignment: () => {
+            return '/declineIncidentAssignment'
         }
     }
 
@@ -78,6 +87,14 @@ interface ApiRoutes {
         },
         assignIncident: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.assignIncident()}`
+        },
+
+        // respond
+        confirmIncidentAssignment: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.confirmIncidentAssignment()}`
+        },
+        declineIncidentAssignment: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.declineIncidentAssignment()}`
         }
     }
 }

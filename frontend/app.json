@@ -22,7 +22,8 @@
         "NSLocationAlwaysUsageDescription": "testing",
         "UIBackgroundModes": [
           "location",
-          "fetch"
+          "fetch",
+          "remote-notification"
         ]
       },
       "bundleIdentifier": "patch"

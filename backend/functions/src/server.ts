@@ -14,6 +14,7 @@ import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
 import { resolve } from "path";
+import MongoStore from 'connect-mongo'
 
 const rootDir = __dirname;
 
@@ -39,11 +40,13 @@ const mongoConnectionString = config.MONGO.get().connectionString;
   },
   acceptMimes: ["application/json"],
   mongoose: {
+    // Note: creates it's own connection to the DB
     url: mongoConnectionString,
   },
   agenda: { 
     enabled: true,
     db: { 
+      // Note: creates it's own connection to the DB
       address: mongoConnectionString, 
       collection: 'jobsManager' 
     } 
@@ -72,7 +75,9 @@ export class Server {
       }))
       .use(session({
           secret: sessionSecret,
-          name: SessionCookieName
+          name: SessionCookieName,
+          // Note: creates it's own connection to the DB
+          store: MongoStore.create({ mongoUrl: mongoConnectionString })
       }));
   }
 }

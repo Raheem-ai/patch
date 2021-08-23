@@ -6,9 +6,6 @@ import { ExpoPushSuccessTicket, ExpoPushErrorTicket, ExpoPushErrorReceipt } from
 @Model({ collection: 'notifications' })
 export class NotificationModel<T extends NotificationType = any> {
 
-    @ObjectID('id')
-    id: string;
-
     @Property()
     type: T
 

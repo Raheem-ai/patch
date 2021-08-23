@@ -31,12 +31,16 @@ export type Location = {
 };
 
 export enum NotificationType {
-    AssignedIncident = 'assignedIncident'
+    AssignedIncident = 'assignedIncident',
+    BroadCastedIncident = 'broadcastedIncident'
 }
 
 export type NotificationPayloads = {
     [NotificationType.AssignedIncident] : {
         id: string,
+    },
+    [NotificationType.BroadCastedIncident]: {
+        id: string
     }
 }
 

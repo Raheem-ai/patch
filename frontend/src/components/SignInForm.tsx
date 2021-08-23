@@ -7,7 +7,7 @@ import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../typ
 import { StackNavigationProp } from '@react-navigation/stack';
 import API from '../api';
 import { getStore } from '../di';
-import { IUserStore } from '../interfaces';
+import { INotificationStore, IUserStore } from '../interfaces';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -21,7 +21,13 @@ export default function SignInForm( { navigation } : Props) {
 
     const signIn = async () => {
         await userStore.signIn(username, password)
-        navigation.navigate(routerNames.userHome)
+
+        setTimeout(async () => {
+            const notificationStore = getStore<INotificationStore>(INotificationStore);
+            await notificationStore.handlePermissions();
+        });
+
+        navigation.navigate(routerNames.userHomePage)
     }
 
     return(
