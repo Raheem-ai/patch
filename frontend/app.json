@@ -2,7 +2,8 @@
   "expo": {
     "name": "patch",
     "slug": "patch",
-    "version": "1.0.0",
+    "owner": "raheem-ai",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
