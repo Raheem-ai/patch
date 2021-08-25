@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1629915886177" clover="3.2.0">
-  <project timestamp="1629915886177" name="All files">
-    <metrics statements="66" coveredstatements="27" conditionals="22" coveredconditionals="5" methods="19" coveredmethods="3" elements="107" coveredelements="35" complexity="0" loc="66" ncloc="66" packages="2" files="6" classes="6"/>
+<coverage generated="1629921633878" clover="3.2.0">
+  <project timestamp="1629921633878" name="All files">
+    <metrics statements="82" coveredstatements="45" conditionals="24" coveredconditionals="5" methods="26" coveredmethods="7" elements="132" coveredelements="57" complexity="0" loc="82" ncloc="82" packages="3" files="8" classes="8"/>
     <package name="src">
-      <metrics statements="29" coveredstatements="19" conditionals="11" coveredconditionals="5" methods="7" coveredmethods="2"/>
+      <metrics statements="33" coveredstatements="25" conditionals="11" coveredconditionals="5" methods="7" coveredmethods="4"/>
       <file name="api.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/api.ts">
         <metrics statements="15" coveredstatements="7" conditionals="9" coveredconditionals="3" methods="3" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
@@ -22,16 +22,23 @@
         <line num="40" count="0" type="stmt"/>
         <line num="44" count="1" type="stmt"/>
       </file>
+      <file name="bindings.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/bindings.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+      </file>
       <file name="di.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/di.ts">
-        <metrics statements="9" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="1"/>
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
         <line num="6" count="1" type="stmt"/>
-        <line num="7" count="1" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
-        <line num="11" count="0" type="stmt"/>
-        <line num="12" count="0" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
       </file>
       <file name="interfaces.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/interfaces.ts">
@@ -47,24 +54,24 @@
       </file>
     </package>
     <package name="src.components">
-      <metrics statements="37" coveredstatements="8" conditionals="11" coveredconditionals="0" methods="12" coveredmethods="1"/>
+      <metrics statements="37" coveredstatements="15" conditionals="11" coveredconditionals="0" methods="12" coveredmethods="2"/>
       <file name="PopUpMessage.tsx" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/components/PopUpMessage.tsx">
         <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
       </file>
       <file name="SignUpForm.tsx" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/components/SignUpForm.tsx">
-        <metrics statements="36" coveredstatements="8" conditionals="11" coveredconditionals="0" methods="11" coveredmethods="1"/>
-        <line num="17" count="1" type="stmt"/>
-        <line num="19" count="1" type="stmt"/>
-        <line num="20" count="1" type="stmt"/>
-        <line num="21" count="1" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="25" count="1" type="stmt"/>
-        <line num="27" count="0" type="stmt"/>
-        <line num="29" count="0" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="34" count="0" type="stmt"/>
+        <metrics statements="36" coveredstatements="15" conditionals="11" coveredconditionals="0" methods="11" coveredmethods="2"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
         <line num="35" count="0" type="stmt"/>
         <line num="37" count="0" type="cond" truecount="0" falsecount="7"/>
         <line num="38" count="0" type="stmt"/>
@@ -73,7 +80,7 @@
         <line num="41" count="0" type="stmt"/>
         <line num="42" count="0" type="stmt"/>
         <line num="44" count="0" type="stmt"/>
-        <line num="47" count="0" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
         <line num="48" count="0" type="stmt"/>
         <line num="50" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="51" count="0" type="stmt"/>
@@ -82,14 +89,32 @@
         <line num="55" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
-        <line num="63" count="0" type="stmt"/>
-        <line num="66" count="0" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
         <line num="68" count="0" type="stmt"/>
         <line num="69" count="0" type="stmt"/>
         <line num="70" count="0" type="stmt"/>
         <line num="71" count="0" type="stmt"/>
         <line num="77" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.stores">
+      <metrics statements="12" coveredstatements="5" conditionals="2" coveredconditionals="0" methods="7" coveredmethods="1"/>
+      <file name="UserStore.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/stores/UserStore.ts">
+        <metrics statements="12" coveredstatements="5" conditionals="2" coveredconditionals="0" methods="7" coveredmethods="1"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="24" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
       </file>
     </package>
   </project>

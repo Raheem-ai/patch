@@ -4,8 +4,10 @@ import SignUpForm from '../components/SignUpForm';
 import APIClient from '../api';
 import { User } from '../../../common/models';
 import { labelNames } from '../types';
+import '../bindings';
+
 var enzyme = require('enzyme');
-var Adapter = require('enzyme-adapter-react-15');
+var Adapter = require('enzyme-adapter-react-16');
 
 enzyme.configure({ adapter: new Adapter() })
 

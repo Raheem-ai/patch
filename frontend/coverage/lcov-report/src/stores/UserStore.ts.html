@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/PopUpMessage.tsx</title>
+    <title>Code coverage report for src/stores/UserStore.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> PopUpMessage.tsx</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/stores</a> UserStore.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">43.75% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>7/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">14.29% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">41.67% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>5/12</span>
             </div>
         
             
@@ -81,10 +81,34 @@
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -92,44 +116,62 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
-import { View } from "react-native";
-import { Text, Provider, Portal, Dialog, Paragraph, Button } from "react-native-paper";
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { injectable } from 'inversify';
+import { makeAutoObservable, runInAction } from 'mobx';
+import { User } from '../../../common/models';
+import API from '../api';
+import { Store } from '../di';
+import { IUserStore } from '../interfaces';
 &nbsp;
-/* We want this component to be generalizable and flexible enough to display dynamic messages */
-// the peop will include the error message
-export default function <span class="fstat-no" title="function not covered" >PopUpMessage(</span>props) {
-<span class="cstat-no" title="statement not covered" >    return (</span>
-        &lt;Provider&gt;
-            &lt;View&gt;
-                &lt;Portal&gt;
-                    &lt;Dialog visible={props.display} onDismiss={props.hideDialog}&gt;
-                        &lt;Dialog.Title&gt;Error&lt;/Dialog.Title&gt;
-                        &lt;Dialog.Content&gt;
-                            &lt;Paragraph&gt;{props.error}&lt;/Paragraph&gt;
-                        &lt;/Dialog.Content&gt;
-                        &lt;Dialog.Actions&gt;
-                            &lt;Button onPress={props.hideDialog}&gt;Try Again&lt;/Button&gt;
-                        &lt;/Dialog.Actions&gt;
-                    &lt;/Dialog&gt;
-                &lt;/Portal&gt;
-            &lt;/View&gt;
-        &lt;/Provider&gt;
-    );
-};</pre></td></tr></table></pre>
+@Store()
+export default class UserStore implements IUserStore {
+&nbsp;
+    public user!: User;
+&nbsp;
+    constructor() {
+        makeAutoObservable(this)
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    get s</span>ignedIn() {
+<span class="cstat-no" title="statement not covered" >        return !!this.user;</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    async </span>signIn(email: string, password: string) {
+        const user = <span class="cstat-no" title="statement not covered" >await API.signIn(email, password)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (user) {</span>
+            // if already signed in this will not return a user so check to be sure
+<span class="cstat-no" title="statement not covered" >            runInAction(<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >this.user = user)</span></span>
+        }
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    async </span>signUp(email: string, password: string) {
+        const user = <span class="cstat-no" title="statement not covered" >await API.signUp(email, password)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        runInAction(<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >this.user = user)</span></span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    async </span>signOut() {
+<span class="cstat-no" title="statement not covered" >        await API.signOut();</span>
+    }
+}</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

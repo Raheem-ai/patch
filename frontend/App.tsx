@@ -5,6 +5,7 @@ import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvi
 import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router-dom';
 import "react-native-gesture-handler";
 import container from './src/di';
+import './src/bindings';
 
 // component imports
 import SignInForm from './src/components/SignInForm';
@@ -21,10 +22,7 @@ import { Provider } from 'react-native-paper/lib/typescript/core/settings';
 import { IUserStore } from './src/interfaces';
 import UserStore from './src/stores/UserStore';
 
-
 const Stack = createStackNavigator<RootStackParamList>();
-  
-container.bind(IUserStore.id).to(UserStore);
 
 /*const theme = {
   ...DarkTheme,
