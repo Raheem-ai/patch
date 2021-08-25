@@ -19,7 +19,7 @@
     "inversify-react": "^1.0.0",
     "mobx": "^6.3.2",
     "mobx-react": "^7.2.0",
-    "react": "^17.0.2",
+    "react": "^16.0.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-paper": "^4.9.2",
@@ -49,7 +49,7 @@
     "jest": "^27.0.6",
     "jest-expo": "^42.1.0",
     "react-dom": "^17.0.2",
-    "react-test-renderer": "^15.7.0",
+    "react-test-renderer": "^16.0.0",
     "typescript": "~4.0.0"
   },
   "private": true

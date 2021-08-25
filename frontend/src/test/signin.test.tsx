@@ -4,6 +4,10 @@ import SignUpForm from '../components/SignUpForm';
 import APIClient from '../api';
 import { User } from '../../../common/models';
 import { labelNames } from '../types';
+var enzyme = require('enzyme');
+var Adapter = require('enzyme-adapter-react-15');
+
+enzyme.configure({ adapter: new Adapter() })
 
 jest.mock('../api');
 const mockedAPIClient = APIClient as jest.Mocked<typeof APIClient>;
