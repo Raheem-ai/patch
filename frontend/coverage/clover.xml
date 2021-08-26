@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1629921633878" clover="3.2.0">
-  <project timestamp="1629921633878" name="All files">
-    <metrics statements="82" coveredstatements="45" conditionals="24" coveredconditionals="5" methods="26" coveredmethods="7" elements="132" coveredelements="57" complexity="0" loc="82" ncloc="82" packages="3" files="8" classes="8"/>
+<coverage generated="1629954714233" clover="3.2.0">
+  <project timestamp="1629954714233" name="All files">
+    <metrics statements="82" coveredstatements="46" conditionals="24" coveredconditionals="5" methods="26" coveredmethods="8" elements="132" coveredelements="59" complexity="0" loc="82" ncloc="82" packages="3" files="8" classes="8"/>
     <package name="src">
       <metrics statements="33" coveredstatements="25" conditionals="11" coveredconditionals="5" methods="7" coveredmethods="4"/>
       <file name="api.ts" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/api.ts">
@@ -35,7 +35,7 @@
         <line num="2" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
         <line num="6" count="1" type="stmt"/>
-        <line num="7" count="2" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
         <line num="11" count="1" type="stmt"/>
         <line num="12" count="1" type="stmt"/>
@@ -54,24 +54,24 @@
       </file>
     </package>
     <package name="src.components">
-      <metrics statements="37" coveredstatements="15" conditionals="11" coveredconditionals="0" methods="12" coveredmethods="2"/>
+      <metrics statements="37" coveredstatements="16" conditionals="11" coveredconditionals="0" methods="12" coveredmethods="3"/>
       <file name="PopUpMessage.tsx" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/components/PopUpMessage.tsx">
-        <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="8" count="0" type="stmt"/>
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="8" count="1" type="stmt"/>
       </file>
       <file name="SignUpForm.tsx" path="/Users/rebeccapattichis/Desktop/internships/raheem/patch/frontend/src/components/SignUpForm.tsx">
         <metrics statements="36" coveredstatements="15" conditionals="11" coveredconditionals="0" methods="11" coveredmethods="2"/>
-        <line num="17" count="2" type="stmt"/>
-        <line num="19" count="2" type="stmt"/>
-        <line num="20" count="2" type="stmt"/>
-        <line num="21" count="2" type="stmt"/>
-        <line num="22" count="2" type="stmt"/>
-        <line num="23" count="2" type="stmt"/>
-        <line num="25" count="2" type="stmt"/>
-        <line num="27" count="2" type="stmt"/>
-        <line num="29" count="2" type="stmt"/>
-        <line num="31" count="2" type="stmt"/>
-        <line num="34" count="2" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+        <line num="29" count="3" type="stmt"/>
+        <line num="31" count="3" type="stmt"/>
+        <line num="34" count="3" type="stmt"/>
         <line num="35" count="0" type="stmt"/>
         <line num="37" count="0" type="cond" truecount="0" falsecount="7"/>
         <line num="38" count="0" type="stmt"/>
@@ -80,7 +80,7 @@
         <line num="41" count="0" type="stmt"/>
         <line num="42" count="0" type="stmt"/>
         <line num="44" count="0" type="stmt"/>
-        <line num="47" count="2" type="stmt"/>
+        <line num="47" count="3" type="stmt"/>
         <line num="48" count="0" type="stmt"/>
         <line num="50" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="51" count="0" type="stmt"/>
@@ -89,7 +89,7 @@
         <line num="55" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
-        <line num="63" count="2" type="stmt"/>
+        <line num="63" count="3" type="stmt"/>
         <line num="66" count="1" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
         <line num="68" count="0" type="stmt"/>
@@ -107,7 +107,7 @@
         <line num="4" count="1" type="stmt"/>
         <line num="5" count="1" type="stmt"/>
         <line num="9" count="1" type="stmt"/>
-        <line num="14" count="2" type="stmt"/>
+        <line num="14" count="3" type="stmt"/>
         <line num="18" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
         <line num="24" count="0" type="cond" truecount="0" falsecount="2"/>

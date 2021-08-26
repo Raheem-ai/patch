@@ -5,6 +5,8 @@ import APIClient from '../api';
 import { User } from '../../../common/models';
 import { labelNames } from '../types';
 import '../bindings';
+import renderer from 'react-test-renderer';
+import App from '../../App';
 
 var enzyme = require('enzyme');
 var Adapter = require('enzyme-adapter-react-16');
@@ -22,6 +24,12 @@ const fakeUser: User = {
   password: 'Test',
 }
 
+/* for some reason this shit doesnt work!!
+it('should render the sign up page without crashing', () => {
+  const rendered = renderer.create(<App/>).toJSON();
+  expect(rendered.children.length).toBe(1);
+});*/
+
 test('sign up testing', () => {
   mockedAPIClient.signUp.mockResolvedValue(fakeUser);
 
@@ -30,20 +38,20 @@ test('sign up testing', () => {
   const signup = shallow(<SignUpForm navigation={navigation} />);
 
   // fill out the text input values for new user
-  signup.find({ label: labelNames.firstname}).simulate('changeText', fakeUser.name);
+  signup.find({ label: labelNames.firstname}).simulate('changeText', 'Charlie');
 
-  expect(signup.text()).toEqual(fakeUser.name);
+  console.log(signup.find({ label: labelNames.firstname}).text());
+  expect(signup.find({ label: labelNames.firstname}).text()).toEqual(fakeUser.name);
 });
 
-// import React from "react";
-// import renderer from "react-test-renderer";
+test('trying to sign up', () => {
+  mockedAPIClient.signUp.mockResolvedValue(fakeUser);
 
-// import App from "./App";
+  const navigate = jest.fn();
+  let navigation = { navigate } as any;
+  const instanceOf = renderer.create(<SignUpForm navigation={navigation} />).getInstance();
+  console.log(instanceOf);
 
-// describe("<App />", () => {
-//   it("has 1 child", () => {
-//     const tree = renderer.create(<App />).toJSON();
-//     // @ts-ignore
-//     expect(tree.children.length).toBe(1);
-//   });
-// });
+  instanceOf.setFirstName('Charlie');
+  expect(instanceOf.state.firstName).toEqual(fakeUser.name);
+});
