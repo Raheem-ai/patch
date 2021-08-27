@@ -24,7 +24,8 @@ type MyState = {
 
 class SignInForm extends React.Component<Props, MyState> {
 
-    contructor() {
+    constructor(props) {
+        super(props);
         this.state = {
             visible: false,
             message: null,
