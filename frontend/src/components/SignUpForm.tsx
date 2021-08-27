@@ -8,11 +8,111 @@ import { getStore } from '../di';
 import { IUserStore } from '../interfaces';
 import { render } from 'enzyme';
 import PopUpMessage from './PopUpMessage';
+import { stringifyKey } from 'mobx/dist/internal';
 
 type Props = {
     navigation: UserHomeNavigationProp;
 };
 
+type MyState = {
+    visible: boolean,
+    message: null | string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    username: string,
+    password: string,
+};
+
+class SignUpForm extends React.Component<Props, MyState> {
+
+    contructor() {
+        this.state = {
+            visible: false,
+            message: null,
+            firstName: "",
+            lastName: "",
+            email: "",
+            username: "",
+            password: "",
+        };
+    }
+
+    setFirstName = input => { this.setState({ firstName: input }) };
+    setLastName = input => { this.setState({ lastName: input }) };
+    setEmail = input => { this.setState({ email: input }) };
+    setUsername = input => { this.setState({ username: input }) };
+    setPassword = input => { this.setState({ password: input }) };
+    showDialog = () => { this.setState({ visible: true }) };
+    hideDialog = () => { this.setState({ visible: false }) };
+
+    validate = () => {
+        let validEmail = new RegExp('^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$');
+
+        if (this.state.firstName === '' || this.state.lastName === '' || this.state.email === '' || this.state.username === '' || this.state.password === '') {
+            this.setState({ message: "You are missing required information." });
+            return false;
+        } else if (!validEmail.test(this.state.email)) {
+            this.setState({ message: "You entered an invalid email." });
+            return false;
+        }
+        return true;
+    };
+
+    public userStore = getStore<IUserStore>(IUserStore);
+
+    signup = async () => {
+        let valid = this.validate();
+
+        if (valid) {
+            try {
+                await this.userStore.signUp(this.state.email, this.state.password);
+                this.props.navigation.navigate(routerNames.userHome);
+            } catch (e) {
+                this.setState({ message: "There was an error processing your sign up attempt. Please try again." });
+                this.showDialog();
+            }
+        } else {
+            this.showDialog();
+        }
+    }
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Create your account</Text>
+                <TextInput style={styles.spacing} mode="outlined" label={labelNames.firstname} value={this.state.firstName} onChangeText={firstName => this.setFirstName(firstName)} />
+                <TextInput style={styles.spacing} mode="outlined" label={labelNames.lastname} value={this.state.lastName} onChangeText={lastName => this.setLastName(lastName)} />
+                <TextInput style={styles.spacing} mode="outlined" label={labelNames.email} value={this.state.email} onChangeText={email => this.setEmail(email)} />
+                <TextInput style={styles.spacing} mode="outlined" label={labelNames.username} value={this.state.username} onChangeText={username => this.setUsername(username)} />
+                <TextInput style={styles.spacing} mode="outlined" label={labelNames.password} value={this.state.password} onChangeText={password => this.setPassword(password)} />
+                <Button style={styles.spacing} mode="contained" onPress={() => this.signup()}>Create Account</Button>
+                <PopUpMessage display={this.state.visible} error={this.state.message} hideDialog={this.hideDialog} />
+            </View>
+        );
+    };
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    title: {
+        fontSize: styleVals.fontSizes.large,
+        fontWeight: "bold",
+        textAlign: 'center',
+    },
+    spacing: {
+        paddingHorizontal: styleVals.paddingVals.medium,
+        paddingBottom: styleVals.paddingVals.large,
+    },
+});
+
+export default SignUpForm;
+
+// OLD IMPLEMENTATION: FUNCTIONAL COMPONENT
+/*
 export default function SignUpForm({ navigation }: Props) {
     let error = null;
 
@@ -88,4 +188,4 @@ const styles = StyleSheet.create({
         paddingHorizontal: styleVals.paddingVals.medium,
         paddingBottom: styleVals.paddingVals.large,
     },
-});
+});*/

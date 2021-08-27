@@ -15,11 +15,15 @@ type Props = {
     navigation: SignInNavigationProp;
 };
 
-class SignInForm extends React.Component<Props, {visible: boolean,
+type MyState = {
+    visible: boolean,
     message: null | string,
     username: string,
-    password: string,}> {
-    navigation: Props;
+    password: string,
+};
+
+class SignInForm extends React.Component<Props, MyState> {
+
     contructor() {
         this.state = {
             visible: false,
@@ -85,7 +89,7 @@ const styles = StyleSheet.create({
 
 export default SignInForm;
 
-// OLD IMPLEMENTATION
+// OLD IMPLEMENTATION: FUNCTIONAL COMPONENT
 /*export default function SignInForm({ navigation }: Props) {
     let error = null;
 
