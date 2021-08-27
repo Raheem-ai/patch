@@ -41,12 +41,20 @@ test('sign up testing', () => {
 
   // check that we can even grab it
   expect(signup.find({label: labelNames.firstname})).toHaveLength(1);
+
   // try to change this textinput value (aka 'fill it in')
-  signup.find(TextInput).at(0).simulate('changeText', 'Charlie');
-  console.log("look at this", signup.find(TextInput).at(0));
   //signup.find({ label: labelNames.firstname}).simulate('changeText', 'Charlie');
-  //expect(signup.state('firstName')).toEqual(fakeUser.name);
-  //console.log(signup.find({ label: labelNames.firstname}).text());
+  signup.find(TextInput).at(0).simulate('changeText', 'Charlie');
+  signup.find(TextInput).at(1).simulate('changeText', 'Watermelon');
+  signup.find(TextInput).at(2).simulate('changeText', 'test@test.com');
+  signup.find(TextInput).at(3).simulate('changeText', fakeUser.id);
+  signup.find(TextInput).at(4).simulate('changeText', 'Test');
+
+  expect(signup.state('firstName')).toEqual(fakeUser.name);
+  expect(signup.state('lastName')).toEqual('Watermelon');
+  expect(signup.state('email')).toEqual(fakeUser.email);
+  expect(signup.state('username')).toEqual(fakeUser.id);
+  expect(signup.state('password')).toEqual(fakeUser.password);
   //expect(signup.find({ label: labelNames.firstname})).toEqual(fakeUser.name);
 });
 
