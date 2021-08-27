@@ -15,7 +15,78 @@ type Props = {
     navigation: SignInNavigationProp;
 };
 
-export default function SignInForm({ navigation }: Props) {
+class SignInForm extends React.Component<Props, {visible: boolean,
+    message: null | string,
+    username: string,
+    password: string,}> {
+    navigation: Props;
+    contructor() {
+        this.state = {
+            visible: false,
+            message: null,
+            username: "",
+            password: "",
+        };
+    }
+
+    setTextUser = input => {
+        this.setState({username: input});
+    };
+
+    setPassword = input => {
+        this.setState({password: input});
+    };
+
+    showDialog = () => {
+        this.setState({visible: true});
+    };
+
+    hideDialog = () => {
+        this.setState({visible: false});
+    };
+
+    public userStore = getStore<IUserStore>(IUserStore);
+
+    signIn = async () => {
+        try {
+            await this.userStore.signIn(this.state.username, this.state.password);
+            this.props.navigation.navigate(routerNames.userHome);
+        } catch(e) {
+            this.setState({message: "Your username or password wsa incorrect."});
+            this.showDialog();
+        }
+    };
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Sign In</Text>
+                <TextInput mode="outlined" label={labelNames.username} value={this.state.username} onChangeText={username => this.setTextUser(username)} />
+                <TextInput mode="outlined" label={labelNames.password} value={this.state.password} onChangeText={password => this.setPassword(password)} />
+                <Button mode="contained" onPress={() => this.signIn()}>Sign In</Button>
+                <PopUpMessage display={this.state.visible} error={this.state.message} hideDialog={this.hideDialog} />
+            </View>
+        );
+    }
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: styleVals.paddingVals.medium,
+    },
+    title: {
+        fontSize: styleVals.fontSizes.large,
+        fontWeight: "bold",
+        textAlign: 'center',
+    },
+});
+
+export default SignInForm;
+
+// OLD IMPLEMENTATION
+/*export default function SignInForm({ navigation }: Props) {
     let error = null;
 
     const [username, setTextUser] = React.useState('');
@@ -61,4 +132,4 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: 'center',
     },
-});
+});*/
