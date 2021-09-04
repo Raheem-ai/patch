@@ -1,7 +1,7 @@
 import {EndpointInfo, Middleware, Req, UseBefore} from "@tsed/common";
 import { StoreSet, useDecorators } from "@tsed/core";
 import { Forbidden, Unauthorized } from "@tsed/exceptions";
-import { Authorize } from "@tsed/passport";
+import { Authenticate } from "@tsed/passport";
 import { User, UserRole } from "common/models";
 
 @Middleware()
@@ -37,7 +37,7 @@ export class RequireRoleMiddleware {
 
 export function RequireRoles(roles: UserRole[]): MethodDecorator {
   return useDecorators(
-    Authorize(),
+    Authenticate(),
     StoreSet(RequireRoleMiddleware, {
       roles
     }),

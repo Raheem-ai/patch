@@ -2,13 +2,17 @@ import { injectable } from 'inversify';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { User } from '../../../common/models';
 import API from '../api';
-import { Store } from '../di';
-import { IUserStore } from '../interfaces';
+import { persistent, Store } from './meta';
+import { IUserStore } from './interfaces';
 
 @Store()
 export default class UserStore implements IUserStore {
 
+    @persistent()
     public user!: User;
+
+    @persistent() 
+    public authToken!: string;
 
     constructor() {
         makeAutoObservable(this)
@@ -20,11 +24,15 @@ export default class UserStore implements IUserStore {
     
     async signIn(email: string, password: string) {
         try {
-            const user = await API.signIn(email, password)
+            const token = await API.signIn(email, password)
+
+            const user = await API.me(token);
 
             if (user) {
-                // if already signed in this will not return a user so check to be sure
-                runInAction(() => this.user = user)
+                runInAction(() => {
+                    this.user = user
+                    this.authToken = token
+                })
             }
         } catch (e) {
             console.error(e);
@@ -33,9 +41,14 @@ export default class UserStore implements IUserStore {
 
     async signUp(email: string, password: string) {
         try {
-            const user = await API.signUp(email, password)
+            const token = await API.signUp(email, password)
+
+            const user = await API.me(token);
             
-            runInAction(() => this.user = user)
+            runInAction(() => {
+                this.user = user
+                this.authToken = token
+            })
         } catch (e) {
             console.error(e);
         }
@@ -43,8 +56,14 @@ export default class UserStore implements IUserStore {
 
     async signOut() {
         try {
-            await API.signOut();
-            runInAction(() => this.user = null)
+            const token = this.authToken;
+
+            runInAction(() => {
+                this.user = null
+                this.authToken = null;
+            })
+
+            await API.signOut(token);
         } catch (e) {
             console.error(e);
         }

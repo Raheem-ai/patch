@@ -5,79 +5,115 @@ import API from '../../common/api';
 const { manifest } = Constants;
 
 // TODO: the port and non local host need to come from config somehow
-const host = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
-  ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
-  : 'http://localhost:9000'//`TODO: <prod/staging api>`;
+// let apiHost = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
+//   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
+// //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
+//   : '';
+let apiHost = 'http://e856-24-44-149-184.ngrok.io' 
+
+export const updateApiHost = (h) => apiHost = h;
+
+export const getApiHost = () => apiHost;
 
 export class APIClient {
-    // backend only returns the user the first time you sign in...if you're currently signed in it will return nothing
-    // so make types make the consumer check against that
-    async signIn(email: string, password: string): Promise<User | null> {
-        const url = `${host}${API.client.signIn()}`;
+    // unauthorized apis
 
-        const user = (await axios.post<User>(url, {            
+    async signIn(email: string, password: string): Promise<string> {
+        const url = `${apiHost}${API.client.signIn()}`;
+
+        const token = (await axios.post<string>(url, {            
             email: email,
             password: password
         })).data
 
-        return user || null;
+        return token;
     }
 
-    async signUp(email: string, password: string): Promise<User> {
-        const url = `${host}${API.client.signUp()}`;
+    async signUp(email: string, password: string): Promise<string> {
+        const url = `${apiHost}${API.client.signUp()}`;
 
-        const user = (await axios.post<User>(url, {            
+        const token = (await axios.post<string>(url, {            
             email: email,
             password: password
         })).data
+
+        return token;
+    }
+
+    // authorized apis
+
+    async me(token: string): Promise<User> {
+        const url = `${apiHost}${API.client.me()}`;
+
+        const user = (await axios.post<User>(url, {}, {
+            headers: this.authHeaders(token),
+          })).data
 
         return user;
     }
 
-    async signOut() {
-        const url = `${host}${API.client.signOut()}`;
+    async signOut(token: string) {
+        const url = `${apiHost}${API.client.signOut()}`;
 
-        await axios.post(url)
+        await axios.post(url, {}, {
+            headers: this.authHeaders(token),
+        });
     }
 
-    async reportLocation(locations: Location[]) {
-        const url = `${host}${API.client.reportLocation()}`;
+    async reportLocation(locations: Location[], token: string) {
+        const url = `${apiHost}${API.client.reportLocation()}`;
 
         await axios.post<User>(url, {            
             locations
+        }, {
+            headers: this.authHeaders(token),
         })
     }
 
     async reportPushToken(token: string) {
-        const url = `${host}${API.client.reportPushToken()}`;
+        const url = `${apiHost}${API.client.reportPushToken()}`;
 
         await axios.post<void>(url, {            
             token
         })
     }
 
-    async dispatch() {
-        const url = `${host}${API.client.dispatch()}`;
+    async dispatch(token: string) {
+        const url = `${apiHost}${API.client.dispatch()}`;
 
-        await axios.post<void>(url);
+        await axios.post<void>(url, {}, {
+            headers: this.authHeaders(token),
+        });
     }
 
-    async assignIncident() {
-        const url = `${host}${API.client.assignIncident()}`;
+    async assignIncident(token: string) {
+        const url = `${apiHost}${API.client.assignIncident()}`;
 
-        await axios.post<void>(url);
+        await axios.post<void>(url, {}, {
+            headers: this.authHeaders(token),
+        });
     }
 
-    async confirmIncidentAssignment() {
-        const url = `${host}${API.client.confirmIncidentAssignment()}`;
+    async confirmIncidentAssignment(token: string) {
+        const url = `${apiHost}${API.client.confirmIncidentAssignment()}`;
 
-        await axios.post<void>(url);
+        await axios.post<void>(url, {}, {
+            headers: this.authHeaders(token),
+        });
     }
 
-    async declineIncidentAssignment() {
-        const url = `${host}${API.client.declineIncidentAssignment()}`;
+    async declineIncidentAssignment(token: string) {
+        const url = `${apiHost}${API.client.declineIncidentAssignment()}`;
 
-        await axios.post<void>(url);
+        await axios.post<void>(url, {}, {
+            headers: this.authHeaders(token),
+        });
+    }
+
+    authHeaders(token: string) {
+        return {
+            'Authorization': `Bearer ${token}`
+        }
     }
 } 
 

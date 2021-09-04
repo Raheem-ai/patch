@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import API from '../api';
-import { getStore, Store } from '../di';
-import { IDispatchStore, IUserStore } from '../interfaces';
+import { getStore, Store } from './meta';
+import { IDispatchStore, IUserStore } from './interfaces';
 
 @Store()
 export default class DispatchStore implements IDispatchStore {

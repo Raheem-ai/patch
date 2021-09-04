@@ -9,6 +9,11 @@ type NotificationTypes<T extends NotificationType> = T extends any
     ? { type: T, payload: NotificationPayload<T> } 
     : never;
 
+// type ReverseType<T extends keyof RootStackParamList> = RootStackParamList[T] extends NotificationRouteParams<infer NType>
+//     ? { t: NType }
+//     : never;
+
+// type a = ReverseType<'UserHomePage'>
 
 export type RootStackParamList = {
     Home: undefined;

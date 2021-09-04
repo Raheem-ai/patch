@@ -27,7 +27,7 @@
           "remote-notification"
         ]
       },
-      "bundleIdentifier": "patch"
+      "bundleIdentifier": "ai.raheem.test"
     },
     "android": {
       "adaptiveIcon": {

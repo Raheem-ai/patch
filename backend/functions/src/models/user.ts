@@ -1,18 +1,22 @@
 import { Model, ObjectID } from "@tsed/mongoose";
 import { CollectionOf, Enum, Property } from "@tsed/schema";
 import { User, UserRole } from "common/models";
-
+import { PrivProps } from ".";
 
 @Model({ collection: 'users' })
 export class UserModel implements User {
 
-    // TODO: this type should be constrained to the keys of UserModel so there is no leaks
-    static privateProperties = {
-        push_token: 0
+    static privateProperties: PrivProps<UserModel> = {
+        push_token: 0,
+        password: 0,
+        auth_etag: 0,
+        id: 0
     }
 
+    id: string; // for types
+
     @ObjectID('id')
-    id: string;
+    _id: string;
 
     @Enum(UserRole)
     roles: UserRole[];
@@ -28,4 +32,7 @@ export class UserModel implements User {
 
     @Property()
     push_token: string
+
+    @Property()
+    auth_etag: string
 }

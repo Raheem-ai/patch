@@ -3,9 +3,6 @@ import bodyParser from "body-parser";
 import compress from "compression";
 import cookieParser from "cookie-parser";
 import methodOverride from "method-override";
-import session from 'express-session';
-import * as uuid from 'uuid';
-import {SessionCookieName} from 'common/constants'
 import API from 'common/api';
 import "@tsed/ajv"; // sets up schema validation
 import "@tsed/mongoose"; // db connecting
@@ -14,7 +11,6 @@ import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
 import { resolve } from "path";
-import MongoStore from 'connect-mongo'
 
 const rootDir = __dirname;
 
@@ -27,8 +23,7 @@ if (process.env.PATCH_LOCAL_ENV) {
 }
 
 const isProd = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.prod];
-const sessionSecret = config.SESSION.get().secrets;
-const mongoConnectionString = config.MONGO.get().connectionString;
+const mongoConnectionString = config.MONGO.get().connection_string;
 
 @Configuration({
   rootDir,
@@ -72,12 +67,6 @@ export class Server {
       .use(bodyParser.json())
       .use(bodyParser.urlencoded({
         extended: true
-      }))
-      .use(session({
-          secret: sessionSecret,
-          name: SessionCookieName,
-          // Note: creates it's own connection to the DB
-          store: MongoStore.create({ mongoUrl: mongoConnectionString })
       }));
   }
 }

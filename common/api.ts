@@ -15,6 +15,7 @@ interface ApiRoutes {
     signUp: () => string
     signIn: () => string   
     signOut: () => string
+    me: () => string
     dispatch: () => string
     reportLocation: () => string
     reportPushToken: () => string
@@ -42,6 +43,9 @@ interface ApiRoutes {
         },
         signOut: () => {
             return `/signout`
+        },
+        me: () => {
+            return `/me`
         },
         dispatch: () => {
             return '/dispatch'
@@ -73,6 +77,9 @@ interface ApiRoutes {
         },
         signOut: () => {
             return `${this.base}${this.namespaces.users}${this.server.signOut()}`
+        },
+        me: () => {
+            return `${this.base}${this.namespaces.users}${this.server.me()}`
         },
         reportLocation: () => {
             return `${this.base}${this.namespaces.users}${this.server.reportLocation()}`

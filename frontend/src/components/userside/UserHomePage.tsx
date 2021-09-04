@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { Button, Menu, Provider } from "react-native-paper";
-import { getStore } from "../../di";
-import { IDispatchStore, ILocationStore, INotificationStore, IUserStore } from "../../interfaces";
+import { getStore } from "../../stores/meta";
+import { IDispatchStore, ILocationStore, INotificationStore, IUserStore } from "../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../types";
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";

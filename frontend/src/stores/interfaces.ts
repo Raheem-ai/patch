@@ -1,7 +1,11 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
-import { User, Location, NotificationPayload, NotificationType } from '../../common/models'
+import { User, Location, NotificationPayload, NotificationType } from '../../../common/models'
 
-export interface IUserStore {
+export interface IBaseStore {
+    init?(): Promise<void>
+}
+
+export interface IUserStore extends IBaseStore {
     user: User;
     signedIn: boolean;
     signIn(email: string, password: string): Promise<void>
@@ -13,7 +17,7 @@ export namespace IUserStore {
     export const id = Symbol('IUserStore');
 }
 
-export interface ILocationStore {
+export interface ILocationStore extends IBaseStore {
     hasForegroundPermission: boolean
     hasBackgroundPermission: boolean 
     hasFullPermission: boolean 
@@ -35,7 +39,7 @@ export namespace ILocationStore {
 }
 
 
-export interface INotificationStore {
+export interface INotificationStore extends IBaseStore {
     // hasPermission: boolean;
     setup(): void;
     teardown(): void;
@@ -57,7 +61,7 @@ export namespace IDispatchStore {
     export const id = Symbol('IDispatchStore');
 }
 
-export interface IDispatchStore {
+export interface IDispatchStore extends IBaseStore {
     dispatch(): Promise<void>
     assignIncident(): Promise<void>
 }

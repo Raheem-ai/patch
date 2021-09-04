@@ -1,8 +1,8 @@
 import * as ExpoLocation from 'expo-location';
 import { LocationObject } from 'expo-location';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from '../di';
-import { ILocationStore } from '../interfaces';
+import { getStore, Store } from './meta';
+import { ILocationStore } from './interfaces';
 import * as TaskManager from 'expo-task-manager';
 import { TaskManagerTaskBody } from 'expo-task-manager';
 import * as uuid from 'uuid';

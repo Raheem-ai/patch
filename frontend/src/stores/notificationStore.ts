@@ -1,17 +1,18 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { Store } from "../di";
+import { Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import API from "../api";
 import { Constants } from "react-native-unimodules";
-import { Platform } from "react-native";
-import { INotificationStore } from "../interfaces";
+import { Alert, Platform } from "react-native";
+import { INotificationStore } from "./interfaces";
 import { NotificationPayload, NotificationType } from "../../../common/models";
-import { interactiveNotifications, NotificationResponseDefinition } from "../notifications/notificationActions";
+import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
 import * as uuid from 'uuid';
+import * as Device from 'expo-device';
 
 @Store()
 export default class NotificationStore implements INotificationStore {
@@ -30,49 +31,20 @@ export default class NotificationStore implements INotificationStore {
     }
 
     static async registerInteractiveNotifications() {
-        for (const notificationType in interactiveNotifications) {
-            const actions = interactiveNotifications[notificationType] || [];
+        for (const notificationType in NotificationHandlers) {
+            const handler: NotificationHandlerDefinition = NotificationHandlers[notificationType];
+            const actions = handler.actions();
 
-            if (actions.length) {
+            if (actions && actions.length) {
                 await Notifications.setNotificationCategoryAsync(notificationType, actions)       
             } 
         }
     }
 
     setup() {
-        this.notificationsSub = Notifications.addNotificationReceivedListener((notification: Notification) => {
-
-            this.handleNotification(notification);
-        });
+        this.notificationsSub = Notifications.addNotificationReceivedListener(this.handleNotification);
         
-        this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(async (res: NotificationResponse) => {
-            if (res.actionIdentifier == 'expo.modules.notifications.actions.DEFAULT') {
-                return;
-            }
-        
-            const payload = res.notification.request.content.data as NotificationPayload<any>;
-            const type = payload.type as NotificationType;
-            const actionId = res.actionIdentifier;
-        
-            const responseDefs: NotificationResponseDefinition[] = interactiveNotifications[type];
-            const handler = responseDefs.find((rd) => rd.identifier == actionId);
-        
-            if (handler.options.opensAppToForeground) {
-                const route = handler.options.routeTo;
-        
-                navigateTo(route, {
-                    notification: {
-                        type: type,
-                        payload: payload
-                    }
-                })
-            } else if (handler.options.opensAppToForeground == false) { //explicitely checking for false for typing
-                await handler.options.handler(payload);
-            }
-
-            this.handleNotificationResponse(res);
-        
-        });
+        this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(this.handleNotificationResponse);
 
         if (Platform.OS === 'android') {
             // TODO: lookup what this is doing and test on android
@@ -88,6 +60,51 @@ export default class NotificationStore implements INotificationStore {
     teardown() {
         Notifications.removeNotificationSubscription(this.notificationsSub)
         Notifications.removeNotificationSubscription(this.notificationResponseSub)
+    }
+
+    handleNotification = (notification: Notification) => {
+        this.handleNotificationCallbacks(notification);
+    }
+
+    handleNotificationResponse = async (res: NotificationResponse) => {
+        const payload = res.notification.request.content.data as NotificationPayload<any>;
+        const type = payload.type as NotificationType;
+        const actionId = res.actionIdentifier;
+
+        const notificationHandler = NotificationHandlers[type];
+        
+        if (res.actionIdentifier == 'expo.modules.notifications.actions.DEFAULT') {
+            if (notificationHandler.defaultRouteTo) {
+                navigateTo(notificationHandler.defaultRouteTo, {
+                    notification: {
+                        type: type,
+                        payload: payload
+                    }
+                })
+            }
+
+            return;
+        }
+    
+        const responseDefs: NotificationResponseDefinition[] = notificationHandler.actions();
+        const handler = responseDefs.find((rd) => rd.identifier == actionId);
+    
+        // not checking if handler exists because the only 
+        // options the user is shown is from the NotificationResponseDefinition itself
+        if (handler.options.opensAppToForeground) {
+            const route = handler.options.routeTo;
+    
+            navigateTo(route, {
+                notification: {
+                    type: type,
+                    payload: payload
+                }
+            })
+        } else if (handler.options.opensAppToForeground == false) { //explicitely checking for false for typing
+            await handler.options.handler(payload);
+        }
+
+        this.handleNotificationResponseCallbacks(res);
     }
 
     async askForPermission(): Promise<boolean> {
@@ -135,7 +152,7 @@ export default class NotificationStore implements INotificationStore {
 
         const callbackMap = this.notificationCallbacks.get(type)
         
-        if (callbackMap[id]) {
+        if (callbackMap && callbackMap[id]) {
             callbackMap[id] = undefined;
         }
     }
@@ -158,16 +175,21 @@ export default class NotificationStore implements INotificationStore {
         const id = params[1];
         const callbackMap = this.notificationResponseCallbacks.get(type)
         
-        if (callbackMap[id]) {
+        if (callbackMap && callbackMap[id]) {
             callbackMap[id] = undefined;
         }
     }
 
     // closure so it can be used as a callback and still reference 'this'
-    handleNotification(notification: Notification) {
+    handleNotificationCallbacks(notification: Notification) {
         const data = notification.request.content.data;
         const key = data.type as NotificationType;
         const callbackMap = this.notificationCallbacks.get(key)
+
+        if (!callbackMap) {
+            return;
+        }
+
         const callbacks = Object.values(callbackMap);
 
         if (callbacks && callbacks.length) {
@@ -178,10 +200,15 @@ export default class NotificationStore implements INotificationStore {
     }
     
     // closure so it can be used as a callback and still reference 'this'
-    handleNotificationResponse(res: NotificationResponse) {
+    handleNotificationResponseCallbacks(res: NotificationResponse) {
         const data = res.notification.request.content.data;
         const key = data.type as NotificationType;
         const callbackMap = this.notificationResponseCallbacks.get(key)
+
+        if (!callbackMap) {
+            return;
+        }
+
         const callbacks = Object.values(callbackMap);
 
         if (callbacks && callbacks.length) {
@@ -192,19 +219,22 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async handlePermissions() {
-        if (Constants.isDevice) {
-            const perms = await Notifications.getPermissionsAsync()
+        // if (Constants.isDevice) {
+        //     const perms = await Notifications.getPermissionsAsync()
         
-            if (perms.status !== PermissionStatus.GRANTED) {
-                const permissionGranted = await this.askForPermission()
+        //     if (perms.status !== PermissionStatus.GRANTED) {
+        //         const permissionGranted = await this.askForPermission()
                 
-                if (!permissionGranted) {
-                    return;
-                } else {
-                    await this.updatePushToken();
-                }                
-            }
-        }
+        //         if (!permissionGranted) {
+        //             return;
+        //         } else {
+        //             await this.updatePushToken();
+        //         }                
+        //     }
+        // }
+
+        await this.updatePushToken();
+
     }
 }
 
@@ -218,12 +248,21 @@ Notifications.setNotificationHandler({
     }
 });
 
-// TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {
-//     console.log('Received a notification in the background!');
-//     console.log(data);
-// });
+TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({ data, error, executionInfo }) => {
+    if (data) {
+        if (Device.brand == "Apple") {
+            const notification = data['UIApplicationLaunchOptionsRemoteNotificationKey'].body as NotificationPayload<any> & { type : NotificationType };
+            await API.declineIncidentAssignment(notification)
+            Alert.alert('finished api call')
+        } else if (Device.brand == "Google") {
+            //TODO: figure out how to handle andoird scenario
+        }
+    } else if (error) {
+        // TODO: error handling?
+    }
+});
 
-// Notifications.registerTaskAsync(INotificationStore.BACKGROUND_NOTIFICATION_TASK);
+Notifications.registerTaskAsync(INotificationStore.BACKGROUND_NOTIFICATION_TASK);
 
 (async function() {
     try {

@@ -4,8 +4,8 @@ import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { labelNames, RootStackParamList, routerNames, ScreenProps, styleVals } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { getStore } from '../di';
-import { IUserStore } from '../interfaces';
+import { getStore } from '../stores/meta';
+import { IUserStore } from '../stores/interfaces';
 
 type Props = ScreenProps<'SignUp'>;
 
