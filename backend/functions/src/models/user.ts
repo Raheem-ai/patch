@@ -1,16 +1,21 @@
 import { Model, ObjectID } from "@tsed/mongoose";
-import { CollectionOf, Enum, Property } from "@tsed/schema";
+import { CollectionOf, Enum, MapOf, Property } from "@tsed/schema";
 import { User, UserRole } from "common/models";
 import { PrivProps } from ".";
 
 @Model({ collection: 'users' })
 export class UserModel implements User {
 
-    static privateProperties: PrivProps<UserModel> = {
+    static systemProperties: PrivProps<UserModel> = {
         push_token: 0,
         password: 0,
         auth_etag: 0,
-        id: 0
+    }
+
+    static personalProperties: PrivProps<UserModel> = {
+        // placeholder for future props that would go in 
+        // a profile but not be visible to orgs looking at their member
+        race: 0
     }
 
     id: string; // for types
@@ -18,8 +23,12 @@ export class UserModel implements User {
     @ObjectID('id')
     _id: string;
 
-    @Enum(UserRole)
-    roles: UserRole[];
+    @CollectionOf({
+        roles: [UserRole]
+    }) 
+    organizations: Map<string, {
+        roles: UserRole[]
+    }>;
     
     @Property()
     name: string;
@@ -35,4 +44,7 @@ export class UserModel implements User {
 
     @Property()
     auth_etag: string
+
+    @Property()
+    race?: string
 }

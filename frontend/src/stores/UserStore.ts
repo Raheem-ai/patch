@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { User } from '../../../common/models';
+import { Me, User } from '../../../common/models';
 import API from '../api';
 import { persistent, Store } from './meta';
 import { IUserStore } from './interfaces';
@@ -9,7 +9,7 @@ import { IUserStore } from './interfaces';
 export default class UserStore implements IUserStore {
 
     @persistent()
-    public user!: User;
+    public user!: Me;
 
     @persistent() 
     public authToken!: string;
@@ -24,7 +24,7 @@ export default class UserStore implements IUserStore {
     
     async signIn(email: string, password: string) {
         try {
-            const token = await API.signIn(email, password)
+            const token = await API.signIn({ email, password })
 
             const user = await API.me(token);
 
@@ -41,7 +41,7 @@ export default class UserStore implements IUserStore {
 
     async signUp(email: string, password: string) {
         try {
-            const token = await API.signUp(email, password)
+            const token = await API.signUp({ email, password })
 
             const user = await API.me(token);
             

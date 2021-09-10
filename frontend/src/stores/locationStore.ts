@@ -2,7 +2,7 @@ import * as ExpoLocation from 'expo-location';
 import { LocationObject } from 'expo-location';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { getStore, Store } from './meta';
-import { ILocationStore } from './interfaces';
+import { ILocationStore, IUserStore } from './interfaces';
 import * as TaskManager from 'expo-task-manager';
 import { TaskManagerTaskBody } from 'expo-task-manager';
 import * as uuid from 'uuid';
@@ -144,13 +144,15 @@ export default class LocationStore implements ILocationStore {
         }
     }
 
-    async reportLocation(locations: Location[]) {
-        await API.reportLocation(locations);
+    async reportLocation(token: string, locations: Location[]) {
+        await API.reportLocation(token, locations);
     }
 }
 
 TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, async ({ data, error }: TaskManagerTaskBody<{ locations: LocationObject[] }>) => {
     const locationStore = getStore<ILocationStore>(ILocationStore);
+    const userStore = getStore<IUserStore>(IUserStore);
+
     const shiftEndTime = JSON.parse((await AsyncStorage.getItem(ILocationStore.SHIFT_END_TIME)));
 
     if (new Date().getTime() > shiftEndTime && (await ExpoLocation.hasStartedLocationUpdatesAsync(ILocationStore.BACKGROUND_LOCATION_TASK))) {
@@ -165,7 +167,8 @@ TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, async ({ data, e
     if (data && data.locations && data.locations.length) {
         // background tasks start the app but render nothing so the store is being created anew each time
         // need to use storage + canned background tasks types to facilitate turning background tings on and off
-        await locationStore.reportLocation(data.locations)
+        await userStore.init(); // make sure token is populated
+        await locationStore.reportLocation(userStore.authToken, data.locations)
     }
 });
 

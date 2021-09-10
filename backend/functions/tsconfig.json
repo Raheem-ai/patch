@@ -18,7 +18,8 @@
     ],
     "esModuleInterop": true,
     "paths": {
-      "common/*": ["../../common/*"]
+      "common/*": ["../../common/*"],
+      "common": ["../../common/index.ts"]
     }
   },
   "compileOnSave": true,

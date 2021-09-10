@@ -13,15 +13,15 @@ export class DispatcherController {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
 
-    @Post(API.server.dispatch())
+    @Post(API.server.broadcastRequest())
     @RequireRoles([UserRole.Dispatcher])
-    async dispatch() {
-        console.log('dispatch')
+    async broadcastRequest() {
+        console.log('broadcastRequest')
     }
 
-    @Post(API.server.assignIncident())
+    @Post(API.server.assignRequest())
     @RequireRoles([UserRole.Dispatcher])
-    async assignIncident(
+    async assignRequest(
         @Req() request: Req
     ) {
         const fullUser = await this.users.findOne({ email: (request.user as User).email })

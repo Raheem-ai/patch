@@ -1,13 +1,14 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
-import { User, Location, NotificationPayload, NotificationType } from '../../../common/models'
+import { User, Location, NotificationPayload, NotificationType, Me } from '../../../common/models'
 
 export interface IBaseStore {
     init?(): Promise<void>
 }
 
 export interface IUserStore extends IBaseStore {
-    user: User;
+    user: Me;
     signedIn: boolean;
+    authToken: string;
     signIn(email: string, password: string): Promise<void>
     signUp(email: string, password: string): Promise<void>
     signOut(): Promise<void>
@@ -29,7 +30,7 @@ export interface ILocationStore extends IBaseStore {
     stopWatchingLocation(): Promise<void>
     addForegroundCallback(cb: (loc: Location) => Promise<void> | void): string;
     removeForegroundCallback(handle: string): void;
-    reportLocation(locations: Location[]): Promise<void>;
+    reportLocation(token: string, locations: Location[]): Promise<void>;
 }
 
 export namespace ILocationStore {
@@ -62,6 +63,6 @@ export namespace IDispatchStore {
 }
 
 export interface IDispatchStore extends IBaseStore {
-    dispatch(): Promise<void>
-    assignIncident(): Promise<void>
+    broadcastRequest(requestId: string, to: string[]): Promise<void>
+    assignRequest(requestId: string, to: string[]): Promise<void>
 }

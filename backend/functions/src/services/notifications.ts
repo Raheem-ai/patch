@@ -10,6 +10,7 @@ import { Document } from "mongoose";
 import {Agenda, Every, Define} from "@tsed/agenda";
 import {Job} from "agenda";
 import { JobNames } from "../jobs";
+import { DBManager } from "./dbManager";
 
 export type NotificationMetadata<T extends NotificationType> = Omit<NotificationModel<T>, 'sent_count'>
 
@@ -18,7 +19,7 @@ export type NotificationMetadata<T extends NotificationType> = Omit<Notification
 export default class Notifications {
 
     @Inject(NotificationModel) notifications: MongooseModel<NotificationModel>;
-    @Inject(UserModel) users: MongooseModel<UserModel>;
+    @Inject(DBManager) db: DBManager;
 
     // TODO: this should come from config
     // ((4) + (16) + (4^3) + (4^4) +(4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
@@ -138,7 +139,7 @@ export default class Notifications {
                         continue;
                     }
 
-                    const fullUser = await this.users.findOne({ push_token: failure.to });
+                    const fullUser = await this.db.getUser({ push_token: failure.to });
                     fullUser.push_token = null;
                     await fullUser.save();
 
@@ -166,7 +167,7 @@ export default class Notifications {
             switch (receipt.details.error) {
                 case "DeviceNotRegistered":
 
-                    const fullUser = await this.users.findOne({ push_token: notification.to });
+                    const fullUser = await this.db.getUser({ push_token: notification.to });
                     fullUser.push_token = null;
                     await fullUser.save();
 
@@ -180,25 +181,11 @@ export default class Notifications {
     }
 
     async bulkUpsert(docs: MongooseDocument<NotificationModel>[]) {
-        const bulkOps = docs.map(doc => ({
-            updateOne: {
-                filter: { _id: doc._id },
-                update: doc.toJSON(),
-                upsert: true,
-            }
-        }))
-
-        await this.notifications.bulkWrite(bulkOps);
+        await this.db.bulkUpsert(this.notifications, docs);
     }
 
     async bulkDelete(docs: MongooseDocument<NotificationModel>[]) {
-        const bulkOps = docs.map(doc => ({
-            deleteOne: {
-                filter: { _id: doc._id },
-            }
-        }))
-
-        await this.notifications.bulkWrite(bulkOps);
+        await this.db.bulkDelete(this.notifications, docs)
     }
 
     @Every('30 seconds', { name: JobNames.RetryTransientNotificationFailures })
@@ -324,7 +311,7 @@ export default class Notifications {
 
     @Every('30 seconds')
     async sendBackgroundNotification(job: Job) {
-        const user = await this.users.findOne({ email: 'Test@test.com' });
+        const user = await this.db.getUser({ email: 'Test@test.com' });
         await this.send({
             type: NotificationType.AssignedIncident,
             to: user.push_token,
@@ -337,7 +324,7 @@ export default class Notifications {
 
     // TODO: use this as a basis for testing down the line 
     // async populateFailedNotifications() {
-    //     const user = await this.users.findOne({ email: 'Test@test.com' });
+    //     const user = await this.db.getUser({ email: 'Test@test.com' });
 
     //     const notifications: NotificationModel[] = [{
     //         // should retry sending on first round of job

@@ -14,7 +14,7 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
 
 export function bindStores() {
     for (const [ iStore, store] of storeMappings) {
-        container.bind(iStore.id).to(store);
+        container.bind(iStore.id).to(store).inSingletonScope();
     }
 }
 

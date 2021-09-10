@@ -1,8 +1,9 @@
 import {EndpointInfo, Middleware, Req, UseBefore} from "@tsed/common";
 import { StoreSet, useDecorators } from "@tsed/core";
-import { Forbidden, Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
 import { User, UserRole } from "common/models";
+import API from "common/api";
 
 @Middleware()
 export class RequireRoleMiddleware {
@@ -17,9 +18,22 @@ export class RequireRoleMiddleware {
       return;
     } else {
       const unmetRoles = [];
+      const orgId = req.header(API.orgIDHeader);
+
+      if (!orgId) {
+        throw new BadRequest(`No org scope supplied`);
+      }
 
       for (const role of roles) {
-        if (!user.roles.includes(role)) {
+        const orgConfig = user.organizations && user.organizations.get(orgId);
+
+        if (!orgConfig) {
+          throw new Forbidden(`You do not have access to the supplied org scope`);
+        }
+
+        const orgRoles = orgConfig.roles;
+
+        if (!orgRoles.includes(role)) {
           unmetRoles.push(role);
         }
       }

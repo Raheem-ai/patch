@@ -11,15 +11,15 @@ export class ResponderController {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
 
-    @Post(API.server.confirmIncidentAssignment())
+    @Post(API.server.confirmRequestAssignment())
     @RequireRoles([UserRole.Responder])
-    async confirmIncidentAssignment() {
+    async confirmRequestAssignment() {
         console.log('confirmed!')
     }
 
-    @Post(API.server.declineIncidentAssignment())
+    @Post(API.server.declineRequestAssignment())
     @RequireRoles([UserRole.Responder])
-    async declineIncidentAssignment() {
+    async declineRequestAssignment() {
         console.log('declined!')
     }
 }

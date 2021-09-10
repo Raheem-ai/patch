@@ -252,7 +252,7 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
     if (data) {
         if (Device.brand == "Apple") {
             const notification = data['UIApplicationLaunchOptionsRemoteNotificationKey'].body as NotificationPayload<any> & { type : NotificationType };
-            await API.declineIncidentAssignment(notification)
+            await API.declineRequestAssignment(notification)
             Alert.alert('finished api call')
         } else if (Device.brand == "Google") {
             //TODO: figure out how to handle andoird scenario

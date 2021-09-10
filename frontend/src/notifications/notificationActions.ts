@@ -2,6 +2,8 @@ import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
 import api from "../api";
+import { IUserStore } from "../stores/interfaces";
+import { getStore } from "../stores/meta";
 
 export class NotificationHandlerDefinition<T extends NotificationType = any> {
     defaultRouteTo?: keyof RootStackParamList
@@ -31,7 +33,11 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await api.confirmIncidentAssignment();
+                            const userStore = getStore<IUserStore>(IUserStore);
+                            await userStore.init();
+
+                            // need to add orgId to notification payload
+                            await api.confirmRequestAssignment(userStore.authToken, payload.id);
                         } catch (e) {
                             console.error(e);
                         }
@@ -47,7 +53,10 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await api.declineIncidentAssignment();
+                            const userStore = getStore<IUserStore>(IUserStore);
+                            await userStore.init();
+
+                            await api.declineRequestAssignment(userStore.authToken, payload.id);
                         } catch (e) {
                             console.error(e);
                         }

@@ -12,18 +12,18 @@ export default class DispatchStore implements IDispatchStore {
         makeAutoObservable(this)
     }
     
-    async dispatch() {
+    async broadcastRequest(requestId: string, to: string[]) {
         try {
-            await API.dispatch()
+            await API.broadcastRequest(this.userStore.authToken, requestId, to);
         } catch (e) {
             console.error(e);
         }
     }
 
-    async assignIncident() {
+    async assignRequest(requestId: string, to: string[]) {
         try {
             console.log(this.userStore)
-            await API.assignIncident()
+            await API.assignRequest(this.userStore.authToken, requestId, to)
         } catch (e) {
             console.error(e);
         }

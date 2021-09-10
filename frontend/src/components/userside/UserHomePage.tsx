@@ -81,7 +81,7 @@ export default function UserHomePage({ navigation, route }: Props) {
     }
 
     const assignIncident = async () => {
-        await dispatchStore.assignIncident();
+        await dispatchStore.assignRequest('fake', []);
     }
 
     return (

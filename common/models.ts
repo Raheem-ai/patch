@@ -1,19 +1,45 @@
+import { AtLeast } from '.';
+
 export interface User {
     id: string;
-    roles: UserRole[];
     name: string;
     email: string;
     password: string;
+    organizations: Map<string, {
+        roles: UserRole[]
+    }>
 
-    push_token?: string;
+    race?: string
 }
 
+export type MinUser = AtLeast<User, 'email' | 'password'>
+
+export type ProtectedUser = Omit<User, 'password' | 'race'>;
+
+// this will change from being the same as ProtectedUser when we get
+// more profile fields
+export type Me = Omit<User, 'password'>
+
+export type BasicCredentials = {
+    email: string, 
+    password: string
+}
+
+// Organizations
+export interface Organization {
+    name: string;
+    members: ProtectedUser[]
+}
+
+export type MinOrg = AtLeast<Organization, 'name'>;
+
 export enum UserRole {
+    Admin,
     Dispatcher,
     Responder
 }
 
-export type ResponseRequest = {
+export type HelpRequest = {
 
 }
 

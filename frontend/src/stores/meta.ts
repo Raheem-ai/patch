@@ -16,7 +16,17 @@ export function Store() {
         
         const oldInit = ctr.prototype.init;
 
+        let initCalled = false;
+
         ctr.prototype.init = async function() {
+            // lets us wait on init without having to worry about erroniously
+            // calling it twice
+            if (initCalled) {
+                return;
+            } else {
+                initCalled = true;
+            }
+            
             if (oldInit) {
                 await oldInit();
             }

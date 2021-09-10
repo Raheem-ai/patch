@@ -1,16 +1,26 @@
 import { BodyParams, Controller, Inject, Post, Req } from "@tsed/common";
-import { Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument, MongooseModel } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Format, Required } from "@tsed/schema";
 import API from 'common/api';
-import { User, UserRole } from "common/models";
+import { BasicCredentials, MinUser, User, UserRole } from "common/models";
 import { createJWT } from "../auth";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserModel } from "../models/user";
 import * as uuid from 'uuid';
+import { APIController } from ".";
 
-export class LocalCredentials {
+export class ValidatedMinUser implements MinUser {
+    @Required()
+    @Format('email')
+    email: string;
+    
+    @Required()
+    password: string;
+}
+
+export class ValidatedBasicCredentials implements BasicCredentials {
     @Required()
     @Format('email')
     email: string;
@@ -20,20 +30,21 @@ export class LocalCredentials {
 }
 
 @Controller(API.namespaces.users)
-export class UsersController {
+export class UsersController implements APIController<'signUp' | 'signIn'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
 
     @Post(API.server.signUp())
-    async signup(
-        @Required() @BodyParams() credentials: LocalCredentials
+    async signUp(
+        @Required() @BodyParams('user') minUser: ValidatedMinUser
     ) {
-        const existingUsers = await this.users.find({ email: credentials.email });
+        const existingUsers = await this.users.find({ email: minUser.email });
 
         if (existingUsers && existingUsers.length) {
             // TODO: should this throw for a notification in the ui?
-            return existingUsers[0].toJSON()
+            throw new BadRequest(`User with email: ${minUser.email} already exists`);
         } else {
-            const user = new this.users(credentials);
+            const user = new this.users(minUser);
+
             user.auth_etag = uuid.v1();
 
             await user.save()
@@ -46,9 +57,8 @@ export class UsersController {
     }
 
     @Post(API.server.signIn())
-    async login(
-        @Req() request: Req, 
-        @BodyParams() credentials: LocalCredentials,
+    async signIn(
+        @Required() @BodyParams('credentials') credentials: ValidatedBasicCredentials,
     ) {
         const user = await this.users.findOne({ email: credentials.email });
 
@@ -86,7 +96,7 @@ export class UsersController {
 
         // strip private fields off here so all other server side apis can have access to
         // them with the initial call to the db to check auth
-        for (const key in UserModel.privateProperties) {
+        for (const key in UserModel.systemProperties) {
             pubUser[key] = undefined
         }
 
