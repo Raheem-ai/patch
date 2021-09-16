@@ -309,18 +309,18 @@ export default class Notifications {
         await this.bulkDelete(notificationsToDelete);
     }
 
-    @Every('30 seconds')
-    async sendBackgroundNotification(job: Job) {
-        const user = await this.db.getUser({ email: 'Test@test.com' });
-        await this.send({
-            type: NotificationType.AssignedIncident,
-            to: user.push_token,
-            body: `You've been assigned to Incident #1234`,
-            payload: {
-                id: '1234'
-            }
-        })
-    }
+    // @Every('30 seconds')
+    // async sendBackgroundNotification(job: Job) {
+    //     const user = await this.db.getUser({ email: 'Test@test.com' });
+    //     await this.send({
+    //         type: NotificationType.AssignedIncident,
+    //         to: user.push_token,
+    //         body: `You've been assigned to Incident #1234`,
+    //         payload: {
+    //             id: '1234',
+    //         }
+    //     })
+    // }
 
     // TODO: use this as a basis for testing down the line 
     // async populateFailedNotifications() {

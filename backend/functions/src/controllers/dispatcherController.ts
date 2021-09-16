@@ -1,44 +1,91 @@
-import { Controller, Inject, Post, Req } from "@tsed/common";
+import { BodyParams, Controller, HeaderParams, Inject, Post, Req } from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import API from 'common/api';
-import { NotificationType, User, UserRole } from "common/models";
+import { NotificationType, UserRole } from "common/models";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
-import { UserModel } from "../models/user";
+import { UserDoc, UserModel } from "../models/user";
 import { ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from "expo-server-sdk";
 import { expo } from "../expo";
-import Notifications from '../services/notifications';
+import Notifications, { NotificationMetadata } from '../services/notifications';
+import { APIController, OrgId } from ".";
+import { Required } from "@tsed/schema";
+import { User } from "../protocols/jwtProtocol";
+import { DBManager } from "../services/dbManager";
 
 @Controller(API.namespaces.dispatch)
-export class DispatcherController {
+export class DispatcherController implements APIController<'broadcastRequest'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
+    
     @Inject(Notifications) notifications: Notifications;
+    @Inject(DBManager) db: DBManager;
+
 
     @Post(API.server.broadcastRequest())
     @RequireRoles([UserRole.Dispatcher])
-    async broadcastRequest() {
-        console.log('broadcastRequest')
+    async broadcastRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string, 
+        @Required() @BodyParams('to') to: string[]
+    ) {
+        // TODO: should we keep track of who you have assigned this to?
+        const usersToAssign = await this.db.getUsersByIds(to);
+
+        const notifications: NotificationMetadata<NotificationType.BroadCastedIncident>[] = [];
+
+        for (const user of usersToAssign) {
+
+            if (!user.push_token) {
+                // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
+                continue;
+            }
+
+            notifications.push({
+                type: NotificationType.BroadCastedIncident,
+                to: user.push_token,
+                body: `You've been broadcasted HelpRequest ${requestId}`,
+                payload: {
+                    id: '1234',
+                    orgId
+                }
+            });
+        }
+
+        await this.notifications.sendBulk(notifications);
     }
 
     @Post(API.server.assignRequest())
     @RequireRoles([UserRole.Dispatcher])
     async assignRequest(
-        @Req() request: Req
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string, 
+        @Required() @BodyParams('to') to: string[]
     ) {
-        const fullUser = await this.users.findOne({ email: (request.user as User).email })
+        // TODO: should we keep track of who you have assigned this to?
+        const usersToAssign = await this.db.getUsersByIds(to);
 
-        if (!fullUser.push_token) {
-            // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
-            return;
+        const notifications: NotificationMetadata<NotificationType.AssignedIncident>[] = [];
+
+        for (const user of usersToAssign) {
+
+            if (!user.push_token) {
+                // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
+                continue;
+            }
+
+            notifications.push({
+                type: NotificationType.AssignedIncident,
+                to: user.push_token,
+                body: `You've been assigned to HelpRequest ${requestId}`,
+                payload: {
+                    id: '1234',
+                    orgId
+                }
+            });
         }
 
-        await this.notifications.send({
-            type: NotificationType.AssignedIncident,
-            to: fullUser.push_token,
-            body: `You've been assigned to Incident #1234`,
-            payload: {
-                id: '1234'
-            }
-        });
+        await this.notifications.sendBulk(notifications);
     }
 
 }

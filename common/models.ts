@@ -40,7 +40,62 @@ export enum UserRole {
 }
 
 export type HelpRequest = {
+    id: string
+    orgId: string
+    location: Location
+    type: RequestType
+    notes: string
+    skills: RequestSkill[]
+    otherRequirements?: any //TODO: what are these exactly?
+    respondersNeeded: number
+    chat: ChatMessage[]
+    dispatcherId: string,
+    responderIds: string[]
+    status: RequestStatus
+}
 
+export type MinHelpRequest = AtLeast<HelpRequest, 'location' | 'type' | 'respondersNeeded'>
+
+export type ChatMessage = {
+    userId: string,
+    message: string,
+    timestamp: number
+}
+
+export enum RequestStatus {
+    // automatically updated
+    Unassigned,
+    PartiallyAssigned,
+    Ready,
+    // updated by any responder
+    // TODO: should you be able to skip to ontheway before all responders are ready?
+    OnTheWay,
+    OnSite,
+    Done
+}
+
+export type ResponderRequestStatuses = 
+    RequestStatus.OnTheWay
+    | RequestStatus.OnSite
+    | RequestStatus.Done;
+
+export enum RequestSkill {
+
+}
+
+export enum RequestType {
+    ConflictResolution,
+    CopWatching,
+    Counseling,
+    DomesticDisturbance,
+    FirstAid,
+    Housing,
+    MentalHealthCrisis,
+    ProvidingSupplies,
+    ResourceReferral,
+    SubstanceCounceling,
+    Transportation,
+    WellnessCheck
 }
 
 export type Location = {
@@ -64,9 +119,11 @@ export enum NotificationType {
 export type NotificationPayloads = {
     [NotificationType.AssignedIncident] : {
         id: string,
+        orgId: string
     },
     [NotificationType.BroadCastedIncident]: {
-        id: string
+        id: string,
+        orgId: string
     }
 }
 

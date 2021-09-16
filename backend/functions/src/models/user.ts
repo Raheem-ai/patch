@@ -1,6 +1,7 @@
 import { Model, ObjectID } from "@tsed/mongoose";
 import { CollectionOf, Enum, MapOf, Property } from "@tsed/schema";
 import { User, UserRole } from "common/models";
+import { Document } from "mongoose";
 import { PrivProps } from ".";
 
 @Model({ collection: 'users' })
@@ -48,3 +49,5 @@ export class UserModel implements User {
     @Property()
     race?: string
 }
+
+export type UserDoc = UserModel & Document;

@@ -1,4 +1,5 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
+import { ClientSideFormat } from '../../../common/api';
 import { User, Location, NotificationPayload, NotificationType, Me } from '../../../common/models'
 
 export interface IBaseStore {
@@ -6,9 +7,10 @@ export interface IBaseStore {
 }
 
 export interface IUserStore extends IBaseStore {
-    user: Me;
+    user: ClientSideFormat<Me>;
     signedIn: boolean;
     authToken: string;
+    currentOrgId: string;
     signIn(email: string, password: string): Promise<void>
     signUp(email: string, password: string): Promise<void>
     signOut(): Promise<void>

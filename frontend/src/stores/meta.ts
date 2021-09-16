@@ -1,6 +1,6 @@
 import "reflect-metadata"
 import { Container, injectable } from "inversify";
-import { makePersistable } from 'mobx-persist-store';
+import { makePersistable, StorageController } from 'mobx-persist-store';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const container = new Container({ defaultScope: "Singleton" });
@@ -14,7 +14,7 @@ export function getStore<T>({ id }: { id: symbol }): T {
 export function Store() {
     return function(ctr: new () => any) {
         
-        const oldInit = ctr.prototype.init;
+        const oldInit: Function = ctr.prototype.init;
 
         let initCalled = false;
 
@@ -26,10 +26,6 @@ export function Store() {
             } else {
                 initCalled = true;
             }
-            
-            if (oldInit) {
-                await oldInit();
-            }
 
             const persistentProps = ctr.prototype[persistentKey];
 
@@ -39,6 +35,10 @@ export function Store() {
                     properties: persistentProps,
                     storage: AsyncStorage
                 });
+            }
+
+            if (oldInit) {
+                await oldInit.call(this);
             }
         }
 
@@ -52,5 +52,22 @@ export function persistent(opts?): PropertyDecorator {
         target[persistentKey].push(propertyKey);
     }
 }
+
+// const AsyncStorageWrapper: StorageController = {
+//     getItem: async <T>(key: string) => {
+//         const json = await AsyncStorage.getItem(key);
+
+//         if (!json) {
+//             return json;
+//         }
+
+//     }, 
+//     removeItem: async <T>(key: string): Promise<T> {
+
+//     }, 
+//     setItem: async <T>(key: string, value: T): Promise<T> {
+
+//     }
+// }
 
 export default container;

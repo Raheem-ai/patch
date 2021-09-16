@@ -22,10 +22,10 @@ export default function SignInForm( { navigation } : Props) {
     const signIn = async () => {
         await userStore.signIn(username, password)
 
-        // setTimeout(async () => {
-            // const notificationStore = getStore<INotificationStore>(INotificationStore);
-            // await notificationStore.handlePermissions();
-        // });
+        setTimeout(() => {
+            const notificationStore = getStore<INotificationStore>(INotificationStore);
+            notificationStore.handlePermissions();
+        }, 0);
 
         navigation.navigate(routerNames.userHomePage)
     }

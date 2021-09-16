@@ -1,12 +1,13 @@
-import { BodyParams, Controller, HeaderParams, Inject, Post, Req } from "@tsed/common";
-import { MongooseDocument, MongooseModel } from "@tsed/mongoose";
+import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
+import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { MinOrg, NotificationType, Organization, User, UserRole } from "common/models";
-import { APIController } from ".";
+import { MinOrg, Organization, UserRole } from "common/models";
+import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
-import { UserModel } from "../models/user";
+import { UserDoc, UserModel } from "../models/user";
+import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
 
@@ -15,8 +16,9 @@ export class ValidatedMinOrg implements MinOrg {
     name: string;
 }
 
+
 @Controller(API.namespaces.organization)
-export class OrganizationController implements APIController<'createOrg' | 'addUserRoles' | 'removeUserRoles' | 'removeUserFromOrg' | 'addUserToOrg'> {
+export class OrganizationController implements APIController<'createOrg' | 'addUserRoles' | 'removeUserRoles' | 'removeUserFromOrg' | 'addUserToOrg' | 'getTeamMembers' | 'getRespondersOnDuty'> {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
@@ -25,14 +27,13 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
     @Post(API.server.createOrg())
     @Authenticate()
     async createOrg(
-        @Req() req: Req,
+        @User() user: UserDoc,
         @Required() @BodyParams('org') minOrg: ValidatedMinOrg,
     ) {
-        const user = req.user as MongooseDocument<UserModel>;
         const [ org, admin ] = await this.db.createOrganization(minOrg, user.id);
 
         return {
-            org: org.toJSON() as Organization,
+            org: this.db.protectedOrganization(org),
             user: this.db.me(admin)
         }
     }
@@ -40,54 +41,72 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
     @Post(API.server.addUserToOrg())
     @RequireRoles([UserRole.Admin])
     async addUserToOrg(
-        @Req() req: Req,
-        @HeaderParams(API.orgIDHeader) orgId: string,
+        @OrgId() orgId: string,
+        @Req() req,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[]
     ) {
         const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles);
 
         return {
-            org: org.toJSON() as Organization,
-            user: this.db.protectedUser(user)
+            org: this.db.protectedOrganization(org),
+            user: this.db.protectedUserFromDoc(user)
         }
     }
     
     @Post(API.server.removeUserFromOrg())
     @RequireRoles([UserRole.Admin])
     async removeUserFromOrg(
-        @Req() req: Req,
-        @HeaderParams(API.orgIDHeader) orgId: string,
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string
     ) {
-        const [ org, user ] = await this.db.removeUserFromOrganization(orgId, userId);
+        const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId);
 
         return {
-            org: org.toJSON() as Organization,
-            user: this.db.protectedUser(user)
+            org: this.db.protectedOrganization(org),
+            user: this.db.protectedUserFromDoc(removedUser)
         }
     }
     
     @Post(API.server.removeUserRoles())
     @RequireRoles([UserRole.Admin])
     async removeUserRoles(
-        @Req() req: Req,
-        @HeaderParams(API.orgIDHeader) orgId: string,
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[]
     ) {
-        return this.db.protectedUser(await this.db.removeUserRoles(orgId, userId, roles));
+        return this.db.protectedUserFromDoc(await this.db.removeUserRoles(orgId, userId, roles));
     }
     
     @Post(API.server.addUserRoles())
     @RequireRoles([UserRole.Admin])
     async addUserRoles(
-        @Req() req: Req,
-        @HeaderParams(API.orgIDHeader) orgId: string,
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[]
     ) {
-        return this.db.protectedUser(await this.db.addUserRoles(orgId, userId, roles));
+        return this.db.protectedUserFromDoc(await this.db.addUserRoles(orgId, userId, roles));
     }
 
+    @Get(API.server.getTeamMembers())
+    @RequireRoles([UserRole.Admin, UserRole.Dispatcher, UserRole.Responder])
+    async getTeamMembers(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+    ) {
+        const org = await this.db.resolveOrganization(orgId);
+        return this.db.protectedOrganization(org).members;
+    }
+
+    @Get(API.server.getRespondersOnDuty())
+    @RequireRoles([UserRole.Admin, UserRole.Dispatcher, UserRole.Responder])
+    async getRespondersOnDuty(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+    ) {
+        return await this.db.getOrgResponders(orgId); // TODO: then filter by who's on duty
+    }
 }

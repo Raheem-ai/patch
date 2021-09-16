@@ -1,4 +1,4 @@
-import {Inject, Req} from "@tsed/common";
+import {Context, Inject, Req} from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import {Arg, OnVerify, Protocol} from "@tsed/passport";
 import {ExtractJwt, Strategy, StrategyOptions} from "passport-jwt";
@@ -8,6 +8,7 @@ import { UserModel } from "../models/user";
 import config from '../config';
 
 const jwtSecrets = config.SESSION.get().secrets;
+const UserContextKey = 'AuthorizedUser';
 
 const secretOrKeyProvider = (req, token, done) => {
     const decodedToken = decode(token, { complete: true });
@@ -38,11 +39,23 @@ const secretOrKeyProvider = (req, token, done) => {
 export class JwtProtocol implements OnVerify {
     @Inject(UserModel) model: MongooseModel<UserModel>
 
-    async $onVerify(@Req() req: Req, @Arg(0) jwtPayload: JWTMetadata) {
+    async $onVerify(
+      @Req() req: Req, 
+      @Arg(0) jwtPayload: JWTMetadata,
+      @Context() ctx: Context
+    ) {
         const user = await this.model.findById(jwtPayload.userId);
 
         const verifiedUser = (user && (user.auth_etag == jwtPayload.etag)) ? user : false;
 
+        if (verifiedUser) {
+          ctx.set(UserContextKey, verifiedUser);
+        }
+
         return verifiedUser;
     }
+}
+
+export function User(): ParameterDecorator {
+  return Context(UserContextKey);
 }

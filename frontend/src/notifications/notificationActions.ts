@@ -37,7 +37,11 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                             await userStore.init();
 
                             // need to add orgId to notification payload
-                            await api.confirmRequestAssignment(userStore.authToken, payload.id);
+                            await api.confirmRequestAssignment({ 
+                                token: userStore.authToken, 
+                                orgId: payload.orgId
+                            }, payload.id);
+
                         } catch (e) {
                             console.error(e);
                         }
@@ -56,7 +60,11 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                             const userStore = getStore<IUserStore>(IUserStore);
                             await userStore.init();
 
-                            await api.declineRequestAssignment(userStore.authToken, payload.id);
+                            await api.declineRequestAssignment({ 
+                                token: userStore.authToken, 
+                                orgId: payload.orgId
+                            }, payload.id);
+                            
                         } catch (e) {
                             console.error(e);
                         }

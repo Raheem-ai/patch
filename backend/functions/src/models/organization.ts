@@ -1,6 +1,7 @@
 import { Model, ObjectID, Ref } from "@tsed/mongoose";
 import { Property } from "@tsed/schema";
 import { Organization, User } from "common/models";
+import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
 
@@ -18,3 +19,5 @@ export class OrganizationModel implements WithRefs<Organization, 'members'> {
     @Ref(UserModel) 
     members: Ref<UserModel>[];
 }
+
+export type OrganizationDoc = OrganizationModel & Document;

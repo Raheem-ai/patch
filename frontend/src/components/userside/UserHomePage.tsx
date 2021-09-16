@@ -64,7 +64,11 @@ export default function UserHomePage({ navigation, route }: Props) {
 
     const signout = async () => {
         await userStore.signOut();
-        navigation.navigate(routerNames.signIn);
+
+        navigation.reset({
+            index: 0,
+            routes: [{ name: routerNames.signIn }],
+        });
     }
 
     const startShift = async () => {
@@ -81,7 +85,7 @@ export default function UserHomePage({ navigation, route }: Props) {
     }
 
     const assignIncident = async () => {
-        await dispatchStore.assignRequest('fake', []);
+        await dispatchStore.assignRequest('fake', [ userStore.user.id ]);
     }
 
     return (

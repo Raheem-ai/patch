@@ -1,12 +1,12 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { Store } from "./meta";
+import { getStore, Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import API from "../api";
 import { Constants } from "react-native-unimodules";
 import { Alert, Platform } from "react-native";
-import { INotificationStore } from "./interfaces";
+import { INotificationStore, IUserStore } from "./interfaces";
 import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
@@ -18,6 +18,8 @@ import * as Device from 'expo-device';
 export default class NotificationStore implements INotificationStore {
     
     // TODO: set badge number on app 
+
+    private userStore = getStore<IUserStore>(IUserStore);
     
     private notificationCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  notification: Notification) => void) }>();
     private notificationResponseCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  res: NotificationResponse) => void) }>();
@@ -129,8 +131,10 @@ export default class NotificationStore implements INotificationStore {
 
     async updatePushToken() {
         // don't keep copy on device
-        const token = (await Notifications.getExpoPushTokenAsync()).data;
-        await API.reportPushToken(token);
+        const pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+        const token = this.userStore.authToken;
+
+        await API.reportPushToken({ token }, pushToken);
     }
 
     onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void) {
@@ -252,8 +256,21 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
     if (data) {
         if (Device.brand == "Apple") {
             const notification = data['UIApplicationLaunchOptionsRemoteNotificationKey'].body as NotificationPayload<any> & { type : NotificationType };
-            await API.declineRequestAssignment(notification)
-            Alert.alert('finished api call')
+
+            const userStore = getStore<IUserStore>(IUserStore);
+            await userStore.init()
+
+            const token = userStore.authToken;
+            
+            switch (notification.type) {
+                case NotificationType.AssignedIncident:
+                    const orgId = (notification as NotificationPayload<NotificationType.AssignedIncident>).orgId
+                    await API.declineRequestAssignment({ token, orgId }, notification)
+                    break;
+            
+                default:
+                    break;
+            }
         } else if (Device.brand == "Google") {
             //TODO: figure out how to handle andoird scenario
         }

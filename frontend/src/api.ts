@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Constants from "expo-constants";
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser } from '../../common/models';
-import API, { IApiClient } from '../../common/api';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser } from '../../common/models';
+import API, { ClientSideApi, ClientSideFormat, IApiClient, OrgContext, RequestContext, TokenContext } from '../../common/api';
 const { manifest } = Constants;
 
 // TODO: the port and non local host need to come from config somehow
@@ -15,169 +15,253 @@ export const updateApiHost = (h) => apiHost = h;
 
 export const getApiHost = () => apiHost;
 
-export class APIClient implements IApiClient {
+export class APIClient implements ClientSideApi<'me'> {
     // unauthorized apis
 
     async signIn(credentials: BasicCredentials): Promise<string> {
         const url = `${apiHost}${API.client.signIn()}`;
 
-        const token = (await axios.post<string>(url, credentials)).data
+        const token = (await axios.post<string>(url, { credentials })).data
 
         return token;
     }
 
-    async signUp(minUser: MinUser): Promise<string> {
+    async signUp(user: MinUser): Promise<string> {
         const url = `${apiHost}${API.client.signUp()}`;
 
-        const token = (await axios.post<string>(url, minUser)).data
+        const token = (await axios.post<string>(url, { user })).data
 
         return token;
     }
 
     // user scoped apis
 
-    async me(token: string): Promise<Me> {
+    async me(ctx: TokenContext): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.me()}`;
 
-        const user = (await axios.post<Me>(url, {}, {
-            headers: this.userScopeAuthHeaders(token),
+        const user = (await axios.post<ClientSideFormat<Me>>(url, {}, {
+            headers: this.userScopeAuthHeaders(ctx),
           })).data
 
         return user;
     }
 
-    async signOut(token: string) {
+    async signOut(ctx: TokenContext) {
         const url = `${apiHost}${API.client.signOut()}`;
 
         await axios.post(url, {}, {
-            headers: this.userScopeAuthHeaders(token),
+            headers: this.userScopeAuthHeaders(ctx),
         });
     }
 
-    async reportLocation(token: string, locations: Location[]) {
+    async reportLocation(ctx: TokenContext, locations: Location[]) {
         const url = `${apiHost}${API.client.reportLocation()}`;
 
         await axios.post<User>(url, {            
             locations
         }, {
-            headers: this.userScopeAuthHeaders(token),
+            headers: this.userScopeAuthHeaders(ctx),
         })
     }
 
-    async reportPushToken(token: string) {
+    async reportPushToken(ctx: TokenContext, token: string) {
         const url = `${apiHost}${API.client.reportPushToken()}`;
 
         await axios.post<void>(url, {            
             token
         }, {
-            headers: this.userScopeAuthHeaders(token),
+            headers: this.userScopeAuthHeaders(ctx),
         })
     }
 
-    async createOrg(token: string, org: MinOrg) {
-        const url = `${apiHost}${API.client.reportPushToken()}`;
+    async createOrg(ctx: TokenContext, org: MinOrg) {
+        const url = `${apiHost}${API.client.createOrg()}`;
 
         return (await axios.post<{ user: User, org: Organization }>(url, {            
             org
         }, {
-            headers: this.userScopeAuthHeaders(token),
+            headers: this.userScopeAuthHeaders(ctx),
         })).data
     }
 
     // org scoped apis
 
-    async broadcastRequest(token: string, orgId: string, requestId: string, to: string[]) {
+    async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
         await axios.post<void>(url, {
             requestId,
             to
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId),
+            headers: this.orgScopeAuthHeaders(ctx),
         });
     }
 
-    async assignRequest(token: string, orgId: string, requestId: string, to: string[]) {
+    async assignRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.assignRequest()}`;
 
         await axios.post<void>(url, {
             requestId,
             to
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId),
+            headers: this.orgScopeAuthHeaders(ctx),
         });
     }
 
-    async confirmRequestAssignment(token: string, orgId: string, requestId: string) {
+    async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
 
-        await axios.post<void>(url, {}, {
-            headers: this.orgScopeAuthHeaders(token, orgId),
+        await axios.post<void>(url, {
+            requestId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
         });
     }
 
-    async declineRequestAssignment(token: string, orgId: string, requestId: string) {
+    async declineRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.declineRequestAssignment()}`;
 
-        await axios.post<void>(url, {}, {
-            headers: this.orgScopeAuthHeaders(token, orgId),
+        await axios.post<void>(url, {
+            requestId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
         });
     }
 
-    async addUserToOrg(token: string, orgId: string, userId: string, roles: UserRole[]) {
+    async addUserToOrg(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserToOrg()}`;
 
         return (await axios.post<{ user: User, org: Organization }>(url, {
             userId,
             roles
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId)
+            headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
-    async removeUserFromOrg(token: string, orgId: string, userId: string) {
+    async removeUserFromOrg(ctx: OrgContext, userId: string) {
         const url = `${apiHost}${API.client.removeUserFromOrg()}`;
 
         return (await axios.post<{ user: User, org: Organization }>(url, {
             userId
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId)
+            headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
-    async removeUserRoles(token: string, orgId: string, userId: string, roles: UserRole[]) {
+    async removeUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.removeUserRoles()}`;
 
         return (await axios.post<User>(url, {
             userId,
             roles
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId)
+            headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
-    async addUserRoles(token: string, orgId: string, userId: string, roles: UserRole[]) {
+    async addUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserRoles()}`;
 
         return (await axios.post<User>(url, {
             userId,
             roles
         }, {
-            headers: this.orgScopeAuthHeaders(token, orgId)
+            headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
-    userScopeAuthHeaders(token: string) {
+    async getTeamMembers(ctx: OrgContext): Promise<ProtectedUser[]> {
+        const url = `${apiHost}${API.client.getTeamMembers()}`;
+
+        return (await axios.get<ProtectedUser[]>(url, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async getRespondersOnDuty(ctx: OrgContext): Promise<ProtectedUser[]> {
+        const url = `${apiHost}${API.client.getRespondersOnDuty()}`;
+
+        return (await axios.get<ProtectedUser[]>(url, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.createNewRequest()}`;
+
+        return (await axios.post<HelpRequest>(url, {
+            request
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async getRequests(ctx: OrgContext): Promise<HelpRequest[]> {
+        const url = `${apiHost}${API.client.getRequests()}`;
+
+        return (await axios.get<HelpRequest[]>(url, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async getRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.getRequest()}`;
+
+        return (await axios.get<HelpRequest>(url, {
+            headers: this.requestScopeAuthHeaders({ ...ctx, requestId })
+        })).data
+    }
+
+    async unAssignRequest(ctx: RequestContext, userId: string): Promise<void> {
+        const url = `${apiHost}${API.client.unAssignRequest()}`;
+
+        await axios.post<void>(url, {
+            userId
+        }, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })
+    }
+
+    async sendChatMessage(ctx: RequestContext, message: ChatMessage): Promise<void> {
+        const url = `${apiHost}${API.client.sendChatMessage()}`;
+
+        await axios.post<void>(url, {
+            message
+        }, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })
+    }
+
+    async setTeamStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<void> {
+        const url = `${apiHost}${API.client.setTeamStatus()}`;
+
+        return (await axios.post<void>(url, {
+            status
+        }, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
+    }
+
+
+    userScopeAuthHeaders(ctx: TokenContext) {
         return {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${ctx.token}`
         }
     }
 
-    orgScopeAuthHeaders(token: string, orgId: string) {
-        return {
-            'Authorization': `Bearer ${token}`,
-            [API.orgIDHeader]: orgId
-        }
+    orgScopeAuthHeaders(ctx: OrgContext) {
+        const headers = this.userScopeAuthHeaders(ctx);
+        headers[API.orgIdHeader] = ctx.orgId;
+
+        return headers;
+    }
+
+    requestScopeAuthHeaders(ctx: RequestContext) {
+        const headers = this.orgScopeAuthHeaders(ctx);
+        headers[API.requestIdHeader] = ctx.requestId;
+
+        return headers;
     }
 } 
 

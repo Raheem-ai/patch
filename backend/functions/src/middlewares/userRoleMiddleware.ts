@@ -2,13 +2,19 @@ import {EndpointInfo, Middleware, Req, UseBefore} from "@tsed/common";
 import { StoreSet, useDecorators } from "@tsed/core";
 import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
-import { User, UserRole } from "common/models";
+import { UserRole } from "common/models";
 import API from "common/api";
+import { MongooseDocument } from "@tsed/mongoose";
+import { UserDoc, UserModel } from "../models/user";
+import { User } from "../protocols/jwtProtocol";
 
 @Middleware()
 export class RequireRoleMiddleware {
-  use(@Req() req: Req, @EndpointInfo() endpoint: EndpointInfo) {
-    const user = req.user as User;
+  use(
+    @Req() req: Req, 
+    @EndpointInfo() endpoint: EndpointInfo,
+    @User() user: UserDoc
+  ) {
     const { roles }: { roles: UserRole[] } =  endpoint.get(RequireRoleMiddleware);
 
     if (!user) {
@@ -18,7 +24,7 @@ export class RequireRoleMiddleware {
       return;
     } else {
       const unmetRoles = [];
-      const orgId = req.header(API.orgIDHeader);
+      const orgId = req.header(API.orgIdHeader);
 
       if (!orgId) {
         throw new BadRequest(`No org scope supplied`);
@@ -49,12 +55,16 @@ export class RequireRoleMiddleware {
   }
 }
 
-export function RequireRoles(roles: UserRole[]): MethodDecorator {
+type OrgScopedMethod = TypedPropertyDescriptor<(orgId: string, user: UserDoc, ...any) => Promise<any>>;
+
+type OrgScopedAuthMethodDecorator = (target: Object, propertyKey: string | symbol, descriptor: OrgScopedMethod) => OrgScopedMethod | void
+
+export function RequireRoles(roles: UserRole[]): OrgScopedAuthMethodDecorator {
   return useDecorators(
-    Authenticate(),
     StoreSet(RequireRoleMiddleware, {
       roles
     }),
-    UseBefore(RequireRoleMiddleware)
+    UseBefore(RequireRoleMiddleware),
+    Authenticate()
   );
 }

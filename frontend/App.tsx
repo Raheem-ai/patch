@@ -80,6 +80,17 @@ export default function App() {
     (async () => {
       await initStores();
       setIsLoading(false);
+
+      setTimeout(() => {
+        const userStore = getStore<IUserStore>(IUserStore);
+        const notificationStore = getStore<INotificationStore>(INotificationStore);
+
+        if (userStore.signedIn) {
+          // not awaiting this on purpose as updating the push token might take a while
+          notificationStore.handlePermissions()
+          navigationRef.current.navigate(routerNames.userHomePage)
+        }
+      }, 0);
     })()
 
   }, [])
