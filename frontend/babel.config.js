@@ -1,11 +1,29 @@
 module.exports = function(api) {
   api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-    env: {
-      production: {
-        plugins: ['react-native-paper/babel'],
-      },
+
+  const presets = ['babel-preset-expo'];
+
+  const env = {
+    production: {
+      plugins: ['react-native-paper/babel'],
     },
+  }
+
+  const plugins = [
+    [
+      require('babel-plugin-module-resolver'),
+      {
+        alias: {
+          "crypto": "crypto-browserify"
+        }
+      }
+  
+    ]
+  ];
+
+  return {
+    presets,
+    env,
+    plugins
   };
 };

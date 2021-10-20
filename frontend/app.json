@@ -2,7 +2,8 @@
   "expo": {
     "name": "patch",
     "slug": "patch",
-    "version": "1.0.0",
+    "owner": "raheem-ai",
+    "version": "0.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -22,10 +23,14 @@
         "NSLocationAlwaysUsageDescription": "testing",
         "UIBackgroundModes": [
           "location",
-          "fetch"
+          "fetch",
+          "remote-notification"
         ]
       },
-      "bundleIdentifier": "patch"
+      "bundleIdentifier": "ai.raheem.test",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw"
+      }
     },
     "android": {
       "adaptiveIcon": {

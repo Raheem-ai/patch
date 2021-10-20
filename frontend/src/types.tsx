@@ -1,23 +1,54 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { HelpRequest, NotificationPayload, NotificationType } from "../../common/models";
+
+export type NotificationRouteParams<T extends NotificationType, P = {}> = {
+    notification?: NotificationTypes<T>
+} & P;
+
+type NotificationTypes<T extends NotificationType> = T extends any 
+    ? { type: T, payload: NotificationPayload<T> } 
+    : never;
+
+// type ReverseType<T extends keyof RootStackParamList> = RootStackParamList[T] extends NotificationRouteParams<infer NType>
+//     ? { t: NType }
+//     : never;
+
+// type a = ReverseType<'UserHomePage'>
 
 export type RootStackParamList = {
     Home: undefined;
     SignIn: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
+    CreateHelpRequest: undefined;
+    HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
+    HelpRequestMap: undefined;
+    HelpRequestList: undefined;
+    HelpRequestChat: undefined
 };
 
-export const routerNames: {[index: string]: keyof RootStackParamList} = {
+// lets us have strict types for routerNames so we can get intellisense for them
+type TypedRouterNames = {
+    [Key in keyof RootStackParamList as Uncapitalize<Key> ]: Key
+}
+
+export const routerNames: TypedRouterNames = {
     home: "Home",
     signIn: "SignIn",
     signUp: "SignUp",
-    userHome: "UserHomePage",
+    userHomePage: "UserHomePage",
+    helpRequestDetails : "HelpRequestDetails",
+    createHelpRequest: "CreateHelpRequest",
+    helpRequestMap: "HelpRequestMap",
+    helpRequestList: "HelpRequestList",
+    helpRequestChat: "HelpRequestChat"
 };
+
+export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
 
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
-export type UserHomeNavigationProp = StackNavigationProp<RootStackParamList, 'UserHomePage'>;
 
 export const labelNames = {
     username: 'Username',

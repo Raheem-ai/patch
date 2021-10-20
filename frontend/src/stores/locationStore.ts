@@ -1,22 +1,24 @@
 import * as ExpoLocation from 'expo-location';
 import { LocationObject } from 'expo-location';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from '../di';
-import { ILocationStore } from '../interfaces';
+import { getStore, Store } from './meta';
+import { ILocationStore, IUserStore } from './interfaces';
 import * as TaskManager from 'expo-task-manager';
 import { TaskManagerTaskBody } from 'expo-task-manager';
 import * as uuid from 'uuid';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isObservableValue } from 'mobx/dist/internal';
 import { Location } from '../../../common/models';
 import API from '../api';
 
 @Store()
 export default class LocationStore implements ILocationStore {
 
-    public hasForegroundPermission: boolean = false;
-    public hasBackgroundPermission: boolean = false;
+    public hasForegroundPermission = false;
+    
+    public hasBackgroundPermission = false;
+    
+    public lastKnownLocation: Location = null;
 
     public foregroundCallbacksMap: Map<string, (loc: LocationObject) => void> = new Map();
     
@@ -24,24 +26,24 @@ export default class LocationStore implements ILocationStore {
 
     constructor() {
         makeAutoObservable(this);
+    }
 
-        ExpoLocation.getForegroundPermissionsAsync()
-            .then((r) => {
-                runInAction(() => this.hasForegroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
-            })
-            .catch((e) => {
-                console.log(e);
-                runInAction(() => this.hasForegroundPermission = false)
-            });
+    async init() {
+        try {
+            const r = await ExpoLocation.getForegroundPermissionsAsync()
+            runInAction(() => this.hasForegroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
+        } catch (e) {
+            console.log(e);
+            runInAction(() => this.hasForegroundPermission = false)
+        }
 
-        ExpoLocation.getBackgroundPermissionsAsync()
-            .then((r) => {
-                runInAction(() => this.hasBackgroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
-            })
-            .catch((e) => {
-                console.log(e);
-                runInAction(() => this.hasBackgroundPermission = false)
-            });
+        try {
+            const r = await ExpoLocation.getBackgroundPermissionsAsync()
+            runInAction(() => this.hasBackgroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
+        } catch (e) {
+            console.log(e);
+            runInAction(() => this.hasBackgroundPermission = false)
+        }
     }
 
     get foregroundCallbacks() {
@@ -94,6 +96,11 @@ export default class LocationStore implements ILocationStore {
         let location = await ExpoLocation.getCurrentPositionAsync({
             // should we have any defaults here?
         });
+
+        runInAction(() => {
+            this.lastKnownLocation = location
+        })
+
         return location;
     }
 
@@ -107,6 +114,10 @@ export default class LocationStore implements ILocationStore {
             const destructor = await ExpoLocation.watchPositionAsync({
                 // should we have any defaults here?
             }, (loc: LocationObject) => {
+                runInAction(()=> {
+                    this.lastKnownLocation = loc
+                })
+
                 for (const cb of this.foregroundCallbacks) {
                     // intentionally not awaiting here so we can trace when an error happens...provided  cbs 
                     // should handle their error cases
@@ -144,13 +155,15 @@ export default class LocationStore implements ILocationStore {
         }
     }
 
-    async reportLocation(locations: Location[]) {
-        await API.reportLocation(locations);
+    async reportLocation(token: string, locations: Location[]) {
+        await API.reportLocation({ token }, locations);
     }
 }
 
 TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, async ({ data, error }: TaskManagerTaskBody<{ locations: LocationObject[] }>) => {
     const locationStore = getStore<ILocationStore>(ILocationStore);
+    const userStore = getStore<IUserStore>(IUserStore);
+
     const shiftEndTime = JSON.parse((await AsyncStorage.getItem(ILocationStore.SHIFT_END_TIME)));
 
     if (new Date().getTime() > shiftEndTime && (await ExpoLocation.hasStartedLocationUpdatesAsync(ILocationStore.BACKGROUND_LOCATION_TASK))) {
@@ -165,7 +178,8 @@ TaskManager.defineTask(ILocationStore.BACKGROUND_LOCATION_TASK, async ({ data, e
     if (data && data.locations && data.locations.length) {
         // background tasks start the app but render nothing so the store is being created anew each time
         // need to use storage + canned background tasks types to facilitate turning background tings on and off
-        await locationStore.reportLocation(data.locations)
+        await userStore.init(); // make sure token is populated
+        await locationStore.reportLocation(userStore.authToken, data.locations)
     }
 });
 
