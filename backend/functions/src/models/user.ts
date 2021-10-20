@@ -1,8 +1,9 @@
-import { Model, ObjectID } from "@tsed/mongoose";
-import { CollectionOf, Enum, MapOf, Property } from "@tsed/schema";
+import { Model, ObjectID, Schema } from "@tsed/mongoose";
+import { CollectionOf, Enum, getJsonSchema, MapOf, Property } from "@tsed/schema";
 import { User, UserRole } from "common/models";
 import { Document } from "mongoose";
 import { PrivProps } from ".";
+import utils from 'util'
 
 @Model({ collection: 'users' })
 export class UserModel implements User {
@@ -24,12 +25,12 @@ export class UserModel implements User {
     @ObjectID('id')
     _id: string;
 
-    @CollectionOf({
-        roles: [UserRole]
-    }) 
-    organizations: Map<string, {
-        roles: UserRole[]
-    }>;
+    @Property()
+    organizations: { [key: string]:  {
+            roles: UserRole[],
+            onDuty: boolean
+        }
+    }
     
     @Property()
     name: string;
@@ -48,6 +49,11 @@ export class UserModel implements User {
 
     @Property()
     race?: string
+
+    @Property()
+    displayColor: string
 }
 
 export type UserDoc = UserModel & Document;
+
+console.log(utils.inspect(getJsonSchema(UserModel), null, 6))

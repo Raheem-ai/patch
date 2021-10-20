@@ -1,4 +1,4 @@
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType } from './models';
+import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -78,14 +78,16 @@ export interface IApiClient {
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
+    setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
     getRespondersOnDuty: AuthenticatedWithOrg<() => Promise<ProtectedUser[]>>
-    getRequests: AuthenticatedWithOrg<() => Promise<HelpRequest[]>>
+    getRequests: AuthenticatedWithOrg<(filter: HelpRequestFilter) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    getTeamMembers: AuthenticatedWithOrg<() => Promise<ProtectedUser[]>>
+    getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
     
     unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
-    sendChatMessage: AuthenticatedWithRequest<(message: ChatMessage) => Promise<void>>
+    sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
+    updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setTeamStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<void>>
 
     // getResources: () => string
@@ -180,6 +182,12 @@ type ApiRoutes = {
         setTeamStatus: () => {
             return '/setTeamStatus'
         },
+        setOnDutyStatus: () => {
+            return '/setOnDutyStatus'
+        }, 
+        updateRequestChatReceipt: () => {
+            return '/updateRequestChatReceipt'
+        }
     }
 
     client: ApiRoutes = {
@@ -212,6 +220,9 @@ type ApiRoutes = {
         },
 
         // respond
+        setOnDutyStatus: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.setOnDutyStatus()}`
+        },
         confirmRequestAssignment: () => {
             return `${this.base}${this.namespaces.responder}${this.server.confirmRequestAssignment()}`
         },
@@ -261,6 +272,9 @@ type ApiRoutes = {
         setTeamStatus: () => {
             return `${this.base}${this.namespaces.request}${this.server.setTeamStatus()}`
         },
+        updateRequestChatReceipt: () => {
+            return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
+        }
     }
 }
 

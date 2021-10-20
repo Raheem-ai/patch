@@ -1,15 +1,19 @@
 import { AtLeast } from '.';
+import { allEnumValues } from './utils';
 
 export interface User {
     id: string;
     name: string;
     email: string;
     password: string;
-    organizations: Map<string, {
-        roles: UserRole[]
-    }>
-
+    organizations: { [key: string]: UserOrgConfig }
+    displayColor: string
     race?: string
+}
+
+export type UserOrgConfig = {
+    roles: UserRole[],
+    onDuty: boolean
 }
 
 export type MinUser = AtLeast<User, 'email' | 'password'>
@@ -28,7 +32,9 @@ export type BasicCredentials = {
 // Organizations
 export interface Organization {
     name: string;
-    members: ProtectedUser[]
+    members: ProtectedUser[];
+    lastRequestId: number;
+    lastDayTimestamp: string
 }
 
 export type MinOrg = AtLeast<Organization, 'name'>;
@@ -39,29 +45,60 @@ export enum UserRole {
     Responder
 }
 
-export type HelpRequest = {
-    id: string
-    orgId: string
-    location: Location
-    type: RequestType
-    notes: string
-    skills: RequestSkill[]
-    otherRequirements?: any //TODO: what are these exactly?
-    respondersNeeded: number
-    chat: ChatMessage[]
-    dispatcherId: string,
-    responderIds: string[]
-    status: RequestStatus
+export type AddressableLocation = {
+    latitude: number,
+    longitude: number,
+    address: string
 }
 
-export type MinHelpRequest = AtLeast<HelpRequest, 'location' | 'type' | 'respondersNeeded'>
+export type HelpRequest = {
+    id: string
+    displayId: string
+    orgId: string
+    location: AddressableLocation
+    type: RequestType[]
+    notes: string
+    skills: RequestSkill[]
+    // otherRequirements?: any //TODO: nix these until later on
+    respondersNeeded: number
+    chat: Chat
+    dispatcherId: string
+    responderIds: string[]
+    status: RequestStatus
+    createdAt: string
+    updatedAt: string
+}
+
+export enum HelpRequestFilter {
+    Active = 'ac',
+    Finished = 'fi',
+    All = 'al'
+};
+
+export enum HelpRequestSortBy {
+    ByTime = 'bt',
+    ByStatus = 'bs'
+    // BySeverity = 'bs',
+    // ByDistance = 'bd'
+};
+
+export type MinHelpRequest = AtLeast<HelpRequest, 'location' | 'type' | 'respondersNeeded' | 'skills'>
+
+export type Chat = {
+    id: string,
+    messages: ChatMessage[],
+    lastMessageId: number,
+    userReceipts: { [userId: string]: number }
+}
 
 export type ChatMessage = {
+    id: number,
     userId: string,
     message: string,
     timestamp: number
 }
 
+// Note: this being a number enum
 export enum RequestStatus {
     // automatically updated
     Unassigned,
@@ -74,28 +111,111 @@ export enum RequestStatus {
     Done
 }
 
+export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
+    [RequestStatus.Unassigned]: 'Unassigned',
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.responderIds.length} of ${req.respondersNeeded}`,
+    [RequestStatus.Ready]: 'Ready',
+    [RequestStatus.OnTheWay]: 'On the way',
+    [RequestStatus.OnSite]: 'On site',
+    [RequestStatus.Done]: 'Finished',
+}
+
 export type ResponderRequestStatuses = 
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
     | RequestStatus.Done;
 
-export enum RequestSkill {
+export enum RequestSkillCategory {
+    Medical = 'me',
+    CounselingAndMediation = 'cm',
+    Languages = 'la'
+}
 
+export enum RequestSkill {
+    // medical
+    CPR = RequestSkillCategory.Medical + ':cp',
+    FirstAid = RequestSkillCategory.Medical + ':fa',
+    MentalHealth = RequestSkillCategory.Medical + ':mh',
+    SubstanceUseTreatment = RequestSkillCategory.Medical + ':su',
+
+    // counseling + mediation
+    ConflictResolution = RequestSkillCategory.CounselingAndMediation + ':cr',
+    DomesticViolence = RequestSkillCategory.CounselingAndMediation + ':dv',
+    RestorativeJustice = RequestSkillCategory.CounselingAndMediation + ':rj',
+    TraumaCounceling = RequestSkillCategory.CounselingAndMediation + ':tc',
+    
+    // langs
+    Spanish = RequestSkillCategory.Languages + ':sp',
+    French = RequestSkillCategory.Languages + ':fr'
+}
+
+export function requestSkillToCategory(skill: RequestSkill): RequestSkillCategory {
+    const cat = (skill as any as string).split(':')[0];
+    return cat as RequestSkillCategory
+}
+
+export function requestSkillsFromCategory(cat: RequestSkillCategory): RequestSkill[] {
+    const skills = allEnumValues(RequestSkill);
+
+    return skills.filter((skill: string) => {
+        return skill.split(':')[0] == cat
+    });
+}
+
+export const RequestSkillCategoryMap: {
+    [key in RequestSkillCategory]: Set<RequestSkill>
+} = allEnumValues(RequestSkillCategory).reduce((map, cat) => {
+    map[cat] = new Set(requestSkillsFromCategory(cat));
+    return map;
+}, {})
+
+export const RequestSkillToLabelMap: { [key in RequestSkill]: string } = {
+    [RequestSkill.CPR]: 'CPR',
+    [RequestSkill.FirstAid]: 'First Aid',
+    [RequestSkill.MentalHealth]: 'Mental Health',
+    [RequestSkill.SubstanceUseTreatment]: 'Substance Use Treatment',
+    [RequestSkill.ConflictResolution]: 'Conflict Resolution',
+    [RequestSkill.DomesticViolence]: 'Domestic Violence',
+    [RequestSkill.RestorativeJustice]: 'Restorative Justice',
+    [RequestSkill.TraumaCounceling]: 'Trauma Counceling',
+    [RequestSkill.Spanish]: 'Spanish',
+    [RequestSkill.French]: 'French',
+}
+
+export const RequestSkillCategoryToLabelMap: { [key in RequestSkillCategory]: string } = {
+    [RequestSkillCategory.Medical]: 'Medical',
+    [RequestSkillCategory.CounselingAndMediation]: 'Counseling & Mediation',
+    [RequestSkillCategory.Languages]: 'Languages',
 }
 
 export enum RequestType {
-    ConflictResolution,
-    CopWatching,
-    Counseling,
-    DomesticDisturbance,
-    FirstAid,
-    Housing,
-    MentalHealthCrisis,
-    ProvidingSupplies,
-    ResourceReferral,
-    SubstanceCounceling,
-    Transportation,
-    WellnessCheck
+    ConflictResolution = 'cr',
+    CopWatching = 'cw',
+    Counseling = 'co',
+    DomesticDisturbance = 'dd',
+    FirstAid = 'fa',
+    Housing = 'ho',
+    MentalHealthCrisis = 'mh',
+    ProvidingSupplies = 'ps',
+    ResourceReferral = 'rr',
+    SubstanceCounceling = 'sc',
+    Transportation = 'tr',
+    WellnessCheck = 'wc'
+}
+
+export const RequestTypeToLabelMap: { [key in RequestType]: string } = {
+    [RequestType.ConflictResolution]: 'Conflict Resolution',
+    [RequestType.CopWatching]: 'Cop Watching',
+    [RequestType.Counseling]: 'Counseling',
+    [RequestType.DomesticDisturbance]: 'Domestic Disturbance',
+    [RequestType.FirstAid]: 'First Aid',
+    [RequestType.Housing]: 'Housing',
+    [RequestType.MentalHealthCrisis]: 'Mental Health Crisis',
+    [RequestType.ProvidingSupplies]: 'Providing Supplies',
+    [RequestType.ResourceReferral]: 'Resource Referral',
+    [RequestType.SubstanceCounceling]: 'Substance Counceling',
+    [RequestType.Transportation]: 'Transportation',
+    [RequestType.WellnessCheck]: 'Wellness Check'
 }
 
 export type Location = {
@@ -112,8 +232,8 @@ export type Location = {
 };
 
 export enum NotificationType {
-    AssignedIncident = 'assignedIncident',
-    BroadCastedIncident = 'broadcastedIncident'
+    AssignedIncident = 'ai',
+    BroadCastedIncident = 'bi'
 }
 
 export type NotificationPayloads = {

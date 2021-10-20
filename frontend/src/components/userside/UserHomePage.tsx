@@ -7,6 +7,7 @@ import { routerNames, ScreenProps } from "../../types";
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationType } from "../../../../common/models";
+import { navigateTo } from "../../navigation";
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -84,8 +85,12 @@ export default function UserHomePage({ navigation, route }: Props) {
         await locationStore.stopWatchingLocation();
     }
 
-    const assignIncident = async () => {
+    const assignHelpRequest = async () => {
         await dispatchStore.assignRequest('fake', [ userStore.user.id ]);
+    }
+
+    const createHelpRequest = async () => {
+        navigateTo(routerNames.createHelpRequest);
     }
 
     return (
@@ -103,7 +108,8 @@ export default function UserHomePage({ navigation, route }: Props) {
                 </Menu>
                 <Button onPress={startShift}>Start Shift</Button>
                 <Button onPress={endShift}>End Shift</Button>
-                <Button onPress={assignIncident}>Assign Incident</Button>
+                <Button onPress={assignHelpRequest}>Assign Help Request</Button>
+                <Button onPress={createHelpRequest}>Create Help Request</Button>
             </View>
         </Provider>
     );

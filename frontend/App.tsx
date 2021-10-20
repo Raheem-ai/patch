@@ -1,5 +1,7 @@
 // needed for uuid to work in react native env
 import 'react-native-get-random-values';
+// require('module-alias/register');
+// import './shim';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
@@ -14,40 +16,28 @@ import SignInForm from './src/components/SignInForm';
 import WelcomePage from './src/components/WelcomePage';
 import SignUpForm from './src/components/SignUpForm';
 import UserHomePage from './src/components/userside/UserHomePage';
+import Header from './src/components/header/header';
+
+import CreateHelpRequest from './src/screens/createHelpRequest';
+import HelpRequestMap from './src/screens/helpRequestMap';
+import HelpRequestList from './src/screens/helpRequestList';
+import HelpRequestChat from './src/screens/helpRequestChat';
+import HelpRequestDetails from './src/screens/helpRequestDetails';
 
 // navigating imports
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { IDispatchStore, ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
-import UserStore from './src/stores/userStore';
-import LocationStore from './src/stores/locationStore';
-import NotificationStore from './src/stores/notificationStore';
-import DispatchStore from './src/stores/dispatchStore';
-import { navigationRef } from './src/navigation';
+import { ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
+import { navigateTo, navigationRef } from './src/navigation';
+import { initServices } from './src/services';
 import { useEffect } from 'react';
-import IncidentDetails from './src/screens/incidentDetails';
 import { getApiHost, updateApiHost } from './src/api';
 import AppLoading from 'expo-app-loading';
-import { bindStores, initStores } from './src/stores';
-
+import { initStores } from './src/stores';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
-  
-
-
-/*const theme = {
-  ...DarkTheme,
-  roundness: 20,
-  colors: {
-    ...DarkTheme.colors,
-    primary: '#2d3436',
-    accent: '#1C1C1C',
-    background: '#1c1c1c',
-    backdrop: '1c1c1c',
-  },
-};*/
 
 const theme = {
   ...DefaultTheme,
@@ -60,6 +50,8 @@ const theme = {
 };
 
 export default function App() {
+  const notificationStore = getStore<INotificationStore>(INotificationStore);
+  const locationStore = getStore<ILocationStore>(ILocationStore);
 
   const [apiHost, setApiHost] = useState(getApiHost())
   const [isApiHostSet, setIsApiHostSet] = useState(!!apiHost)
@@ -67,7 +59,6 @@ export default function App() {
 
   // setup notifications for both foreground/background scenarios
   useEffect(() => {
-    const notificationStore = getStore<INotificationStore>(INotificationStore);
     notificationStore.setup();
 
     return () => {
@@ -78,22 +69,36 @@ export default function App() {
   // handle persistent store loading
   useEffect(() => {
     (async () => {
-      await initStores();
+
+      await Promise.all([
+        initStores(),
+        initServices()
+      ]);
+
       setIsLoading(false);
 
       setTimeout(() => {
         const userStore = getStore<IUserStore>(IUserStore);
-        const notificationStore = getStore<INotificationStore>(INotificationStore);
+
+        if (locationStore.hasForegroundPermission) {
+          // not awaiting this but kicking it off here so any map views that 
+          // need your current location get a head start on loading it
+          locationStore.getCurrentLocation()
+        }
 
         if (userStore.signedIn) {
           // not awaiting this on purpose as updating the push token might take a while
           notificationStore.handlePermissions()
-          navigationRef.current.navigate(routerNames.userHomePage)
+          navigateTo(routerNames.userHomePage)
         }
       }, 0);
     })()
 
-  }, [])
+  }, []);
+
+  const header = (props: StackHeaderProps) => {
+    return <Header {...props} />
+  }
 
   if (isLoading) {
     return (
@@ -103,16 +108,20 @@ export default function App() {
 
   return (
     // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
-    // unless we want an ergonomic way to switch out components in the future
+    // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
     <Provider container={container}>
       <PaperProvider theme={theme}>
         <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator>
+          <Stack.Navigator screenOptions={{ header }} headerMode='screen'>
             <Stack.Screen name={routerNames.home} component={WelcomePage} />
             <Stack.Screen name={routerNames.signIn} component={SignInForm} />
             <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
             <Stack.Screen name={routerNames.userHomePage} component={UserHomePage} />
-            <Stack.Screen name={routerNames.incidentDetails} component={IncidentDetails}/>
+            <Stack.Screen name={routerNames.helpRequestDetails} component={HelpRequestDetails}/>
+            <Stack.Screen name={routerNames.createHelpRequest} component={CreateHelpRequest}/>
+            <Stack.Screen name={routerNames.helpRequestMap} component={HelpRequestMap}/>
+            <Stack.Screen name={routerNames.helpRequestList} component={HelpRequestList}/>
+            <Stack.Screen name={routerNames.helpRequestChat} component={HelpRequestChat}/>
           </Stack.Navigator>
         </NavigationContainer>
         <Modal
@@ -129,7 +138,7 @@ export default function App() {
                 setIsApiHostSet(true);
                 }}>Sign In</Button>
             </View>
-          </Modal>
+        </Modal>
       </PaperProvider>
      </Provider>
   );

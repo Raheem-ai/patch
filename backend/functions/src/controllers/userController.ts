@@ -11,6 +11,7 @@ import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController } from ".";
 import { User } from "../protocols/jwtProtocol";
+import { DBManager } from "../services/dbManager";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -32,6 +33,7 @@ export class ValidatedBasicCredentials implements BasicCredentials {
 
 @Controller(API.namespaces.users)
 export class UsersController implements APIController<'signUp' | 'signIn' | 'signOut' | 'reportLocation' | 'reportPushToken' | 'me'> {
+    @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
 
     @Post(API.server.signUp())
@@ -44,11 +46,7 @@ export class UsersController implements APIController<'signUp' | 'signIn' | 'sig
             // TODO: should this throw for a notification in the ui?
             throw new BadRequest(`User with email: ${minUser.email} already exists`);
         } else {
-            const user = new this.users(minUser);
-
-            user.auth_etag = uuid.v1();
-
-            await user.save()
+            const user = await this.db.createUser(minUser);
 
             // return auth token
             const token = await createJWT(user.id, user.auth_etag)
@@ -91,15 +89,7 @@ export class UsersController implements APIController<'signUp' | 'signIn' | 'sig
     @Post(API.server.me())
     @Authenticate()
     async me(@User() user: UserDoc) {
-        const pubUser = user.toJSON();
-
-        // strip private fields off here so all other server side apis can have access to
-        // them with the initial call to the db to check auth
-        for (const key in UserModel.systemProperties) {
-            pubUser[key] = undefined
-        }
-
-        return pubUser;
+        return this.db.me(user);
     }
 
     @Post(API.server.reportLocation())

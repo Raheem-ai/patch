@@ -32,18 +32,19 @@ export class RequestAccessMiddleware {
       throw new BadRequest(`No request scope supplied`);
     }
 
-    const orgConfig = user.organizations && user.organizations.get(orgId);
+    const orgConfig = user.organizations && user.organizations[orgId];
 
     if (!orgConfig) {
       throw new Forbidden(`You do not have access to the supplied org scope`);
     }
 
     const orgRoles = orgConfig.roles;
+    const request = await this.db.resolveRequest(requestId);
 
     if (orgRoles.includes(UserRole.Dispatcher)) {
+        context.set(HelpRequestContextKey, request);
         return; // dispatchers of an org have access to all apis on all requests
     } else if (orgRoles.includes(UserRole.Responder)) {
-        const request = await this.db.resolveRequest(requestId);
         const hasAccess = request.responderIds.includes(user.id);
 
         if (!hasAccess) {
@@ -65,8 +66,8 @@ type RequestScopedAuthMethodDecorator = (target: Object, propertyKey: string | s
 
 export function RequestAccess(): RequestScopedAuthMethodDecorator {
   return useDecorators(
-    Authenticate(),
-    UseBefore(RequestAccessMiddleware)
+    UseBefore(RequestAccessMiddleware),
+    Authenticate()
   );
 }
 

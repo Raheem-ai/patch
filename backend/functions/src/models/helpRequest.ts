@@ -1,34 +1,47 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
-import { CollectionOf, Enum, getJsonSchema, Property, Required } from "@tsed/schema";
-import { ChatMessage, HelpRequest, Location, Organization, RequestSkill, RequestStatus, RequestType, User } from "common/models";
+import { CollectionOf, Enum, getJsonSchema, Property, Required, string } from "@tsed/schema";
+import { AddressableLocation, Chat, ChatMessage, HelpRequest, Location, Organization, RequestSkill, RequestStatus, RequestType, User } from "common/models";
 import { Document } from "mongoose";
 import { inspect } from "util";
 import { WithRefs } from ".";
 import { UserModel } from './user';
+import utils from 'util'
 
 @Schema()
 class ChatMessageSchema  implements ChatMessage {
+    @Required() id: number
     @Required() userId: string
     @Required() message: string
     @Required() timestamp: number
 }
 
-@Model({ collection: 'help_requests' })
+@Model({ 
+    collection: 'help_requests',
+    schemaOptions: {
+        timestamps: true
+    }
+})
 export class HelpRequestModel implements HelpRequest {
 
-    id: string; // for types
+    // handled by mongo but here for types
+    id: string; 
+    createdAt: string;
+    updatedAt: string;
 
     @ObjectID('id')
     _id: string;
 
     @Property()
+    displayId: string
+    
+    @Property()
     orgId: string
 
     @Property()
-    location: Location
+    location: AddressableLocation
 
     @Enum(RequestType)
-    type: RequestType
+    type: RequestType[]
 
     @Property()
     notes: string
@@ -42,8 +55,13 @@ export class HelpRequestModel implements HelpRequest {
     @Property()
     respondersNeeded: number
 
-    @CollectionOf(ChatMessageSchema)
-    chat: ChatMessage[]
+    @Property({
+        id: String,
+        messages: [ChatMessageSchema],
+        lastChatId: Number,
+        userRecepits: Object
+    })
+    chat: Chat
 
     @Property()
     dispatcherId: string
@@ -57,3 +75,5 @@ export class HelpRequestModel implements HelpRequest {
 }
 
 export type HelpRequestDoc = HelpRequestModel & Document;
+
+// console.log(utils.inspect(getJsonSchema(HelpRequestModel), null, 4))

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Constants from "expo-constants";
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter } from '../../common/models';
 import API, { ClientSideApi, ClientSideFormat, IApiClient, OrgContext, RequestContext, TokenContext } from '../../common/api';
 const { manifest } = Constants;
 
@@ -9,13 +9,13 @@ const { manifest } = Constants;
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-let apiHost = 'http://e856-24-44-149-184.ngrok.io' 
+let apiHost = 'http://6e73-24-44-148-246.ngrok.io' 
 
 export const updateApiHost = (h) => apiHost = h;
 
 export const getApiHost = () => apiHost;
 
-export class APIClient implements ClientSideApi<'me'> {
+export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     // unauthorized apis
 
     async signIn(credentials: BasicCredentials): Promise<string> {
@@ -108,6 +108,16 @@ export class APIClient implements ClientSideApi<'me'> {
         });
     }
 
+    async setOnDutyStatus(ctx: OrgContext, onDuty: boolean) {
+        const url = `${apiHost}${API.client.setOnDutyStatus()}`;
+
+        return (await axios.post<ClientSideFormat<Me>>(url, {
+            onDuty
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
     async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
 
@@ -171,10 +181,12 @@ export class APIClient implements ClientSideApi<'me'> {
         })).data
     }
 
-    async getTeamMembers(ctx: OrgContext): Promise<ProtectedUser[]> {
+    async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getTeamMembers()}`;
 
-        return (await axios.get<ProtectedUser[]>(url, {
+        return (await axios.post<ProtectedUser[]>(url, {
+            userIds
+        }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
@@ -197,10 +209,12 @@ export class APIClient implements ClientSideApi<'me'> {
         })).data
     }
 
-    async getRequests(ctx: OrgContext): Promise<HelpRequest[]> {
+    async getRequests(ctx: OrgContext, filter: HelpRequestFilter): Promise<HelpRequest[]> {
         const url = `${apiHost}${API.client.getRequests()}`;
 
-        return (await axios.get<HelpRequest[]>(url, {
+        return (await axios.post<HelpRequest[]>(url, {
+            filter
+        }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
@@ -223,21 +237,31 @@ export class APIClient implements ClientSideApi<'me'> {
         })
     }
 
-    async sendChatMessage(ctx: RequestContext, message: ChatMessage): Promise<void> {
+    async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
-        await axios.post<void>(url, {
+        return (await axios.post<HelpRequest>(url, {
             message
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
-        })
+        })).data
     }
 
     async setTeamStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<void> {
         const url = `${apiHost}${API.client.setTeamStatus()}`;
 
-        return (await axios.post<void>(url, {
+        await axios.post<void>(url, {
             status
+        }, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })
+    }
+
+    async updateRequestChatReceipt(ctx: RequestContext, lastMessageId: number): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.updateRequestChatReceipt()}`;
+
+        return (await axios.post<HelpRequest>(url, {
+            lastMessageId
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
         })).data

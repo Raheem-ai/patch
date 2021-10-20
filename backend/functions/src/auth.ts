@@ -18,8 +18,8 @@ export async function createJWT(userId: string, etag: string): Promise<string> {
     const secret = jwtSecrets[0]; 
 
     const opts: jwt.SignOptions = { 
-        //expires in a day
-        expiresIn: 60 * 60 * 24,
+        //expires in one hour
+        expiresIn: 60 * 60,
         keyid: secret.kid
     }; 
 

@@ -1,9 +1,10 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
+import { Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { MinOrg, Organization, UserRole } from "common/models";
+import { MinOrg, Organization, ProtectedUser, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -33,7 +34,7 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
         const [ org, admin ] = await this.db.createOrganization(minOrg, user.id);
 
         return {
-            org: this.db.protectedOrganization(org),
+            org: await this.db.protectedOrganization(org),
             user: this.db.me(admin)
         }
     }
@@ -49,7 +50,7 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
         const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles);
 
         return {
-            org: this.db.protectedOrganization(org),
+            org: await this.db.protectedOrganization(org),
             user: this.db.protectedUserFromDoc(user)
         }
     }
@@ -64,7 +65,7 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
         const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId);
 
         return {
-            org: this.db.protectedOrganization(org),
+            org: await this.db.protectedOrganization(org),
             user: this.db.protectedUserFromDoc(removedUser)
         }
     }
@@ -91,14 +92,39 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
         return this.db.protectedUserFromDoc(await this.db.addUserRoles(orgId, userId, roles));
     }
 
-    @Get(API.server.getTeamMembers())
+    @Post(API.server.getTeamMembers())
     @RequireRoles([UserRole.Admin, UserRole.Dispatcher, UserRole.Responder])
     async getTeamMembers(
         @OrgId() orgId: string,
         @User() user: UserDoc,
+        @BodyParams('userIds') userIds?: string[]
     ) {
         const org = await this.db.resolveOrganization(orgId);
-        return this.db.protectedOrganization(org).members;
+        const orgMembers = (await this.db.protectedOrganization(org)).members;
+
+        if (userIds && userIds.length) {
+            const specificMembers: ProtectedUser[] = [];
+            const usersNotInOrg: string[] = [];
+
+            for (const id of userIds) {
+                const idx = orgMembers.findIndex(member => member.id == id);
+
+                if (idx != -1) {
+                    specificMembers.push(orgMembers[idx])
+                } else {
+                    usersNotInOrg.push(id);
+                }
+            }
+
+            if (usersNotInOrg.length) {
+                throw new Unauthorized(`Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${org.name}`)
+            }
+
+            return specificMembers
+
+        } else {
+            return orgMembers
+        }
     }
 
     @Get(API.server.getRespondersOnDuty())

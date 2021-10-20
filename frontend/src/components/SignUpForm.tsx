@@ -6,6 +6,7 @@ import { labelNames, RootStackParamList, routerNames, ScreenProps, styleVals } f
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getStore } from '../stores/meta';
 import { IUserStore } from '../stores/interfaces';
+import { navigateTo } from '../navigation';
 
 type Props = ScreenProps<'SignUp'>;
 
@@ -20,7 +21,7 @@ export default function SignUpForm({ navigation }: Props) {
 
     const signup = async () => {
         await userStore.signUp(email, password);
-        navigation.navigate(routerNames.userHomePage);
+        navigateTo(routerNames.userHomePage);
     }
 
     return(
@@ -31,7 +32,7 @@ export default function SignUpForm({ navigation }: Props) {
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.email} value={email} onChangeText={email => setEmail(email)}/>
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.username} value={username} onChangeText={username =>setUsername(username)} />
             <TextInput style={styles.spacing} mode="outlined"label={labelNames.password} value={password} onChangeText={password => setPassword(password)}/>
-            <Button style={styles.spacing} mode="contained" onPress={() => navigation.navigate(routerNames.userHomePage)}>Create Account</Button>
+            <Button style={styles.spacing} mode="contained" onPress={() => navigateTo(routerNames.userHomePage)}>Create Account</Button>
         </View>
     );
 };

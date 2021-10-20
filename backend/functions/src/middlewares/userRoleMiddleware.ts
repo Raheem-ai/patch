@@ -31,7 +31,7 @@ export class RequireRoleMiddleware {
       }
 
       for (const role of roles) {
-        const orgConfig = user.organizations && user.organizations.get(orgId);
+        const orgConfig = user.organizations && user.organizations[orgId];
 
         if (!orgConfig) {
           throw new Forbidden(`You do not have access to the supplied org scope`);

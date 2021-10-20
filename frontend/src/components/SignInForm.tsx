@@ -8,6 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import API from '../api';
 import { getStore } from '../stores/meta';
 import { INotificationStore, IUserStore } from '../stores/interfaces';
+import { navigateTo } from '../navigation';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -27,7 +28,7 @@ export default function SignInForm( { navigation } : Props) {
             notificationStore.handlePermissions();
         }, 0);
 
-        navigation.navigate(routerNames.userHomePage)
+        navigateTo(routerNames.userHomePage)
     }
 
     return(

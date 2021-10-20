@@ -1,5 +1,5 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { NotificationPayload, NotificationType } from "../../common/models";
+import { HelpRequest, NotificationPayload, NotificationType } from "../../common/models";
 
 export type NotificationRouteParams<T extends NotificationType, P = {}> = {
     notification?: NotificationTypes<T>
@@ -20,7 +20,11 @@ export type RootStackParamList = {
     SignIn: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    IncidentDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>
+    CreateHelpRequest: undefined;
+    HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
+    HelpRequestMap: undefined;
+    HelpRequestList: undefined;
+    HelpRequestChat: undefined
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -33,10 +37,13 @@ export const routerNames: TypedRouterNames = {
     signIn: "SignIn",
     signUp: "SignUp",
     userHomePage: "UserHomePage",
-    incidentDetails : "IncidentDetails"
+    helpRequestDetails : "HelpRequestDetails",
+    createHelpRequest: "CreateHelpRequest",
+    helpRequestMap: "HelpRequestMap",
+    helpRequestList: "HelpRequestList",
+    helpRequestChat: "HelpRequestChat"
 };
 
-export type NotificationScreenProp<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
 
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;

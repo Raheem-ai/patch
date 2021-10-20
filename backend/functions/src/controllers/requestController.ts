@@ -3,7 +3,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { ChatMessage, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
+import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
@@ -19,12 +19,16 @@ export class ValidatedMinOrg implements MinOrg {
 }
 
 
-@Controller(API.namespaces.organization)
+@Controller(API.namespaces.request)
 export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setTeamStatus'> {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;
+
+    includeVirtuals(helpRequest: HelpRequestDoc): HelpRequest {
+        return helpRequest.toObject({ virtuals: true });
+    }
 
     @Post(API.server.createNewRequest())
     @RequireRoles([UserRole.Dispatcher])
@@ -35,7 +39,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     ) {
         const createdReq = await this.db.createRequest(request, orgId, user.id);
 
-        return createdReq.toJSON();
+        return this.includeVirtuals(createdReq);
     }
 
     @Get(API.server.getRequest())
@@ -47,17 +51,24 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         // path params
         @RequestId() requestId: string
     ) {
-        return (await this.db.resolveRequest(requestId)).toJSON()
+        return this.includeVirtuals((await this.db.resolveRequest(requestId)))
     }
 
-    @Get(API.server.getRequests())
+    @Post(API.server.getRequests())
     @RequireRoles([UserRole.Dispatcher, UserRole.Responder])
     async getRequests(
         @OrgId() orgId: string,
-        @User() user: UserDoc
+        @User() user: UserDoc,
+        @BodyParams('filter') filter: HelpRequestFilter
     ) {
-        const requests = await this.db.getUnfinishedRequests(orgId);
-        return requests.map(r => r.toJSON());
+        switch (filter) {
+            case HelpRequestFilter.Active:
+                return (await this.db.getActiveRequests(orgId)).map(this.includeVirtuals);
+            case HelpRequestFilter.Finished: 
+                return (await this.db.getFinishedRequests(orgId)).map(this.includeVirtuals)
+            case HelpRequestFilter.All:
+                return (await this.db.getAllRequests(orgId)).map(this.includeVirtuals)
+        }
     }
 
     @Post(API.server.unAssignRequest())
@@ -82,10 +93,20 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
-        @Required() @BodyParams('message') message: ChatMessage,
+        @Required() @BodyParams('message') message: string,
     ) {
-        helpRequest.chat.push(message);
-        await helpRequest.save();
+        return this.includeVirtuals(await this.db.sendMessageToReq(user, helpRequest, message));
+    }
+
+    @Post(API.server.updateRequestChatReceipt())
+    @RequestAccess()
+    async updateRequestChatReceipt(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+        @Required() @BodyParams('lastMessageId') lastMessageId: number,
+    ) {
+        return this.includeVirtuals(await this.db.updateRequestChatRecepit(helpRequest, user.id, lastMessageId));
     }
     
     @Post(API.server.setTeamStatus())

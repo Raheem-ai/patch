@@ -1,10 +1,12 @@
 import { injectable } from 'inversify';
-import { makeAutoObservable, runInAction } from 'mobx';
-import { Me, User } from '../../../common/models';
+import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
+import { Me, ProtectedUser, User, UserRole } from '../../../common/models';
 import API from '../api';
 import { persistent, Store } from './meta';
 import { IUserStore } from './interfaces';
-import { ClientSideFormat } from '../../../common/api';
+import { ClientSideFormat, OrgContext } from '../../../common/api';
+import { navigateTo } from '../navigation';
+import { routerNames } from '../types';
 
 @Store()
 export default class UserStore implements IUserStore {
@@ -18,6 +20,8 @@ export default class UserStore implements IUserStore {
     @persistent()
     public currentOrgId: string;
 
+    public usersInOrg: ObservableMap<string, ClientSideFormat<ProtectedUser>> = new ObservableMap()
+
     constructor() {
         makeAutoObservable(this)
     }
@@ -28,8 +32,52 @@ export default class UserStore implements IUserStore {
         }
     }
 
+    orgContext(): OrgContext {
+        return {
+            token: this.authToken,
+            orgId: this.currentOrgId
+        }
+    }
+
+    get isOnDuty() {
+        if (!this.isResponder) {
+            return false;
+        }
+
+        const org = this.user.organizations[this.currentOrgId];
+
+        return !!org?.onDuty;
+    }
+
     get signedIn() {
         return !!this.user;
+    }
+
+    get isResponder(): boolean {
+        if (!this.currentOrgId) {
+            return false
+        }
+
+        const org = this.user.organizations[this.currentOrgId];
+        return org.roles.includes(UserRole.Responder);
+    }
+
+    get isDispatcher(): boolean {
+        if (!this.currentOrgId) {
+            return false
+        }
+
+        const org = this.user.organizations[this.currentOrgId];
+        return org.roles.includes(UserRole.Dispatcher);
+    }
+
+    get isAdmin(): boolean {
+        if (!this.currentOrgId) {
+            return false
+        }
+
+        const org = this.user.organizations[this.currentOrgId];
+        return org.roles.includes(UserRole.Admin);
     }
     
     async signIn(email: string, password: string) {
@@ -60,11 +108,15 @@ export default class UserStore implements IUserStore {
         try {
             const token = this.authToken;
 
-            runInAction(() => {
-                this.user = null
-                this.authToken = null;
-                this.currentOrgId = null;
-            })
+            setTimeout(() => {
+                navigateTo(routerNames.signIn)
+
+                runInAction(() => {
+                    this.user = null
+                    this.authToken = null;
+                    this.currentOrgId = null;
+                })
+            }, 0)
 
             await API.signOut({ token });
         } catch (e) {
@@ -72,7 +124,29 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async 
+    async updateOrgUsers(userIds: string[]): Promise<void> {
+        const users = await API.getTeamMembers(this.orgContext(), userIds);
+
+        const updatedUserMap = {};
+
+        for (const user of users) {
+            updatedUserMap[user.id] = user
+        }
+
+        runInAction(() => {
+            this.usersInOrg.merge(updatedUserMap);
+        })
+    }
+
+    async toggleOnDuty() {
+        const onDuty = !this.isOnDuty;
+
+        const me = await API.setOnDutyStatus(this.orgContext(), onDuty);
+
+        runInAction(() => {
+            this.user = me;
+        })
+    }
 
     async getLatestMe(prefetched?: { me: ClientSideFormat<Me>, token: string }) {
         try {

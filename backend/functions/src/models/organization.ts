@@ -16,6 +16,12 @@ export class OrganizationModel implements WithRefs<Organization, 'members'> {
     @Property() 
     name: string;
 
+    @Property()
+    lastRequestId: number;
+
+    @Property()
+    lastDayTimestamp: string;
+
     @Ref(UserModel) 
     members: Ref<UserModel>[];
 }
