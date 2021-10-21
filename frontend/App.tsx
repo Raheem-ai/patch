@@ -1,8 +1,5 @@
 // needed for uuid to work in react native env
 import 'react-native-get-random-values';
-// require('module-alias/register');
-// import './shim';
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';

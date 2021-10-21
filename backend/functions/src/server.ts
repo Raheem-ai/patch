@@ -46,7 +46,8 @@ const mongoConnectionString = config.MONGO.get().connection_string;
       collection: 'jobsManager' 
     } 
   },
-  port: 9000
+  // PORT set by Google Cloud Run
+  port: process.env.PORT || 9000
 })
 export class Server {
   @Inject()

@@ -10,7 +10,6 @@ import { ILocationStore } from '../stores/interfaces';
 import { getStore } from '../stores/meta';
 
 const apiKey = Constants.manifest.ios.config.googleMapsApiKey;
-console.log(apiKey)
 
 const MetersPerMile = 1609.34;
 
