@@ -17,6 +17,7 @@
         "name": "gcr.io/cloud-builders/git",
         "args": [
             "clone",
+            "--verbose",
             "--recurse-submodules",
             "git@github.com:Raheem-ai/patch.git"
         ],
