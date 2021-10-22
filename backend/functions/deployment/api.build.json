@@ -16,6 +16,19 @@
     {
         "name": "gcr.io/cloud-builders/git",
         "args": [
+            "config",
+            "--file=.gitmodules", 
+            "submodule.backend/functions/infra.url",
+            "git@github.com:Raheem-ai/raheem-infra.git"
+        ],
+        "volumes": [{
+            "name": "ssh",
+            "path": "/root/.ssh"
+        }]
+    },
+    {
+        "name": "gcr.io/cloud-builders/git",
+        "args": [
             "submodule",
             "update", 
             "--init"
