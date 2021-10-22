@@ -47,6 +47,8 @@
             "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
             "-f",
             "api.dockerfile",
+            "--cache-from",
+            "gcr.io/$PROJECT_ID/patch:latest",
             "."
          ]
     },
