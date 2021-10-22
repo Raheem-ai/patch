@@ -15,6 +15,14 @@
     },
     {
         "name": "gcr.io/cloud-builders/git",
+        "entrypoint": "bash",
+        "args": [
+            "-c",
+            "ssh -T git@github.com"
+        ]
+    },
+    {
+        "name": "gcr.io/cloud-builders/git",
         "args": [
             "clone",
             "--verbose",
