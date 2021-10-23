@@ -66,9 +66,9 @@
             "config:generate",
             "-e",
             "$_ENVIRONMENT",
-            "--toStdOut",
-            "--secretVersionInfo",
-            "> secretConfig.txt"
+            "--toFile",
+            "secretConfig.txt",
+            "--secretVersionInfo"
         ]
     },
     {
