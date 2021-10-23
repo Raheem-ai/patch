@@ -58,6 +58,31 @@
             "push",
             "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA"
         ]
+    },
+    {
+        "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
+        "entrypoint": "/app/backend/functions/infra/bin/run",
+        "args": [
+            "config:generate",
+            "-e",
+            "_ENVIRONMENT",
+            "--toStdOut",
+            "--secretVersionInfo",
+            "> secretConfig.txt"
+        ]
+    },
+    {
+        "name": "gcr.io/cloud-builders/gcloud",
+        "entrypoint": "bash",
+        "args": [
+            "gcloud",
+            "beta",
+            "run",
+            "services",
+            "update",
+            "_SERVICE",
+            "--set-secrets=$(cat secretConfig.txt)"
+        ]
     }],
     "availableSecrets": {
         "secretManager": [
