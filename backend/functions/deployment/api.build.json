@@ -81,7 +81,7 @@
             "services",
             "update",
             "$_SERVICE",
-            "--set-secrets=$(cat secretConfig.txt)"
+            "--set-secrets=\"$(cat secretConfig.txt)\""
         ]
     }],
     "availableSecrets": {
