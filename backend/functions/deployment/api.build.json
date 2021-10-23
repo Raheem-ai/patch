@@ -65,7 +65,7 @@
         "args": [
             "config:generate",
             "-e",
-            "_ENVIRONMENT",
+            "$_ENVIRONMENT",
             "--toStdOut",
             "--secretVersionInfo",
             "> secretConfig.txt"
@@ -80,7 +80,7 @@
             "run",
             "services",
             "update",
-            "_SERVICE",
+            "$_SERVICE",
             "--set-secrets=$(cat secretConfig.txt)"
         ]
     }],
