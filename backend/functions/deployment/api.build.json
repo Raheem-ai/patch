@@ -68,7 +68,20 @@
             "$_ENVIRONMENT",
             "--toFile",
             "secretConfig.txt",
-            "--secretVersionInfo",
+            "--secretVersionList",
+            "--noComments"
+        ]
+    },
+    {
+        "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
+        "entrypoint": "/app/backend/functions/infra/bin/run",
+        "args": [
+            "config:generate",
+            "-e",
+            "$_ENVIRONMENT",
+            "--toFile",
+            "config.txt",
+            "--configList",
             "--noComments"
         ]
     },
@@ -77,7 +90,7 @@
         "entrypoint": "bash",
         "args": [
             "-c",
-            "gcloud beta run services update $_SERVICE --region=us-central1 --set-secrets=$(cat secretConfig.txt)"
+            "gcloud beta run services update $_SERVICE --region=us-central1 --set-secrets=$(cat secretConfig.txt) --set-env-vars=$(cat config.txt)"
         ]
     }],
     "availableSecrets": {
