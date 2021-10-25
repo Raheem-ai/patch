@@ -77,7 +77,7 @@
         "entrypoint": "bash",
         "args": [
             "-c",
-            "gcloud beta run services update $_SERVICE --set-secrets=$(cat secretConfig.txt)"
+            "gcloud beta run services update $_SERVICE --region=us-central1 --set-secrets=$(cat secretConfig.txt)"
         ]
     }],
     "availableSecrets": {
