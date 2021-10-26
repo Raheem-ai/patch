@@ -9,7 +9,7 @@ const { manifest } = Constants;
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-let apiHost = 'http://6e73-24-44-148-246.ngrok.io' 
+let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
 
 export const updateApiHost = (h) => apiHost = h;
 
