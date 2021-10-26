@@ -62,6 +62,13 @@
         ]
     },
     {
+        "name": "gcr.io/cloud-builders/docker",
+        "args": [
+            "push",
+            "gcr.io/$PROJECT_ID/patch:rc-latest"
+        ]
+    },
+    {
         "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
         "entrypoint": "/app/backend/functions/infra/bin/run",
         "args": [
