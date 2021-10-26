@@ -10,6 +10,7 @@ IMAGE_REPO="gcr.io/$PROJECT_ID/patch"
 # Get all images at the given image repo
 echo -e "${YELL}Getting all images for repo ${IMAGE_REPO}${NC}"
 IMAGELIST=$(gcloud container images list --repository=${IMAGE_REPO} --format='get(name)')
+gcloud container images list --repository=${IMAGE_REPO} --format='get(name)'
 echo "${IMAGELIST}"
 
 while IFS= read -r IMAGENAME; do
