@@ -108,6 +108,9 @@
         "entrypoint": "bash",
         "args": [
             "backend/functions/deployment/gc.sh"
+        ],
+        "env": [
+            "PROJECT_ID=$PROJECT_ID"
         ]
     }],
     "availableSecrets": {
