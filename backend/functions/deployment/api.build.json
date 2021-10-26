@@ -41,6 +41,14 @@
     },
     {
         "name": "gcr.io/cloud-builders/docker",
+        "entrypoint": "bash",
+        "args": [
+            "-c",
+            "docker pull gcr.io/$PROJECT_ID/patch:rc-latest || exit 0"
+         ]
+    },
+    {
+        "name": "gcr.io/cloud-builders/docker",
         "args": [
             "build",
             "-t",
