@@ -1,7 +1,15 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import Constants from "expo-constants";
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter } from '../../common/models';
-import API, { ClientSideApi, ClientSideFormat, IApiClient, OrgContext, RequestContext, TokenContext } from '../../common/api';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens } from '../../common/models';
+import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
+import { Service } from './services/meta';
+import { IAPIService } from './services/interfaces';
+import { persistent } from './meta';
+import { getStore } from './stores/meta';
+import { IUserStore } from './stores/interfaces';
+import { navigateTo } from './navigation';
+import { routerNames } from './types';
+import { makeAutoObservable, runInAction } from 'mobx';
 const { manifest } = Constants;
 
 // TODO: the port and non local host need to come from config somehow
@@ -9,29 +17,164 @@ const { manifest } = Constants;
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+// let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+let apiHost = 'http://2f6b-179-218-29-159.ngrok.io'
 
-export const updateApiHost = (h) => apiHost = h;
+// export const updateApiHost = (h) => apiHost = h;
 
-export const getApiHost = () => apiHost;
+// export const getApiHost = () => apiHost;
 
-export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
-    // unauthorized apis
+@Service()
+export class APIClient implements IAPIService {
+    
+    private userStore: IUserStore;
 
-    async signIn(credentials: BasicCredentials): Promise<string> {
-        const url = `${apiHost}${API.client.signIn()}`;
+    // TODO: move accessToken here?
 
-        const token = (await axios.post<string>(url, { credentials })).data
+    @persistent()
+    refreshToken: string;
 
-        return token;
+    constructor() {
+        makeAutoObservable(this)
     }
 
-    async signUp(user: MinUser): Promise<string> {
+    async init() {
+        this.userStore = getStore<IUserStore>(IUserStore);
+    }
+
+    private async tryPost<T>(url: string, body: any, config: AxiosRequestConfig) {
+        try {
+            return await axios.post<T>(url, body, config);
+        } catch (e) {
+            const error = e as AxiosError;
+            const status = error?.response?.status;
+
+            // we're already signed in and the error is auth based
+            const shouldRetry = !!this.refreshToken 
+                && !!status && (status >= 400 && status < 500);
+
+            if (!shouldRetry) {
+                throw error;
+            }
+
+            let accessToken;
+
+            try {
+                accessToken = await this.refreshAuth(this.refreshToken);
+            } catch (e) {
+                // clear user store and reroute to signin
+                this.refreshToken = null;
+                
+                navigateTo(routerNames.signIn)
+
+                setTimeout(() => {
+                    this.userStore.clear()
+                })
+
+                throw 'User no longer signed in'
+            }
+
+            const updatedConfig = {
+                ...config,
+                ...{
+                    headers: {
+                        ...config.headers,
+                        ...this.userScopeAuthHeaders({ token: accessToken })
+                    }
+                }
+            };
+
+            runInAction(() => {
+                // update accessToken for later calls
+                this.userStore.authToken = accessToken
+            })
+
+            return await axios.post<T>(url, body, updatedConfig);
+        }
+    }
+
+    private async tryGet<T>(url: string, config: AxiosRequestConfig) {
+        try {
+            return await axios.get<T>(url, config);
+        } catch (e) {
+            const error = e as AxiosError;
+            const status = error?.response?.status;
+
+            // we're already signed in and the error is auth based
+            const shouldRetry = !!this.refreshToken 
+                && !!status && (status >= 400 && status < 500);
+
+            if (!shouldRetry) {
+                throw error;
+            }
+
+            let accessToken;
+
+            try {
+                accessToken = await this.refreshAuth(this.refreshToken);
+            } catch (e) {
+                // clear user store and reroute to signin
+                this.refreshToken = null;
+                
+                navigateTo(routerNames.signIn)
+
+                setTimeout(() => {
+                    this.userStore.clear()
+                })
+
+                throw 'User no longer signed in'
+            }
+
+            const updatedConfig = {
+                ...config,
+                ...{
+                    headers: {
+                        ...config.headers,
+                        ...this.userScopeAuthHeaders({ token: accessToken })
+                    }
+                }
+            };
+
+            runInAction(() => {
+                // update accessToken for later calls
+                this.userStore.authToken = accessToken
+            })
+
+            return await axios.get<T>(url, updatedConfig);
+        }
+    }
+    
+    // unauthorized apis
+    async signIn(credentials: BasicCredentials): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.signIn()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { credentials })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
+    async signUp(user: MinUser): Promise<AuthTokens> {
         const url = `${apiHost}${API.client.signUp()}`;
 
-        const token = (await axios.post<string>(url, { user })).data
+        const tokens = (await axios.post<AuthTokens>(url, { user })).data
 
-        return token;
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
+    async refreshAuth(refreshToken: string): Promise<string> {
+        const url = `${apiHost}${API.client.refreshAuth()}`;
+
+        const accessToken = (await axios.post<string>(url, { refreshToken })).data
+
+        return accessToken;
     }
 
     // user scoped apis
@@ -39,9 +182,9 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async me(ctx: TokenContext): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.me()}`;
 
-        const user = (await axios.post<ClientSideFormat<Me>>(url, {}, {
+        const user = (await this.tryPost<ClientSideFormat<Me>>(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
-          })).data
+        })).data
 
         return user;
     }
@@ -49,7 +192,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async signOut(ctx: TokenContext) {
         const url = `${apiHost}${API.client.signOut()}`;
 
-        await axios.post(url, {}, {
+        await this.tryPost(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
         });
     }
@@ -57,7 +200,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async reportLocation(ctx: TokenContext, locations: Location[]) {
         const url = `${apiHost}${API.client.reportLocation()}`;
 
-        await axios.post<User>(url, {            
+        await this.tryPost<User>(url, {            
             locations
         }, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -67,7 +210,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async reportPushToken(ctx: TokenContext, token: string) {
         const url = `${apiHost}${API.client.reportPushToken()}`;
 
-        await axios.post<void>(url, {            
+        await this.tryPost<void>(url, {            
             token
         }, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -77,7 +220,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async createOrg(ctx: TokenContext, org: MinOrg) {
         const url = `${apiHost}${API.client.createOrg()}`;
 
-        return (await axios.post<{ user: User, org: Organization }>(url, {            
+        return (await this.tryPost<{ user: User, org: Organization }>(url, {            
             org
         }, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -89,7 +232,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             requestId,
             to
         }, {
@@ -100,7 +243,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async assignRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.assignRequest()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             requestId,
             to
         }, {
@@ -111,7 +254,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async setOnDutyStatus(ctx: OrgContext, onDuty: boolean) {
         const url = `${apiHost}${API.client.setOnDutyStatus()}`;
 
-        return (await axios.post<ClientSideFormat<Me>>(url, {
+        return (await this.tryPost<ClientSideFormat<Me>>(url, {
             onDuty
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
@@ -121,7 +264,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
@@ -131,7 +274,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async declineRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.declineRequestAssignment()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
@@ -141,7 +284,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async addUserToOrg(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserToOrg()}`;
 
-        return (await axios.post<{ user: User, org: Organization }>(url, {
+        return (await this.tryPost<{ user: User, org: Organization }>(url, {
             userId,
             roles
         }, {
@@ -152,7 +295,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async removeUserFromOrg(ctx: OrgContext, userId: string) {
         const url = `${apiHost}${API.client.removeUserFromOrg()}`;
 
-        return (await axios.post<{ user: User, org: Organization }>(url, {
+        return (await this.tryPost<{ user: User, org: Organization }>(url, {
             userId
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
@@ -162,7 +305,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async removeUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.removeUserRoles()}`;
 
-        return (await axios.post<User>(url, {
+        return (await this.tryPost<User>(url, {
             userId,
             roles
         }, {
@@ -173,7 +316,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async addUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserRoles()}`;
 
-        return (await axios.post<User>(url, {
+        return (await this.tryPost<User>(url, {
             userId,
             roles
         }, {
@@ -184,7 +327,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getTeamMembers()}`;
 
-        return (await axios.post<ProtectedUser[]>(url, {
+        return (await this.tryPost<ProtectedUser[]>(url, {
             userIds
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
@@ -194,7 +337,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async getRespondersOnDuty(ctx: OrgContext): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getRespondersOnDuty()}`;
 
-        return (await axios.get<ProtectedUser[]>(url, {
+        return (await this.tryGet<ProtectedUser[]>(url, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
@@ -202,7 +345,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.createNewRequest()}`;
 
-        return (await axios.post<HelpRequest>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             request
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
@@ -212,7 +355,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async getRequests(ctx: OrgContext, filter: HelpRequestFilter): Promise<HelpRequest[]> {
         const url = `${apiHost}${API.client.getRequests()}`;
 
-        return (await axios.post<HelpRequest[]>(url, {
+        return (await this.tryPost<HelpRequest[]>(url, {
             filter
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
@@ -222,7 +365,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async getRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.getRequest()}`;
 
-        return (await axios.get<HelpRequest>(url, {
+        return (await this.tryGet<HelpRequest>(url, {
             headers: this.requestScopeAuthHeaders({ ...ctx, requestId })
         })).data
     }
@@ -230,7 +373,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async unAssignRequest(ctx: RequestContext, userId: string): Promise<void> {
         const url = `${apiHost}${API.client.unAssignRequest()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             userId
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -240,7 +383,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
-        return (await axios.post<HelpRequest>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             message
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -250,7 +393,7 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async setTeamStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<void> {
         const url = `${apiHost}${API.client.setTeamStatus()}`;
 
-        await axios.post<void>(url, {
+        await this.tryPost<void>(url, {
             status
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -260,13 +403,12 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
     async updateRequestChatReceipt(ctx: RequestContext, lastMessageId: number): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.updateRequestChatReceipt()}`;
 
-        return (await axios.post<HelpRequest>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             lastMessageId
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
         })).data
     }
-
 
     userScopeAuthHeaders(ctx: TokenContext) {
         return {
@@ -287,6 +429,4 @@ export class APIClient implements ClientSideApi<'me' | 'setOnDutyStatus'> {
 
         return headers;
     }
-} 
-
-export default new APIClient();
+}

@@ -9,10 +9,12 @@ import * as uuid from 'uuid';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Location } from '../../../common/models';
-import API from '../api';
+import { getService } from '../services/meta';
+import { IAPIService } from '../services/interfaces';
 
 @Store()
 export default class LocationStore implements ILocationStore {
+    private api = getService<IAPIService>(IAPIService)
 
     public hasForegroundPermission = false;
     
@@ -26,6 +28,10 @@ export default class LocationStore implements ILocationStore {
 
     constructor() {
         makeAutoObservable(this);
+    }
+
+    clear() {
+        this.lastKnownLocation = null;
     }
 
     async init() {
@@ -156,7 +162,7 @@ export default class LocationStore implements ILocationStore {
     }
 
     async reportLocation(token: string, locations: Location[]) {
-        await API.reportLocation({ token }, locations);
+        await this.api.reportLocation({ token }, locations);
     }
 }
 

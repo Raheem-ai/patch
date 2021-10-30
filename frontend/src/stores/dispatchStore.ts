@@ -1,13 +1,15 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import API from '../api';
+import { makeAutoObservable } from 'mobx';
 import { getStore, Store } from './meta';
 import { IDispatchStore, IUserStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
+import { getService } from '../services/meta';
+import { IAPIService } from '../services/interfaces';
 
 @Store()
 export default class DispatchStore implements IDispatchStore {
 
     private userStore = getStore<IUserStore>(IUserStore);
+    private api = getService<IAPIService>(IAPIService)
 
     constructor() {
         makeAutoObservable(this)
@@ -22,7 +24,7 @@ export default class DispatchStore implements IDispatchStore {
     
     async broadcastRequest(requestId: string, to: string[]) {
         try {
-            await API.broadcastRequest(this.orgContext(), requestId, to);
+            await this.api.broadcastRequest(this.orgContext(), requestId, to);
         } catch (e) {
             console.error(e);
         }
@@ -31,10 +33,14 @@ export default class DispatchStore implements IDispatchStore {
     async assignRequest(requestId: string, to: string[]) {
         try {
             console.log(this.userStore)
-            await API.assignRequest(this.orgContext(), requestId, to)
+            await this.api.assignRequest(this.orgContext(), requestId, to)
         } catch (e) {
             console.error(e);
         }
+    }
+
+    clear() {
+
     }
    
 }

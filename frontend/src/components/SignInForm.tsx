@@ -1,11 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, HelperText, TextInput, Title } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { Header } from 'react-native/Libraries/NewAppScreen';
-import { NavigationStackProp } from 'react-navigation-stack';
 import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import API from '../api';
 import { getStore } from '../stores/meta';
 import { INotificationStore, IUserStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';

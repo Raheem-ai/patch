@@ -1,14 +1,16 @@
 import { autorun, makeAutoObservable, reaction, runInAction, set, when } from 'mobx';
-import API from '../api';
 import { getStore, Store } from './meta';
-import { ILocationStore, IRequestStore, IUserStore } from './interfaces';
+import { IRequestStore, IUserStore } from './interfaces';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { HelpRequest, HelpRequestFilter, HelpRequestSortBy, RequestStatus, ResponderRequestStatuses } from '../../../common/models';
+import { getService } from '../services/meta';
+import { IAPIService } from '../services/interfaces';
 
 @Store()
 export default class RequestStore implements IRequestStore {
 
     private userStore = getStore<IUserStore>(IUserStore);
+    private api = getService<IAPIService>(IAPIService)
 
     requests: HelpRequest[] = []
     currentRequest: HelpRequest = null
@@ -29,6 +31,14 @@ export default class RequestStore implements IRequestStore {
         } else {
             when(() => this.userStore.signedIn, () => this.getRequests())
         }
+    }
+
+    clear() {
+        runInAction(() => {
+            this.requests = []
+            this.currentRequest = null
+            this.currentRequestIdx = -1
+        })
     }
 
     orgContext(orgId?: string): OrgContext {
@@ -84,7 +94,7 @@ export default class RequestStore implements IRequestStore {
     
     async getRequest(requestId: string): Promise<void> {
         try {
-            const req = await API.getRequest(this.orgContext(), requestId);
+            const req = await this.api.getRequest(this.orgContext(), requestId);
 
             const userIdSet = new Set<string>();
 
@@ -107,7 +117,7 @@ export default class RequestStore implements IRequestStore {
             const oldCurrentReqId = this.currentRequest?.id;
             let possibleUpdatedCurrentReq:  HelpRequest;
 
-            const requests = await API.getRequests(this.orgContext(), this.filter);
+            const requests = await this.api.getRequests(this.orgContext(), this.filter);
 
             const userIdSet = new Set<string>();
 
@@ -158,7 +168,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void> {
-        await API.setTeamStatus(this.requestContext(requestId), status);
+        await this.api.setTeamStatus(this.requestContext(requestId), status);
         await this.getRequests();
     }
 
@@ -166,7 +176,7 @@ export default class RequestStore implements IRequestStore {
         const chat = request.chat;
 
         if (!!chat && chat.lastMessageId > chat.userReceipts[this.userStore.user.id]) {
-            const updatedReq = await API.updateRequestChatReceipt({
+            const updatedReq = await this.api.updateRequestChatReceipt({
                 requestId: request.id,
                 orgId: request.orgId,
                 token: this.userStore.authToken
@@ -177,7 +187,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async sendMessage(request: HelpRequest, message: string) {
-        const updatedReq = await API.sendChatMessage(
+        const updatedReq = await this.api.sendChatMessage(
             this.requestContext(request.id, request.orgId), 
             message
         );

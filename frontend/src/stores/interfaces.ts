@@ -3,7 +3,9 @@ import { ClientSideFormat } from '../../../common/api';
 import { User, Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy } from '../../../common/models'
 
 export interface IBaseStore {
-    init?(): Promise<void>
+    init?(): Promise<void>,
+    // should this be clearUserData?
+    clear(): void
 }
 
 export interface IUserStore extends IBaseStore {

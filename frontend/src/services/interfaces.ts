@@ -1,4 +1,5 @@
 import { GeocodeResult, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
+import { ClientSideApi } from "../../../common/api";
 
 export interface IBaseService {
     init?(): Promise<void>
@@ -12,4 +13,12 @@ export interface IMapsService extends IBaseService {
 
 export namespace IMapsService {
     export const id = Symbol('IMapsService');
+}
+
+export namespace IAPIService {
+    export const id = Symbol('IAPIService');
+}
+
+export interface IAPIService extends IBaseService, ClientSideApi<'me' | 'setOnDutyStatus'> {
+
 }

@@ -1,21 +1,24 @@
-import { injectable } from 'inversify';
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { Me, ProtectedUser, User, UserRole } from '../../../common/models';
-import API from '../api';
-import { persistent, Store } from './meta';
+import { Me, ProtectedUser, UserRole } from '../../../common/models';
+import { Store } from './meta';
 import { IUserStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { routerNames } from '../types';
+import { persistent } from '../meta';
+import { getService } from '../services/meta';
+import { IAPIService } from '../services/interfaces';
 
 @Store()
 export default class UserStore implements IUserStore {
+
+    private api = getService<IAPIService>(IAPIService)
 
     @persistent()
     public user!: ClientSideFormat<Me>;
 
     @persistent() 
-    public authToken!: string;
+    public authToken: string;
 
     @persistent()
     public currentOrgId: string;
@@ -28,8 +31,20 @@ export default class UserStore implements IUserStore {
 
     async init() {
         if (this.signedIn) {
+            // this effectively validates that your refresh token is still valid
+            // by calling a method that takes you through the refresh auth flow
+            await this.api.init()
             await this.getLatestMe();
         }
+    }
+
+    clear() {
+        runInAction(() => {
+            this.user = null
+            this.authToken = null
+            this.currentOrgId = null
+            this.usersInOrg = new ObservableMap()
+        })
     }
 
     orgContext(): OrgContext {
@@ -82,9 +97,11 @@ export default class UserStore implements IUserStore {
     
     async signIn(email: string, password: string) {
         try {
-            const token = await API.signIn({ email, password })
+            const authTokens = await this.api.signIn({ email, password })
 
-            const user = await API.me({ token });
+            const token = authTokens.accessToken;
+
+            const user = await this.api.me({ token });
 
             await this.getLatestMe({ me: user, token })
         } catch (e) {
@@ -94,9 +111,11 @@ export default class UserStore implements IUserStore {
 
     async signUp(email: string, password: string) {
         try {
-            const token = await API.signUp({ email, password })
+            const authTokens = await this.api.signUp({ email, password })
 
-            const user = await API.me({ token });
+            const token = authTokens.accessToken;
+
+            const user = await this.api.me({ token });
             
             await this.getLatestMe({ me: user, token })
         } catch (e) {
@@ -118,14 +137,14 @@ export default class UserStore implements IUserStore {
                 })
             }, 0)
 
-            await API.signOut({ token });
+            await this.api.signOut({ token });
         } catch (e) {
             console.error(e);
         }
     }
 
     async updateOrgUsers(userIds: string[]): Promise<void> {
-        const users = await API.getTeamMembers(this.orgContext(), userIds);
+        const users = await this.api.getTeamMembers(this.orgContext(), userIds);
 
         const updatedUserMap = {};
 
@@ -141,7 +160,7 @@ export default class UserStore implements IUserStore {
     async toggleOnDuty() {
         const onDuty = !this.isOnDuty;
 
-        const me = await API.setOnDutyStatus(this.orgContext(), onDuty);
+        const me = await this.api.setOnDutyStatus(this.orgContext(), onDuty);
 
         runInAction(() => {
             this.user = me;
@@ -151,7 +170,7 @@ export default class UserStore implements IUserStore {
     async getLatestMe(prefetched?: { me: ClientSideFormat<Me>, token: string }) {
         try {
             const token = prefetched ? prefetched.token : this.authToken;
-            const me = prefetched ? prefetched.me : await API.me({ token });
+            const me = prefetched ? prefetched.me : await this.api.me({ token });
 
             runInAction(() => {
                 this.user = me;

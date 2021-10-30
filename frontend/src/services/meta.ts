@@ -1,4 +1,7 @@
 import { injectable } from "inversify";
+import { makePersistable } from "mobx-persist-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { persistentKey } from "../meta";
 import { getStore } from "../stores/meta";
 
 export function Service() {
@@ -6,21 +9,31 @@ export function Service() {
         
         const oldInit: Function = ctr.prototype.init;
 
-        let initCalled = false;
+        let initPromise: Promise<void>;
 
-        // this isn't really doing anything now but it will come in handy later
-        // ...mark.my.words
         ctr.prototype.init = async function() {
             // lets us wait on init without having to worry about erroniously
             // calling it twice
-            if (initCalled) {
-                return;
+            if (!!initPromise) {
+                return initPromise;
             } else {
-                initCalled = true;
-            }
+                initPromise = (async () => {
+                    const persistentProps = ctr.prototype[persistentKey];
 
-            if (oldInit) {
-                await oldInit.call(this);
+                    if (persistentProps && persistentProps.length) {
+                        await makePersistable(this, { 
+                            name: ctr.name, 
+                            properties: persistentProps,
+                            storage: AsyncStorage
+                        });
+                    }
+
+                    if (oldInit) {
+                        await oldInit.call(this);
+                    }
+                })()
+
+                return initPromise
             }
         }
 

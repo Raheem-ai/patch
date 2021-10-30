@@ -1,6 +1,11 @@
 import { AtLeast } from '.';
 import { allEnumValues } from './utils';
 
+export interface AuthTokens {
+    refreshToken: string,
+    accessToken: string
+}
+
 export interface User {
     id: string;
     name: string;

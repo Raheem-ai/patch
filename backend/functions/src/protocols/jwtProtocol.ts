@@ -7,7 +7,7 @@ import { JWTMetadata } from "../auth";
 import { UserModel } from "../models/user";
 import config from '../config';
 
-const jwtSecrets = config.SESSION.get().secrets;
+const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const UserContextKey = 'AuthorizedUser';
 
 const secretOrKeyProvider = (req, token, done) => {
@@ -18,7 +18,7 @@ const secretOrKeyProvider = (req, token, done) => {
         return
     }
 
-    const secret = jwtSecrets.find(s => s.kid == decodedToken.header.kid);
+    const secret = accessTokenSecrets.find(s => s.kid == decodedToken.header.kid);
 
     if (!secret) {
         done(`Error: key not found: ${decodedToken.header.kid}`, null)

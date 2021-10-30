@@ -1,16 +1,18 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import API from '../api';
+import { makeAutoObservable } from 'mobx';
 import { getStore, Store } from './meta';
-import { CreateReqData, ICreateRequestStore, IUserStore } from './interfaces';
+import { ICreateRequestStore, IUserStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
-import { AddressableLocation, HelpRequest, Location, MinHelpRequest, RequestSkill, RequestType } from '../../../common/models';
+import { AddressableLocation, MinHelpRequest, RequestSkill, RequestType } from '../../../common/models';
+import { getService } from '../services/meta';
+import { IAPIService } from '../services/interfaces';
 
 
 @Store()
 export default class CreateRequestStore implements ICreateRequestStore  {
 
     private userStore = getStore<IUserStore>(IUserStore);
-
+    private api = getService<IAPIService>(IAPIService)
+    
     location: AddressableLocation = null
     type: RequestType[] = []
     notes: string = ''
@@ -38,7 +40,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
                 respondersNeeded: this.respondersNeeded
             }
 
-            await API.createNewRequest(this.orgContext(), req);
+            await this.api.createNewRequest(this.orgContext(), req);
         } catch (e) {
             console.error(e);
         }

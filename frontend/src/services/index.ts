@@ -1,10 +1,12 @@
+import { APIClient } from "../api";
 import container, { getStore } from "../stores/meta";
 import { GoogleMapsService } from "./googleMapsService";
-import { IBaseService, IMapsService } from "./interfaces";
+import { IAPIService, IBaseService, IMapsService } from "./interfaces";
 import { getService } from "./meta";
 
 const serviceMappings: [{ id: symbol }, new () => any][] = [
-    [ IMapsService, GoogleMapsService ]
+    [ IMapsService, GoogleMapsService ],
+    [ IAPIService, APIClient ]
 ];
 
 export function bindServices() {

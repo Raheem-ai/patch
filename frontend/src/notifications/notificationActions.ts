@@ -16,7 +16,7 @@ export class NotificationHandlerDefinition<T extends NotificationType = any> {
 }
 
 export class AssignedIncidentHandler extends NotificationHandlerDefinition<NotificationType.AssignedIncident> {
-    defaultRouteTo = routerNames.incidentDetails;
+    defaultRouteTo = routerNames.helpRequestDetails;
     
     constructor() {
         super(NotificationType.AssignedIncident)
@@ -78,7 +78,7 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     isDestructive: false,
                     isAuthenticationRequired: true,
                     opensAppToForeground: true,
-                    routeTo: routerNames.incidentDetails 
+                    routeTo: routerNames.helpRequestDetails 
                 }
             }
         ]
@@ -86,7 +86,7 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
 }
 
 export class BroadCastedIncidentHandler extends NotificationHandlerDefinition<NotificationType.BroadCastedIncident> {
-    defaultRouteTo = routerNames.incidentDetails;
+    defaultRouteTo = routerNames.helpRequestDetails;
     
     constructor() {
         super(NotificationType.BroadCastedIncident)

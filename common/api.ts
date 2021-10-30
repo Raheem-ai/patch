@@ -1,4 +1,4 @@
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter } from './models';
+import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -58,8 +58,9 @@ export type ClientSideApi<ToChange extends keyof IApiClient> = {
 
 export interface IApiClient {
     // no auth
-    signUp: (minUser: MinUser) => Promise<string>
-    signIn: (credentials: BasicCredentials) => Promise<string>   
+    signUp: (minUser: MinUser) => Promise<AuthTokens>
+    signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
+    refreshAuth: (refreshToken: string) => Promise<string>
     
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -187,6 +188,9 @@ type ApiRoutes = {
         }, 
         updateRequestChatReceipt: () => {
             return '/updateRequestChatReceipt'
+        },
+        refreshAuth: () => {
+            return '/refreshAuth'
         }
     }
 
@@ -200,6 +204,9 @@ type ApiRoutes = {
         },
         signOut: () => {
             return `${this.base}${this.namespaces.users}${this.server.signOut()}`
+        },
+        refreshAuth: () => {
+            return `${this.base}${this.namespaces.users}${this.server.refreshAuth()}`
         },
         me: () => {
             return `${this.base}${this.namespaces.users}${this.server.me()}`

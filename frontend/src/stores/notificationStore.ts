@@ -1,11 +1,10 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { getStore, Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
-import API from "../api";
 import { Constants } from "react-native-unimodules";
-import { Alert, Platform } from "react-native";
+import { Platform } from "react-native";
 import { INotificationStore, IUserStore } from "./interfaces";
 import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
@@ -13,6 +12,8 @@ import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
 import * as uuid from 'uuid';
 import * as Device from 'expo-device';
+import { getService } from "../services/meta";
+import { IAPIService } from "../services/interfaces";
 
 @Store()
 export default class NotificationStore implements INotificationStore {
@@ -20,7 +21,8 @@ export default class NotificationStore implements INotificationStore {
     // TODO: set badge number on app 
 
     private userStore = getStore<IUserStore>(IUserStore);
-    
+    private api = getService<IAPIService>(IAPIService)
+
     private notificationCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  notification: Notification) => void) }>();
     private notificationResponseCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  res: NotificationResponse) => void) }>();
 
@@ -30,6 +32,10 @@ export default class NotificationStore implements INotificationStore {
     
     constructor() { 
         makeAutoObservable(this);
+    }
+
+    clear() {
+
     }
 
     static async registerInteractiveNotifications() {
@@ -134,7 +140,7 @@ export default class NotificationStore implements INotificationStore {
         const pushToken = (await Notifications.getExpoPushTokenAsync()).data;
         const token = this.userStore.authToken;
 
-        await API.reportPushToken({ token }, pushToken);
+        await this.api.reportPushToken({ token }, pushToken);
     }
 
     onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void) {
@@ -258,6 +264,8 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
             const notification = data['UIApplicationLaunchOptionsRemoteNotificationKey'].body as NotificationPayload<any> & { type : NotificationType };
 
             const userStore = getStore<IUserStore>(IUserStore);
+            const api = getService<IAPIService>(IAPIService)
+
             await userStore.init()
 
             const token = userStore.authToken;
@@ -265,7 +273,7 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
             switch (notification.type) {
                 case NotificationType.AssignedIncident:
                     const orgId = (notification as NotificationPayload<NotificationType.AssignedIncident>).orgId
-                    await API.declineRequestAssignment({ token, orgId }, notification)
+                    await api.declineRequestAssignment({ token, orgId }, notification)
                     break;
             
                 default:

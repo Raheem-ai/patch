@@ -1,5 +1,8 @@
 // needed for uuid to work in react native env
 import 'react-native-get-random-values';
+// need for some decorator/observable tings
+import "reflect-metadata"
+
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
@@ -29,7 +32,7 @@ import { ILocationStore, INotificationStore, IUserStore } from './src/stores/int
 import { navigateTo, navigationRef } from './src/navigation';
 import { initServices } from './src/services';
 import { useEffect } from 'react';
-import { getApiHost, updateApiHost } from './src/api';
+// import { getApiHost, updateApiHost } from './src/api';
 import AppLoading from 'expo-app-loading';
 import { initStores } from './src/stores';
 
@@ -50,8 +53,8 @@ export default function App() {
   const notificationStore = getStore<INotificationStore>(INotificationStore);
   const locationStore = getStore<ILocationStore>(ILocationStore);
 
-  const [apiHost, setApiHost] = useState(getApiHost())
-  const [isApiHostSet, setIsApiHostSet] = useState(!!apiHost)
+  // const [apiHost, setApiHost] = useState(getApiHost())
+  // const [isApiHostSet, setIsApiHostSet] = useState(!!apiHost)
   const [isLoading, setIsLoading] = useState(true);
 
   // setup notifications for both foreground/background scenarios
@@ -67,28 +70,34 @@ export default function App() {
   useEffect(() => {
     (async () => {
 
-      await Promise.all([
-        initStores(),
-        initServices()
-      ]);
+      try {
+        await Promise.all([
+          initStores(),
+          initServices()
+        ]);
+      } catch (e) {
+        console.error('Error during initialization:', e)
+      } finally {
+        setIsLoading(false);
 
-      setIsLoading(false);
+        setTimeout(() => {
+          const userStore = getStore<IUserStore>(IUserStore);
 
-      setTimeout(() => {
-        const userStore = getStore<IUserStore>(IUserStore);
+          if (locationStore.hasForegroundPermission) {
+            // not awaiting this but kicking it off here so any map views that 
+            // need your current location get a head start on loading it
+            locationStore.getCurrentLocation()
+          }
 
-        if (locationStore.hasForegroundPermission) {
-          // not awaiting this but kicking it off here so any map views that 
-          // need your current location get a head start on loading it
-          locationStore.getCurrentLocation()
-        }
-
-        if (userStore.signedIn) {
-          // not awaiting this on purpose as updating the push token might take a while
-          notificationStore.handlePermissions()
-          navigateTo(routerNames.userHomePage)
-        }
-      }, 0);
+          if (userStore.signedIn) {
+            // not awaiting this on purpose as updating the push token might take a while
+            notificationStore.handlePermissions()
+            navigateTo(routerNames.userHomePage)
+          } else {
+            navigateTo(routerNames.signIn)
+          }
+        }, 0);
+      }
     })()
 
   }, []);
@@ -121,21 +130,6 @@ export default function App() {
             <Stack.Screen name={routerNames.helpRequestChat} component={HelpRequestChat}/>
           </Stack.Navigator>
         </NavigationContainer>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={!isApiHostSet}
-          onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-          }}>
-            <View style={styles.modalView}> 
-              <TextInput  style={styles.input} mode="outlined" label={'apiHost'} value={apiHost} onChangeText={h => setApiHost(h)}/>
-              <Button mode="contained" onPress={() => {
-                updateApiHost(apiHost);
-                setIsApiHostSet(true);
-                }}>Sign In</Button>
-            </View>
-        </Modal>
       </PaperProvider>
      </Provider>
   );
