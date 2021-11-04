@@ -9,7 +9,7 @@ import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvi
 import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router-dom';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
-import container, { getStore } from './src/stores/meta';
+import { getStore } from './src/stores/meta';
 
 // component imports
 import SignInForm from './src/components/SignInForm';
@@ -30,11 +30,12 @@ import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack'
 import { RootStackParamList, routerNames } from './src/types';
 import { ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
-import { initServices } from './src/services';
+import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
 // import { getApiHost, updateApiHost } from './src/api';
 import AppLoading from 'expo-app-loading';
-import { initStores } from './src/stores';
+import { bindStores, initStores } from './src/stores';
+import { container } from './src/meta';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -50,26 +51,20 @@ const theme = {
 };
 
 export default function App() {
-  const notificationStore = getStore<INotificationStore>(INotificationStore);
-  const locationStore = getStore<ILocationStore>(ILocationStore);
-
-  // const [apiHost, setApiHost] = useState(getApiHost())
-  // const [isApiHostSet, setIsApiHostSet] = useState(!!apiHost)
   const [isLoading, setIsLoading] = useState(true);
 
-  // setup notifications for both foreground/background scenarios
+  // handle store binding + initialization + splash screen loading state
   useEffect(() => {
+    bindStores();
+    bindServices();
+
+    const notificationStore = getStore<INotificationStore>(INotificationStore);
+    const locationStore = getStore<ILocationStore>(ILocationStore);
+
+    // setup notifications for both foreground/background scenarios
     notificationStore.setup();
 
-    return () => {
-      notificationStore.teardown();
-    }
-  }, [])
-
-  // handle persistent store loading
-  useEffect(() => {
     (async () => {
-
       try {
         await Promise.all([
           initStores(),
@@ -99,6 +94,10 @@ export default function App() {
         }, 0);
       }
     })()
+
+    return () => {
+      notificationStore.teardown();
+    }
 
   }, []);
 

@@ -1,5 +1,5 @@
 import { APIClient } from "../api";
-import container, { getStore } from "../stores/meta";
+import { container } from "../meta";
 import { GoogleMapsService } from "./googleMapsService";
 import { IAPIService, IBaseService, IMapsService } from "./interfaces";
 import { getService } from "./meta";
@@ -11,7 +11,7 @@ const serviceMappings: [{ id: symbol }, new () => any][] = [
 
 export function bindServices() {
     for (const [ iService, service ] of serviceMappings) {
-        container.bind(iService.id).to(service).inSingletonScope();
+        container.isBound(iService.id) || container.bind(iService.id).to(service).inSingletonScope();
     }
 }
 
@@ -21,5 +21,3 @@ export async function initServices() {
         return service.init();
     }));
 }
-
-bindServices();

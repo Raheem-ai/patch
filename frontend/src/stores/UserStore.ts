@@ -33,6 +33,7 @@ export default class UserStore implements IUserStore {
         if (this.signedIn) {
             // this effectively validates that your refresh token is still valid
             // by calling a method that takes you through the refresh auth flow
+            // and signs you out if the refresh token has expired
             await this.api.init()
             await this.getLatestMe();
         }

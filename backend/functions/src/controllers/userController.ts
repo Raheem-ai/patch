@@ -56,28 +56,21 @@ export class UsersController implements APIController<'signUp' | 'signIn' | 'sig
             throw new BadRequest(`key not found: ${decodedRefreshToken.header.kid}`)
         }
 
-        const refreshTokenPayload = await new Promise<JWTMetadata>((resolve, _) => {
-            verify(refreshToken, secret.value, { complete: true }, (err, jwt: Jwt) => {
-                if (err) {
-                    console.error(err);
-                    resolve(null)
-                } else {
-                    resolve(jwt.payload as JWTMetadata)
-                }
-            });
-        })
+        let refreshTokenPayload;
 
-        if (!refreshTokenPayload) {
-            throw new BadRequest(`couldn't verify refresh token`);
-        }
-
-        // TODO: figure this out
-        // this might actually already work cuz the 'expiresIn' field is build into the
-        // jsonwebtoken lib along with verify which has an 'ignoreExpiration' option
-        const alreadyExpired = false;
-
-        if (alreadyExpired) {
-            throw new BadRequest('refresh token has expired')
+        try {
+            refreshTokenPayload = await new Promise<JWTMetadata>((resolve, reject) => {
+                verify(refreshToken, secret.value, { complete: true }, (err, jwt: Jwt) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(jwt.payload as JWTMetadata)
+                    }
+                });
+            })
+        } catch (e) {
+            const err = e as Error;
+            throw new BadRequest(err.message)
         }
 
         const userId = refreshTokenPayload.userId;

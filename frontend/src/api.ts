@@ -4,7 +4,7 @@ import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, M
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
-import { persistent } from './meta';
+import { securelyPersistent } from './meta';
 import { getStore } from './stores/meta';
 import { IUserStore } from './stores/interfaces';
 import { navigateTo } from './navigation';
@@ -18,11 +18,7 @@ const { manifest } = Constants;
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
 // let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-let apiHost = 'http://2f6b-179-218-29-159.ngrok.io'
-
-// export const updateApiHost = (h) => apiHost = h;
-
-// export const getApiHost = () => apiHost;
+let apiHost = 'http://0660-179-218-29-159.ngrok.io'
 
 @Service()
 export class APIClient implements IAPIService {
@@ -31,7 +27,7 @@ export class APIClient implements IAPIService {
 
     // TODO: move accessToken here?
 
-    @persistent()
+    @securelyPersistent()
     refreshToken: string;
 
     constructor() {
@@ -63,13 +59,13 @@ export class APIClient implements IAPIService {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
                 // clear user store and reroute to signin
-                this.refreshToken = null;
+                runInAction(() => {
+                    this.refreshToken = null;
+                })
                 
                 navigateTo(routerNames.signIn)
 
-                setTimeout(() => {
-                    this.userStore.clear()
-                })
+                this.userStore.clear()
 
                 throw 'User no longer signed in'
             }
@@ -114,13 +110,13 @@ export class APIClient implements IAPIService {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
                 // clear user store and reroute to signin
-                this.refreshToken = null;
+                runInAction(() => {
+                    this.refreshToken = null;
+                })
                 
                 navigateTo(routerNames.signIn)
 
-                setTimeout(() => {
-                    this.userStore.clear()
-                })
+                this.userStore.clear()
 
                 throw 'User no longer signed in'
             }

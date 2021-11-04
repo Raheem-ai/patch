@@ -3,9 +3,10 @@ import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
 import DispatchStore from './dispatchStore';
-import container, { getStore } from './meta';
+import { getStore } from './meta';
 import CreateRequestStore from './createRequestStore';
 import RequestStore from './requestStore';
+import { container } from '../meta';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -18,7 +19,7 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
 
 export function bindStores() {
     for (const [ iStore, store] of storeMappings) {
-        container.bind(iStore.id).to(store).inSingletonScope();
+        container.isBound(iStore.id) || container.bind(iStore.id).to(store).inSingletonScope();
     }
 }
 
@@ -28,5 +29,3 @@ export async function initStores() {
         return store.init();
     }));
 }
-
-bindStores();

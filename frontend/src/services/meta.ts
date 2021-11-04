@@ -1,7 +1,6 @@
 import { injectable } from "inversify";
 import { makePersistable } from "mobx-persist-store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { persistentKey } from "../meta";
+import { persistentKey, PersistentStorage, securelyPersistentKey } from "../meta";
 import { getStore } from "../stores/meta";
 
 export function Service() {
@@ -18,13 +17,16 @@ export function Service() {
                 return initPromise;
             } else {
                 initPromise = (async () => {
-                    const persistentProps = ctr.prototype[persistentKey];
+                    const persistentProps = ctr.prototype[persistentKey] || [];
+                    const securelyPersistentProps = ctr.prototype[securelyPersistentKey] || [];
 
-                    if (persistentProps && persistentProps.length) {
+                    const allPersistentProps = [...persistentProps, ...securelyPersistentProps]
+
+                    if (allPersistentProps && allPersistentProps.length) {
                         await makePersistable(this, { 
                             name: ctr.name, 
-                            properties: persistentProps,
-                            storage: AsyncStorage
+                            properties: allPersistentProps,
+                            storage: new PersistentStorage(securelyPersistentProps)
                         });
                     }
 

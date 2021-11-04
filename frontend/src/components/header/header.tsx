@@ -48,7 +48,7 @@ const Header = observer((props: Props) => {
             <View style={styles.container}>
                 <View style={styles.leftIconContainer}>
                     {
-                        leftActions.map(a => <IconButton icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                        leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
                     }
                 </View>
                 <View style={styles.titleContainer}>
@@ -64,7 +64,7 @@ const Header = observer((props: Props) => {
                 }
                 <View style={styles.rightIconContainer}>
                     {
-                        rightActions.map(a => <IconButton style={styles.icon}icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                        rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
                     }
                 </View>
             </View>
@@ -96,7 +96,7 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={style}>
-                {MainMenuOptions.map(opt => <Text style={styles.mainMenuText} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {MainMenuOptions.map(opt => <Text key={opt.name} style={styles.mainMenuText} onPress={onPress(opt)}>{opt.name}</Text>)}
             </View>
         )
     }
@@ -104,7 +104,7 @@ const Header = observer((props: Props) => {
     const subMenuOptions = () => {
         return (
             <View style={styles.subMenuOptions}>
-                {SubMenuOptions.map(opt => <Text style={styles.subMenuText} onPress={() => {
+                {SubMenuOptions.map(opt => <Text key={opt.name} style={styles.subMenuText} onPress={() => {
                     if (opt.routeTo) {
                         navigateTo(routerNames[opt.routeTo])
                     } else if (opt.onPress) {
