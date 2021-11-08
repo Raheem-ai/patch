@@ -3,7 +3,6 @@ import { getStore, Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
-import { Constants } from "react-native-unimodules";
 import { Platform } from "react-native";
 import { INotificationStore, IUserStore } from "./interfaces";
 import { NotificationPayload, NotificationType } from "../../../common/models";
@@ -14,6 +13,7 @@ import * as uuid from 'uuid';
 import * as Device from 'expo-device';
 import { getService } from "../services/meta";
 import { IAPIService } from "../services/interfaces";
+// import Constants from 'expo-constants';
 
 @Store()
 export default class NotificationStore implements INotificationStore {

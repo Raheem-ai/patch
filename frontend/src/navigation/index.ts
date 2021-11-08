@@ -4,7 +4,7 @@ import { IUserStore } from '../stores/interfaces';
 import { getStore } from '../stores/meta';
 import { RootStackParamList, routerNames } from '../types';
 
-export const navigationRef = React.createRef<NavigationContainerRef>();
+export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
 // TODO: make params required and make consumers pass in params...maybe create a second function that will take 
 // any of the routes that don't take params

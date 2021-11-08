@@ -10,15 +10,6 @@ module.exports = function(api) {
   }
 
   const plugins = [
-    [
-      require('babel-plugin-module-resolver'),
-      {
-        alias: {
-          "crypto": "crypto-browserify"
-        }
-      }
-  
-    ]
   ];
 
   return {

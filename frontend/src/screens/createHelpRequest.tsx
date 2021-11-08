@@ -13,11 +13,10 @@ import MapView, { MapEvent, Marker, Point, PROVIDER_GOOGLE } from 'react-native-
 import { HeaderHeight } from "../components/header/header";
 import { navigateTo, navigationRef } from "../navigation";
 import { observer } from "mobx-react-lite";
-import Constants from "expo-constants";
 import { IMapsService } from "../services/interfaces";
 import { debounce } from "lodash";
 import { getService } from "../services/meta";
-import { GeocodeResult, LatLng, LatLngLiteral, LatLngLiteralVerbose, Place, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
+import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, Place, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import Tags from "../components/tags";
 import { runInAction } from "mobx";
 
@@ -273,6 +272,7 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
         const [manuallyChosenLocation, setManuallyChosenLocation] = useState<GeocodeResult>(null);
 
         const mapInstance = useRef<MapView>();
+
         // react native papers types are broken here
         const textInputInstance = useRef<RNTextInput>();
         

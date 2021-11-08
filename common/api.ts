@@ -1,4 +1,4 @@
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens } from './models';
+import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -68,6 +68,7 @@ export interface IApiClient {
     reportLocation: Authenticated<(locations: Location[]) => Promise<void>>
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
+    getSecrets: Authenticated<() => Promise<AppSecrets>>
 
     // must be signed in and have the correct rolls within th target org
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
@@ -191,6 +192,9 @@ type ApiRoutes = {
         },
         refreshAuth: () => {
             return '/refreshAuth'
+        },
+        getSecrets: () => {
+            return '/getSecrets'
         }
     }
 
@@ -216,6 +220,11 @@ type ApiRoutes = {
         },
         reportPushToken: () => {
             return `${this.base}${this.namespaces.users}${this.server.reportPushToken()}`
+        },
+        // putting this here because there isn't a great place for it and it doesn't deserve it's own 
+        // controller *kanye shrug*
+        getSecrets: () => {
+            return `${this.base}${this.namespaces.users}${this.server.getSecrets()}`
         },
 
         // dispatch

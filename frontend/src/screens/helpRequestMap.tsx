@@ -4,7 +4,6 @@ import { Dimensions, GestureResponderEvent, StyleSheet, View } from "react-nativ
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/helpRequestCard";
-import { navigateTo } from "../navigation";
 import { ILocationStore, IRequestStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { ScreenProps, routerNames } from "../types";

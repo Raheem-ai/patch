@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Dimensions, View } from 'react-native';
-import { StackHeaderProps } from 'react-navigation-stack';
+import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
 import { useState } from 'react';
@@ -18,7 +18,7 @@ const Header = observer((props: Props) => {
     const userStore = getStore<IUserStore>(IUserStore);
 
     const dimensions = Dimensions.get('window');
-    const config: HeaderRouteConfig = HeaderConfig[props.scene.route.name];
+    const config: HeaderRouteConfig = HeaderConfig[props.route.name];
     
     const title = typeof config.title == 'string'
         ? config.title

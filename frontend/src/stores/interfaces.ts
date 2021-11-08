@@ -1,6 +1,6 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
 import { ClientSideFormat } from '../../../common/api';
-import { User, Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets } from '../../../common/models'
 
 export interface IBaseStore {
     init?(): Promise<void>,
@@ -111,4 +111,12 @@ export interface IRequestStore extends IBaseStore {
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
+}
+
+export interface ISecretStore extends IBaseStore, AppSecrets {
+    googleMapsApiKey: string;
+}
+
+export namespace ISecretStore {
+    export const id = Symbol('ISecretStore');
 }

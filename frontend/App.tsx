@@ -6,12 +6,11 @@ import "reflect-metadata"
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
-import { Switch, Route, BrowserRouter as Router, useHistory } from 'react-router-dom';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
 import { getStore } from './src/stores/meta';
 
-// component imports
+// // component imports
 import SignInForm from './src/components/SignInForm';
 import WelcomePage from './src/components/WelcomePage';
 import SignUpForm from './src/components/SignUpForm';
@@ -24,7 +23,7 @@ import HelpRequestList from './src/screens/helpRequestList';
 import HelpRequestChat from './src/screens/helpRequestChat';
 import HelpRequestDetails from './src/screens/helpRequestDetails';
 
-// navigating imports
+// // navigating imports
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
@@ -32,7 +31,6 @@ import { ILocationStore, INotificationStore, IUserStore } from './src/stores/int
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
-// import { getApiHost, updateApiHost } from './src/api';
 import AppLoading from 'expo-app-loading';
 import { bindStores, initStores } from './src/stores';
 import { container } from './src/meta';
@@ -117,7 +115,7 @@ export default function App() {
     <Provider container={container}>
       <PaperProvider theme={theme}>
         <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator screenOptions={{ header }} headerMode='screen'>
+          <Stack.Navigator screenOptions={{ header, headerMode: 'screen' }}>
             <Stack.Screen name={routerNames.home} component={WelcomePage} />
             <Stack.Screen name={routerNames.signIn} component={SignInForm} />
             <Stack.Screen name={routerNames.signUp} component={SignUpForm} />

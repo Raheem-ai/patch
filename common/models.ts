@@ -253,3 +253,7 @@ export type NotificationPayloads = {
 }
 
 export type NotificationPayload<T extends NotificationType> = NotificationPayloads[T];
+
+export type AppSecrets = {
+    googleMapsApiKey: string
+}

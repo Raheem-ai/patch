@@ -1,4 +1,4 @@
-import { BodyParams, Controller, Inject, Post, Req } from "@tsed/common";
+import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
@@ -36,7 +36,7 @@ export class ValidatedBasicCredentials implements BasicCredentials {
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
 
 @Controller(API.namespaces.users)
-export class UsersController implements APIController<'signUp' | 'signIn' | 'signOut' | 'reportLocation' | 'reportPushToken' | 'me' | 'refreshAuth'> {
+export class UsersController implements APIController<'signUp' | 'signIn' | 'signOut' | 'reportLocation' | 'reportPushToken' | 'me' | 'refreshAuth' | 'getSecrets'> {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
 
@@ -172,6 +172,19 @@ export class UsersController implements APIController<'signUp' | 'signIn' | 'sig
         if (user.push_token != token) {
             user.push_token = token;
             await user.save();
+        }
+    }
+
+    @Get(API.server.getSecrets())
+    @Authenticate()
+    async getSecrets(
+        @User() user: UserDoc
+    ) {
+        return {
+            // TODO: this should come from the secret store but it's currently already in source 
+            // in 'app.json' of the front end so punting on this until we generate dynamic front end config
+            // and set up CI/CD for front end deployments (https://docs.expo.dev/guides/setting-up-continuous-integration/)
+            googleMapsApiKey: 'AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw'
         }
     }
 

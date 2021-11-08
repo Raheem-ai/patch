@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import Constants from "expo-constants";
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -174,6 +174,16 @@ export class APIClient implements IAPIService {
     }
 
     // user scoped apis
+
+    async getSecrets(ctx: TokenContext): Promise<AppSecrets> {
+        const url = `${apiHost}${API.client.getSecrets()}`;
+
+        const secrets = (await this.tryGet<AppSecrets>(url, {
+            headers: this.userScopeAuthHeaders(ctx),
+        })).data
+
+        return secrets;
+    }
 
     async me(ctx: TokenContext): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.me()}`;

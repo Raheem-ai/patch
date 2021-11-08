@@ -22,10 +22,9 @@ export default class Notifications {
     @Inject(DBManager) db: DBManager;
 
     // TODO: this should come from config
-    // ((4) + (16) + (4^3) + (4^4) +(4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
+    // ((4) + (16) + (4^3) + (4^4) + (4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
     // stale job
-    // private backOffIncrementInMins = 4;
-    private backOffIncrementInMins = 1;
+    private backOffIncrementInMins = 4;
 
     async send<T extends NotificationType>(notification: NotificationMetadata<T>): Promise<void> {
         await this.sendBulk([notification])
@@ -188,7 +187,7 @@ export default class Notifications {
         await this.db.bulkDelete(this.notifications, docs)
     }
 
-    @Every('30 seconds', { name: JobNames.RetryTransientNotificationFailures })
+    @Every('5 minutes', { name: JobNames.RetryTransientNotificationFailures })
     async retryTransientFailures(job: Job) {
         // get any notification with an error ticket or receipt that isn't null
         // and who's next scheduled send is before (or) now
@@ -250,7 +249,7 @@ export default class Notifications {
         })
     }
     
-    @Every('30 seconds', { name: JobNames.CheckNotificationReceipts })
+    @Every('10 minutes', { name: JobNames.CheckNotificationReceipts })
     async checkReceipts(job: Job) {
         const pendingNotifications = await this.notifications.find({
             success_ticket: {

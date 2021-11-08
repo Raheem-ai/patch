@@ -1,30 +1,29 @@
-// import { Loader } from '@googlemaps/js-api-loader';
-import { resolve } from 'inversify-react';
 import { makeAutoObservable } from 'mobx';
-import { Constants } from 'react-native-unimodules';
+// import { Constants } from 'react-native-unimodules';
 import { IMapsService } from './interfaces';
 import { Service } from './meta';
-
 import {Client, GeocodeResult, PlaceAutocompleteRequest, PlaceAutocompleteResult} from "@googlemaps/google-maps-services-js";
-import { ILocationStore } from '../stores/interfaces';
+import { ILocationStore, ISecretStore } from '../stores/interfaces';
 import { getStore } from '../stores/meta';
 
-const apiKey = Constants.manifest.ios.config.googleMapsApiKey;
 
 const MetersPerMile = 1609.34;
 
 @Service()
 export class GoogleMapsService implements IMapsService {
-    // private google: typeof google;
-    // private geocoder: google.maps.Geocoder;
-    client: Client = new Client({});
+    private client: Client = new Client({});
 
-    locationStore: ILocationStore = getStore(ILocationStore);
+    private locationStore = getStore<ILocationStore>(ILocationStore);
+    private secretStore = getStore<ISecretStore>(ISecretStore);
 
-    maxSearchRadius = MetersPerMile * 100; // 100 mile search radius
+    private maxSearchRadius = MetersPerMile * 100; // 100 mile search radius
 
     constructor() {
         makeAutoObservable(this);
+    }
+
+    async init() {
+        await this.secretStore.init();
     }
 
     async placeIdToLatLong(placeId: string): Promise<{ lat: number, long: number }> {
@@ -33,7 +32,7 @@ export class GoogleMapsService implements IMapsService {
 
             const response = await this.client.placeDetails({
                 params: {
-                    key: apiKey,
+                    key: this.secretStore.googleMapsApiKey || '',
                     place_id: placeId,
                     fields: ['geometry']
                 }
@@ -59,7 +58,7 @@ export class GoogleMapsService implements IMapsService {
         const params: PlaceAutocompleteRequest = {
             params: {
                 input,
-                key: apiKey
+                key: this.secretStore.googleMapsApiKey || ''
             }
         };
 
@@ -84,7 +83,7 @@ export class GoogleMapsService implements IMapsService {
     async latLongToPlace(lat: number, long: number): Promise<GeocodeResult> {
         const result = await this.client.reverseGeocode({
             params: {
-                key: apiKey,
+                key: this.secretStore.googleMapsApiKey || '',
                 latlng: {
                     lat: lat,
                     lng: long
