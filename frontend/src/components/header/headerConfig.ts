@@ -1,5 +1,5 @@
 import { navigateTo, navigationRef } from "../../navigation"
-import { IRequestStore } from "../../stores/interfaces"
+import { BottomDrawerView, IBottomDrawerStore, IRequestStore } from "../../stores/interfaces"
 import { getStore } from "../../stores/meta"
 import { RootStackParamList, routerNames } from "../../types"
 
@@ -29,9 +29,6 @@ const HeaderConfig: {
     [routerNames.userHomePage]: {
         title: 'User Home Page'
     },
-    [routerNames.createHelpRequest]: {
-        title: 'Requests'
-    },
     [routerNames.helpRequestList]: {
         title: 'Requests',
         rightActions: [{
@@ -39,7 +36,10 @@ const HeaderConfig: {
             callback: () => navigateTo(routerNames.helpRequestMap)
         }, {
             icon: 'plus',
-            callback: () => navigateTo(routerNames.createHelpRequest)
+            callback: () => {
+                const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                bottomDrawerStore.show(BottomDrawerView.createRequest, true);
+            }
         }]
     },
     [routerNames.helpRequestMap]: {
@@ -49,18 +49,26 @@ const HeaderConfig: {
             callback: () => navigateTo(routerNames.helpRequestList)
         }, {
             icon: 'plus',
-            callback: () => navigateTo(routerNames.createHelpRequest)
+            callback: () => {
+                const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                bottomDrawerStore.show(BottomDrawerView.createRequest, true);
+            }
         }]
     },
     [routerNames.helpRequestDetails]: {
         title: () => {
             const requestStore = getStore<IRequestStore>(IRequestStore);
-            const req = requestStore.currentRequest;
-            return `Request ${req.displayId}`
+            const id = requestStore.loading
+                ? ''
+                : requestStore.currentRequest.displayId;
+
+            return `Request ${id}`
         },
         leftActions: [{
             icon: 'chevron-left',
             callback: () => {
+                const requestStore = getStore<IRequestStore>(IRequestStore);
+                requestStore.tryPopRequest();
                 navigationRef.current.goBack();
             }
         }]

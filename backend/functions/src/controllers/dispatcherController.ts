@@ -79,7 +79,7 @@ export class DispatcherController implements APIController<'broadcastRequest'> {
                 to: user.push_token,
                 body: `You've been assigned to HelpRequest ${requestId}`,
                 payload: {
-                    id: '1234',
+                    id: requestId,
                     orgId
                 }
             });

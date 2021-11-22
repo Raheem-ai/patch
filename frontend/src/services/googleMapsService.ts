@@ -1,5 +1,4 @@
 import { makeAutoObservable } from 'mobx';
-// import { Constants } from 'react-native-unimodules';
 import { IMapsService } from './interfaces';
 import { Service } from './meta';
 import {Client, GeocodeResult, PlaceAutocompleteRequest, PlaceAutocompleteResult} from "@googlemaps/google-maps-services-js";
@@ -9,7 +8,7 @@ import { getStore } from '../stores/meta';
 
 const MetersPerMile = 1609.34;
 
-@Service()
+@Service(IMapsService)
 export class GoogleMapsService implements IMapsService {
     private client: Client = new Client({});
 
@@ -72,7 +71,7 @@ export class GoogleMapsService implements IMapsService {
 
             params.params.radius = this.maxSearchRadius
 
-            params.params.strictbounds = true
+            // params.params.strictbounds = true
         }
 
         const results = await this.client.placeAutocomplete(params);

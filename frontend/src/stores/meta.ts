@@ -1,12 +1,12 @@
 import { Container, injectable } from "inversify";
-import { makePersistable } from 'mobx-persist-store';
+import { getPersistedStore, makePersistable } from 'mobx-persist-store';
 import { container, persistentKey, PersistentStorage, securelyPersistentKey } from "../meta";
 
 export function getStore<T>({ id }: { id: symbol }): T {
     return container.get(id);
 }
 
-export function Store() {
+export function Store({ id }: { id: Symbol }) {
     return function(ctr: new () => any) {
         
         const oldInit: Function = ctr.prototype.init;
@@ -27,7 +27,8 @@ export function Store() {
 
                     if (allPersistentProps && allPersistentProps.length) {
                         await makePersistable(this, { 
-                            name: ctr.name, 
+                            // to get around the minification of constructor names for prod
+                            name: id.toString(), 
                             properties: allPersistentProps,
                             storage: new PersistentStorage(securelyPersistentProps)
                         });

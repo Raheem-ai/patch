@@ -20,7 +20,6 @@ export type RootStackParamList = {
     SignIn: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    CreateHelpRequest: undefined;
     HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
@@ -38,7 +37,6 @@ export const routerNames: TypedRouterNames = {
     signUp: "SignUp",
     userHomePage: "UserHomePage",
     helpRequestDetails : "HelpRequestDetails",
-    createHelpRequest: "CreateHelpRequest",
     helpRequestMap: "HelpRequestMap",
     helpRequestList: "HelpRequestList",
     helpRequestChat: "HelpRequestChat"
@@ -72,3 +70,19 @@ export const styleVals = {
         medium: 10,
     },
 };
+
+export const Colors = {
+    primary: {
+        alpha: '#694F70',
+        beta: '#F9F6FA',
+        delta: '#E6E1E8'
+    },
+    secondary: {
+        alpha: '#5D8A98', 
+        beta: '#CFDCE0',
+        delta: '#A5BAC2'
+    },
+    tertiary: {
+        alpha: '#D04B00'
+    }
+}

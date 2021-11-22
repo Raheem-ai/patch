@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import Constants from "expo-constants";
 import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
@@ -10,17 +9,17 @@ import { IUserStore } from './stores/interfaces';
 import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
-const { manifest } = Constants;
+import { AtLeast } from '../../common';
 
 // TODO: the port and non local host need to come from config somehow
 // let apiHost = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-// let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-let apiHost = 'http://0660-179-218-29-159.ngrok.io'
+let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+// let apiHost = 'http://02f9-179-218-29-159.ngrok.io'
 
-@Service()
+@Service(IAPIService)
 export class APIClient implements IAPIService {
     
     private userStore: IUserStore;
@@ -28,7 +27,7 @@ export class APIClient implements IAPIService {
     // TODO: move accessToken here?
 
     @securelyPersistent()
-    refreshToken: string;
+    refreshToken: string = null;
 
     constructor() {
         makeAutoObservable(this)
@@ -46,10 +45,16 @@ export class APIClient implements IAPIService {
             const status = error?.response?.status;
 
             // we're already signed in and the error is auth based
-            const shouldRetry = !!this.refreshToken 
-                && !!status && (status >= 400 && status < 500);
+            const isAuthError = !!status && (status >= 400 && status < 500);
+            const shouldRetry = !!this.refreshToken && isAuthError;
 
             if (!shouldRetry) {
+                // in case refreshToken gets corrupted (should just show up in testing)
+                if (isAuthError) {
+                    navigateTo(routerNames.signIn)
+                    this.userStore.clear()
+                }
+
                 throw error;
             }
 
@@ -97,10 +102,16 @@ export class APIClient implements IAPIService {
             const status = error?.response?.status;
 
             // we're already signed in and the error is auth based
-            const shouldRetry = !!this.refreshToken 
-                && !!status && (status >= 400 && status < 500);
+            const isAuthError = !!status && (status >= 400 && status < 500);
+            const shouldRetry = !!this.refreshToken && isAuthError;
 
             if (!shouldRetry) {
+                // in case refreshToken gets corrupted (should just show up in testing)
+                if (isAuthError) {
+                    navigateTo(routerNames.signIn)
+                    this.userStore.clear()
+                }
+
                 throw error;
             }
 
@@ -373,6 +384,14 @@ export class APIClient implements IAPIService {
 
         return (await this.tryGet<HelpRequest>(url, {
             headers: this.requestScopeAuthHeaders({ ...ctx, requestId })
+        })).data
+    }
+
+    async editRequest(ctx: OrgContext, requestUpdates: AtLeast<HelpRequest, 'id'>): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.editRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, { requestUpdates } ,{
+            headers: this.requestScopeAuthHeaders({ ...ctx, requestId: requestUpdates.id })
         })).data
     }
 

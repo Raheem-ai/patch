@@ -1,4 +1,4 @@
-import { NavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainerRef, StackActions } from '@react-navigation/native';
 import React from 'react';
 import { IUserStore } from '../stores/interfaces';
 import { getStore } from '../stores/meta';
@@ -9,7 +9,14 @@ export const navigationRef = React.createRef<NavigationContainerRef<RootStackPar
 // TODO: make params required and make consumers pass in params...maybe create a second function that will take 
 // any of the routes that don't take params
 export function navigateTo<Route extends keyof RootStackParamList>(name: Route, params?: RootStackParamList[Route]) {
-  navigationRef.current?.navigate(name, params);
+  const shouldPush = navigationRef.current?.getCurrentRoute().name == name;
+
+  if (shouldPush) {
+    const pushAction = StackActions.push(name, params);
+    navigationRef.current?.dispatch(pushAction);
+  } else {
+    navigationRef.current?.navigate(name, params);
+  }
 }
 
 export type MainMenuOption = { name: string, routeTo: keyof typeof routerNames }

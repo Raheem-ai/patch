@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { getStore, Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
@@ -13,9 +13,11 @@ import * as uuid from 'uuid';
 import * as Device from 'expo-device';
 import { getService } from "../services/meta";
 import { IAPIService } from "../services/interfaces";
+import Constants from "expo-constants";
+import { securelyPersistent } from "../meta";
 // import Constants from 'expo-constants';
 
-@Store()
+@Store(INotificationStore)
 export default class NotificationStore implements INotificationStore {
     
     // TODO: set badge number on app 
@@ -29,6 +31,10 @@ export default class NotificationStore implements INotificationStore {
     // in case we want to stop listening at some point
     private notificationsSub = null;
     private notificationResponseSub = null;
+
+    // keep copy in secure store and never delete it so we'll know when it needs to be updated
+    // ie. reinstalls
+    @securelyPersistent() expoPushToken = null;
     
     constructor() { 
         makeAutoObservable(this);
@@ -121,26 +127,25 @@ export default class NotificationStore implements INotificationStore {
             
             if (status !== PermissionStatus.GRANTED) {
                 console.log('Permission to receive push notifications was denied');
-                // runInAction(() => this.hasPermission = false)
                 return false;
             } else {
                 console.log('Permission granted to receive push notifications')
-                // runInAction(() => this.hasPermission = true)
                 return true;
             }
         } catch (e) {
             console.log('Error requesting permission to receive push notifications: ', e);
-            // runInAction(() => this.hasPermission = false)
             return false;
         }
     }
 
     async updatePushToken() {
-        // don't keep copy on device
-        const pushToken = (await Notifications.getExpoPushTokenAsync()).data;
+        const currentPushToken = (await Notifications.getExpoPushTokenAsync()).data;
         const token = this.userStore.authToken;
 
-        await this.api.reportPushToken({ token }, pushToken);
+        if (this.expoPushToken != currentPushToken) {
+            runInAction(() => this.expoPushToken = currentPushToken);
+            await this.api.reportPushToken({ token }, currentPushToken);
+        }
     }
 
     onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void) {
@@ -229,22 +234,21 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async handlePermissions() {
-        // if (Constants.isDevice) {
-        //     const perms = await Notifications.getPermissionsAsync()
+        if (Constants.isDevice) {
+            const perms = await Notifications.getPermissionsAsync()
         
-        //     if (perms.status !== PermissionStatus.GRANTED) {
-        //         const permissionGranted = await this.askForPermission()
+            if (perms.status !== PermissionStatus.GRANTED) {
+                const permissionGranted = await this.askForPermission()
                 
-        //         if (!permissionGranted) {
-        //             return;
-        //         } else {
-        //             await this.updatePushToken();
-        //         }                
-        //     }
-        // }
-
-        await this.updatePushToken();
-
+                if (!permissionGranted) {
+                    return;
+                } else {
+                    await this.updatePushToken();
+                }                
+            } else {
+                await this.updatePushToken();
+            }
+        }
     }
 }
 

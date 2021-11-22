@@ -12,7 +12,7 @@ import { Location } from '../../../common/models';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 
-@Store()
+@Store(ILocationStore)
 export default class LocationStore implements ILocationStore {
     private api = getService<IAPIService>(IAPIService)
 

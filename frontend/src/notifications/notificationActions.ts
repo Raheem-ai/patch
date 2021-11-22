@@ -1,9 +1,10 @@
 import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
-import api from "../api";
 import { IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
+import { getService } from "../services/meta";
+import { IAPIService } from "../services/interfaces";
 
 export class NotificationHandlerDefinition<T extends NotificationType = any> {
     defaultRouteTo?: keyof RootStackParamList
@@ -33,6 +34,9 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
+                            const api = getService<IAPIService>(IAPIService);
+                            await api.init();
+
                             const userStore = getStore<IUserStore>(IUserStore);
                             await userStore.init();
 
@@ -57,6 +61,9 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
+                            const api = getService<IAPIService>(IAPIService);
+                            await api.init();
+                            
                             const userStore = getStore<IUserStore>(IUserStore);
                             await userStore.init();
 

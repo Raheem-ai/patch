@@ -5,7 +5,7 @@ import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 import { securelyPersistent } from '../meta';
 
-@Store()
+@Store(ISecretStore)
 export default class SecretStore implements ISecretStore {
 
     private userStore = getStore<IUserStore>(IUserStore);

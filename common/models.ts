@@ -13,6 +13,7 @@ export interface User {
     password: string;
     organizations: { [key: string]: UserOrgConfig }
     displayColor: string
+    skills: RequestSkill[]
     race?: string
 }
 
@@ -147,7 +148,7 @@ export enum RequestSkill {
     ConflictResolution = RequestSkillCategory.CounselingAndMediation + ':cr',
     DomesticViolence = RequestSkillCategory.CounselingAndMediation + ':dv',
     RestorativeJustice = RequestSkillCategory.CounselingAndMediation + ':rj',
-    TraumaCounceling = RequestSkillCategory.CounselingAndMediation + ':tc',
+    TraumaCounseling = RequestSkillCategory.CounselingAndMediation + ':tc',
     
     // langs
     Spanish = RequestSkillCategory.Languages + ':sp',
@@ -182,7 +183,7 @@ export const RequestSkillToLabelMap: { [key in RequestSkill]: string } = {
     [RequestSkill.ConflictResolution]: 'Conflict Resolution',
     [RequestSkill.DomesticViolence]: 'Domestic Violence',
     [RequestSkill.RestorativeJustice]: 'Restorative Justice',
-    [RequestSkill.TraumaCounceling]: 'Trauma Counceling',
+    [RequestSkill.TraumaCounseling]: 'Trauma Counseling',
     [RequestSkill.Spanish]: 'Spanish',
     [RequestSkill.French]: 'French',
 }
@@ -203,7 +204,7 @@ export enum RequestType {
     MentalHealthCrisis = 'mh',
     ProvidingSupplies = 'ps',
     ResourceReferral = 'rr',
-    SubstanceCounceling = 'sc',
+    SubstanceCounseling = 'sc',
     Transportation = 'tr',
     WellnessCheck = 'wc'
 }
@@ -218,7 +219,7 @@ export const RequestTypeToLabelMap: { [key in RequestType]: string } = {
     [RequestType.MentalHealthCrisis]: 'Mental Health Crisis',
     [RequestType.ProvidingSupplies]: 'Providing Supplies',
     [RequestType.ResourceReferral]: 'Resource Referral',
-    [RequestType.SubstanceCounceling]: 'Substance Counceling',
+    [RequestType.SubstanceCounseling]: 'Substance Counseling',
     [RequestType.Transportation]: 'Transportation',
     [RequestType.WellnessCheck]: 'Wellness Check'
 }

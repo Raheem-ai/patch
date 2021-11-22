@@ -2,6 +2,7 @@ import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
+import { AtLeast } from "common";
 import API from 'common/api';
 import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
 import { APIController, OrgId, RequestId } from ".";
@@ -20,7 +21,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.request)
-export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setTeamStatus'> {
+export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setTeamStatus' | 'editRequest'> {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
@@ -69,6 +70,17 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
             case HelpRequestFilter.All:
                 return (await this.db.getAllRequests(orgId)).map(this.includeVirtuals)
         }
+    }
+
+    @Post(API.server.editRequest())
+    @RequestAccess()
+    async editRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+        @BodyParams('requestUpdates') requestUpdates: AtLeast<HelpRequest, 'id'>,
+    ) {
+        return this.includeVirtuals((await this.db.editRequest(helpRequest, requestUpdates)))
     }
 
     @Post(API.server.unAssignRequest())

@@ -29,7 +29,7 @@ export default function SignInForm( { navigation } : Props) {
 
     return(
         <View style={styles.container}>
-            <Text style={styles.title}>Sign In</Text>
+            {/* <Text style={styles.title}>Sign In</Text> */}
             <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
             <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
             <Button mode="contained" onPress={signIn}>Sign In</Button>
@@ -40,8 +40,9 @@ export default function SignInForm( { navigation } : Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        padding: styleVals.paddingVals.medium,
+        // justifyContent: 'center',
+        padding: 20,
+        paddingTop: 20
     },
     title: {
         fontSize: styleVals.fontSizes.large,

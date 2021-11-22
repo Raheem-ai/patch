@@ -38,7 +38,11 @@ const Header = observer((props: Props) => {
     const headerBar = () => {
         const leftActions = config.leftActions && config.leftActions.length
             ? config.leftActions
-            : [{ icon: 'menu', callback: openHeader }]
+            // TODO: these should move somewhere at some point cuz they're the only screens that allow you
+            // to not be logged in
+            : (props.route.name == routerNames.signIn || props.route.name == routerNames.signUp)
+                ? []
+                : [{ icon: 'menu', callback: openHeader }];
 
         const rightActions = config.rightActions && config.rightActions.length
             ? config.rightActions
@@ -46,12 +50,15 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={styles.container}>
-                <View style={styles.leftIconContainer}>
-                    {
-                        leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
-                    }
-                </View>
-                <View style={styles.titleContainer}>
+                {   leftActions.length 
+                    ? <View style={styles.leftIconContainer}>
+                        {
+                            leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                        }
+                    </View>
+                    : null
+                }
+                <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 20 }]}>
                     <Text style={styles.title}>{title}</Text>
                 </View>
                 { userStore.isResponder
@@ -151,7 +158,7 @@ const windowDimensions = Dimensions.get("window"); // this should probably be mo
 const iconSize = 30;
 const iconPadding = 12;
 const iconContainerSize = (2 * iconPadding) + iconSize;
-const interactiveHeaderHeight = iconContainerSize;
+export const InteractiveHeaderHeight = iconContainerSize;
 
 const styles = StyleSheet.create({
     // CLOSED
@@ -163,13 +170,13 @@ const styles = StyleSheet.create({
     },
     leftIconContainer: {
         width: iconContainerSize,
-        height: interactiveHeaderHeight
+        height: InteractiveHeaderHeight
     },
     titleContainer: {
         flex: 1,
         alignItems: 'flex-start', 
         justifyContent: 'center',
-        height: interactiveHeaderHeight
+        height: InteractiveHeaderHeight
     },
     title: {
         color: '#fff',
@@ -178,7 +185,7 @@ const styles = StyleSheet.create({
     onDutyStatusContainer: {
         alignItems: 'flex-start', 
         justifyContent: 'center',
-        height: interactiveHeaderHeight,
+        height: InteractiveHeaderHeight,
         marginRight: 12
     },
     onDutyStatusOutline: { 
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
     rightIconContainer: {
         // width: iconContainerSize,
         flexDirection: 'row',
-        height: interactiveHeaderHeight
+        height: InteractiveHeaderHeight
     },
     icon: {
         margin: 0,
@@ -222,7 +229,7 @@ const styles = StyleSheet.create({
         justifyContent:'space-between'
     },
     onDutySwitchContainer: {
-        height: interactiveHeaderHeight,
+        height: InteractiveHeaderHeight,
         alignItems: 'center',
         marginRight: 12,
         flexDirection: 'row'

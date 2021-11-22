@@ -1,3 +1,4 @@
+import { AtLeast } from '.';
 import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -87,6 +88,7 @@ export interface IApiClient {
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
     
+    editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
     unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
     sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
@@ -171,6 +173,9 @@ type ApiRoutes = {
         },
         getRequest: () => {
             return '/getRequest'
+        },
+        editRequest: () => {
+            return '/editRequest'
         },
         getTeamMembers: () => {
             return '/getTeamMembers'
@@ -278,6 +283,9 @@ type ApiRoutes = {
         },
         getRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.getRequest()}`
+        },
+        editRequest: () => {
+            return `${this.base}${this.namespaces.request}${this.server.editRequest()}`
         },
         unAssignRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.unAssignRequest()}`

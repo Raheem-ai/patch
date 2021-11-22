@@ -17,7 +17,6 @@ import SignUpForm from './src/components/SignUpForm';
 import UserHomePage from './src/components/userside/UserHomePage';
 import Header from './src/components/header/header';
 
-import CreateHelpRequest from './src/screens/createHelpRequest';
 import HelpRequestMap from './src/screens/helpRequestMap';
 import HelpRequestList from './src/screens/helpRequestList';
 import HelpRequestChat from './src/screens/helpRequestChat';
@@ -34,6 +33,9 @@ import { useEffect } from 'react';
 import AppLoading from 'expo-app-loading';
 import { bindStores, initStores } from './src/stores';
 import { container } from './src/meta';
+import GlobalBottomDrawer from './src/components/globalBottomDrawer';
+import GlobalErrorBoundary from './src/globalErrorBoundary';
+import { observer } from 'mobx-react';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -85,9 +87,6 @@ export default function App() {
           if (userStore.signedIn) {
             // not awaiting this on purpose as updating the push token might take a while
             notificationStore.handlePermissions()
-            navigateTo(routerNames.userHomePage)
-          } else {
-            navigateTo(routerNames.signIn)
           }
         }, 0);
       }
@@ -109,27 +108,46 @@ export default function App() {
     )
   }
 
+  // safe to get here because isLoading doesn't get set until after store binding/init
+  const userStore = getStore<IUserStore>(IUserStore);
+
+  const initialRoute = userStore.signedIn
+      ? routerNames.userHomePage
+      : routerNames.signIn
+
   return (
     // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
     // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
     <Provider container={container}>
       <PaperProvider theme={theme}>
         <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator screenOptions={{ header, headerMode: 'screen' }}>
-            <Stack.Screen name={routerNames.home} component={WelcomePage} />
-            <Stack.Screen name={routerNames.signIn} component={SignInForm} />
-            <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
-            <Stack.Screen name={routerNames.userHomePage} component={UserHomePage} />
-            <Stack.Screen name={routerNames.helpRequestDetails} component={HelpRequestDetails}/>
-            <Stack.Screen name={routerNames.createHelpRequest} component={CreateHelpRequest}/>
-            <Stack.Screen name={routerNames.helpRequestMap} component={HelpRequestMap}/>
-            <Stack.Screen name={routerNames.helpRequestList} component={HelpRequestList}/>
-            <Stack.Screen name={routerNames.helpRequestChat} component={HelpRequestChat}/>
-          </Stack.Navigator>
+          {/* <GlobalErrorBoundary> */}
+            <Stack.Navigator screenOptions={{ header, headerMode: 'screen' }} initialRouteName={initialRoute}>
+              <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+              <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
+              <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
+              <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
+              <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
+              <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
+              <Stack.Screen name={routerNames.helpRequestList} component={userScreen(HelpRequestList)}/>
+              <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
+            </Stack.Navigator>
+            <GlobalBottomDrawer/>
+          {/* </GlobalErrorBoundary>   */}
         </NavigationContainer>
       </PaperProvider>
      </Provider>
   );
+}
+
+const userScreen = function(Component: (props) => JSX.Element) {
+  return observer(function(props) {
+    const userStore = getStore<IUserStore>(IUserStore);
+    
+    return userStore.signedIn
+      ? <Component {...props} />
+      : null
+  })
 }
 
 

@@ -89,10 +89,6 @@ export default function UserHomePage({ navigation, route }: Props) {
         await dispatchStore.assignRequest('fake', [ userStore.user.id ]);
     }
 
-    const createHelpRequest = async () => {
-        navigateTo(routerNames.createHelpRequest);
-    }
-
     return (
         <Provider>
             <View>
@@ -109,7 +105,6 @@ export default function UserHomePage({ navigation, route }: Props) {
                 <Button onPress={startShift}>Start Shift</Button>
                 <Button onPress={endShift}>End Shift</Button>
                 <Button onPress={assignHelpRequest}>Assign Help Request</Button>
-                <Button onPress={createHelpRequest}>Create Help Request</Button>
             </View>
         </Provider>
     );

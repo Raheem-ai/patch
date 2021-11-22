@@ -1,6 +1,8 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
+import React from 'react';
+import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill } from '../../../common/models'
 
 export interface IBaseStore {
     init?(): Promise<void>,
@@ -77,17 +79,37 @@ export namespace IDispatchStore {
 export interface IDispatchStore extends IBaseStore {
     broadcastRequest(requestId: string, to: string[]): Promise<void>
     assignRequest(requestId: string, to: string[]): Promise<void>
+    toggleSelectAll(): Promise<void>;
+    toggleIncludeOffDuty(): Promise<void>;
+    toggleResponder(userId: string): Promise<void>;
+    assignableResponders: ClientSideFormat<ProtectedUser>[]
+    includeOffDuty: boolean
+    selectAll: boolean
+    selectedResponderIds: Set<string>
+    selectedResponders: ClientSideFormat<ProtectedUser>[]
+}
+
+export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded'>
+
+export interface ITempRequestStore extends CreateReqData {
+    clear(prop?: keyof CreateReqData): void
 }
 
 export namespace ICreateRequestStore {
     export const id = Symbol('ICreateRequestStore');
 }
 
-export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded'>
-
-export interface ICreateRequestStore extends CreateReqData {
+export interface ICreateRequestStore extends ITempRequestStore {
     createRequest: () => Promise<void>;
-    clear(prop?: keyof CreateReqData): void
+}
+
+export namespace IEditRequestStore {
+    export const id = Symbol('IEditRequestStore');
+}
+
+export interface IEditRequestStore extends ITempRequestStore {
+    loadRequest(req: CreateReqData): void
+    editRequest(reqId: string): Promise<void>
 }
 
 export namespace IRequestStore {
@@ -99,6 +121,7 @@ export interface IRequestStore extends IBaseStore {
     sortedRequests: HelpRequest[]
     currentRequest: HelpRequest
     currentRequestIdx: number
+    loading: boolean
 
     filter: HelpRequestFilter
     sortBy: HelpRequestSortBy
@@ -106,11 +129,13 @@ export interface IRequestStore extends IBaseStore {
     setSortBy(sortBy: HelpRequestSortBy): void
     setFilter(filter: HelpRequestFilter): Promise<void>
     getRequests(): Promise<void>
-    getRequest(requestId: string): Promise<void>
+    pushRequest(requestId: string): Promise<void>
+    tryPopRequest(): Promise<void>
     setCurrentRequest(request: HelpRequest): void;
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
+    updateReq(updatedReq: HelpRequest): void
 }
 
 export interface ISecretStore extends IBaseStore, AppSecrets {
@@ -119,4 +144,54 @@ export interface ISecretStore extends IBaseStore, AppSecrets {
 
 export namespace ISecretStore {
     export const id = Symbol('ISecretStore');
+}
+
+export interface IBottomDrawerStore extends IBaseStore {
+    readonly topAnim: Animated.Value
+    expanded: boolean
+    showing: boolean
+    viewId: BottomDrawerView
+    view: BottomDrawerComponentClass
+    
+    show(view: BottomDrawerView, expanded?: boolean): void;
+    hide(): void// should this take an optional callback?
+    expand(): void
+    minimize(): void
+}
+
+export namespace IBottomDrawerStore {
+    export const id = Symbol('IBottomDrawerStore');
+}
+
+export enum BottomDrawerView {
+    createRequest = 'cr',
+    editRequest = 'er',
+    requestChat = 'rc',
+    assignResponders = 'ar'
+}
+
+export type BottomDrawerComponentClass = React.ComponentClass & {
+    onHide?: () => void,
+    onShow?: () => void,
+    minimizeLabel?: string | (() => string),
+    submit?: {
+        label: string | (() => string),
+        action: () => void
+    }
+    raisedHeader?: boolean | (() => boolean)
+}
+
+export type BottomDrawerConfig = { 
+    [key in BottomDrawerView]: BottomDrawerComponentClass
+}
+
+// export const BottomDrawerHandleHeight = 56;
+export const BottomDrawerHandleHeight = 64;
+
+export interface INativeEventStore extends IBaseStore {
+    keyboardHeight: number;
+}
+
+export namespace INativeEventStore {
+    export const id = Symbol('INativeEventStore');
 }

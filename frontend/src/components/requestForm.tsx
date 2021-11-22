@@ -1,60 +1,64 @@
-import React, { ClassType, Component, ComponentType, FunctionComponent, useCallback, useEffect, useState } from "react";
-import { ScreenProps, routerNames } from "../types";
-import { Modal, Portal, Button, Text, List, TextInput, IconButton } from 'react-native-paper';
-import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput as RNTextInput, View } from "react-native";
-import { HelpRequest, RequestSkill, RequestSkillCategory, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
+import React, { ComponentType, useCallback, useState } from "react";
+import { Button, Text, List, IconButton } from 'react-native-paper';
+import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TextInput as RNTextInput, View } from "react-native";
+import { RequestSkill, RequestSkillCategory, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
-import { CreateReqData, ICreateRequestStore, ILocationStore, IRequestStore } from "../stores/interfaces";
+import { CreateReqData, IEditRequestStore, ILocationStore, IRequestStore, I, BottomDrawerView, BottomDrawerHandleHeight, ITempRequestStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { useRef } from "react";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { Icon } from "react-native-paper/lib/typescript/components/Avatar/Avatar";
-import MapView, { MapEvent, Marker, Point, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { HeaderHeight } from "../components/header/header";
-import { navigateTo, navigationRef } from "../navigation";
-import { observer } from "mobx-react-lite";
+import { observer } from "mobx-react";
 import { IMapsService } from "../services/interfaces";
 import { debounce } from "lodash";
 import { getService } from "../services/meta";
-import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, Place, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
+import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import Tags from "../components/tags";
 import { runInAction } from "mobx";
 
 const windowDimensions = Dimensions.get("window");
-const containerStyle = { backgroundColor: '#eee', height: windowDimensions.height };
+const containerStyle = { height: windowDimensions.height - HeaderHeight - BottomDrawerHandleHeight };
 
 const ResponderCountRange = [1, 2, 3, 4, 5];
 
-type Props = ScreenProps<'CreateHelpRequest'>;
+type Props = {
+    headerLabel: string,
+    tempStore: ITempRequestStore
+}
 
-const CreateHelpRequest = observer(({ navigation, route }: Props) => {
-    const [screenId, setScreenId] = useState(null);
+@observer
+class RequestForm extends React.Component<Props> {
 
-    const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-    const locationStore = getStore<ILocationStore>(ILocationStore);
-    
-    useEffect(() => {
-        locationStore.askForPermission().then(() => locationStore.getCurrentLocation())
-    }, [])
-
-    const openLink = (id: keyof CreateReqData) => {
-        setScreenId(id);
+    state = {
+        screenId: null
     }
 
-    const back = () => {
-        setScreenId(null);
+    locationStore = getStore<ILocationStore>(ILocationStore);
+
+    async componentDidMount() {
+        await this.locationStore.askForPermission()
+        this.locationStore.getCurrentLocation()
+    }
+
+    openLink = (id: keyof CreateReqData) => {
+        this.setState({ screenId: id });
+    }
+
+    back = () => {
+        this.setState({ screenId: null });
     }
     
-    const listView = () => {
+    listView = () => {
 
         const skillTags = () => {
-            if (!createStore.skills || !createStore.skills.length) {
+            if (!this.props.tempStore.skills || !this.props.tempStore.skills.length) {
                 return null
             }
 
             const deleteSkillTag = (idx: number) => {
                 runInAction(() => {
-                    createStore.skills.splice(idx, 1)
+                    this.props.tempStore.skills.splice(idx, 1)
                 })
             }
 
@@ -62,20 +66,20 @@ const CreateHelpRequest = observer(({ navigation, route }: Props) => {
                 <View style={[{ minHeight: 60 }]}>
                     <Tags 
                         verticalMargin={12} 
-                        tags={createStore.skills.map(s => RequestSkillToLabelMap[s]) || []}
+                        tags={this.props.tempStore.skills.map(s => RequestSkillToLabelMap[s]) || []}
                         onTagDeleted={deleteSkillTag}/>
                 </View>
             )
         }
 
         const typeTags = () => {
-            if (!createStore.type || !createStore.type.length) {
+            if (!this.props.tempStore.type || !this.props.tempStore.type.length) {
                 return null
             }
 
             const deleteTypeTag = (idx: number) => {
                 runInAction(() => {
-                    createStore.type.splice(idx, 1)
+                    this.props.tempStore.type.splice(idx, 1)
                 })
             }
 
@@ -84,7 +88,7 @@ const CreateHelpRequest = observer(({ navigation, route }: Props) => {
                     <Tags 
                         dark 
                         verticalMargin={12} 
-                        tags={createStore.type.map(t => RequestTypeToLabelMap[t]) || []}
+                        tags={this.props.tempStore.type.map(t => RequestTypeToLabelMap[t]) || []}
                         onTagDeleted={deleteTypeTag}/>
                 </View>
             )
@@ -92,7 +96,6 @@ const CreateHelpRequest = observer(({ navigation, route }: Props) => {
 
         return (
             <View style={containerStyle}>
-                <CreateRequestHeader/>
                 <View style={{
                     paddingLeft: 20,
                     borderStyle: 'solid',
@@ -104,37 +107,37 @@ const CreateHelpRequest = observer(({ navigation, route }: Props) => {
                     <Text style={{
                         fontSize: 24,
                         fontWeight: 'bold',
-                    }}>New Request</Text>
+                    }}>{this.props.headerLabel}</Text>
                 </View>
-                <Section openLink={openLink}  linkTo={'location'} label={createStore.location ? createStore.location.address : null}/>
+                <Section openLink={this.openLink}  linkTo={'location'} label={this.props.tempStore.location ? this.props.tempStore.location.address : null}/>
                 <Section 
-                    openLink={openLink}  
+                    openLink={this.openLink}  
                     linkTo={'type'} 
-                    // label={createStore.type ? createStore.type.map(s => RequestTypeToLabelMap[s]).join(', ') : ''}
                     labelComponent={typeTags()}/>
-                <Section openLink={openLink}  linkTo={'notes'} label={createStore.notes ? createStore.notes : ''}/>
+                <Section openLink={this.openLink}  linkTo={'notes'} label={this.props.tempStore.notes ? this.props.tempStore.notes : ''}/>
                 <Section 
-                    openLink={openLink}  
+                    openLink={this.openLink}  
                     linkTo={'skills'} 
-                    // label={createStore.skills ? createStore.skills.map(s => RequestSkillToLabelMap[s]).join(', ') : ''}
                     labelComponent={skillTags()}/>
-                <Section openLink={openLink}  linkTo={'respondersNeeded'} label={createStore.respondersNeeded ? createStore.respondersNeeded.toString() : null}/>
+                <Section openLink={this.openLink}  linkTo={'respondersNeeded'} label={this.props.tempStore.respondersNeeded ? this.props.tempStore.respondersNeeded.toString() : null}/>
             </View>
         )
     }
 
-    const Component: ComponentType<SectionScreenProps> = screenId 
-        ? CreateRequestScreenMap[screenId]
-        : null;
+    render() {
+        const Component: ComponentType<SectionScreenProps> = this.state.screenId 
+            ? CreateRequestScreenMap[this.state.screenId]
+            : null;
 
-    return (
-        Component
-            ? <Component back={back} store={createStore} screenId={screenId}/>
-            : listView()
-    )
-})
+        return (
+            Component
+                ? <Component back={this.back} store={this.props.tempStore} screenId={this.state.screenId}/>
+                : this.listView()
+        )
+    }
+}
 
-export default CreateHelpRequest
+export default RequestForm
 
 const SectionTitleLabelMap: {
     [ key in keyof CreateReqData]: string
@@ -190,40 +193,40 @@ function Section(props: {
 
 type SectionScreenProps = {
     back: () => void,
-    store: ICreateRequestStore,
+    store: ITempRequestStore,
     screenId: keyof CreateReqData
 }
 
-const CreateRequestHeader = () => {
-    const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-    const requestStore = getStore<IRequestStore>(IRequestStore);
+// const CreateRequestHeader = () => {
+//     const tempStore = getStore<IEditRequestStore>(IEditRequestStore);
+//     const requestStore = getStore<IRequestStore>(IRequestStore);
 
-    const cancel = () => {
-        createStore.clear()
+//     const cancel = () => {
+//         tempStore.clear()
 
-        // TODO: close bottom drawer
-        navigationRef.current?.goBack()
-    }
+//         // TODO: close bottom drawer
+//         navigationRef.current?.goBack()
+//     }
 
-    const create = async () => {
-        await createStore.createRequest();
+//     const create = async () => {
+//         await tempStore.createRequest();
 
-        await requestStore.getRequests();
-        navigateTo(routerNames.helpRequestList);
-    }
+//         await requestStore.getRequests();
+//         navigateTo(routerNames.helpRequestList);
+//     }
 
-    return <View style={styles.createRequestHeader}>
-        <IconButton
-            icon='close' 
-            color='#000'
-            onPress={cancel}
-            size={30} />
-        <Button 
-            color='#fff'
-            onPress={create}
-            style={styles.headerCreateButton}>add</Button>
-    </View>
-}
+//     return <View style={styles.createRequestHeader}>
+//         <IconButton
+//             icon='close' 
+//             color='#000'
+//             onPress={cancel}
+//             size={30} />
+//         <Button 
+//             color='#fff'
+//             onPress={create}
+//             style={styles.headerCreateButton}>add</Button>
+//     </View>
+// }
 
 const BackButtonHeader = ({ back, save, screenId }: { back: () => void, save: () => void, screenId: string }) => {
     return <View style={styles.backButtonHeader}>
@@ -739,8 +742,3 @@ const styles = StyleSheet.create({
         borderRadius: 20
     }
 })
-
-
-// function CreateRequestWizard() {
-//     const [currentWizardScreen, setCurrentWizardScreen] = useState<>()
-// }

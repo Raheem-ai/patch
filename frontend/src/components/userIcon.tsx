@@ -1,8 +1,21 @@
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Colors } from '../types';
 
-const UserIcon = ({ user, style }:{ user: { name: string, displayColor: string }, style?: StyleProp<ViewStyle> }) => {
+type UserIconProps = { 
+    user: { 
+        name: string
+    }, 
+    style?: StyleProp<ViewStyle> ,
+    large?: boolean
+}
+
+const UserIcon = ({ 
+    user, 
+    style,
+    large 
+} : UserIconProps) => {
     const userName = user.name;
     const usernameParts = userName.split(' ');
 
@@ -14,9 +27,17 @@ const UserIcon = ({ user, style }:{ user: { name: string, displayColor: string }
     
     return (
         <View
-            style={[styles.userIcon, { backgroundColor: user.displayColor, borderColor: user.displayColor }, style]}
+            style={[
+                styles.userIcon, 
+                { backgroundColor: Colors.secondary.alpha, borderColor: Colors.secondary.alpha }, 
+                large ? styles.large : null,
+                style
+            ]}
         >
-            <Text style={{ color: styles.userIcon.color }}>{initials}</Text>
+            <Text style={[
+                { color: styles.userIcon.color },
+                large ? { fontSize: styles.large.fontSize } : null
+            ]}>{initials}</Text>
         </View>
     )
 }
@@ -34,6 +55,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    large: {
+        width: 36,
+        height: 36,
+        borderRadius: 20,
+        fontSize: 18
     }
 })
 

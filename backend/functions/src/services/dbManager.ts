@@ -184,11 +184,11 @@ export class DBManager {
         org.members.push(userId)
 
         // save both in transaction
-        return this.transaction((session) => {
-            return Promise.all([
-                org.save({ session }),
-                user.save({ session })
-            ]);
+        return this.transaction(async (session) => {
+            return [
+                await org.save({ session }),
+                await user.save({ session })
+            ] as [ OrganizationDoc, UserDoc ];
         }, session)
     }
 
@@ -213,11 +213,11 @@ export class DBManager {
         }), 1)
 
         // save both
-        return this.transaction((session) => {
-            return Promise.all([
-                org.save({ session }),
-                user.save({ session })
-            ]);
+        return this.transaction(async (session) => {
+            return [
+                await org.save({ session }),
+                await user.save({ session })
+            ] as [ OrganizationDoc, UserDoc ];
         })
     }
 
@@ -310,6 +310,17 @@ export class DBManager {
         return await this.requests.findOne(query);
     }
 
+    async editRequest(helpRequest: string | HelpRequestDoc, requestUpdates: AtLeast<HelpRequest, 'id'>) {
+        const req = await this.resolveRequest(helpRequest);
+
+        for (const prop in requestUpdates) {
+            // field specific work if we need it in the future
+            req[prop] = requestUpdates[prop]
+        }
+
+        return await req.save()
+    }
+
     getRequests(query: FilterQuery<HelpRequestModel>) {
         return this.requests.find(query);
     }
@@ -377,6 +388,10 @@ export class DBManager {
         return model.find({ _id: { $in: ids } });
     }
 
+    /**
+     * Note you CANNOT use Promise.all() inside of ops...must handle each async db action sequentially
+     * ie. (https://medium.com/@alkor_shikyaro/transactions-and-promises-in-node-js-ca5a3aeb6b74)
+     */
     async transaction<T extends (session: ClientSession) => Promise<any>>(ops: T, session?: ClientSession): Promise<ReturnType<T>> {
         // allow individual methods to honor a transaction they are already in without having to change their
         // call structure
@@ -386,9 +401,10 @@ export class DBManager {
         
         let retVal;
 
-        await this.db.get().transaction(async (session) => {
-            retVal = await ops(session);
+        await this.db.get().transaction(async (freshSession) => {
+            retVal = await ops(freshSession);
         });
+
 
         return retVal;
     }
@@ -469,11 +485,12 @@ export class DBManager {
 
             console.log('creating users/org')
             let user1 = await this.createUser({ 
-                email: 'Test@test.com', 
+                email: 'Charlie@test.com', 
                 password: 'Test', 
                 displayColor: "#25db00",
                 name: "Chuck LePartay",
-                race: "nunya"
+                race: "nunya",
+                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
             });
 
             let [ org, admin1 ] = await this.createOrganization({
@@ -483,12 +500,21 @@ export class DBManager {
             admin1 = await this.addUserRoles(org.id, admin1, [ UserRole.Dispatcher, UserRole.Responder ]);
 
             let user2 = await this.createUser({ 
-                email: 'Test2@test.com', 
+                email: 'Nadav@test.com', 
                 password: 'Test',
-                name: 'Nadav Sonos',
+                name: 'Nadav Sorrynotsry',
+                skills: [ RequestSkill.French, RequestSkill.ConflictResolution ]
             });
 
-            await this.addUserToOrganization(org, user2, [UserRole.Responder]);
+            let user3 = await this.createUser({ 
+                email: 'Cosette@test.com', 
+                password: 'Test',
+                name: 'Cosette Ayyayy',
+                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
+            });
+
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
 
             const minRequests: MinHelpRequest[] = [
                 {
@@ -504,7 +530,7 @@ export class DBManager {
                 },
                 {
                     skills: [RequestSkill.SubstanceUseTreatment],
-                    type: [RequestType.ConflictResolution, RequestType.FirstAid, RequestType.SubstanceCounceling],
+                    type: [RequestType.ConflictResolution, RequestType.FirstAid, RequestType.SubstanceCounseling],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
@@ -515,7 +541,7 @@ export class DBManager {
                     responderIds: [user2.id],
                 },
                 {
-                    skills: [RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment, RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment],
+                    skills: [RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment, RequestSkill.FirstAid, RequestSkill.CPR],
                     type: [RequestType.ConflictResolution],
                     location: {
                         latitude: 40.70107496314848,
@@ -524,10 +550,10 @@ export class DBManager {
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
                     respondersNeeded: 4,
-                    responderIds: [user1.id, user2.id],
+                    responderIds: [user1.id, user3.id],
                 },
                 {
-                    skills: [RequestSkill.French, RequestSkill.TraumaCounceling, RequestSkill.SubstanceUseTreatment],
+                    skills: [RequestSkill.French, RequestSkill.TraumaCounseling, RequestSkill.SubstanceUseTreatment],
                     type: [RequestType.Counseling],
                     location: {
                         latitude: 40.70107496314848,

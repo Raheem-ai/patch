@@ -1,19 +1,24 @@
 import { makeAutoObservable } from 'mobx';
 import { getStore, Store } from './meta';
-import { ICreateRequestStore, IRequestStore, IUserStore } from './interfaces';
-import { OrgContext } from '../../../common/api';
+import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore } from './interfaces';
 import { AddressableLocation, MinHelpRequest, RequestSkill, RequestType } from '../../../common/models';
+import { OrgContext, RequestContext } from '../../../common/api';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 
 
-@Store(ICreateRequestStore)
-export default class CreateRequestStore implements ICreateRequestStore  {
+// TODO: turn this into UpsertRequestStore and have a computed 
+// req object that merges the base req ({} for creates and the original req for edit)
+// and the changes so we can update just the things you changed...so if someone 
+// updates the location and there's a race with someone udpating the 
+// notes they wont conflict
+@Store(IEditRequestStore)
+export default class EditRequestStore implements IEditRequestStore  {
 
     private userStore = getStore<IUserStore>(IUserStore);
     private requestStore = getStore<IRequestStore>(IRequestStore);
     private api = getService<IAPIService>(IAPIService)
-    
+
     location: AddressableLocation = null
     type: RequestType[] = []
     notes: string = ''
@@ -30,10 +35,18 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             orgId: this.userStore.currentOrgId
         }
     }
-    
-    async createRequest() {
+
+    requestContext(requestId: string): RequestContext {
+        return {
+            requestId,
+            ...this.orgContext()
+        } 
+    }
+
+    async editRequest(reqId: string) {
         try {
-            const req: MinHelpRequest = {
+            const req = {
+                id: reqId,
                 type: this.type,
                 location: this.location,
                 notes: this.notes,
@@ -41,11 +54,19 @@ export default class CreateRequestStore implements ICreateRequestStore  {
                 respondersNeeded: this.respondersNeeded
             }
 
-            await this.api.createNewRequest(this.orgContext(), req);
-            await this.requestStore.getRequests()
+            const updatedReq = await this.api.editRequest(this.requestContext(reqId), req);
+            this.requestStore.updateReq(updatedReq);
         } catch (e) {
             console.error(e);
         }
+    }
+    
+    loadRequest(req: CreateReqData) {
+        this.location = req.location
+        this.type = req.type
+        this.notes = req.notes
+        this.skills = req.skills
+        this.respondersNeeded = req.respondersNeeded
     }
 
     clear() {

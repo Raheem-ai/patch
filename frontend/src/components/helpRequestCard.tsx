@@ -204,6 +204,7 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
                                     : toGoIconDivider()
                         }
 
+                        // TODO: add key here at some point
                         return i < (statuses.length - 1)
                             ? <>
                                 {resolveStatusIcon()}

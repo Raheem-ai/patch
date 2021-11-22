@@ -9,7 +9,7 @@ import { persistent } from '../meta';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 
-@Store()
+@Store(IUserStore)
 export default class UserStore implements IUserStore {
 
     private api = getService<IAPIService>(IAPIService)

@@ -3,7 +3,7 @@ import { makePersistable } from "mobx-persist-store";
 import { persistentKey, PersistentStorage, securelyPersistentKey } from "../meta";
 import { getStore } from "../stores/meta";
 
-export function Service() {
+export function Service({ id }: { id: Symbol }) {
     return function(ctr: new () => any) {
         
         const oldInit: Function = ctr.prototype.init;
@@ -24,7 +24,7 @@ export function Service() {
 
                     if (allPersistentProps && allPersistentProps.length) {
                         await makePersistable(this, { 
-                            name: ctr.name, 
+                            name: id.toString(), 
                             properties: allPersistentProps,
                             storage: new PersistentStorage(securelyPersistentProps)
                         });
