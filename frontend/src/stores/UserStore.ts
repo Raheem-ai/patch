@@ -8,6 +8,7 @@ import { routerNames } from '../types';
 import { persistent } from '../meta';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
+import { clearAllStores } from './utils';
 
 @Store(IUserStore)
 export default class UserStore implements IUserStore {
@@ -95,6 +96,10 @@ export default class UserStore implements IUserStore {
         const org = this.user.organizations[this.currentOrgId];
         return org.roles.includes(UserRole.Admin);
     }
+
+    onSignedOut = () => {
+        // TODO: make general 'was signed out' flow that safely clears all stores
+    }
     
     async signIn(email: string, password: string) {
         try {
@@ -130,12 +135,7 @@ export default class UserStore implements IUserStore {
 
             setTimeout(() => {
                 navigateTo(routerNames.signIn)
-
-                runInAction(() => {
-                    this.user = null
-                    this.authToken = null;
-                    this.currentOrgId = null;
-                })
+                clearAllStores()
             }, 0)
 
             await this.api.signOut({ token });

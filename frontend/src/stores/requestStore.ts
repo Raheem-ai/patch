@@ -29,18 +29,10 @@ export default class RequestStore implements IRequestStore {
         await this.userStore.init();
 
         if (this.userStore.signedIn) {
-            await this.getRequests()
+            await this.getRequestsAfterSignin()
         } else {
             when(() => this.userStore.signedIn, this.getRequestsAfterSignin)
         }
-
-        // testing active request
-    
-        // if (this.requests.length) {
-        //     runInAction(() => {
-        //         this.activeRequest = this.requests[2]
-        //     })
-        // }
     }
     
     get currentRequestIdx() {
@@ -52,11 +44,12 @@ export default class RequestStore implements IRequestStore {
     }
 
     get currentRequest() {
-        return this.requests[this.currentRequestIdx + 1] || null;
+        const idx = this.currentRequestIdx + 1;
+        return this.requests.length && (idx <= this.requests.length - 1) ? this.requests[idx] : null;
     }
 
-    getRequestsAfterSignin = () => {
-        this.getRequests();
+    getRequestsAfterSignin = async () => {
+        await this.getRequests();
 
         when(() => !this.userStore.signedIn, () => {
             when(() => this.userStore.signedIn, this.getRequestsAfterSignin)
@@ -124,7 +117,7 @@ export default class RequestStore implements IRequestStore {
 
     async confirmRequestAssignment(orgId: string, reqId: string) {
         const req = await this.api.confirmRequestAssignment(this.orgContext(orgId), reqId);
-        
+
         runInAction(() => { 
             this.updateOrAddReq(req);
             this.activeRequest = req;

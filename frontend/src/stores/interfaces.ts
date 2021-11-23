@@ -208,3 +208,17 @@ export interface IHeaderStore extends IBaseStore {
 export namespace IHeaderStore {
     export const id = Symbol('IHeaderStore');
 }
+
+export const AllStores = [
+    IUserStore,
+    ILocationStore,
+    INotificationStore,
+    IDispatchStore,
+    ICreateRequestStore,
+    IRequestStore,
+    ISecretStore,
+    IEditRequestStore,
+    IBottomDrawerStore,
+    INativeEventStore,
+    IHeaderStore
+]

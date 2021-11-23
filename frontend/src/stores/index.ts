@@ -1,4 +1,4 @@
-import { IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore } from './interfaces';
+import { AllStores, IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore } from './interfaces';
 import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
@@ -27,7 +27,31 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IHeaderStore, HeaderStore ]
 ];
 
+function validateStores() {
+    const mappingSet = new Set<Symbol>(storeMappings.map(([val, _]) => val.id));
+    const allStoreSet = new Set<Symbol>(AllStores.map((IStore) => IStore.id));
+
+    const mappingDiff = new Set<Symbol>([...mappingSet].filter(s => !allStoreSet.has(s)));
+    const allStoreDiff = new Set<Symbol>([...allStoreSet].filter(s => !mappingSet.has(s)));
+
+    let errorMsg = '';
+
+    if (mappingDiff.size) {
+        errorMsg += `\nStore(s) "${Array.from(mappingDiff.values()).map(s => s.toString()).join(', ')}" are in the startup mapping but not in the AllStores array`
+    }
+
+    if (allStoreDiff.size) {
+        errorMsg += `\nStore(s) "${Array.from(allStoreDiff.values()).map(s => s.toString()).join(', ')}" are in the AllStores array but not in the startup mapping`
+    } 
+
+    if (errorMsg) {
+        throw errorMsg
+    }
+}
+
 export function bindStores() {
+    validateStores()
+
     for (const [ iStore, store] of storeMappings) {
         container.isBound(iStore.id) || container.bind(iStore.id).to(store).inSingletonScope();
     }

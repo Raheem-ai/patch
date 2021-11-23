@@ -281,21 +281,21 @@ export class APIClient implements IAPIService {
     async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
 
-        await this.tryPost<void>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
-        });
+        })).data;
     }
 
     async declineRequestAssignment(ctx: OrgContext, requestId: string) {
         const url = `${apiHost}${API.client.declineRequestAssignment()}`;
 
-        await this.tryPost<void>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
-        });
+        })).data;
     }
 
     async addUserToOrg(ctx: OrgContext, userId: string, roles: UserRole[]) {

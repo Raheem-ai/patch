@@ -147,7 +147,8 @@ const styles = StyleSheet.create({
     cardTrack: {
         position: 'absolute',
         bottom: 0,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems: 'flex-end'
     },
     cardContainer: {
         width: windowDimensions.width - (2 * 20),
