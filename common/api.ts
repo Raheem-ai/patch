@@ -74,8 +74,8 @@ export interface IApiClient {
     // must be signed in and have the correct rolls within th target org
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
-    confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<void>>
-    declineRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<void>>
+    confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
+    declineRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>

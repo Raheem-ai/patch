@@ -9,13 +9,14 @@ import { routerNames } from '../../types';
 import { getStore } from '../../stores/meta';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { IUserStore } from '../../stores/interfaces';
+import { IHeaderStore, IUserStore } from '../../stores/interfaces';
 
 type Props = StackHeaderProps & {};
 
 const Header = observer((props: Props) => {
 
     const userStore = getStore<IUserStore>(IUserStore);
+    const headerStore = getStore<IHeaderStore>(IHeaderStore);
 
     const dimensions = Dimensions.get('window');
     const config: HeaderRouteConfig = HeaderConfig[props.route.name];
@@ -30,10 +31,10 @@ const Header = observer((props: Props) => {
     const dynamicContentToDisplay = false;
 
     const openHeader = () => {
-        setIsOpen(true)
+        headerStore.open()
     }
 
-    const closeHeader = () => setIsOpen(false)
+    const closeHeader = () => headerStore.close()
 
     const headerBar = () => {
         const leftActions = config.leftActions && config.leftActions.length
@@ -146,7 +147,7 @@ const Header = observer((props: Props) => {
             </View>
         </View>
 
-    return isOpen
+    return headerStore.isOpen
         ? fullScreenHeader()
         : headerBar()
 })
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
         height: HeaderHeight,
         backgroundColor: '#000',
         flexDirection: 'row',
-        alignItems: 'flex-end'
+        alignItems: 'flex-end',
     },
     leftIconContainer: {
         width: iconContainerSize,

@@ -9,10 +9,13 @@ import { IRequestStore, IUserStore } from "../stores/interfaces";
 import { navigateTo } from "../navigation";
 import { routerNames } from "../types";
 import UserIcon from "./userIcon";
+import { ActiveRequestTabHeight } from "../constants";
 
 type Props = {
     request: HelpRequest,
-    style?: StyleProp<ViewStyle>
+    style?: StyleProp<ViewStyle>,
+    dark?: boolean,
+    minimal?: boolean
 };
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: () => void, style?: StyleProp<ViewStyle>) => JSX.Element) } = {
@@ -36,7 +39,12 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.Done]: 'check',
 }
 
-const HelpRequestCard = observer(({ request, style } : Props) => {
+const HelpRequestCard = observer(({ 
+    request, 
+    style,
+    dark,
+    minimal
+} : Props) => {
     const userStore = getStore<IUserStore>(IUserStore);
     const requestStore = getStore<IRequestStore>(IRequestStore);
     const [statusOpen, setStatusOpen] = useState(false);
@@ -64,14 +72,14 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
 
         return (
             <View style={styles.headerRow} onTouchStart={closeStatusOrGoToDetails}>
-                <Text style={styles.idText}>{id}</Text>
+                <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
                 <View style={styles.locationContainer}>
                     <IconButton
                         style={styles.locationIcon}
                         icon='map-marker' 
                         color={styles.locationIcon.color}
                         size={styles.locationIcon.width} />
-                    <Text style={styles.locationText}>{address}</Text>
+                    <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
                 </View>
             </View>
         )
@@ -83,9 +91,9 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
 
         return (
             <View style={styles.detailsRow} onTouchStart={closeStatusOrGoToDetails}>
-                <Text numberOfLines={4}>
-                    <Text style={styles.typeText}>{type}: </Text>
-                    <Text>{notes}</Text>
+                <Text numberOfLines={4} style={dark ? styles.darkDetailsText : {}}>
+                    <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type}: </Text>
+                    <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
                 </Text>
             </View>
         )
@@ -231,9 +239,9 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
                     <>
                         <View>
                             <IconButton
-                                style={styles.messageIcon}
+                                style={[styles.messageIcon, dark ? styles.messageIconDark : null]}
                                 icon='message-text' 
-                                color={styles.messageIcon.color}
+                                color={dark ? styles.messageIconDark.color : styles.messageIcon.color}
                                 onPress={goToChat}
                                 size={28}>
                             </IconButton>
@@ -258,7 +266,7 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
                     statusOpen
                         ? statusSelector()
                         : <View style={styles.statusContainer}>
-                            <Text style={styles.statusText}>{label}</Text>
+                            <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {statusIcon(request.status, openStatusSelector)}
                         </View>
                 }       
@@ -267,9 +275,12 @@ const HelpRequestCard = observer(({ request, style } : Props) => {
     }
 
     return (
-        <View style={[styles.container, style]}>
+        <View style={[styles.container, dark ? styles.darkContainer: null, minimal ? styles.minimalContainer: null, style]}>
             {header()}
-            {details()}
+            { minimal 
+                ? null
+                : details()
+            }
             {status()}
         </View>
     )
@@ -282,6 +293,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1
+    },
+    darkContainer: {
+        backgroundColor: '#444144',
+    },
+    minimalContainer: {
+        height: ActiveRequestTabHeight,
+        borderBottomWidth: 0,
+        justifyContent: 'space-between'
+    },
+    darkText: {
+        color: '#A9A7A9'
     },
     headerRow: {
         height: 22,
@@ -311,6 +333,9 @@ const styles = StyleSheet.create({
         margin: 12,
         flexDirection: 'row'
     },
+    darkDetailsText: {
+        color: '#E0DEE0'
+    },
     typeText: {
         fontWeight: 'bold'
     },
@@ -332,6 +357,10 @@ const styles = StyleSheet.create({
         margin: 0,
         marginRight: 4,
         borderRadius: 0
+    },
+    messageIconDark: {
+        color: '#CCCACC',
+        backgroundColor: '#444144'
     },
     unreadMessageNotifier: {
         backgroundColor: '#00C95C',
@@ -385,6 +414,9 @@ const styles = StyleSheet.create({
     statusText: {
         alignSelf: 'center',
     }, 
+    darkStatusText: {
+        color: '#A9A7A9'
+    },
     statusIcon: {
         color: '#fff',
         backgroundColor: '#000',

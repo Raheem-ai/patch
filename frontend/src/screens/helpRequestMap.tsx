@@ -4,7 +4,8 @@ import { Dimensions, GestureResponderEvent, StyleSheet, View } from "react-nativ
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/helpRequestCard";
-import { ILocationStore, IRequestStore } from "../stores/interfaces";
+import { ActiveRequestTabHeight } from "../constants";
+import { BottomDrawerHandleHeight, IBottomDrawerStore, ILocationStore, IRequestStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { ScreenProps, routerNames } from "../types";
 
@@ -15,6 +16,7 @@ const windowDimensions = Dimensions.get("window");
 export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     const locationStore = getStore<ILocationStore>(ILocationStore);
     const requestStore = getStore<IRequestStore>(IRequestStore);
+    const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
 
     const [startTouchX, setStartTouchX] = useState(null);
     const [deltaTouchX, setDeltaTouchX] = useState(0);
@@ -94,6 +96,15 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         left: visualDeltaX + deltaTouchX 
     }
 
+    const bottomUIOffset = ((bottomDrawerStore.showing) 
+        ? BottomDrawerHandleHeight 
+        : 0
+    ) + (requestStore.activeRequest 
+        ? ActiveRequestTabHeight
+        : 0
+    ); 
+
+    const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 
     return (
         <>
@@ -102,7 +113,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                 provider={PROVIDER_GOOGLE} 
                 showsUserLocation={true}
                 initialRegion={initialRegion}
-                style={{ height: windowDimensions.height - HeaderHeight }}>
+                style={{ height: height }}>
                     { requestStore.requests.length 
                             ? <Marker
                                 coordinate={{ 
@@ -111,7 +122,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                             : null }
             </MapView>
             <View 
-                style={[styles.cardTrack, swipeStyle]} 
+                style={[styles.cardTrack, swipeStyle, bottomUIOffset ? { bottom: styles.cardTrack.bottom + bottomUIOffset } : null ]} 
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}>
@@ -119,7 +130,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     requestStore.requests.map(r => {
                         return (
                             <View key={r.id} style={styles.cardContainer}>
-                                <HelpRequestCard request={r} style={styles.card}/>
+                                <HelpRequestCard request={r} style={styles.card} dark={requestStore.activeRequest?.id == r.id}/>
                             </View>
                         )
                     })

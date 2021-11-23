@@ -15,7 +15,8 @@ export default class RequestStore implements IRequestStore {
 
     loading = false;
 
-    @securelyPersistent() requests: HelpRequest[] = []
+    @securelyPersistent() requests: HelpRequest[] = [];
+    @securelyPersistent() activeRequest: HelpRequest;
     @persistent() currentRequestIdxStack: number[] = [-1];
     @persistent() filter = HelpRequestFilter.Active;
     @persistent() sortBy = HelpRequestSortBy.ByTime;
@@ -32,6 +33,14 @@ export default class RequestStore implements IRequestStore {
         } else {
             when(() => this.userStore.signedIn, this.getRequestsAfterSignin)
         }
+
+        // testing active request
+    
+        // if (this.requests.length) {
+        //     runInAction(() => {
+        //         this.activeRequest = this.requests[2]
+        //     })
+        // }
     }
     
     get currentRequestIdx() {
@@ -111,6 +120,19 @@ export default class RequestStore implements IRequestStore {
         this.filter = filter;
         await this.getRequests()
         // stop loading
+    }
+
+    async confirmRequestAssignment(orgId: string, reqId: string) {
+        const req = await this.api.confirmRequestAssignment(this.orgContext(orgId), reqId);
+        
+        runInAction(() => { 
+            this.updateOrAddReq(req);
+            this.activeRequest = req;
+        })
+    }
+
+    setActiveRequest(req: HelpRequest) {
+        this.activeRequest = req;
     }
 
     /**
@@ -246,6 +268,10 @@ export default class RequestStore implements IRequestStore {
         this.updateReq(updatedReq);
     }
 
+    updateOrAddReq(updatedReq: HelpRequest, givenIndex?: number) {
+        this.updateReq(updatedReq, givenIndex) || this.requests.push(updatedReq);
+    }
+
     updateReq(updatedReq: HelpRequest, givenIndex?: number) {
         const index = typeof givenIndex == 'number' 
             ? givenIndex
@@ -257,6 +283,10 @@ export default class RequestStore implements IRequestStore {
                     this.requests[index][prop] = updatedReq[prop]
                 }
             })
+
+            return true;
+        } else {
+            return false;
         }
     }
 }

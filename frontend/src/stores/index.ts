@@ -1,4 +1,4 @@
-import { IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore } from './interfaces';
+import { IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore } from './interfaces';
 import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
@@ -11,6 +11,7 @@ import SecretStore from './secretStore';
 import EditRequestStore from './editRequestStore';
 import BottomDrawerStore from './bottomDrawerStore';
 import NativeEventStore from './nativeEventStore';
+import HeaderStore from './headerStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -22,7 +23,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ ISecretStore, SecretStore ],
     [ IEditRequestStore, EditRequestStore ],
     [ IBottomDrawerStore, BottomDrawerStore ],
-    [ INativeEventStore, NativeEventStore ]
+    [ INativeEventStore, NativeEventStore ],
+    [ IHeaderStore, HeaderStore ]
 ];
 
 export function bindStores() {

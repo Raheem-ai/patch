@@ -122,7 +122,7 @@ export default function App() {
       <PaperProvider theme={theme}>
         <NavigationContainer ref={navigationRef}>
           {/* <GlobalErrorBoundary> */}
-            <Stack.Navigator screenOptions={{ header, headerMode: 'screen' }} initialRouteName={initialRoute}>
+            <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
               <Stack.Screen name={routerNames.signIn} component={SignInForm} />
               <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
               <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
@@ -149,7 +149,6 @@ const userScreen = function(Component: (props) => JSX.Element) {
       : null
   })
 }
-
 
 const styles = StyleSheet.create({
   modalView: {

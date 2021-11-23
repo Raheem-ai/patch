@@ -1,5 +1,5 @@
-import {  Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore } from './interfaces';
+import {  getStore, Store } from './meta';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IRequestStore } from './interfaces';
 import { Alert, Animated, Dimensions } from 'react-native';
 import { persistent } from '../meta';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
@@ -8,6 +8,7 @@ import RequestChat from '../components/requestChat';
 import EditHelpRequest from '../components/editRequest';
 import AssignResponders from '../components/assignResponders';
 import CreateHelpRequest from '../components/createRequest';
+import { ActiveRequestTabHeight } from '../constants';
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
@@ -20,11 +21,14 @@ const dimensions = Dimensions.get('window')
 
 @Store(IBottomDrawerStore)
 export default class BottomDrawerStore implements IBottomDrawerStore {
-    topAnim = new Animated.Value(dimensions.height)
+    bottomDrawerTabTop = new Animated.Value(dimensions.height)
+
     expanded: boolean = false;
     showing: boolean = false;
 
     viewIdStack: BottomDrawerView[] = []
+
+    private requestStore = getStore<IRequestStore>(IRequestStore);
 
     constructor() {
         makeAutoObservable(this)
@@ -94,7 +98,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             })
         }
 
-        Animated.timing(this.topAnim, {
+        Animated.timing(this.bottomDrawerTabTop, {
             toValue: !!expanded 
                 ? 0 + (newIsMinimizeable
                     ? HeaderHeight
@@ -120,7 +124,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             return;
         }
 
-        Animated.timing(this.topAnim, {
+        Animated.timing(this.bottomDrawerTabTop, {
             toValue: dimensions.height,
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
@@ -145,7 +149,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 : this.view.minimizeLabel
             : false;
 
-        Animated.timing(this.topAnim, {
+        Animated.timing(this.bottomDrawerTabTop, {
             toValue: 0 + (isMinimizable
                 ? HeaderHeight
                 : InteractiveHeaderHeight),
@@ -160,8 +164,8 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     minimize = (cb?: () => void) => {
-        Animated.timing(this.topAnim, {
-            toValue: dimensions.height - BottomDrawerHandleHeight,
+        Animated.timing(this.bottomDrawerTabTop, {
+            toValue: dimensions.height - BottomDrawerHandleHeight - (this.requestStore.activeRequest ? ActiveRequestTabHeight : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start((_) => {

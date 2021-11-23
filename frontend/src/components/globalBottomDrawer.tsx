@@ -3,10 +3,12 @@ import { observer } from "mobx-react";
 import React, {ComponentClass} from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { BottomDrawerHandleHeight, IBottomDrawerStore, IUserStore } from "../stores/interfaces";
+import { ActiveRequestTabHeight } from "../constants";
+import { BottomDrawerHandleHeight, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { Colors } from "../types";
 import { HeaderHeight, InteractiveHeaderHeight } from "./header/header";
+import HelpRequestCard from "./helpRequestCard";
 
 const dimensions = Dimensions.get('window')
 
@@ -17,6 +19,8 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
     bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
     userStore = getStore<IUserStore>(IUserStore);
+    requestStore = getStore<IRequestStore>(IRequestStore);
+    headerStore = getStore<IHeaderStore>(IHeaderStore);
 
     toggleExpanded = () => {
         if (this.bottomDrawerStore.expanded) {
@@ -26,11 +30,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
         }
     }
 
-    render() {
-        if (!this.bottomDrawerStore.view || !this.userStore.signedIn) {
-            return null;
-        }
-
+    drawer() {
         const submitActionLabel = this.bottomDrawerStore.view.submit?.label
             ? typeof this.bottomDrawerStore.view.submit.label == 'function'
                 ? this.bottomDrawerStore.view.submit.label()
@@ -55,8 +55,8 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
             <Animated.View style={[
                 styles.container, 
                 { 
-                    top: this.bottomDrawerStore.topAnim,
-                    height: dimensions.height - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight)
+                    top: this.bottomDrawerStore.bottomDrawerTabTop,
+                    height: dimensions.height - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight) - (this.requestStore.activeRequest ? ActiveRequestTabHeight : 0)
                 },
                 this.bottomDrawerStore.expanded 
                     ? null
@@ -110,6 +110,36 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                 </View>
                     <ChildView/>
             </Animated.View>
+        )
+    }
+
+    activeRequest() {
+        return (
+            <HelpRequestCard request={this.requestStore.activeRequest} style={[
+                styles.activeRequestCard,
+                { zIndex: styles.container.zIndex }
+            ]} minimal dark/>
+        )
+    }
+
+    render() {
+        if (!this.userStore.signedIn) {
+            return null
+        }
+
+        return (
+            <>
+                {
+                    !this.bottomDrawerStore.view
+                        ? null
+                        : this.drawer()
+                }
+                {
+                    this.requestStore.activeRequest && !this.headerStore.isOpen
+                        ? this.activeRequest()
+                        : null
+                }
+            </>
         )
     }
 }
@@ -193,5 +223,17 @@ const styles = StyleSheet.create({
         color: '#111111',
         fontWeight: 'bold',
         marginLeft: 20
+    },
+    activeRequestCard: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: -2
+        } 
     }
 })

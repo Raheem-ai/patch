@@ -121,6 +121,7 @@ export interface IRequestStore extends IBaseStore {
     sortedRequests: HelpRequest[]
     currentRequest: HelpRequest
     currentRequestIdx: number
+    activeRequest: HelpRequest
     loading: boolean
 
     filter: HelpRequestFilter
@@ -136,6 +137,8 @@ export interface IRequestStore extends IBaseStore {
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateReq(updatedReq: HelpRequest): void
+    setActiveRequest(req: HelpRequest): void
+    confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
 }
 
 export interface ISecretStore extends IBaseStore, AppSecrets {
@@ -147,7 +150,7 @@ export namespace ISecretStore {
 }
 
 export interface IBottomDrawerStore extends IBaseStore {
-    readonly topAnim: Animated.Value
+    readonly bottomDrawerTabTop: Animated.Value
     expanded: boolean
     showing: boolean
     viewId: BottomDrawerView
@@ -194,4 +197,14 @@ export interface INativeEventStore extends IBaseStore {
 
 export namespace INativeEventStore {
     export const id = Symbol('INativeEventStore');
+}
+
+export interface IHeaderStore extends IBaseStore {
+    isOpen: boolean;
+    open(): void;
+    close(): void;
+}
+
+export namespace IHeaderStore {
+    export const id = Symbol('IHeaderStore');
 }
