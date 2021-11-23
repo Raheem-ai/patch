@@ -65,7 +65,17 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             } else {
                 // TODO: test this when we have another minimizeable view
                 runInAction(() => {
-                    this.viewIdStack.push(view);
+                    const idx = this.viewIdStack.findIndex(v => v == view);
+
+                    if (idx < 0) {
+                        // not already in stack so add it
+                        this.viewIdStack.push(view);
+                    } else {
+                        // already in stack so move it to the front
+                        this.viewIdStack.splice(idx, 1);
+                        this.viewIdStack.push(view);
+                    }
+                    
                     this.showing = true
                     this.expanded = !!expanded
                 })
