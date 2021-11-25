@@ -155,6 +155,7 @@ export interface IBottomDrawerStore extends IBaseStore {
     showing: boolean
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
+    currentRoute: string
     
     show(view: BottomDrawerView, expanded?: boolean): void;
     hide(): void// should this take an optional callback?

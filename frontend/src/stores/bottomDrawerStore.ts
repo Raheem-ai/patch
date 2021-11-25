@@ -3,12 +3,14 @@ import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeigh
 import { Alert, Animated, Dimensions } from 'react-native';
 import { persistent } from '../meta';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { autorun, makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import RequestChat from '../components/requestChat';
 import EditHelpRequest from '../components/editRequest';
 import AssignResponders from '../components/assignResponders';
 import CreateHelpRequest from '../components/createRequest';
 import { ActiveRequestTabHeight } from '../constants';
+import { navigationRef } from '../navigation';
+import { routerNames } from '../types';
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
@@ -23,6 +25,7 @@ const dimensions = Dimensions.get('window')
 export default class BottomDrawerStore implements IBottomDrawerStore {
     bottomDrawerTabTop = new Animated.Value(dimensions.height)
 
+    currentRoute: string = null;
     expanded: boolean = false;
     showing: boolean = false;
 
@@ -32,6 +35,13 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     constructor() {
         makeAutoObservable(this)
+
+        // Bottom drawer does not have access to navigation props/hooks so handling it here
+        reaction(() => this.currentRoute, (newRoute, prevRoute) => {
+           if ((prevRoute == routerNames.helpRequestMap || newRoute == routerNames.helpRequestMap) && this.showing) {
+                this.minimize()
+            }
+        })
     }
 
     get viewId() {
@@ -164,8 +174,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     minimize = (cb?: () => void) => {
+        const onRequestMap = navigationRef.current?.getCurrentRoute().name == routerNames.helpRequestMap;
+        
         Animated.timing(this.bottomDrawerTabTop, {
-            toValue: dimensions.height - BottomDrawerHandleHeight - (this.requestStore.activeRequest ? ActiveRequestTabHeight : 0),
+            toValue: dimensions.height - BottomDrawerHandleHeight - ((this.requestStore.activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start((_) => {

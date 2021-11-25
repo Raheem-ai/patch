@@ -96,13 +96,9 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         left: visualDeltaX + deltaTouchX 
     }
 
-    const bottomUIOffset = ((bottomDrawerStore.showing) 
+    const bottomUIOffset = bottomDrawerStore.showing
         ? BottomDrawerHandleHeight 
-        : 0
-    ) + (requestStore.activeRequest 
-        ? ActiveRequestTabHeight
-        : 0
-    ); 
+        : 0; 
 
     const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 

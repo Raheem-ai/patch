@@ -3,7 +3,7 @@ import 'react-native-get-random-values';
 // need for some decorator/observable tings
 import "reflect-metadata"
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
 import "react-native-gesture-handler";
@@ -23,10 +23,10 @@ import HelpRequestChat from './src/screens/helpRequestChat';
 import HelpRequestDetails from './src/screens/helpRequestDetails';
 
 // // navigating imports
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
+import { IBottomDrawerStore, ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -36,6 +36,7 @@ import { container } from './src/meta';
 import GlobalBottomDrawer from './src/components/globalBottomDrawer';
 import GlobalErrorBoundary from './src/globalErrorBoundary';
 import { observer } from 'mobx-react';
+import { runInAction } from 'mobx';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -52,6 +53,8 @@ const theme = {
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+
+  const stackNavRef = useRef();
 
   // handle store binding + initialization + splash screen loading state
   useEffect(() => {
@@ -120,7 +123,7 @@ export default function App() {
     // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
     <Provider container={container}>
       <PaperProvider theme={theme}>
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
           {/* <GlobalErrorBoundary> */}
             <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
               <Stack.Screen name={routerNames.signIn} component={SignInForm} />
@@ -148,6 +151,17 @@ const userScreen = function(Component: (props) => JSX.Element) {
       ? <Component {...props} />
       : null
   })
+}
+
+const updateBottomDrawerRoute = function(state: NavigationState) {
+  const routeName = state?.routes[state?.index]?.name;
+
+  if (routeName) {
+    runInAction(() => {
+      const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+      bottomDrawerStore.currentRoute = routeName
+    })
+  }
 }
 
 const styles = StyleSheet.create({

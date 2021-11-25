@@ -49,9 +49,9 @@ export default class UserStore implements IUserStore {
         })
     }
 
-    orgContext(): OrgContext {
+    orgContext(token?: string): OrgContext {
         return {
-            token: this.authToken,
+            token: token || this.authToken,
             orgId: this.currentOrgId
         }
     }
@@ -109,6 +109,18 @@ export default class UserStore implements IUserStore {
 
             const user = await this.api.me({ token });
 
+            const keys = Object.keys(user.organizations);
+
+            const orgId = !!this.currentOrgId && keys.includes(this.currentOrgId)
+                ? this.currentOrgId
+                : keys[0]
+
+            // need to fetch all data needed for BottomDrawer views before setting the user
+            // which starts unlocking views that require you to be signed in
+            if (orgId) {
+                await this.updateOrgUsers([], { token, orgId })
+            }
+
             await this.getLatestMe({ me: user, token })
         } catch (e) {
             console.error(e);
@@ -122,6 +134,18 @@ export default class UserStore implements IUserStore {
             const token = authTokens.accessToken;
 
             const user = await this.api.me({ token });
+
+            const keys = Object.keys(user.organizations);
+
+            const orgId = !!this.currentOrgId && keys.includes(this.currentOrgId)
+                ? this.currentOrgId
+                : keys[0]
+
+            // need to fetch all data needed for BottomDrawer views before setting the user
+            // which starts unlocking views that require you to be signed in
+            if (orgId) {
+                await this.updateOrgUsers([], { token, orgId })
+            }
             
             await this.getLatestMe({ me: user, token })
         } catch (e) {
@@ -144,8 +168,8 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async updateOrgUsers(userIds: string[]): Promise<void> {
-        const users = await this.api.getTeamMembers(this.orgContext(), userIds);
+    async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {
+        const users = await this.api.getTeamMembers(orgCtx || this.orgContext(), userIds);
 
         const updatedUserMap = {};
 
