@@ -13,7 +13,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 
 @Controller(API.namespaces.dispatch)
-export class DispatcherController implements APIController<'broadcastRequest'> {
+export class DispatcherController implements APIController<'broadcastRequest' | 'assignRequest'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     
     @Inject(Notifications) notifications: Notifications;
@@ -62,7 +62,7 @@ export class DispatcherController implements APIController<'broadcastRequest'> {
         @Required() @BodyParams('requestId') requestId: string, 
         @Required() @BodyParams('to') to: string[]
     ) {
-        // TODO: should we keep track of who you have assigned this to?
+        const updatedReq = await this.db.assignRequest(requestId, to);
         const usersToAssign = await this.db.getUsersByIds(to);
 
         const notifications: NotificationMetadata<NotificationType.AssignedIncident>[] = [];
@@ -77,15 +77,17 @@ export class DispatcherController implements APIController<'broadcastRequest'> {
             notifications.push({
                 type: NotificationType.AssignedIncident,
                 to: user.push_token,
-                body: `You've been assigned to HelpRequest ${requestId}`,
+                body: `You've been assigned to HelpRequest ${updatedReq.displayId}`,
                 payload: {
-                    id: requestId,
-                    orgId
+                    id: updatedReq.id,
+                    orgId: updatedReq.orgId
                 }
             });
         }
 
         await this.notifications.sendBulk(notifications);
+
+        return updatedReq
     }
 
 }

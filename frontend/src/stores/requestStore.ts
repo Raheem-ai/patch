@@ -16,7 +16,6 @@ export default class RequestStore implements IRequestStore {
     loading = false;
 
     @securelyPersistent() requests: HelpRequest[] = [];
-    @securelyPersistent() activeRequest: HelpRequest;
     @persistent() currentRequestIdxStack: number[] = [-1];
     @persistent() filter = HelpRequestFilter.Active;
     @persistent() sortBy = HelpRequestSortBy.ByTime;
@@ -48,6 +47,16 @@ export default class RequestStore implements IRequestStore {
         return this.requests.length && (idx <= this.requests.length - 1) ? this.requests[idx] : null;
     }
 
+    get activeRequest() {
+        return this.activeRequests.length 
+            ? this.activeRequests[this.activeRequests.length - 1]
+            : null;
+    }
+
+    get activeRequests() {
+        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(this.userStore.user.id));
+    }
+
     getRequestsAfterSignin = async () => {
         await this.getRequests();
 
@@ -61,6 +70,8 @@ export default class RequestStore implements IRequestStore {
             this.requests = []
             // this.currentRequest = null
             this.currentRequestIdxStack = [-1]
+            // this.activeRequest = null
+            // this.activeRequests = []
         })
     }
 
@@ -120,13 +131,9 @@ export default class RequestStore implements IRequestStore {
 
         runInAction(() => { 
             this.updateOrAddReq(req);
-            this.activeRequest = req;
         })
     }
 
-    setActiveRequest(req: HelpRequest) {
-        this.activeRequest = req;
-    }
 
     /**
      * NOTE: should only be called from header config back button for request details
@@ -150,7 +157,12 @@ export default class RequestStore implements IRequestStore {
 
             const userIdSet = new Set<string>();
 
-            [ req.dispatcherId, ...req.responderIds ].forEach(id => userIdSet.add(id));
+            const allAssignedUserIds = req.assignments.reduce<string[]>((arr, r) => { 
+                arr.push(...r.responderIds);
+                return arr;
+            }, []);
+
+            [ req.dispatcherId, ...req.assignedResponderIds, ...req.declinedResponderIds, ...allAssignedUserIds ].forEach(id => userIdSet.add(id));
 
             // TODO: might be worth having a common response type that returns 
             // related objects to save us a round trip call for this and other tings
@@ -191,7 +203,12 @@ export default class RequestStore implements IRequestStore {
             const userIdSet = new Set<string>();
 
             for (const req of requests) {
-                [ req.dispatcherId, ...req.responderIds ].forEach(id => userIdSet.add(id));
+                const allAssignedUserIds = req.assignments.reduce<string[]>((arr, r) => { 
+                    arr.push(...r.responderIds);
+                    return arr;
+                }, []);
+
+                [ req.dispatcherId, ...req.assignedResponderIds, ...req.declinedResponderIds, ...allAssignedUserIds].forEach(id => userIdSet.add(id));
                 
                 if (req.id == oldCurrentReqId) {
                     possibleUpdatedCurrentReq = req;

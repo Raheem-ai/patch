@@ -57,6 +57,11 @@ export type AddressableLocation = {
     address: string
 }
 
+export type HelpRequestAssignment = {
+    timestamp: number,
+    responderIds: string[]
+}
+
 export type HelpRequest = {
     id: string
     displayId: string
@@ -69,10 +74,13 @@ export type HelpRequest = {
     respondersNeeded: number
     chat: Chat
     dispatcherId: string
-    responderIds: string[]
     status: RequestStatus
     createdAt: string
     updatedAt: string
+
+    assignments: HelpRequestAssignment[]
+    assignedResponderIds: string[]
+    declinedResponderIds: string[]
 }
 
 export enum HelpRequestFilter {
@@ -119,7 +127,7 @@ export enum RequestStatus {
 
 export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.responderIds.length} of ${req.respondersNeeded}`,
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.assignedResponderIds.length} of ${req.respondersNeeded}`,
     [RequestStatus.Ready]: 'Ready',
     [RequestStatus.OnTheWay]: 'On the way',
     [RequestStatus.OnSite]: 'On site',

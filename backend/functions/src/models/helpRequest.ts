@@ -1,11 +1,11 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
-import { CollectionOf, Enum, getJsonSchema, Property, Required, string } from "@tsed/schema";
-import { AddressableLocation, Chat, ChatMessage, HelpRequest, Location, Organization, RequestSkill, RequestStatus, RequestType, User } from "common/models";
+import { CollectionOf, Enum, getJsonSchema, Property, Required } from "@tsed/schema";
+import { AddressableLocation, Chat, ChatMessage, HelpRequest, HelpRequestAssignment, Location, Organization, RequestSkill, RequestStatus, RequestType, User } from "common/models";
 import { Document } from "mongoose";
-import { inspect } from "util";
-import { WithRefs } from ".";
-import { UserModel } from './user';
-import utils from 'util'
+// import { inspect } from "util";
+// import { WithRefs } from ".";
+// import { UserModel } from './user';
+// import utils from 'util'
 
 @Schema()
 class ChatMessageSchema  implements ChatMessage {
@@ -13,6 +13,12 @@ class ChatMessageSchema  implements ChatMessage {
     @Required() userId: string
     @Required() message: string
     @Required() timestamp: number
+}
+
+@Schema()
+class HelpRequestAssignmentSchema implements HelpRequestAssignment {
+    @Required() timestamp: number
+    @Required() responderIds: string[]
 }
 
 @Model({ 
@@ -67,7 +73,13 @@ export class HelpRequestModel implements HelpRequest {
     dispatcherId: string
 
     @CollectionOf(String)
-    responderIds: string[]
+    assignedResponderIds: string[]
+
+    @CollectionOf(String)
+    declinedResponderIds: string[]
+
+    @CollectionOf(HelpRequestAssignmentSchema)
+    assignments: HelpRequestAssignment[]
 
     @Enum(RequestStatus) 
     status: RequestStatus

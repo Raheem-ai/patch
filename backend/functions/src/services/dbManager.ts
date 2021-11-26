@@ -1,7 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, Organization, ProtectedUser, RequestSkill, RequestStatus, RequestType, UserOrgConfig, UserRole } from "common/models";
-import { NotificationModel } from "../models/notification";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, NotificationType, Organization, ProtectedUser, RequestSkill, RequestStatus, RequestType, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -14,20 +13,21 @@ import randomColor from 'randomcolor';
 import * as uuid from 'uuid';
 import timespace from '@mapbox/timespace';
 import { AtLeast } from "common";
-import { MomentTimezone } from 'moment-timezone';
 import moment from 'moment';
+import Notifications, { NotificationMetadata } from "./notifications";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
 @Agenda()
 @Service()
 export class DBManager {
-    @Inject(NotificationModel) notifications: Model<NotificationModel>;
+    
     @Inject(UserModel) users: Model<UserModel>;
     @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
     @Inject(HelpRequestModel) requests: Model<HelpRequestModel>
 
     @Inject(MongooseService) db: MongooseService;
+    // @Inject(Notifications) notifications: Notifications;
 
     // the 'me' api handles returning non-system props along with personal
     // ones so the user has access...everywhere else a user is 
@@ -264,10 +264,10 @@ export class DBManager {
         
         req.orgId = orgId;
         req.dispatcherId = dispatcherId;
-        req.responderIds ||= [];
+        req.assignedResponderIds ||= [];
 
-        req.status ||= req.responderIds.length 
-            ? req.respondersNeeded && req.responderIds.length < req.respondersNeeded
+        req.status ||= req.assignedResponderIds.length 
+            ? req.respondersNeeded && req.assignedResponderIds.length < req.respondersNeeded
                 ? RequestStatus.PartiallyAssigned
                 : RequestStatus.Ready
             : RequestStatus.Unassigned;
@@ -382,6 +382,53 @@ export class DBManager {
         return await helpRequest.save()
     }
 
+    async assignRequest(request: string | HelpRequestDoc, to: string[]) {
+        request = await this.resolveRequest(request);
+
+        request.assignments ||= [];
+
+        request.assignments.push({
+            responderIds: to,
+            timestamp: new Date().getTime()
+        });
+
+        const updatedRequest = await request.save();
+
+        return updatedRequest;
+    }
+
+    async confirmRequestAssignment(requestId: string | HelpRequestDoc, user: UserDoc) {
+        const request = await this.resolveRequest(requestId);
+
+        if (!request.assignedResponderIds.includes(user.id)) {
+            request.assignedResponderIds.push(user.id);
+        }
+
+        const idx = request.declinedResponderIds.indexOf(user.id)
+
+        if (idx != -1) {
+            request.declinedResponderIds.splice(idx, 1)
+        }
+
+        return await request.save()
+    }
+
+    async declineRequestAssignment(requestId: string | HelpRequestDoc, user: UserDoc) {
+        const request = await this.resolveRequest(requestId);
+
+        if (!request.declinedResponderIds.includes(user.id)) {
+            request.declinedResponderIds.push(user.id);
+        }
+
+        const idx = request.assignedResponderIds.indexOf(user.id)
+
+        if (idx != -1) {
+            request.assignedResponderIds.splice(idx, 1)
+        }
+
+        return await request.save()
+    }
+
     // HELPERS
 
     findByIds<M extends Model<any>, D=DocFromModel<M>>(model: M, ids: string[]): Query<D[], D> {
@@ -461,7 +508,7 @@ export class DBManager {
             : requestId;
 
         if (!user) {
-            throw `Unknown user`
+            throw `Unknown request`
         }
 
         return user;
@@ -537,8 +584,7 @@ export class DBManager {
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                    respondersNeeded: 1,
-                    responderIds: [user2.id],
+                    respondersNeeded: 1
                 },
                 {
                     skills: [RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment, RequestSkill.FirstAid, RequestSkill.CPR],
@@ -550,7 +596,6 @@ export class DBManager {
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
                     respondersNeeded: 4,
-                    responderIds: [user1.id, user3.id],
                 },
                 {
                     skills: [RequestSkill.French, RequestSkill.TraumaCounseling, RequestSkill.SubstanceUseTreatment],
@@ -562,7 +607,7 @@ export class DBManager {
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
                     respondersNeeded: 2,
-                    responderIds: [user1.id, user2.id],
+                    assignedResponderIds: [user1.id, user2.id],
                     status: RequestStatus.Done
                 }
             ];
@@ -573,8 +618,17 @@ export class DBManager {
             for (const req of minRequests) {
                 fullReqs.push(await this.createRequest(req, org.id, admin1.id))
             }
+
+            fullReqs[0] = await this.assignRequest(fullReqs[0], [user1.id, user2.id, user3.id]);
+            fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
+            fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
+
+            fullReqs[0] = await this.confirmRequestAssignment(fullReqs[0], user1);
+            fullReqs[0] = await this.declineRequestAssignment(fullReqs[0], user3);
+            fullReqs[1] = await this.confirmRequestAssignment(fullReqs[1], user3);
+            fullReqs[2] = await this.declineRequestAssignment(fullReqs[2], user1);
             
-            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[2], 'Message one...blah blah blah...blah blah blah blah blah ')
+            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah...blah blah blah blah blah ')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah')
 

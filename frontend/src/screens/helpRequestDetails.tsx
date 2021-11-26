@@ -1,15 +1,20 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
-import { NotificationType, RequestTypeToLabelMap } from "../../../common/models";
+import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { BottomDrawerView, IBottomDrawerStore, IRequestStore, IUserStore } from "../stores/interfaces";
+import { BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { observer } from "mobx-react";
 import ResponderRow from "../components/responderRow";
+import { timestampToTime } from "../../../common/utils";
+import { HeaderHeight } from "../components/header/header";
+import { ActiveRequestTabHeight } from "../constants";
 
 type Props = ScreenProps<'HelpRequestDetails'>;
+
+const dimensions = Dimensions.get('screen');
 
 const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const requestStore = getStore<IRequestStore>(IRequestStore);
@@ -129,7 +134,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             : ''
 
         const lastMessageTime = !!lastChatMessage
-            ? new Date(lastChatMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            ? timestampToTime(lastChatMessage.timestamp)
             : ''
 
         const hasUnreadMessages = !isLoading && (requestStore.currentRequest.chat && requestStore.currentRequest.chat.messages.length) 
@@ -183,7 +188,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             ? null
             : requestStore.currentRequest;
 
-        const responderIds = request?.responderIds || [];
+
+        const responderIds = request?.assignedResponderIds || [];
 
         const addResponders = () => {
             bottomDrawerStore.show(BottomDrawerView.assignResponders, true);
@@ -223,7 +229,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         responderIds.map((id) => {
                             const responder = userStore.usersInOrg.get(id);
                             return (
-                                <ResponderRow responder={responder} orgId={userStore.currentOrgId}/>
+                                <ResponderRow key={id} responder={responder} orgId={userStore.currentOrgId}/>
                             )
                         })
                     }
@@ -231,10 +237,141 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             )   
         }
 
+        const assignments = () => {
+            if (!request?.assignments?.length) {
+                return null
+            }
+
+            const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
+                const [isOpen, setIsOpen] = useState(false);
+                const numResponders = assignment.responderIds.length;
+
+                const toggleOpen = () => {
+                    setIsOpen(!isOpen);
+                }
+
+                // should be for each sorting each responderId into pending, assigned, declined
+                const assignedResponderIds = [];
+                const pendingResponderIds = [];
+                const declinedResponderIds = [];
+
+                assignment.responderIds.forEach(responderId => {
+                    const accepted = request.assignedResponderIds.includes(responderId);
+                    const declined = request.declinedResponderIds.includes(responderId);
+
+                    if (accepted) {
+                        assignedResponderIds.push(responderId)
+                    } else if (declined) {
+                        declinedResponderIds.push(responderId)
+                    } else {
+                        pendingResponderIds.push(responderId)
+                    }
+                })
+
+                const sendReminders = async () => {
+                    const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
+                    await dispatchStore.assignRequest(request.id, pendingResponderIds);
+                    setIsOpen(false)
+                }
+
+                return (
+                    <View style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
+                        <View style={styles.assignmentHeader} onTouchStart={toggleOpen}>
+                            <Text>
+                                <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
+                                <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTime(assignment.timestamp)}`}</Text>
+                            </Text>
+                            <IconButton
+                                style={styles.assignmentSelectIcon}
+                                icon={isOpen ? 'chevron-up' : 'chevron-down'}
+                                color={styles.assignmentSelectIcon.color}
+                                size={styles.assignmentSelectIcon.width}/>
+                        </View>
+                        { isOpen
+                            ? <View>
+                                {
+                                    assignedResponderIds.map((id) => {
+                                        const user = userStore.usersInOrg.get(id);
+
+                                        return (
+                                            <View style={styles.assignmentRow}>
+                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
+                                                <IconButton
+                                                    style={styles.assignmentAcceptedIcon}
+                                                    icon={'check'}
+                                                    color={styles.assignmentAcceptedIcon.color}
+                                                    size={styles.assignmentAcceptedIcon.width}/>
+                                            </View>
+                                        )
+                                    })
+                                }
+                                {
+                                    declinedResponderIds.map((id) => {
+                                        const user = userStore.usersInOrg.get(id);
+
+                                        return (
+                                            <View style={styles.assignmentRow}>
+                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
+                                                <IconButton
+                                                    style={styles.assignmentDeclinedIcon}
+                                                    icon={'close'}
+                                                    color={styles.assignmentDeclinedIcon.color}
+                                                    size={styles.assignmentDeclinedIcon.width}/>
+                                            </View>
+                                        )
+                                    })    
+                                }
+                                {
+                                    pendingResponderIds.map((id) => {
+                                        const user = userStore.usersInOrg.get(id);
+
+                                        return (
+                                            <View style={styles.assignmentRow}>
+                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
+                                                <IconButton
+                                                    style={styles.assignmentPendingIcon}
+                                                    icon={'clock-outline'}
+                                                    color={styles.assignmentPendingIcon.color}
+                                                    size={styles.assignmentPendingIcon.width}/>
+                                            </View>
+                                        )
+                                    })
+                                }
+                                {
+                                    pendingResponderIds.length
+                                        ? <View style={{ flexDirection: 'row'}}>
+                                            <Text style={styles.assignmentReminderButton} onPress={sendReminders}>{`SEND ${pendingResponderIds.length} REMINDER${pendingResponderIds.length > 1 ? 'S' : ''}`}</Text>
+                                        </View>
+                                        : null
+                                }
+                            </View>
+                            : null
+                        }
+                    </View>
+                )
+            }
+
+            return (
+                <View>
+                    {
+                        request.assignments.map((assignment, i) => {
+                            return (
+                                <Assignment 
+                                    key={i} 
+                                    assignment={assignment}
+                                    style={[i > 0 ? { marginTop: 16 } : null]}/>
+                            )
+                        })
+                    }
+                </View>
+            )
+        }
+
         return (
             <View style={styles.teamSection}>
                 { teamHeader() }
                 { responders() }
+                { assignments() }
                 <Button 
                     uppercase={false}
                     onPress={addResponders}
@@ -249,26 +386,34 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return null
     }
 
+    const height = dimensions.height - HeaderHeight 
+        - (requestStore.activeRequest ? ActiveRequestTabHeight : 0)
+        - (bottomDrawerStore.showing ? BottomDrawerHandleHeight : 0);
+    
     return (
-        <>
-            <View style={styles.container}>
-                { header() }
-                { notesSection() }
-                { timeAndPlace() }
-                { chatPreview() }
-            </View>
-            { teamSection() }
-        </>
+        <View style={{ height: height }}>
+            <ScrollView>
+                <View style={styles.detailsContainer}>
+                    { header() }
+                    { notesSection() }
+                    { timeAndPlace() }
+                    { chatPreview() }
+                </View>
+                { teamSection() }
+            </ScrollView>
+        </View>
     );
 });
 
 export default HelpRequestDetails;
 
 const styles = StyleSheet.create({
-    container: {
+    detailsContainer: {
+        flex: 1,
         padding: 16,
         paddingTop: 30,
-        marginBottom: 4
+        marginBottom: 4,
+        backgroundColor: '#fff'
     },
     notesSection: {
         marginBottom: 16
@@ -286,6 +431,71 @@ const styles = StyleSheet.create({
         color: '#666',
         alignSelf: 'center',
         margin: 0
+    },
+    assignmentSelectIcon: { 
+        width: 30,
+        height: 30,
+        color: '#838383',
+        alignSelf: 'center',
+        margin: 0
+    },
+    assignmentAcceptedIcon: {
+        width: 14,
+        height: 14,
+        backgroundColor: '#55BB76',
+        color: '#fff',
+        alignSelf: 'center',
+        margin: 0,
+        marginHorizontal: 8
+    },
+    assignmentPendingIcon: {
+        width: 16,
+        height: 16,
+        color: '#666666',
+        alignSelf: 'center',
+        margin: 0,
+        marginHorizontal: 7
+    },
+    assignmentDeclinedIcon: {
+        width: 14,
+        height: 14,
+        color: '#fff',
+        backgroundColor: '#D04B00',
+        alignSelf: 'center',
+        margin: 0,
+        marginHorizontal: 8
+    },
+    assignmentReminderButton: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#694F70',
+        margin: 0,
+        padding: 0,
+        marginTop: 16
+    },
+    assignmentRow: {
+        flexDirection: 'row',
+        alignItems: "center",
+        justifyContent: 'space-between',
+        marginTop: 12
+    },
+    assignmentRowText: {
+        fontSize: 14,
+        color: '#666666'
+    },
+    assignmentHeader: {
+        flexDirection: 'row',
+        alignItems: "center",
+        justifyContent: 'space-between'
+    },
+    assignmentHeaderText: {
+        color: '#333333',
+        fontSize: 14,
+        fontWeight: 'bold'
+    },
+    assignmentHeaderSubText: {
+        color: '#666666',
+        fontSize: 14
     },
     locationText: {
         fontSize: 14,
@@ -372,7 +582,7 @@ const styles = StyleSheet.create({
     },
     teamSection: {
         flex: 1,
-        backgroundColor: '#e0e0e0',
+        backgroundColor: '#F3F1F3',
         padding: 16,
         paddingTop: 30,
     },
@@ -412,7 +622,7 @@ const styles = StyleSheet.create({
         marginTop: 12
     },
     respondersContainer: {
-        
+        flex: 1
     },
     responderRow: {
         flexDirection: 'row',

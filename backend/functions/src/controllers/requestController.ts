@@ -91,10 +91,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('userId') userId: string,
     ) {
-        const idx = helpRequest.responderIds.findIndex(id => id === userId);
+        const idx = helpRequest.assignedResponderIds.findIndex(id => id === userId);
 
         if (idx != -1) {
-            helpRequest.responderIds.splice(idx, 1);
+            helpRequest.assignedResponderIds.splice(idx, 1);
             await helpRequest.save();
         }
     }

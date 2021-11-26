@@ -54,8 +54,6 @@ const theme = {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const stackNavRef = useRef();
-
   // handle store binding + initialization + splash screen loading state
   useEffect(() => {
     bindStores();

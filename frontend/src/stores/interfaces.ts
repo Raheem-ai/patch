@@ -137,7 +137,6 @@ export interface IRequestStore extends IBaseStore {
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateReq(updatedReq: HelpRequest): void
-    setActiveRequest(req: HelpRequest): void
     confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
 }
 

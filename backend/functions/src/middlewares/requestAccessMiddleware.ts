@@ -45,7 +45,7 @@ export class RequestAccessMiddleware {
         context.set(HelpRequestContextKey, request);
         return; // dispatchers of an org have access to all apis on all requests
     } else if (orgRoles.includes(UserRole.Responder)) {
-        const hasAccess = request.responderIds.includes(user.id);
+        const hasAccess = request.assignedResponderIds.includes(user.id);
 
         if (!hasAccess) {
           throw new Forbidden(`You do not have access to the this request`);

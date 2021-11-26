@@ -9,3 +9,7 @@ export function allEnumValues<T=any>(e: any): T[] {
         return values.filter((val: string) => val[0] == val[0].toLowerCase()) as T[];
     }
 }
+
+export function timestampToTime(timestamp: number) {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}

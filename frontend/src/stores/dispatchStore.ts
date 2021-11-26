@@ -1,6 +1,6 @@
 import { isComputed, isObservable, makeAutoObservable, ObservableSet, runInAction } from 'mobx';
 import { getStore, Store } from './meta';
-import { IDispatchStore, IUserStore } from './interfaces';
+import { IDispatchStore, IRequestStore, IUserStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
@@ -11,6 +11,7 @@ export default class DispatchStore implements IDispatchStore {
 
     private userStore = getStore<IUserStore>(IUserStore);
     private api = getService<IAPIService>(IAPIService)
+    private requestStore = getService<IRequestStore>(IRequestStore)
 
     @persistent() includeOffDuty = false;
     @persistent() selectAll = false;
@@ -79,9 +80,10 @@ export default class DispatchStore implements IDispatchStore {
     async assignRequest(requestId: string) {
         try {
             const responderIds = Array.from(this.selectedResponderIds.values());
-            await this.api.assignRequest(this.orgContext(), requestId, responderIds)
+            const updatedReq = await this.api.assignRequest(this.orgContext(), requestId, responderIds)
 
             runInAction(() => {
+                this.requestStore.updateReq(updatedReq)
                 this.clear()
             })
         } catch (e) {

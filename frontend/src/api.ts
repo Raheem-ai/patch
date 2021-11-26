@@ -17,7 +17,7 @@ import { AtLeast } from '../../common';
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
 let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-// let apiHost = 'http://02f9-179-218-29-159.ngrok.io'
+// let apiHost = 'http://98db-24-44-149-184.ngrok.io'
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
@@ -260,12 +260,12 @@ export class APIClient implements IAPIService {
     async assignRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.assignRequest()}`;
 
-        await this.tryPost<void>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             requestId,
             to
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
-        });
+        })).data;
     }
 
     async setOnDutyStatus(ctx: OrgContext, onDuty: boolean) {

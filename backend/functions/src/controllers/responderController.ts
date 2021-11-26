@@ -23,7 +23,7 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.resolveRequest(requestId)
+        return await this.db.confirmRequestAssignment(requestId, user);
     }
 
     @Post(API.server.declineRequestAssignment())
@@ -33,7 +33,7 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.resolveRequest(requestId)
+        return await this.db.declineRequestAssignment(requestId, user);
     }
 
     @Post(API.server.setOnDutyStatus())

@@ -100,7 +100,7 @@ const HelpRequestCard = observer(({
     }
 
     const status = () => {
-        const respondersToAssign = request.respondersNeeded - request.responderIds.length;
+        const respondersToAssign = request.respondersNeeded - request.assignedResponderIds.length;
 
         const unAssignedResponders = [];
         const assignedResponders = [];
@@ -113,8 +113,8 @@ const HelpRequestCard = observer(({
                 size={16} />)
         }
 
-        for (let i = 0; i < request.responderIds.length; i++) {
-            const responder = userStore.usersInOrg.get(request.responderIds[i]); 
+        for (let i = 0; i < request.assignedResponderIds.length; i++) {
+            const responder = userStore.usersInOrg.get(request.assignedResponderIds[i]); 
             assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
         }
 
@@ -140,7 +140,7 @@ const HelpRequestCard = observer(({
         }
 
         const statusSelector = () => {
-            const firstStatus = request.respondersNeeded > request.responderIds.length
+            const firstStatus = request.respondersNeeded > request.assignedResponderIds.length
                 ? RequestStatus.PartiallyAssigned
                 : RequestStatus.Ready;
 
@@ -246,7 +246,7 @@ const HelpRequestCard = observer(({
                                 size={28}>
                             </IconButton>
                             { hasUnreadMessages 
-                                ? <View style={styles.unreadMessageNotifier}/>
+                                ? <View style={[styles.unreadMessageNotifier, dark ? styles.darkUnreadMessageNotifier : null]}/>
                                 : null
                             }
                         </View>
@@ -374,6 +374,9 @@ const styles = StyleSheet.create({
         top: -2,
         right: 2,
         zIndex: 1
+    },
+    darkUnreadMessageNotifier: {
+        borderColor: '#444144',
     },
     unAssignedResponderIcon: {
         color: '#fff',
