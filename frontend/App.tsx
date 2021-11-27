@@ -4,7 +4,7 @@ import 'react-native-get-random-values';
 import "reflect-metadata"
 
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, Modal, Alert } from 'react-native';
+import { StyleSheet, Text, View, Modal, Alert, StatusBar, SafeAreaView } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
@@ -53,7 +53,7 @@ const theme = {
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-
+  
   // handle store binding + initialization + splash screen loading state
   useEffect(() => {
     bindStores();
@@ -123,6 +123,11 @@ export default function App() {
       <PaperProvider theme={theme}>
         <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
           {/* <GlobalErrorBoundary> */}
+            <StatusBar
+              animated={true}
+              barStyle={'light-content'}
+              // just for android so it's behavior is *more* similiar to ios
+              translucent={true} />
             <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
               <Stack.Screen name={routerNames.signIn} component={SignInForm} />
               <Stack.Screen name={routerNames.signUp} component={SignUpForm} />

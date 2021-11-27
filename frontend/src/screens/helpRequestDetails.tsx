@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
@@ -11,6 +11,10 @@ import ResponderRow from "../components/responderRow";
 import { timestampToTime } from "../../../common/utils";
 import { HeaderHeight } from "../components/header/header";
 import { ActiveRequestTabHeight } from "../constants";
+
+import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
+
+const WrappedScrollView = wrapScrollView(ScrollView)
 
 type Props = ScreenProps<'HelpRequestDetails'>;
 
@@ -245,9 +249,18 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
                 const [isOpen, setIsOpen] = useState(false);
                 const numResponders = assignment.responderIds.length;
+                const me = useRef<View>();
+                const scrollIntoView = useScrollIntoView();
 
                 const toggleOpen = () => {
                     setIsOpen(!isOpen);
+
+                    // runs before the state updates
+                    if (!isOpen) {
+                        setTimeout(() => {
+                            scrollIntoView(me.current)
+                        })
+                    }
                 }
 
                 // should be for each sorting each responderId into pending, assigned, declined
@@ -275,7 +288,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 }
 
                 return (
-                    <View style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
+                    <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
                         <View style={styles.assignmentHeader} onTouchStart={toggleOpen}>
                             <Text>
                                 <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
@@ -392,7 +405,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     
     return (
         <View style={{ height: height }}>
-            <ScrollView>
+            <WrappedScrollView>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
@@ -400,7 +413,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { chatPreview() }
                 </View>
                 { teamSection() }
-            </ScrollView>
+            </WrappedScrollView>
         </View>
     );
 });

@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, GestureResponderEvent, StyleSheet, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { IconButton } from "react-native-paper";
 import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/helpRequestCard";
 import { ActiveRequestTabHeight } from "../constants";
@@ -11,7 +12,7 @@ import { ScreenProps, routerNames } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
 
-const windowDimensions = Dimensions.get("window");
+const windowDimensions = Dimensions.get("screen");
 
 export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     const locationStore = getStore<ILocationStore>(ILocationStore);
@@ -102,6 +103,16 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 
+    const goToActiveRequest = () => {
+        const activeIdx = requestStore.requests.findIndex(r => r.id == requestStore.activeRequest?.id);
+
+        if (activeIdx != -1) {
+            setIdx(activeIdx + 1)
+            setVisualDeltaX((activeIdx) * windowDimensions.width)
+            setDeltaTouchX(0)
+        }
+    }
+
     return (
         <>
             <MapView 
@@ -117,20 +128,32 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                                     longitude: requestStore.requests[idx - 1].location.longitude }} />
                             : null }
             </MapView>
-            <View 
-                style={[styles.cardTrack, swipeStyle, bottomUIOffset ? { bottom: styles.cardTrack.bottom + bottomUIOffset } : null ]} 
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}>
-                {
-                    requestStore.requests.map(r => {
-                        return (
-                            <View key={r.id} style={styles.cardContainer}>
-                                <HelpRequestCard request={r} style={styles.card} dark={requestStore.activeRequest?.id == r.id}/>
-                            </View>
-                        )
-                    })
+            <View style={[styles.bottomOverlay, bottomUIOffset ? { bottom: styles.bottomOverlay.bottom + bottomUIOffset } : null ]}>
+                { requestStore.activeRequest?.id != requestStore.requests?.[idx - 1]?.id
+                    ? <View style={styles.returnIconContainer} onTouchStart={goToActiveRequest}>
+                        <IconButton
+                            style={styles.returnIcon}
+                            icon={'keyboard-return'}
+                            color={styles.returnIcon.color}
+                            size={styles.returnIcon.width}/>
+                    </View>
+                    : null
                 }
+                <View 
+                    style={[styles.cardTrack, swipeStyle]} 
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}>
+                    {
+                        requestStore.requests.map(r => {
+                            return (
+                                <View key={r.id} style={styles.cardContainer}>
+                                    <HelpRequestCard request={r} style={styles.card} dark={requestStore.activeRequest?.id == r.id}/>
+                                </View>
+                            )
+                        })
+                    }
+                </View>
             </View>
         </>
     )
@@ -140,9 +163,12 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 export default HelpRequestMap;
 
 const styles = StyleSheet.create({
-    cardTrack: {
+    bottomOverlay: {
         position: 'absolute',
         bottom: 0,
+    },
+    cardTrack: {
+        position: 'relative',
         flexDirection: 'row',
         alignItems: 'flex-end'
     },
@@ -153,5 +179,21 @@ const styles = StyleSheet.create({
     card: {
         borderRadius: 8,
         borderBottomWidth: 0
+    },
+    returnIconContainer: {
+        backgroundColor: '#444144',
+        height: 64,
+        width: 64,
+        borderRadius: 64,
+        justifyContent: 'center',
+        position: 'relative',
+        right: 20 + 64 - windowDimensions.width
+    },
+    returnIcon: {
+        color: '#fff',
+        height: 30,
+        width: 30,
+        margin: 0,
+        alignSelf: 'center'
     }
 })

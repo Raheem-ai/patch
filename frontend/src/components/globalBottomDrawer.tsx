@@ -2,7 +2,7 @@ import { Route } from "@react-navigation/routers";
 import { throws } from "assert";
 import { observer } from "mobx-react";
 import React, {ComponentClass} from "react";
-import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ActiveRequestTabHeight } from "../constants";
 import { navigationRef } from "../navigation";
@@ -12,7 +12,7 @@ import { Colors, routerNames } from "../types";
 import { HeaderHeight, InteractiveHeaderHeight } from "./header/header";
 import HelpRequestCard from "./helpRequestCard";
 
-const dimensions = Dimensions.get('window')
+const dimensions = Dimensions.get('screen')
 
 type BottomDrawerProps = { }
 
@@ -167,7 +167,8 @@ const styles = StyleSheet.create({
     headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        height: BottomDrawerHandleHeight,
     },
     raisedHeader: {
         shadowRadius: 1,

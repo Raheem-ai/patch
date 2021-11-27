@@ -8,9 +8,11 @@ import RequestChat from '../components/requestChat';
 import EditHelpRequest from '../components/editRequest';
 import AssignResponders from '../components/assignResponders';
 import CreateHelpRequest from '../components/createRequest';
-import { ActiveRequestTabHeight } from '../constants';
+import { ActiveRequestTabHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
 import { routerNames } from '../types';
+import { constants } from 'buffer';
+import Constants from 'expo-constants';
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
@@ -19,7 +21,7 @@ const Config: BottomDrawerConfig = {
     [BottomDrawerView.requestChat]: RequestChat
 }
 
-const dimensions = Dimensions.get('window')
+const dimensions = Dimensions.get('screen')
 
 @Store(IBottomDrawerStore)
 export default class BottomDrawerStore implements IBottomDrawerStore {
@@ -112,7 +114,11 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             toValue: !!expanded 
                 ? 0 + (newIsMinimizeable
                     ? HeaderHeight
-                    : InteractiveHeaderHeight)
+                    : isAndroid 
+                        // NOTE: no idea why a random 12 pixels is being removed...
+                        // ESPECIALLY because minimizable views go exactly where they need
+                        ? Constants.statusBarHeight + 1 + 12 
+                        : InteractiveHeaderHeight)
                 : dimensions.height - HeaderHeight - BottomDrawerHandleHeight,
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
@@ -161,8 +167,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: 0 + (isMinimizable
-                ? HeaderHeight
-                : InteractiveHeaderHeight),
+                ? HeaderHeight // should only run this one as you can only expand from being minimized
+                : isAndroid 
+                    ? Constants.statusBarHeight + 1 + 12 
+                    : InteractiveHeaderHeight),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start();
@@ -177,7 +185,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         const onRequestMap = navigationRef.current?.getCurrentRoute().name == routerNames.helpRequestMap;
         
         Animated.timing(this.bottomDrawerTabTop, {
-            toValue: dimensions.height - BottomDrawerHandleHeight - ((this.requestStore.activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0),
+            toValue: dimensions.height 
+                - BottomDrawerHandleHeight 
+                - ((this.requestStore.activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
+                - (isAndroid ? Constants.statusBarHeight - 1 : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start((_) => {

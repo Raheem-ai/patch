@@ -560,8 +560,32 @@ export class DBManager {
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
+            let userAdmin = await this.createUser({ 
+                email: 'admin@test.com', 
+                password: 'Test',
+                name: 'Adminess Hater',
+                skills: []
+            });
+
+            let userDispatcher = await this.createUser({ 
+                email: 'dispatcher@test.com', 
+                password: 'Test',
+                name: 'Dee Patcher',
+                skills: []
+            });
+
+            let userResponder = await this.createUser({ 
+                email: 'responder@test.com', 
+                password: 'Test',
+                name: 'Reece Ponder II',
+                skills: []
+            });
+
             [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
             [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ]);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ]);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ]);
 
             const minRequests: MinHelpRequest[] = [
                 {

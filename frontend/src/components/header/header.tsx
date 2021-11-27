@@ -10,6 +10,8 @@ import { getStore } from '../../stores/meta';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { IHeaderStore, IUserStore } from '../../stores/interfaces';
+import Constants from 'expo-constants';
+import { isAndroid } from '../../constants';
 
 type Props = StackHeaderProps & {};
 
@@ -18,7 +20,7 @@ const Header = observer((props: Props) => {
     const userStore = getStore<IUserStore>(IUserStore);
     const headerStore = getStore<IHeaderStore>(IHeaderStore);
 
-    const dimensions = Dimensions.get('window');
+    const dimensions = Dimensions.get('screen');
     const config: HeaderRouteConfig = HeaderConfig[props.route.name];
     
     const title = typeof config.title == 'string'
@@ -126,7 +128,7 @@ const Header = observer((props: Props) => {
     }
     
     const fullScreenHeader = () =>
-        <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height }}}>
+        <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
                     <IconButton icon='close' size={iconSize} color='#fff' onPress={closeHeader}/>
@@ -153,13 +155,14 @@ const Header = observer((props: Props) => {
 })
 
 export default Header;
-export const HeaderHeight = 90;
 
-const windowDimensions = Dimensions.get("window"); // this should probably be more dynamic  
+// const windowDimensions = Dimensions.get("screen"); // this should probably be more dynamic  
 const iconSize = 30;
 const iconPadding = 12;
 const iconContainerSize = (2 * iconPadding) + iconSize;
 export const InteractiveHeaderHeight = iconContainerSize;
+
+export const HeaderHeight = InteractiveHeaderHeight + Constants.statusBarHeight;
 
 const styles = StyleSheet.create({
     // CLOSED

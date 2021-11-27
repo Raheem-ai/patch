@@ -17,7 +17,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../components/tags";
 import { runInAction } from "mobx";
 
-const windowDimensions = Dimensions.get("window");
+const windowDimensions = Dimensions.get("screen");
 const containerStyle = { height: windowDimensions.height - HeaderHeight - BottomDrawerHandleHeight };
 
 const ResponderCountRange = [1, 2, 3, 4, 5];
