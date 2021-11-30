@@ -251,8 +251,13 @@ export default class RequestStore implements IRequestStore {
     }
 
     async setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void> {
-        await this.api.setTeamStatus(this.requestContext(requestId), status);
-        await this.getRequests();
+        const req = await this.api.setRequestStatus(this.requestContext(requestId), status);
+        this.updateReq(req);
+    }
+
+    async resetRequestStatus(requestId: string): Promise<void> {
+        const req = await this.api.resetRequestStatus(this.requestContext(requestId));
+        this.updateReq(req);
     }
 
     async updateChatReceipt(request: HelpRequest): Promise<void> {

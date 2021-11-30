@@ -410,6 +410,12 @@ export class DBManager {
             request.declinedResponderIds.splice(idx, 1)
         }
 
+        if (request.status == RequestStatus.Unassigned || request.status == RequestStatus.PartiallyAssigned) {
+            request.status = request.respondersNeeded > request.assignedResponderIds.length
+                ? RequestStatus.PartiallyAssigned
+                : RequestStatus.Ready;
+        }
+
         return await request.save()
     }
 
@@ -424,6 +430,12 @@ export class DBManager {
 
         if (idx != -1) {
             request.assignedResponderIds.splice(idx, 1)
+        }
+
+        if (request.status == RequestStatus.Ready || request.status == RequestStatus.PartiallyAssigned) {
+            request.status = request.assignedResponderIds.length
+                ? RequestStatus.PartiallyAssigned
+                : RequestStatus.Unassigned;
         }
 
         return await request.save()

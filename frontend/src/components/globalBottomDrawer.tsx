@@ -24,8 +24,6 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     requestStore = getStore<IRequestStore>(IRequestStore);
     headerStore = getStore<IHeaderStore>(IHeaderStore);
 
-    disposer: () => void = null;
-
     toggleExpanded = () => {
         if (this.bottomDrawerStore.expanded) {
             this.bottomDrawerStore.minimize()

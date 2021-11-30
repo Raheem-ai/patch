@@ -10,6 +10,7 @@ import { navigateTo } from "../navigation";
 import { routerNames } from "../types";
 import UserIcon from "./userIcon";
 import { ActiveRequestTabHeight } from "../constants";
+import { StatusIcon, StatusSelector } from "./statusSelector";
 
 type Props = {
     request: HelpRequest,
@@ -18,26 +19,7 @@ type Props = {
     minimal?: boolean
 };
 
-export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: () => void, style?: StyleProp<ViewStyle>) => JSX.Element) } = {
-    [RequestStatus.Unassigned]: '',
-    [RequestStatus.PartiallyAssigned]: (onPress: () => void, style?: StyleProp<ViewStyle>) => {
-        return (
-            <PartiallyAssignedIcon 
-                frontColor={'#000'} 
-                backColor={'#999'} 
-                innerSize={16} 
-                totalSize={28}
-                onPress={onPress}
-                style={[{
-                    marginLeft: 4
-                }, style]}/>
-        )
-    },
-    [RequestStatus.Ready]: 'account-multiple',
-    [RequestStatus.OnTheWay]: 'arrow-right',
-    [RequestStatus.OnSite]: 'map-marker',
-    [RequestStatus.Done]: 'check',
-}
+
 
 const HelpRequestCard = observer(({ 
     request, 
@@ -124,106 +106,6 @@ const HelpRequestCard = observer(({
             ? potentialLabel
             : potentialLabel(request);
 
-        const statusIcon = (status: RequestStatus, onPress: () => void, style?: StyleProp<ViewStyle>) => {
-            const potentialIcon = RequestStatusToIconMap[status];
-
-            return status == RequestStatus.Unassigned
-                ? null
-                : typeof potentialIcon == 'string' 
-                    ? <IconButton
-                        onPress={onPress}
-                        style={[styles.statusIcon, style]}
-                        icon={potentialIcon} 
-                        color={styles.statusIcon.color}
-                        size={16} />
-                    : potentialIcon(onPress, style)
-        }
-
-        const statusSelector = () => {
-            const firstStatus = request.respondersNeeded > request.assignedResponderIds.length
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Ready;
-
-            const statuses = [firstStatus, RequestStatus.OnTheWay, RequestStatus.OnSite, RequestStatus.Done];
-
-            const currentStatusIdx = statuses.indexOf(request.status);
-
-            const updateStatus = (status: RequestStatus) => async () => {
-                if (status != request.status) {
-                    switch (status) {
-                        case RequestStatus.OnTheWay:
-                        case RequestStatus.OnSite:
-                        case RequestStatus.Done:
-                            await requestStore.setRequestStatus(request.id, status)
-                    }
-                }
-
-                closeStatusSelector()
-            }
-
-            const noMarginIconStyles: StyleProp<ViewStyle> = {
-                marginLeft: 0
-            }
-
-            const toGoStatusIconStyles: StyleProp<ViewStyle> = [
-                noMarginIconStyles,
-                { 
-                    backgroundColor: styles.toGoStatusSelectorDivider.borderBottomColor,
-                    borderColor: styles.toGoStatusSelectorDivider.borderBottomColor
-                }
-            ]
-
-            return (
-                <View style={styles.statusSelector}>
-                    { statuses.map((s, i) => {
-                        const oldStatusIcon = () => {
-                            return statusIcon(s, updateStatus(s), noMarginIconStyles);
-                        }
-
-                        const oldIconDivider = () => {
-                            return <View style={styles.statusSelectorDivider}/>
-                        }
-
-                        const toGoStatusIcon = () => {
-                            return statusIcon(s, updateStatus(s), toGoStatusIconStyles)
-                        }
-
-                        const toGoIconDivider = () => {
-                            return (
-                                <View style={[styles.statusSelectorDivider, styles.toGoStatusSelectorDivider]}>
-                                    <View style={[{ height: styles.toGoStatusSelectorDivider.borderBottomWidth, overflow: 'hidden'}]}>
-                                        <View style={[{ height: styles.toGoStatusSelectorDivider.borderBottomWidth + 1, borderWidth: styles.toGoStatusSelectorDivider.borderBottomWidth, borderColor: styles.toGoStatusSelectorDivider.borderBottomColor, borderStyle: styles.toGoStatusSelectorDivider.borderStyle }]}></View>
-                                    </View>
-                                </View>
-                            )
-                        }
-
-                        const resolveStatusIcon = () => {
-                            return i == 0
-                                ? oldStatusIcon()
-                                : currentStatusIdx >= i 
-                                    ? oldStatusIcon()
-                                    : toGoStatusIcon()
-                        }
-
-                        const resolveStatusIconDivider = () => {
-                            return currentStatusIdx > i 
-                                    ? oldIconDivider()
-                                    : toGoIconDivider()
-                        }
-
-                        // TODO: add key here at some point
-                        return i < (statuses.length - 1)
-                            ? <>
-                                {resolveStatusIcon()}
-                                {resolveStatusIconDivider()}
-                            </>
-                            : resolveStatusIcon()
-                    })}
-                </View>
-            )
-        }
-
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
             && (!request.chat.userReceipts[userStore.user.id] 
                 || (request.chat.userReceipts[userStore.user.id] < request.chat.lastMessageId));
@@ -264,10 +146,14 @@ const HelpRequestCard = observer(({
                 </View>
                 {
                     statusOpen
-                        ? statusSelector()
+                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} request={request} onStatusUpdated={closeStatusSelector} requestStore={requestStore}/>
                         : <View style={styles.statusContainer}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
-                            {statusIcon(request.status, openStatusSelector)}
+                            {
+                                request.status == RequestStatus.Unassigned 
+                                    ? null  
+                                    : <StatusIcon dark={dark} status={request.status} onPress={openStatusSelector}/>
+                            }
                         </View>
                 }       
             </View>
@@ -420,18 +306,6 @@ const styles = StyleSheet.create({
     darkStatusText: {
         color: '#A9A7A9'
     },
-    statusIcon: {
-        color: '#fff',
-        backgroundColor: '#000',
-        width: 28,
-        height: 28,
-        borderRadius: 20,
-        margin: 0,
-        marginLeft: 4,
-        borderColor:'#000',
-        borderStyle: 'solid',
-        borderWidth: 1
-    }, 
     statusSelector: {
         position: 'absolute',
         flexDirection: 'row',
@@ -447,20 +321,10 @@ const styles = StyleSheet.create({
         shadowOffset: {
             height: 0,
             width: 0
-        }
+        },
+        width: 200
     },
-    statusSelectorDivider: {
-        height: 15,
-        width: 28,
-        borderBottomColor: '#000',
-        borderBottomWidth: 2,
-        borderStyle: 'solid',
-    },
-    toGoStatusSelectorDivider: {
-        height: 17,
-        justifyContent: 'flex-end',
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 2,
-        borderStyle: 'dotted', 
+    darkStatusSelector: {
+        backgroundColor: '#444144',
     }
 })

@@ -5,6 +5,7 @@ import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
 import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
+import { assignedResponderBasedRequestStatus } from "common/utils";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
@@ -21,7 +22,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.request)
-export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setTeamStatus' | 'editRequest'> {
+export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
@@ -121,16 +122,27 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         return this.includeVirtuals(await this.db.updateRequestChatRecepit(helpRequest, user.id, lastMessageId));
     }
     
-    @Post(API.server.setTeamStatus())
+    @Post(API.server.setRequestStatus())
     @RequestAccess()
-    async setTeamStatus(
+    async setRequestStatus(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('status') status: ResponderRequestStatuses,
     ) {
         helpRequest.status = status;
-        await helpRequest.save();
+        return await helpRequest.save();
+    }
+
+    @Post(API.server.resetRequestStatus())
+    @RequestAccess()
+    async resetRequestStatus(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+    ) {
+        helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
+        return await helpRequest.save();
     }
     
 }

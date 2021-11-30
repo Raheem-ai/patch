@@ -134,6 +134,7 @@ export interface IRequestStore extends IBaseStore {
     tryPopRequest(): Promise<void>
     setCurrentRequest(request: HelpRequest): void;
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
+    resetRequestStatus(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateReq(updatedReq: HelpRequest): void

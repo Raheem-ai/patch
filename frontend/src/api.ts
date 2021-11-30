@@ -16,8 +16,8 @@ import { AtLeast } from '../../common';
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-// let apiHost = 'http://98db-24-44-149-184.ngrok.io'
+// let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+let apiHost = 'http://98db-24-44-149-184.ngrok.io'
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
@@ -415,14 +415,22 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async setTeamStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<void> {
-        const url = `${apiHost}${API.client.setTeamStatus()}`;
+    async setRequestStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.setRequestStatus()}`;
 
-        await this.tryPost<void>(url, {
+        return (await this.tryPost<HelpRequest>(url, {
             status
         }, {
             headers: this.requestScopeAuthHeaders(ctx)
-        })
+        })).data
+    }
+
+    async resetRequestStatus(ctx: RequestContext): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.resetRequestStatus()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {}, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
     }
 
     async updateRequestChatReceipt(ctx: RequestContext, lastMessageId: number): Promise<HelpRequest> {

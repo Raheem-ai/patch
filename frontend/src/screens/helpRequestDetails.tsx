@@ -13,6 +13,7 @@ import { HeaderHeight } from "../components/header/header";
 import { ActiveRequestTabHeight } from "../constants";
 
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
+import { StatusSelector } from "../components/statusSelector";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -27,6 +28,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const [notification, setNotification] = useState<Props['route']['params']['notification']>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const request = requestStore.currentRequest;
 
     useEffect(() => {
         (async () => {
@@ -55,9 +58,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }, []);
 
     const notesSection = () => {
-        const notes = isLoading
-            ? '' 
-            : requestStore.currentRequest.notes;
+        const notes = requestStore.currentRequest.notes;
         
         return (
             <View style={styles.notesSection}>
@@ -67,13 +68,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const timeAndPlace = () => {
-        const address = isLoading
-            ? ''
-            : requestStore.currentRequest.location.address.split(',').slice(0, 2).join();
+        const address = requestStore.currentRequest.location.address.split(',').slice(0, 2).join();
 
-        const time = isLoading
-            ? ''
-            : new Date(requestStore.currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const time = new Date(requestStore.currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
         return (
             <View style={styles.timeAndPlaceSection}>
@@ -98,9 +95,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const header = () => {
-        const tags = isLoading
-            ? []
-            : requestStore.currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
+        const tags = requestStore.currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
         const edit = () => {
             bottomDrawerStore.show(BottomDrawerView.editRequest, true)
@@ -125,9 +120,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const chatPreview = () => {
 
-        const lastChatMessage = isLoading
-            ? null
-            : requestStore.currentRequest.chat?.messages[requestStore.currentRequest.chat.messages.length - 1];
+        const lastChatMessage = requestStore.currentRequest.chat?.messages[requestStore.currentRequest.chat.messages.length - 1];
 
         const chatMessageText = !!lastChatMessage
             ? lastChatMessage.message
@@ -141,7 +134,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             ? timestampToTime(lastChatMessage.timestamp)
             : ''
 
-        const hasUnreadMessages = !isLoading && (requestStore.currentRequest.chat && requestStore.currentRequest.chat.messages.length) 
+        const hasUnreadMessages = (requestStore.currentRequest.chat && requestStore.currentRequest.chat.messages.length) 
             && (!requestStore.currentRequest.chat.userReceipts[userStore.user.id] 
                 || (requestStore.currentRequest.chat.userReceipts[userStore.user.id] < requestStore.currentRequest.chat.lastMessageId));
 
@@ -188,11 +181,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const teamSection = () => {
-        const request = isLoading
-            ? null
-            : requestStore.currentRequest;
-
-
         const responderIds = request?.assignedResponderIds || [];
 
         const addResponders = () => {
@@ -395,6 +383,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
+    const statusPicker = () => {
+        return (
+            <View style={{ 
+                height: 85, 
+                backgroundColor: '#454343'
+            }}>
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore} />
+            </View>
+        )
+    }
+
     if (isLoading) {
         return null
     }
@@ -412,6 +411,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { timeAndPlace() }
                     { chatPreview() }
                 </View>
+                { statusPicker() }
                 { teamSection() }
             </WrappedScrollView>
         </View>

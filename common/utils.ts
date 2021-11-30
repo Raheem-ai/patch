@@ -1,5 +1,8 @@
 // all enum values should either be an uncapitalized string or number and all enum keys
 // should be capitalized
+
+import { HelpRequest, RequestStatus } from "./models";
+
 // NOTE: this means all string enums need to be lower case ie 'foo','bar', 'ab'
 export function allEnumValues<T=any>(e: any): T[] {
     const values = Object.values(e);
@@ -12,4 +15,12 @@ export function allEnumValues<T=any>(e: any): T[] {
 
 export function timestampToTime(timestamp: number) {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+export function assignedResponderBasedRequestStatus(request: HelpRequest): RequestStatus {
+    return !request.assignedResponderIds.length 
+        ? RequestStatus.Unassigned
+        : request.respondersNeeded > request.assignedResponderIds.length
+            ? RequestStatus.PartiallyAssigned
+            : RequestStatus.Ready;
 }

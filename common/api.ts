@@ -92,7 +92,8 @@ export interface IApiClient {
     unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
     sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
-    setTeamStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<void>>
+    setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
+    resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
 
     // getResources: () => string
 }
@@ -186,8 +187,11 @@ type ApiRoutes = {
         sendChatMessage: () => {
             return '/sendChatMessage'
         },
-        setTeamStatus: () => {
-            return '/setTeamStatus'
+        setRequestStatus: () => {
+            return '/setRequestStatus'
+        },
+        resetRequestStatus: () => {
+            return '/resetRequestStatus'
         },
         setOnDutyStatus: () => {
             return '/setOnDutyStatus'
@@ -293,8 +297,11 @@ type ApiRoutes = {
         sendChatMessage: () => {
             return `${this.base}${this.namespaces.request}${this.server.sendChatMessage()}`
         },
-        setTeamStatus: () => {
-            return `${this.base}${this.namespaces.request}${this.server.setTeamStatus()}`
+        setRequestStatus: () => {
+            return `${this.base}${this.namespaces.request}${this.server.setRequestStatus()}`
+        },
+        resetRequestStatus: () => {
+            return `${this.base}${this.namespaces.request}${this.server.resetRequestStatus()}`
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
