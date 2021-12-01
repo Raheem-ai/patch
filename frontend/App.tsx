@@ -39,7 +39,7 @@ import { observer } from 'mobx-react';
 import { runInAction } from 'mobx';
 import TeamList from './src/screens/teamList';
 import { ActiveRequestTabHeight } from './src/constants';
-import { VisualArea } from './src/components/helpers/VisualArea';
+import { VisualArea } from './src/components/helpers/visualArea';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
