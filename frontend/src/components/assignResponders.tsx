@@ -1,6 +1,7 @@
 import { observer } from "mobx-react"
 import React from "react"
 import { Dimensions, StyleSheet, View } from "react-native"
+import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
 import { HelpRequest } from "../../../common/models"
 import { IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces"
@@ -113,7 +114,7 @@ export default class AssignResponders extends React.Component {
     responders = () => {
 
         return (
-            <>
+            <ScrollView style={{ flex: 1 }}>
                 { 
                     this.dispatchStore.assignableResponders.map((r) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
@@ -138,7 +139,7 @@ export default class AssignResponders extends React.Component {
                         )
                     })
                 }
-            </>
+            </ScrollView>
         )
     }
 

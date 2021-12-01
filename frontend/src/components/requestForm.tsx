@@ -417,7 +417,7 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
                 </MapView>
                 <View style={{ 
                     position: 'relative',
-                    top: - windowDimensions.height + HeaderHeight + bottomDrawerStore.bottomUIOffset
+                    top: - bottomDrawerStore.drawerContentHeight
                 }}>
                         <View style={{ 
                             backgroundColor: '#fff', 
