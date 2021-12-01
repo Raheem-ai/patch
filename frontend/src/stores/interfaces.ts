@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy } from '../../../common/models'
 
 export interface IBaseStore {
     init?(): Promise<void>,
@@ -141,6 +141,23 @@ export interface IRequestStore extends IBaseStore {
     confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
 }
 
+export namespace ITeamStore {
+    export const id = Symbol('ITeamStore');
+}
+
+export interface ITeamStore extends IBaseStore {
+    sortedUsers: ClientSideFormat<ProtectedUser>[]
+    
+    loading: boolean
+
+    filter: TeamFilter
+    sortBy: TeamSortBy
+
+    setSortBy(sortBy: TeamSortBy): void
+    setFilter(filter: TeamFilter): Promise<void>
+    refreshUsers(): Promise<void>
+}
+
 export interface ISecretStore extends IBaseStore, AppSecrets {
     googleMapsApiKey: string;
 }
@@ -153,12 +170,21 @@ export interface IBottomDrawerStore extends IBaseStore {
     readonly bottomDrawerTabTop: Animated.Value
     expanded: boolean
     showing: boolean
+    headerShowing: boolean
+    minimizable: boolean
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
     currentRoute: string
-    
+
+    bottomUIOffset: number
+    topUIOffset: number
+    drawerContentHeight: number
+
+
     show(view: BottomDrawerView, expanded?: boolean): void;
+    showHeader(): void;
     hide(): void// should this take an optional callback?
+    hideHeader(): void;
     expand(): void
     minimize(): void
 }
@@ -221,5 +247,6 @@ export const AllStores = [
     IEditRequestStore,
     IBottomDrawerStore,
     INativeEventStore,
-    IHeaderStore
+    IHeaderStore,
+    ITeamStore
 ]

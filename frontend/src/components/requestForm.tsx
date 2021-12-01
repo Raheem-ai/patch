@@ -3,7 +3,7 @@ import { Button, Text, List, IconButton } from 'react-native-paper';
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TextInput as RNTextInput, View } from "react-native";
 import { RequestSkill, RequestSkillCategory, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
-import { CreateReqData, IEditRequestStore, ILocationStore, IRequestStore, I, BottomDrawerView, BottomDrawerHandleHeight, ITempRequestStore } from "../stores/interfaces";
+import { CreateReqData, ILocationStore, ITempRequestStore, IBottomDrawerStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { useRef } from "react";
 import { useKeyboard } from "../hooks/useKeyboard";
@@ -18,7 +18,7 @@ import Tags from "../components/tags";
 import { runInAction } from "mobx";
 
 const windowDimensions = Dimensions.get("screen");
-const containerStyle = { height: windowDimensions.height - HeaderHeight - BottomDrawerHandleHeight };
+
 
 const ResponderCountRange = [1, 2, 3, 4, 5];
 
@@ -35,6 +35,7 @@ class RequestForm extends React.Component<Props> {
     }
 
     locationStore = getStore<ILocationStore>(ILocationStore);
+    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
 
     async componentDidMount() {
         await this.locationStore.askForPermission()
@@ -43,10 +44,12 @@ class RequestForm extends React.Component<Props> {
 
     openLink = (id: keyof CreateReqData) => {
         this.setState({ screenId: id });
+        this.bottomDrawerStore.hideHeader();
     }
 
     back = () => {
         this.setState({ screenId: null });
+        this.bottomDrawerStore.showHeader();
     }
     
     listView = () => {
@@ -93,9 +96,9 @@ class RequestForm extends React.Component<Props> {
                 </View>
             )
         }
-
+        
         return (
-            <View style={containerStyle}>
+            <View style={{ height: this.bottomDrawerStore.drawerContentHeight }}>
                 <View style={{
                     paddingLeft: 20,
                     borderStyle: 'solid',
@@ -264,6 +267,7 @@ const Suggestion = ({ suggestion, onPress }: { suggestion: PlaceAutocompleteResu
 const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<SectionScreenProps> } = {
     'location': observer(({ back, store }: SectionScreenProps) => {
         const locationStore = getStore<ILocationStore>(ILocationStore);
+        const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
         const mapsService = getService<IMapsService>(IMapsService);
 
         const [suggestions, setSuggestions] = useState<PlaceAutocompleteResult[]>([]);
@@ -392,7 +396,6 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
             }
         }
 
-
         return (
             <>
                 <MapView 
@@ -401,7 +404,7 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
                     initialRegion={initialRegion}
                     onPress={mapPressed}
                     ref={mapInstance}
-                    style={{ height: windowDimensions.height - HeaderHeight }}>
+                    style={{ height: bottomDrawerStore.drawerContentHeight }}>
                         { targetCoords 
                             ? <Marker
                                 coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
@@ -414,7 +417,7 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
                 </MapView>
                 <View style={{ 
                     position: 'relative',
-                    top: -windowDimensions.height + HeaderHeight
+                    top: - windowDimensions.height + HeaderHeight + bottomDrawerStore.bottomUIOffset
                 }}>
                         <View style={{ 
                             backgroundColor: '#fff', 
@@ -497,7 +500,7 @@ const CreateRequestScreenMap: { [key in keyof CreateReqData]: ComponentType<Sect
                         height: 44, 
                         margin: 24,
                         position: 'absolute',
-                        bottom: 0,
+                        bottom: 0 + bottomDrawerStore.bottomUIOffset,
                         width: windowDimensions.width - (2 * 24),
                         justifyContent: 'center'
                 }}>

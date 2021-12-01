@@ -5,7 +5,7 @@ import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
 import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
-import { assignedResponderBasedRequestStatus } from "common/utils";
+import { assignedResponderBasedRequestStatus } from "common/utils/requestUtils";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";

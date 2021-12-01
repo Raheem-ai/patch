@@ -98,6 +98,18 @@ export enum HelpRequestSortBy {
 
 export type MinHelpRequest = AtLeast<HelpRequest, 'location' | 'type' | 'respondersNeeded' | 'skills'>
 
+export enum TeamFilter {
+    Everyone = 'ev',
+    OnDuty = 'on',
+    OffDuty = 'off'
+};
+
+export enum TeamSortBy {
+    ByLastName = 'bln',
+    ByFirstName = 'bfn',
+    BySkill = 'bs'
+};
+
 export type Chat = {
     id: string,
     messages: ChatMessage[],

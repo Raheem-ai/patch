@@ -23,7 +23,8 @@ export type RootStackParamList = {
     HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
-    HelpRequestChat: undefined
+    HelpRequestChat: undefined;
+    TeamList: undefined;
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -39,7 +40,8 @@ export const routerNames: TypedRouterNames = {
     helpRequestDetails : "HelpRequestDetails",
     helpRequestMap: "HelpRequestMap",
     helpRequestList: "HelpRequestList",
-    helpRequestChat: "HelpRequestChat"
+    helpRequestChat: "HelpRequestChat",
+    teamList: "TeamList"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>

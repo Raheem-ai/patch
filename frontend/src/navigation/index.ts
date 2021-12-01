@@ -36,7 +36,7 @@ export const MainMenuOptions: MainMenuOption[] = [
   }, 
   {
     name: 'Team',
-    routeTo: 'userHomePage'
+    routeTo: 'teamList'
   }
 ]
 

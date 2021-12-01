@@ -64,53 +64,56 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                     ? null
                     : styles.minimizedHeader
             ]}>
-                <View style={[
-                    styles.headerContainer, 
-                    hasRaisedHeader 
-                        ? styles.raisedHeader 
-                        : null,
-                    this.bottomDrawerStore.expanded 
-                        ? null
-                        : styles.minimizedHeader
-                ]}>
-                    { this.bottomDrawerStore.expanded
-                        ? <View style={styles.closeIconContainer}>
-                            <IconButton
-                                onPress={this.bottomDrawerStore.hide}
-                                style={styles.closeIcon}
-                                icon='close' 
-                                color={styles.closeIcon.color}
-                                size={styles.closeIcon.width} />
-                        </View>
-                        : minimizeLabel
-                            ? <View style={styles.minimizedLabelContainer} onTouchStart={this.toggleExpanded}>
-                                <Text style={styles.minimizedLabel}>{minimizeLabel}</Text>
+                { this.bottomDrawerStore.headerShowing 
+                    ? <View style={[
+                        styles.headerContainer, 
+                        hasRaisedHeader 
+                            ? styles.raisedHeader 
+                            : null,
+                        this.bottomDrawerStore.expanded 
+                            ? null
+                            : styles.minimizedHeader
+                    ]}>
+                        { this.bottomDrawerStore.expanded
+                            ? <View style={styles.closeIconContainer}>
+                                <IconButton
+                                    onPress={this.bottomDrawerStore.hide}
+                                    style={styles.closeIcon}
+                                    icon='close' 
+                                    color={styles.closeIcon.color}
+                                    size={styles.closeIcon.width} />
+                            </View>
+                            : minimizeLabel
+                                ? <View style={styles.minimizedLabelContainer} onTouchStart={this.toggleExpanded}>
+                                    <Text style={styles.minimizedLabel}>{minimizeLabel}</Text>
+                                </View>
+                                : null
+                        }
+                        { minimizeLabel
+                            ? <View style={styles.toggleExpandedIconContainer}>
+                                <IconButton
+                                    onPress={this.toggleExpanded}
+                                    style={styles.toggleExpandedIcon}
+                                    icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
+                                    // icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
+                                    color={styles.toggleExpandedIcon.color}
+                                    size={styles.toggleExpandedIcon.width} />
                             </View>
                             : null
-                    }
-                    { minimizeLabel
-                        ? <View style={styles.toggleExpandedIconContainer}>
-                            <IconButton
-                                onPress={this.toggleExpanded}
-                                style={styles.toggleExpandedIcon}
-                                icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
-                                // icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
-                                color={styles.toggleExpandedIcon.color}
-                                size={styles.toggleExpandedIcon.width} />
-                        </View>
-                        : null
-                    }
-                    { this.bottomDrawerStore.view.submit && this.bottomDrawerStore.expanded 
-                        ? <Button 
-                            labelStyle={styles.submitButtonLabel}
-                            uppercase={false}
-                            onPress={this.bottomDrawerStore.view.submit.action}
-                            color={styles.submitButton.color}
-                            style={styles.submitButton}>{submitActionLabel}</Button>
-                        : null
-                    }
-                </View>
-                    <ChildView/>
+                        }
+                        { this.bottomDrawerStore.view.submit && this.bottomDrawerStore.expanded 
+                            ? <Button 
+                                labelStyle={styles.submitButtonLabel}
+                                uppercase={false}
+                                onPress={this.bottomDrawerStore.view.submit.action}
+                                color={styles.submitButton.color}
+                                style={styles.submitButton}>{submitActionLabel}</Button>
+                            : null
+                        }
+                    </View>
+                    : null
+                }
+                <ChildView/>
             </Animated.View>
         )
     }

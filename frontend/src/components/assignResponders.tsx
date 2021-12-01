@@ -16,6 +16,7 @@ export default class AssignResponders extends React.Component {
     userStore = getStore<IUserStore>(IUserStore);
     dispatchStore = getStore<IDispatchStore>(IDispatchStore);
     requestStore = getStore<IRequestStore>(IRequestStore);
+    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
 
     static raisedHeader = true;
 
@@ -143,11 +144,11 @@ export default class AssignResponders extends React.Component {
 
     render() {
         return (
-            <>
+            <View style={{ height: this.bottomDrawerStore.drawerContentHeight }}>
                 { this.header() }
                 { this.responderActions() }
                 { this.responders() }
-            </>
+            </View>
         )
     }
 }

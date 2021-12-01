@@ -4,7 +4,7 @@ import 'react-native-get-random-values';
 import "reflect-metadata"
 
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, Modal, Alert, StatusBar, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, Modal, Alert, StatusBar, SafeAreaView, Dimensions } from 'react-native';
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
@@ -15,7 +15,7 @@ import SignInForm from './src/components/SignInForm';
 import WelcomePage from './src/components/WelcomePage';
 import SignUpForm from './src/components/SignUpForm';
 import UserHomePage from './src/components/userside/UserHomePage';
-import Header from './src/components/header/header';
+import Header, { HeaderHeight } from './src/components/header/header';
 
 import HelpRequestMap from './src/screens/helpRequestMap';
 import HelpRequestList from './src/screens/helpRequestList';
@@ -26,7 +26,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { IBottomDrawerStore, ILocationStore, INotificationStore, IUserStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, IBottomDrawerStore, ILocationStore, INotificationStore, IRequestStore, IUserStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -37,6 +37,9 @@ import GlobalBottomDrawer from './src/components/globalBottomDrawer';
 import GlobalErrorBoundary from './src/globalErrorBoundary';
 import { observer } from 'mobx-react';
 import { runInAction } from 'mobx';
+import TeamList from './src/screens/teamList';
+import { ActiveRequestTabHeight } from './src/constants';
+import { VisualArea } from './src/components/helpers/VisualArea';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -135,8 +138,9 @@ export default function App() {
               <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
               <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
               <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
-              <Stack.Screen name={routerNames.helpRequestList} component={userScreen(HelpRequestList)}/>
+              <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
               <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
+              <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
             </Stack.Navigator>
             <GlobalBottomDrawer/>
           {/* </GlobalErrorBoundary>   */}
@@ -164,6 +168,16 @@ const updateBottomDrawerRoute = function(state: NavigationState) {
       const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
       bottomDrawerStore.currentRoute = routeName
     })
+  }
+}
+
+const visualArea = function(Component: (props) => JSX.Element) {
+  return function(props) {
+    return (
+      <VisualArea>
+        <Component {...props} />
+      </VisualArea>
+    )
   }
 }
 

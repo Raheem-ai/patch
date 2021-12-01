@@ -1,9 +1,8 @@
 import {  getStore, Store } from './meta';
 import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IRequestStore } from './interfaces';
-import { Alert, Animated, Dimensions } from 'react-native';
-import { persistent } from '../meta';
+import { Animated, Dimensions } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
-import { autorun, makeAutoObservable, reaction, runInAction, when } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import RequestChat from '../components/requestChat';
 import EditHelpRequest from '../components/editRequest';
 import AssignResponders from '../components/assignResponders';
@@ -11,7 +10,6 @@ import CreateHelpRequest from '../components/createRequest';
 import { ActiveRequestTabHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
 import { routerNames } from '../types';
-import { constants } from 'buffer';
 import Constants from 'expo-constants';
 
 const Config: BottomDrawerConfig = {
@@ -30,6 +28,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     currentRoute: string = null;
     expanded: boolean = false;
     showing: boolean = false;
+    headerShowing: boolean = false;
 
     viewIdStack: BottomDrawerView[] = []
 
@@ -68,8 +67,33 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         return Config[this.viewId] || null
     }
 
+    get minimizable() {
+        return !!this.view && this.isMinimizable(this.view)
+    }
+
+    get bottomUIOffset() {
+        const onRequestMap = this.currentRoute == routerNames.helpRequestMap;
+
+        return (this.requestStore.activeRequest && !onRequestMap ? ActiveRequestTabHeight : 0)
+            + (this.showing && !this.expanded ? BottomDrawerHandleHeight : 0)
+    }
+
+    get topUIOffset() {
+        return this.showing && this.expanded && this.headerShowing ? BottomDrawerHandleHeight : 0;
+    }
+
+    // TODO: there are 2-6ish pixels off here...might be borders adding up or something
+    get drawerContentHeight() {
+        return Dimensions.get('screen').height 
+            - (this.minimizable 
+                ? HeaderHeight
+                : HeaderHeight - InteractiveHeaderHeight)
+            - this.bottomUIOffset 
+            - this.topUIOffset;
+    }
+
     show = (view: BottomDrawerView, expanded?: boolean) => {
-        const currentIsMinimizeable = this.view && this.isMinimizable(this.view);
+        const currentIsMinimizeable = this.minimizable;
         const newIsMinimizeable = this.isMinimizable(Config[view]);
 
         if (currentIsMinimizeable && newIsMinimizeable){
@@ -77,6 +101,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 runInAction(() => {
                     this.showing = true
                     this.expanded = !!expanded
+                    this.headerShowing = true
                 })
             } else {
                 // TODO: test this when we have another minimizeable view
@@ -94,6 +119,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                     
                     this.showing = true
                     this.expanded = !!expanded
+                    this.headerShowing = true
                 })
             }
         } else if (currentIsMinimizeable) {
@@ -101,12 +127,14 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 this.viewIdStack.push(view);
                 this.showing = true;
                 this.expanded = !!expanded
+                this.headerShowing = true
             })
         } else if (!this.view) {
             runInAction(() => {
                 this.viewId = view
                 this.showing = true
                 this.expanded = !!expanded
+                this.headerShowing = true
             })
         }
 
@@ -125,6 +153,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         }).start();
 
         this.view.onShow?.()
+    }
+
+    showHeader = () => {
+        this.headerShowing = true;
     }
 
     hide = () => {
@@ -158,15 +190,13 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         })
     }
 
-    expand = () => {
-        const isMinimizable = this.view.minimizeLabel
-            ? typeof this.view.minimizeLabel == 'function'
-                ? (this.view.minimizeLabel as () => string)()
-                : this.view.minimizeLabel
-            : false;
+    hideHeader = () => {
+        this.headerShowing = false;
+    }
 
+    expand = () => {
         Animated.timing(this.bottomDrawerTabTop, {
-            toValue: 0 + (isMinimizable
+            toValue: 0 + (this.minimizable
                 ? HeaderHeight // should only run this one as you can only expand from being minimized
                 : isAndroid 
                     ? Constants.statusBarHeight + 1 + 12 

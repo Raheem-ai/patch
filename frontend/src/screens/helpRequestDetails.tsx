@@ -398,9 +398,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return null
     }
 
-    const height = dimensions.height - HeaderHeight 
-        - (requestStore.activeRequest ? ActiveRequestTabHeight : 0)
-        - (bottomDrawerStore.showing ? BottomDrawerHandleHeight : 0);
+    const height = dimensions.height - HeaderHeight - bottomDrawerStore.bottomUIOffset;
     
     return (
         <View style={{ height: height }}>

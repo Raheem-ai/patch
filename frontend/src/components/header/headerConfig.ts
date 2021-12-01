@@ -90,7 +90,17 @@ const HeaderConfig: {
                 // }, 0)
             }
         }]
-    }
+    },
+    [routerNames.teamList]: {
+        title: 'Team',
+        rightActions: [{
+            icon: 'plus',
+            callback: () => {
+                // const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                // bottomDrawerStore.show(BottomDrawerView.createRequest, true);
+            }
+        }]
+    },
 }
 
 export default HeaderConfig;

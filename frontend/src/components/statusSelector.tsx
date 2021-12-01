@@ -2,7 +2,7 @@ import React from "react";
 import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
-import { assignedResponderBasedRequestStatus } from "../../../common/utils";
+import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
 import { IRequestStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 
