@@ -5,7 +5,7 @@ import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ActiveRequestTabHeight } from "../constants";
-import { navigationRef } from "../navigation";
+import { navigateTo, navigationRef } from "../navigation";
 import { BottomDrawerHandleHeight, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { Colors, routerNames } from "../types";
@@ -119,11 +119,24 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     }
 
     activeRequest() {
+        const onPress = () => {
+            if (this.requestStore.activeRequest?.id != this.requestStore.currentRequest?.id) {
+                this.requestStore.pushRequest(this.requestStore.activeRequest.id)
+                navigateTo(routerNames.helpRequestDetails)
+            }
+        }
+
         return (
-            <HelpRequestCard key='activeRequestTab' request={this.requestStore.activeRequest} style={[
-                styles.activeRequestCard,
-                { zIndex: styles.container.zIndex }
-            ]} minimal dark/>
+            <HelpRequestCard 
+                key='activeRequestTab' 
+                onPress={onPress}
+                request={this.requestStore.activeRequest} 
+                style={[
+                    styles.activeRequestCard,
+                    { zIndex: styles.container.zIndex }
+                ]} 
+                minimal 
+                dark/>
         )
     }
 

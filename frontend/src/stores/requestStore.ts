@@ -140,6 +140,8 @@ export default class RequestStore implements IRequestStore {
      * page
      */
     async tryPopRequest() {
+        // TODO: this being used for the map index and for the current request for other views
+        // is making the header flash old reqeuest ids when you go detailsA > ActiveRequesDetails > back > back
         if (this.currentRequestIdxStack.length > 1) {
             this.currentRequestIdxStack.pop();
         }

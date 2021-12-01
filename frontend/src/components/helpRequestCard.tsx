@@ -16,7 +16,8 @@ type Props = {
     request: HelpRequest,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
-    minimal?: boolean
+    minimal?: boolean,
+    onPress?: () => void
 };
 
 
@@ -25,7 +26,8 @@ const HelpRequestCard = observer(({
     request, 
     style,
     dark,
-    minimal
+    minimal,
+    onPress
 } : Props) => {
     const userStore = getStore<IUserStore>(IUserStore);
     const requestStore = getStore<IRequestStore>(IRequestStore);
@@ -42,6 +44,8 @@ const HelpRequestCard = observer(({
     const closeStatusOrGoToDetails = () => {
         if (statusOpen) {
             closeStatusSelector()
+        } else if (onPress) {
+            onPress();
         } else {
             requestStore.setCurrentRequest(request)
             navigateTo(routerNames.helpRequestDetails)
