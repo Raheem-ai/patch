@@ -6,13 +6,14 @@ type Props = {
     tags: string[],
     verticalMargin: number,
     dark?: boolean,
-    onTagDeleted?: (idx: number) => void
+    disabled?: boolean,
+    onTagDeleted?: (idx: number, tag: string) => void
 }
 
 export default function Tags(props: Props) {
 
-    const onDeleteTagTapped = (idx: number) => () => {
-        props.onTagDeleted(idx);
+    const onDeleteTagTapped = (idx: number, tag: string) => () => {
+        props.onTagDeleted(idx, tag);
     }
 
     return (
@@ -23,19 +24,36 @@ export default function Tags(props: Props) {
                         <View 
                             style={[
                                 styles.tagContainer, 
-                                { backgroundColor: props.dark ? styles.dark.backgroundColor : styles.light.backgroundColor },
+                                { backgroundColor: props.dark 
+                                    ? props.disabled 
+                                        ? styles.darkDisabled.backgroundColor
+                                        : styles.dark.backgroundColor 
+                                    : props.disabled 
+                                        ? styles.lightDisabled.backgroundColor
+                                        : styles.light.backgroundColor 
+                                },
                                 { marginBottom: props.verticalMargin }
                             ]}
                             key={t}
                         >
-                            <Text style={[styles.tagText, { color: props.dark ? styles.dark.color : styles.light.color }]}>{t}</Text>
+                            <Text style={[
+                                styles.tagText, 
+                                { color: props.dark 
+                                    ? props.disabled 
+                                        ? styles.darkDisabled.color
+                                        : styles.dark.color 
+                                    : props.disabled 
+                                        ? styles.lightDisabled.color
+                                        : styles.light.color 
+                                }
+                            ]}>{t}</Text>
                             {   
                                 props.onTagDeleted 
                                     ? <IconButton
                                         style={styles.closeIcon}
                                         icon='close' 
                                         color={props.dark ? styles.dark.color : styles.light.color}
-                                        onPress={onDeleteTagTapped(idx)}
+                                        onPress={onDeleteTagTapped(idx, t)}
                                         size={styles.closeIcon.height}></IconButton>
                                     : null
                             }
@@ -69,6 +87,14 @@ const styles = StyleSheet.create({
     light: {
         color: '#666',
         backgroundColor: '#e0e0e0'
+    },
+    darkDisabled: {
+        color: '#e0e0e0',
+        backgroundColor: '#333'
+    }, 
+    lightDisabled: {
+        color: '#666',
+        backgroundColor: '#c0c0c0'
     },
     closeIcon: {
         alignSelf: 'center',

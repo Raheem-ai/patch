@@ -30,27 +30,22 @@ export class RequireRoleMiddleware {
         throw new BadRequest(`No org scope supplied`);
       }
 
+      const orgConfig = user.organizations && user.organizations[orgId];
+
+      if (!orgConfig) {
+        throw new Forbidden(`You do not have access to the supplied org scope`);
+      }
+
+      const orgRoles = orgConfig.roles;
+
       for (const role of roles) {
-        const orgConfig = user.organizations && user.organizations[orgId];
-
-        if (!orgConfig) {
-          throw new Forbidden(`You do not have access to the supplied org scope`);
-        }
-
-        const orgRoles = orgConfig.roles;
-
-        if (!orgRoles.includes(role)) {
-          unmetRoles.push(role);
+        if (orgRoles.includes(role)) {
+          // one of the required roles met
+          return;
         }
       }
 
-      if (unmetRoles.length) {
-        // throw unauthorized for roles...
-        throw new Forbidden(`Roles [${unmetRoles.map(r => UserRole[r])}] are required to call this api`);
-      } else {
-        //met role requirements so allow access
-        return;
-      }
+      throw new Forbidden(`Roles [${roles.map(r => UserRole[r])}] are required to call this api`);      
     }
   }
 }

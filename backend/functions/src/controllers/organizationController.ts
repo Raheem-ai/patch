@@ -4,22 +4,37 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { MinOrg, Organization, ProtectedUser, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, Organization, PendingUser, ProtectedUser, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
+import * as uuid from 'uuid';
+import { Twilio } from 'twilio';
+import * as querystring from 'querystring'
+import config from '../config';
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
     name: string;
 }
 
+const twilioConfig = config.TWILIO.get();
+const twilioClient = new Twilio(twilioConfig.sID, twilioConfig.token);
 
 @Controller(API.namespaces.organization)
-export class OrganizationController implements APIController<'createOrg' | 'addUserRoles' | 'removeUserRoles' | 'removeUserFromOrg' | 'addUserToOrg' | 'getTeamMembers' | 'getRespondersOnDuty'> {
+export class OrganizationController implements APIController<
+    'createOrg' 
+    | 'addUserRoles' 
+    | 'removeUserRoles' 
+    | 'removeUserFromOrg' 
+    | 'addUserToOrg' 
+    | 'getTeamMembers' 
+    | 'getRespondersOnDuty'
+    | 'inviteUserToOrg'
+> {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
@@ -134,5 +149,70 @@ export class OrganizationController implements APIController<'createOrg' | 'addU
         @User() user: UserDoc,
     ) {
         return await this.db.getOrgResponders(orgId); // TODO: then filter by who's on duty
+    }
+
+    @Post(API.server.inviteUserToOrg())
+    @RequireRoles([UserRole.Admin])
+    async inviteUserToOrg(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('email') email: string, 
+        @Required() @BodyParams('phone') phone: string, 
+        @Required() @BodyParams('roles') roles: UserRole[], 
+        @Required() @BodyParams('baseUrl') baseUrl: string
+    ) {
+        const org = await this.db.resolveOrganization(orgId)
+
+        const existingUser = await this.db.getUser({ email });
+
+        const pendingUser: PendingUser = {
+            email,
+            phone,
+            roles,
+            pendingId: uuid.v1()
+        };
+
+        await this.db.addPendingUserToOrg(org, pendingUser);
+
+        let link: string,
+            msg: string;
+
+
+        // TODO: retest this when we have the concept of being part of more than one org
+        if (existingUser) {
+            link = this.getLinkUrl<LinkExperience.JoinOrganization>(baseUrl, LinkExperience.JoinOrganization, {
+                orgId,
+                email,
+                roles,
+                pendingId: pendingUser.pendingId    
+            });
+
+            msg = `You have been invited to join '${org.name}' on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join '${org.name}'.\n${link}`;
+        } else {
+            link = this.getLinkUrl<LinkExperience.SignUpThroughOrganization>(baseUrl, LinkExperience.SignUpThroughOrganization, {
+                orgId,
+                email,
+                roles,
+                pendingId: pendingUser.pendingId
+            });
+
+            msg = `You have been invited to sign up and join '${org.name}' on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join '${org.name}'.\n${link}`;
+        }
+
+        twilioClient.messages.create({
+            from: twilioConfig.phoneNumber, 
+            to: phone,
+            body: msg
+        })
+
+        return pendingUser;
+    }
+
+    getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
+        const expoSection = baseUrl.startsWith('exp')
+            ? '--/'
+            :'';
+
+        return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
     }
 }

@@ -13,7 +13,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 
 @Controller(API.namespaces.dispatch)
-export class DispatcherController implements APIController<'broadcastRequest' | 'assignRequest'> {
+export class DispatcherController implements APIController<'broadcastRequest' | 'assignRequest' | 'removeUserFromRequest'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     
     @Inject(Notifications) notifications: Notifications;
@@ -88,6 +88,17 @@ export class DispatcherController implements APIController<'broadcastRequest' | 
         await this.notifications.sendBulk(notifications);
 
         return updatedReq
+    }
+
+    @Post(API.server.removeUserFromRequest())
+    @RequireRoles([UserRole.Dispatcher])
+    async removeUserFromRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('userId') userId: string,
+        @Required() @BodyParams('requestId') requestId: string, 
+    ) {
+        return await this.db.removeUserFromRequest(userId, requestId);
     }
 
 }

@@ -3,6 +3,7 @@ import { MongooseModel } from "@tsed/mongoose";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
 import { UserOrgConfig, UserRole } from "common/models";
+import { request } from "express";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -11,7 +12,7 @@ import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
 
 @Controller(API.namespaces.responder)
-export class ResponderController implements APIController<'confirmRequestAssignment' | 'declineRequestAssignment' | 'setOnDutyStatus'> {
+export class ResponderController implements APIController<'confirmRequestAssignment' | 'declineRequestAssignment' | 'setOnDutyStatus' | 'joinRequest' | 'leaveRequest'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
@@ -23,7 +24,7 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.confirmRequestAssignment(requestId, user);
+        return await this.db.confirmRequestAssignment(requestId, user.id);
     }
 
     @Post(API.server.declineRequestAssignment())
@@ -33,7 +34,7 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.declineRequestAssignment(requestId, user);
+        return await this.db.declineRequestAssignment(requestId, user.id);
     }
 
     @Post(API.server.setOnDutyStatus())
@@ -51,5 +52,25 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         const updatedUser = await user.save();
 
         return this.db.me(updatedUser);
+    }
+
+    @Post(API.server.joinRequest())
+    @RequireRoles([UserRole.Responder])
+    async joinRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string
+    ) {
+        return await this.db.confirmRequestAssignment(requestId, user.id)
+    }
+
+    @Post(API.server.leaveRequest())
+    @RequireRoles([UserRole.Responder])
+    async leaveRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string
+    ) {
+        return await this.db.declineRequestAssignment(requestId, user.id)
     }
 }

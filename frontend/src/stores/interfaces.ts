@@ -2,7 +2,8 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User } from '../../../common/models'
+import { RootStackParamList } from '../types';
 
 export interface IBaseStore {
     init?(): Promise<void>,
@@ -21,10 +22,12 @@ export interface IUserStore extends IBaseStore {
     currentOrgId: string;
     usersInOrg: Map<string, ClientSideFormat<ProtectedUser>>
     signIn(email: string, password: string): Promise<void>
-    signUp(email: string, password: string): Promise<void>
+    signUp(minUser: MinUser): Promise<void>
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], baseUrl: string): Promise<void>
+    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
 }
 
 export namespace IUserStore {
@@ -139,6 +142,9 @@ export interface IRequestStore extends IBaseStore {
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateReq(updatedReq: HelpRequest): void
     confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
+    joinRequest(reqId: string): Promise<void>
+    leaveRequest(reqId: string): Promise<void>
+    removeUserFromRequest(userId: string, reqId: string): Promise<void>
 }
 
 export namespace ITeamStore {
@@ -197,7 +203,8 @@ export enum BottomDrawerView {
     createRequest = 'cr',
     editRequest = 'er',
     requestChat = 'rc',
-    assignResponders = 'ar'
+    assignResponders = 'ar',
+    inviteUserToOrg ='iu'
 }
 
 export type BottomDrawerComponentClass = React.ComponentClass & {
@@ -236,6 +243,38 @@ export namespace IHeaderStore {
     export const id = Symbol('IHeaderStore');
 }
 
+export interface ILinkingStore extends IBaseStore {
+    baseUrl: string
+    initialRoute: keyof RootStackParamList;
+    initialRouteParams: any
+}
+
+export namespace ILinkingStore {
+    export const id = Symbol('ILinkingStore');
+}
+
+export type EditUserData = Omit<User, 'organizations' | 'id'>
+
+export interface ITempUserStore extends EditUserData, IBaseStore { }
+
+export namespace INewUserStore {
+    export const id = Symbol('INewUserStore');
+}
+
+export interface INewUserStore extends ITempUserStore {
+    roles: UserRole[]
+    inviteNewUser: () => Promise<void>;
+}
+
+export namespace IEditUserStore {
+    export const id = Symbol('IEditUserStore');
+}
+
+export interface IEditUserStore extends ITempUserStore {
+    loadUser(user: EditUserData): void
+    editUser(): Promise<void>
+}
+
 export const AllStores = [
     IUserStore,
     ILocationStore,
@@ -248,5 +287,7 @@ export const AllStores = [
     IBottomDrawerStore,
     INativeEventStore,
     IHeaderStore,
-    ITeamStore
+    ITeamStore,
+    ILinkingStore,
+    INewUserStore
 ]

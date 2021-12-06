@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, NotificationType, Organization, ProtectedUser, RequestSkill, RequestStatus, RequestType, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinUser, NotificationType, Organization, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -77,16 +77,33 @@ export class DBManager {
         return jsonOrg;
     }
 
-    async createUser(minUser: Partial<UserModel>): Promise<UserDoc> {
-        minUser.auth_etag = minUser.auth_etag || uuid.v1();
-        minUser.displayColor = minUser.displayColor || randomColor({
+    async createUser(user: Partial<UserModel>): Promise<UserDoc> {
+        user.auth_etag = user.auth_etag || uuid.v1();
+        user.displayColor = user.displayColor || randomColor({
             hue: '#DB0000'
         });
 
-        const user = new this.users(minUser)
+        const newUser = new this.users(user)
         user.organizations = {};
 
-        return await user.save();
+        return await newUser.save();
+    }
+
+    async createUserThroughOrg(orgId: string | OrganizationDoc, pendingId: string, user: MinUser) {
+        const org = await this.resolveOrganization(orgId);
+        const idx = org?.pendingUsers?.findIndex(u => u.pendingId == pendingId);
+
+        if (idx != -1) {
+            const pendingUser = org.pendingUsers[idx];
+            
+            const newUser = await this.createUser(user);
+
+            org.pendingUsers.splice(idx, 1);
+
+            return await this.addUserToOrganization(org, newUser, pendingUser.roles);
+        } else {
+            throw `Invite for user with email ${user.email} to join '${org.name}' not found`
+        }
     }
 
     async createOrganization(minOrg: Partial<OrganizationModel>, adminId: string) {
@@ -257,6 +274,17 @@ export class DBManager {
         }
     }
 
+    async addPendingUserToOrg(orgId: string | OrganizationDoc, pendingUser: PendingUser) {
+        const org = await this.resolveOrganization(orgId);
+
+        // TODO: we should put an orgInvites field or something on the user (if they already exist)
+        // so you can know you have invites without having to do a huge search across every org
+        // in the db...then this would update with the user (if they exist) in a transaction
+        org.pendingUsers.push(pendingUser)
+
+        await org.save()
+    }
+
     // Requests
 
     async createRequest(minhHelpRequest: MinHelpRequest, orgId: string, dispatcherId: string): Promise<HelpRequestDoc> {
@@ -397,14 +425,14 @@ export class DBManager {
         return updatedRequest;
     }
 
-    async confirmRequestAssignment(requestId: string | HelpRequestDoc, user: UserDoc) {
+    async confirmRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.assignedResponderIds.includes(user.id)) {
-            request.assignedResponderIds.push(user.id);
+        if (!request.assignedResponderIds.includes(userId)) {
+            request.assignedResponderIds.push(userId);
         }
 
-        const idx = request.declinedResponderIds.indexOf(user.id)
+        const idx = request.declinedResponderIds.indexOf(userId)
 
         if (idx != -1) {
             request.declinedResponderIds.splice(idx, 1)
@@ -419,14 +447,14 @@ export class DBManager {
         return await request.save()
     }
 
-    async declineRequestAssignment(requestId: string | HelpRequestDoc, user: UserDoc) {
+    async declineRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.declinedResponderIds.includes(user.id)) {
-            request.declinedResponderIds.push(user.id);
+        if (!request.declinedResponderIds.includes(userId)) {
+            request.declinedResponderIds.push(userId);
         }
 
-        const idx = request.assignedResponderIds.indexOf(user.id)
+        const idx = request.assignedResponderIds.indexOf(userId)
 
         if (idx != -1) {
             request.assignedResponderIds.splice(idx, 1)
@@ -439,6 +467,17 @@ export class DBManager {
         }
 
         return await request.save()
+    }
+
+    async removeUserFromRequest(userId: string, requestId: string): Promise<HelpRequestDoc> {
+        const request = await this.resolveRequest(requestId);
+        const idx = request.assignedResponderIds.indexOf(userId);
+
+        if (idx != -1) {
+            request.assignedResponderIds.splice(idx, 1);
+        }
+
+        return await request.save();
     }
 
     // HELPERS
@@ -659,10 +698,10 @@ export class DBManager {
             fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
             fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
 
-            fullReqs[0] = await this.confirmRequestAssignment(fullReqs[0], user1);
-            fullReqs[0] = await this.declineRequestAssignment(fullReqs[0], user3);
-            fullReqs[1] = await this.confirmRequestAssignment(fullReqs[1], user3);
-            fullReqs[2] = await this.declineRequestAssignment(fullReqs[2], user1);
+            fullReqs[0] = await this.confirmRequestAssignment(fullReqs[0], user1.id);
+            fullReqs[0] = await this.declineRequestAssignment(fullReqs[0], user3.id);
+            fullReqs[1] = await this.confirmRequestAssignment(fullReqs[1], user3.id);
+            fullReqs[2] = await this.declineRequestAssignment(fullReqs[2], user1.id);
             
             let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah...blah blah blah blah blah ')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')

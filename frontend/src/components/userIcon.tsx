@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Colors } from '../types';
+import {parseFullName} from 'parse-full-name';
 
 type UserIconProps = { 
     user: { 
@@ -16,14 +17,17 @@ const UserIcon = ({
     style,
     large 
 } : UserIconProps) => {
-    const userName = user.name;
-    const usernameParts = userName.split(' ');
+    const userName = parseFullName(user.name);
+
+    // single names resolve as last name for some reason?!?!
+    const first = userName.first || userName.last;
+    const last = userName.first ? userName.last : null;
 
     // either FL for Firstname Lastname or 
     // Fi for Firstname
-    let initials = usernameParts.length >= 2
-        ? `${usernameParts[0][0]}${usernameParts[usernameParts.length - 1][0]}`.toUpperCase()
-        : `${usernameParts[0][0].toUpperCase()}${(usernameParts[0][1] || '').toLowerCase()}`
+    let initials = last
+        ? `${first[0]}${last[0]}`.toUpperCase()
+        : `${first[0].toUpperCase()}${(first[1] || '').toLowerCase()}`
     
     return (
         <View

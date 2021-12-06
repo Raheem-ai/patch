@@ -3,9 +3,10 @@
     "name": "patch",
     "slug": "patch",
     "owner": "raheem-ai",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "scheme": "raheem",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -36,7 +37,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "ai.raheem.patch"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -10,11 +10,15 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    phone: string;
     password: string;
     organizations: { [key: string]: UserOrgConfig }
     displayColor: string
     skills: RequestSkill[]
     race?: string
+    pronouns?: string[]
+    bio?: string
+    // location?
 }
 
 export type UserOrgConfig = {
@@ -22,7 +26,7 @@ export type UserOrgConfig = {
     onDuty: boolean
 }
 
-export type MinUser = AtLeast<User, 'email' | 'password'>
+export type MinUser = AtLeast<User, 'email' | 'password' | 'name'>
 
 export type ProtectedUser = Omit<User, 'password' | 'race'>;
 
@@ -40,15 +44,29 @@ export interface Organization {
     name: string;
     members: ProtectedUser[];
     lastRequestId: number;
-    lastDayTimestamp: string
+    lastDayTimestamp: string;
+    pendingUsers: PendingUser[]
 }
 
 export type MinOrg = AtLeast<Organization, 'name'>;
+
+export type PendingUser = {
+    email: string 
+    phone: string 
+    roles: UserRole[]
+    pendingId: string
+}
 
 export enum UserRole {
     Admin,
     Dispatcher,
     Responder
+}
+
+export const UserRoleToLabelMap: { [key in UserRole]: string } = {
+    [UserRole.Admin]: 'Admin',
+    [UserRole.Dispatcher]: 'Dispatcher',
+    [UserRole.Responder]: 'Responder'
 }
 
 export type AddressableLocation = {
@@ -278,3 +296,23 @@ export type NotificationPayload<T extends NotificationType> = NotificationPayloa
 export type AppSecrets = {
     googleMapsApiKey: string
 }
+
+export enum LinkExperience {
+    SignUpThroughOrganization = 'suto',
+    JoinOrganization = 'jo'
+}
+
+export type LinkParams = {
+    [LinkExperience.SignUpThroughOrganization]: {
+        orgId: string,
+        email: string,
+        roles: UserRole[],
+        pendingId: string
+    },
+    [LinkExperience.JoinOrganization]: {
+        orgId: string,
+        email: string,
+        roles: UserRole[],
+        pendingId: string
+    } 
+} 

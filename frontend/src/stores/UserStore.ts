@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { Me, ProtectedUser, UserRole } from '../../../common/models';
+import { AuthTokens, Me, MinUser, ProtectedUser, UserRole } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -9,6 +9,7 @@ import { persistent } from '../meta';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 import { clearAllStores } from './utils';
+import { clearAllServices } from '../services/utils';
 
 @Store(IUserStore)
 export default class UserStore implements IUserStore {
@@ -100,54 +101,40 @@ export default class UserStore implements IUserStore {
     onSignedOut = () => {
         // TODO: make general 'was signed out' flow that safely clears all stores
     }
+
+    async afterSignIn(authTokens: AuthTokens) {
+        const token = authTokens.accessToken;
+
+        const user = await this.api.me({ token });
+
+        const keys = Object.keys(user.organizations);
+
+        const orgId = !!this.currentOrgId && keys.includes(this.currentOrgId)
+            ? this.currentOrgId
+            : keys[0]
+
+        // need to fetch all data needed for BottomDrawer views before setting the user
+        // which starts unlocking views that require you to be signed in
+        if (orgId) {
+            await this.updateOrgUsers([], { token, orgId })
+        }
+
+        await this.getLatestMe({ me: user, token })
+    }
     
     async signIn(email: string, password: string) {
         try {
             const authTokens = await this.api.signIn({ email, password })
-
-            const token = authTokens.accessToken;
-
-            const user = await this.api.me({ token });
-
-            const keys = Object.keys(user.organizations);
-
-            const orgId = !!this.currentOrgId && keys.includes(this.currentOrgId)
-                ? this.currentOrgId
-                : keys[0]
-
-            // need to fetch all data needed for BottomDrawer views before setting the user
-            // which starts unlocking views that require you to be signed in
-            if (orgId) {
-                await this.updateOrgUsers([], { token, orgId })
-            }
-
-            await this.getLatestMe({ me: user, token })
+            await this.afterSignIn(authTokens);
         } catch (e) {
             console.error(e);
         }
     }
 
-    async signUp(email: string, password: string) {
+    async signUp(minUser: MinUser) {
         try {
-            const authTokens = await this.api.signUp({ email, password })
-
-            const token = authTokens.accessToken;
-
-            const user = await this.api.me({ token });
-
-            const keys = Object.keys(user.organizations);
-
-            const orgId = !!this.currentOrgId && keys.includes(this.currentOrgId)
-                ? this.currentOrgId
-                : keys[0]
-
-            // need to fetch all data needed for BottomDrawer views before setting the user
-            // which starts unlocking views that require you to be signed in
-            if (orgId) {
-                await this.updateOrgUsers([], { token, orgId })
-            }
-            
-            await this.getLatestMe({ me: user, token })
+            const authTokens = await this.api.signUp(minUser)
+            await this.afterSignIn(authTokens);
         } catch (e) {
             console.error(e);
         }
@@ -160,9 +147,27 @@ export default class UserStore implements IUserStore {
             setTimeout(() => {
                 navigateTo(routerNames.signIn)
                 clearAllStores()
+                clearAllServices()
             }, 0)
 
             await this.api.signOut({ token });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], baseUrl: string) {
+        try {
+            const pendingUser = await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, baseUrl);
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
+        try {
+            const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
+            await this.afterSignIn(authTokens);
         } catch (e) {
             console.error(e);
         }

@@ -26,7 +26,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, IBottomDrawerStore, ILocationStore, INotificationStore, IRequestStore, IUserStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -40,6 +40,7 @@ import { runInAction } from 'mobx';
 import TeamList from './src/screens/teamList';
 import { ActiveRequestTabHeight } from './src/constants';
 import { VisualArea } from './src/components/helpers/visualArea';
+import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -114,8 +115,11 @@ export default function App() {
 
   // safe to get here because isLoading doesn't get set until after store binding/init
   const userStore = getStore<IUserStore>(IUserStore);
+  const linkingStore = getStore<ILinkingStore>(ILinkingStore);
 
-  const initialRoute = userStore.signedIn
+  const initialRoute = linkingStore.initialRoute
+    ? linkingStore.initialRoute
+    : userStore.signedIn
       ? routerNames.userHomePage
       : routerNames.signIn
 
@@ -134,6 +138,7 @@ export default function App() {
             <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
               <Stack.Screen name={routerNames.signIn} component={SignInForm} />
               <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
+              <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
               <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
               <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
               <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>

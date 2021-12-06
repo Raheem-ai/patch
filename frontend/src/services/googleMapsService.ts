@@ -25,6 +25,10 @@ export class GoogleMapsService implements IMapsService {
         await this.secretStore.init();
     }
 
+    clear() {
+        
+    }
+
     async placeIdToLatLong(placeId: string): Promise<{ lat: number, long: number }> {
         try {
             console.log(placeId)

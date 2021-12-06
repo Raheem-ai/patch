@@ -1,5 +1,6 @@
+import { UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
-import { BottomDrawerView, IBottomDrawerStore, IRequestStore } from "../../stores/interfaces"
+import { BottomDrawerView, IBottomDrawerStore, ILinkingStore, IRequestStore, IUserStore } from "../../stores/interfaces"
 import { getStore } from "../../stores/meta"
 import { RootStackParamList, routerNames } from "../../types"
 
@@ -12,6 +13,7 @@ export type HeaderRouteConfig = {
     title: string | (() => string),
     leftActions?: IHeaderAction[],
     rightActions?: IHeaderAction[]
+    unauthenticated?: boolean
 }
 
 const HeaderConfig: {
@@ -21,10 +23,16 @@ const HeaderConfig: {
         title: 'Home'
     },
     [routerNames.signIn]: {
-        title: 'Sign In'
+        title: 'Sign In',
+        unauthenticated: true
     },
     [routerNames.signUp]: {
-        title: 'Sign Up'
+        title: 'Sign Up',
+        unauthenticated: true
+    },
+    [routerNames.signUpThroughOrg]: {
+        title: 'Sign Up',
+        unauthenticated: true
     },
     [routerNames.userHomePage]: {
         title: 'User Home Page'
@@ -93,11 +101,13 @@ const HeaderConfig: {
     },
     [routerNames.teamList]: {
         title: 'Team',
+        // TODO: make this able tp be a functin so 
+        // header actions can switch for user roles
         rightActions: [{
             icon: 'plus',
-            callback: () => {
-                // const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-                // bottomDrawerStore.show(BottomDrawerView.createRequest, true);
+            callback: async () => {
+                const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                bottomDrawerStore.show(BottomDrawerView.inviteUserToOrg, true);
             }
         }]
     },

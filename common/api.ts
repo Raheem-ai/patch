@@ -1,5 +1,5 @@
 import { AtLeast } from '.';
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets } from './models';
+import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -62,6 +62,7 @@ export interface IApiClient {
     signUp: (minUser: MinUser) => Promise<AuthTokens>
     signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
     refreshAuth: (refreshToken: string) => Promise<string>
+    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
     
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -81,12 +82,19 @@ export interface IApiClient {
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], baseUrl: string) => Promise<PendingUser>>
+    
+
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
     getRespondersOnDuty: AuthenticatedWithOrg<() => Promise<ProtectedUser[]>>
     getRequests: AuthenticatedWithOrg<(filter: HelpRequestFilter) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
+
+    joinRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
+    leaveRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
+    removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string) => Promise<HelpRequest>>
     
     editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
     unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
@@ -94,6 +102,8 @@ export interface IApiClient {
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
+
+    
 
     // getResources: () => string
 }
@@ -204,13 +214,31 @@ type ApiRoutes = {
         },
         getSecrets: () => {
             return '/getSecrets'
-        }
+        },
+        joinRequest: () => {
+            return '/joinRequest'
+        },
+        leaveRequest: () => {
+            return '/leaveRequest'
+        },
+        removeUserFromRequest: () => {
+            return '/removeUserFromRequest'
+        },
+        inviteUserToOrg: () => {
+            return '/inviteUserToOrg'
+        },
+        signUpThroughOrg: () => {
+            return '/signUpThroughOrg'
+        },
     }
 
     client: ApiRoutes = {
         // users
         signUp: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUp()}`
+        },
+        signUpThroughOrg: () => {
+            return `${this.base}${this.namespaces.users}${this.server.signUpThroughOrg()}`
         },
         signIn: () => {
             return `${this.base}${this.namespaces.users}${this.server.signIn()}`
@@ -243,6 +271,9 @@ type ApiRoutes = {
         assignRequest: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.assignRequest()}`
         },
+        removeUserFromRequest: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.removeUserFromRequest()}`
+        },
 
         // respond
         setOnDutyStatus: () => {
@@ -254,6 +285,13 @@ type ApiRoutes = {
         declineRequestAssignment: () => {
             return `${this.base}${this.namespaces.responder}${this.server.declineRequestAssignment()}`
         },
+        leaveRequest: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.leaveRequest()}`
+        },
+        joinRequest: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.joinRequest()}`
+        },
+
 
         // organization
         createOrg: () => {
@@ -276,6 +314,9 @@ type ApiRoutes = {
         },
         getRespondersOnDuty: () => {
             return `${this.base}${this.namespaces.organization}${this.server.getRespondersOnDuty()}`
+        },
+        inviteUserToOrg: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.inviteUserToOrg()}`
         },
 
         // request

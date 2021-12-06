@@ -7,14 +7,16 @@ import config, {
 import {
     ExpoCredentials,
     PatchMongoDBCredentials,
-    PatchSessionSecret
+    PatchSessionSecret,
+    PatchTwilioSecret
 } from 'infra/src/secrets';
 
 const environmentConfig = {
     RAHEEM: new RaheemConfig(),
     SESSION: new PatchSessionSecret(),
     MONGO: new PatchMongoDBCredentials(),
-    EXPO: new ExpoCredentials()
+    EXPO: new ExpoCredentials(),
+    TWILIO: new PatchTwilioSecret()
 }
 
 export { environmentConfig };

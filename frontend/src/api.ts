@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -16,8 +16,8 @@ import { AtLeast } from '../../common';
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-// let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-let apiHost = 'http://98db-24-44-149-184.ngrok.io'
+let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+// let apiHost = 'http://786e-24-44-148-246.ngrok.io'
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
@@ -35,6 +35,10 @@ export class APIClient implements IAPIService {
 
     async init() {
         this.userStore = getStore<IUserStore>(IUserStore);
+    }
+
+    clear() {
+        this.refreshToken = null;
     }
 
     private async tryPost<T>(url: string, body: any, config: AxiosRequestConfig) {
@@ -176,6 +180,22 @@ export class APIClient implements IAPIService {
         return tokens;
     }
 
+    async signUpThroughOrg(orgId: string, pendingId: string, user: MinUser): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.signUpThroughOrg()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { 
+            orgId, 
+            pendingId,
+            user
+        })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
     async refreshAuth(refreshToken: string): Promise<string> {
         const url = `${apiHost}${API.client.refreshAuth()}`;
 
@@ -296,6 +316,50 @@ export class APIClient implements IAPIService {
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
+    }
+
+    async joinRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.joinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async leaveRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.leaveRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.removeUserFromRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId,
+            userId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+    
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], baseUrl: string) {
+        const url = `${apiHost}${API.client.inviteUserToOrg()}`;
+
+        return (await this.tryPost<PendingUser>(url, {
+            email,
+            phone,
+            roles,
+            baseUrl
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
     }
 
     async addUserToOrg(ctx: OrgContext, userId: string, roles: UserRole[]) {

@@ -49,6 +49,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "randomcolor": "^0.6.2",
+    "twilio": "^3.71.3",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

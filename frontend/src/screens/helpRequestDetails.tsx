@@ -182,9 +182,23 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const teamSection = () => {
         const responderIds = request?.assignedResponderIds || [];
+        const canJoin = userStore.isResponder && !request.assignedResponderIds.includes(userStore.user.id)
+        const canLeave = userStore.isResponder && request.assignedResponderIds.includes(userStore.user.id)
 
         const addResponders = () => {
             bottomDrawerStore.show(BottomDrawerView.assignResponders, true);
+        }
+
+        const joinRequest = () => {
+            requestStore.joinRequest(request.id);
+        }
+
+        const leaveRequest = () => {
+            requestStore.leaveRequest(request.id);
+        }
+
+        const removeResponder = (responderId: string) => () => {
+            requestStore.removeUserFromRequest(responderId, request.id)
         }
 
         const teamHeader = () => {
@@ -199,12 +213,35 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <Text style={styles.teamLabel}>TEAM</Text>
                     </View>
                     <View>
-                        <IconButton
-                            onPress={addResponders}
-                            style={styles.addResponderIcon}
-                            icon='account-plus'
-                            color={styles.addResponderIcon.color}
-                            size={styles.addResponderIcon.width} />
+                        { userStore.isDispatcher
+                            ? <IconButton 
+                                onPress={addResponders}
+                                style={styles.addResponderIcon}
+                                icon='account-plus'
+                                color={styles.addResponderIcon.color}
+                                size={styles.addResponderIcon.width} />
+                            : canJoin
+                                ? <View style={styles.teamLabelContainer}>
+                                    <IconButton 
+                                        onPress={joinRequest}
+                                        style={styles.addResponderIcon}
+                                        icon='account-check'
+                                        color={styles.addResponderIcon.color}
+                                        size={styles.addResponderIcon.width} />
+                                    <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>JOIN</Text>    
+                                </View>
+                                : canLeave
+                                    ? <View style={styles.teamLabelContainer}>
+                                        <IconButton 
+                                            onPress={leaveRequest}
+                                            style={styles.addResponderIcon}
+                                            icon='account-minus'
+                                            color={styles.addResponderIcon.color}
+                                            size={styles.addResponderIcon.width} />
+                                        <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>LEAVE</Text>    
+                                    </View>
+                                    : null
+                        }
                     </View>
                 </View>
             )
@@ -220,8 +257,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     {
                         responderIds.map((id) => {
                             const responder = userStore.usersInOrg.get(id);
+                            
                             return (
-                                <ResponderRow key={id} responder={responder} orgId={userStore.currentOrgId}/>
+                                <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+                                    <ResponderRow style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore.currentOrgId}/>
+                                    {
+                                        userStore.isDispatcher
+                                            ? <IconButton
+                                                onPress={removeResponder(id)}
+                                                style={styles.responderRowActionIcon}    
+                                                icon='close' 
+                                                color={styles.responderRowActionIcon.color}
+                                                size={styles.responderRowActionIcon.width} />
+                                            : null
+                                    }
+                                </View>
                             )
                         })
                     }
@@ -373,12 +423,33 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 { teamHeader() }
                 { responders() }
                 { assignments() }
-                <Button 
-                    uppercase={false}
-                    onPress={addResponders}
-                    color={styles.addResponderButton.color}
-                    icon='account-plus' 
-                    style={styles.addResponderButton}>Add responders</Button>
+                { userStore.isDispatcher
+                    ? <Button 
+                        uppercase={false}
+                        onPress={addResponders}
+                        color={styles.addResponderButton.color}
+                        icon='account-plus' 
+                        style={styles.addResponderButton}>Add responders</Button>
+                    : null
+                } 
+                { canJoin
+                    ? <Button 
+                        uppercase={false}
+                        onPress={joinRequest}
+                        color={styles.addResponderButton.color}
+                        icon='account-check' 
+                        style={styles.addResponderButton}>Join request</Button>
+                    : null
+                }
+                { canLeave
+                    ? <Button 
+                        uppercase={false}
+                        onPress={leaveRequest}
+                        color={styles.addResponderButton.color}
+                        icon='account-minus' 
+                        style={styles.addResponderButton}>Leave request</Button>
+                    : null
+                }
             </View>
         )
     }
@@ -609,13 +680,23 @@ const styles = StyleSheet.create({
     },
     teamIcon: {
         width: 20,
+        height: 20,
         color: '#333',
         alignSelf: 'center',
         margin: 0
     },
     addResponderIcon: {
         width: 20,
+        height: 20,
         color: '#999',
+        alignSelf: 'center',
+        margin: 0
+    },
+    responderRowActionIcon: {
+        width: 20,
+        height: 20,
+        color: '#fff',
+        backgroundColor: '#999',
         alignSelf: 'center',
         margin: 0
     },

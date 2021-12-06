@@ -1,5 +1,5 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { HelpRequest, NotificationPayload, NotificationType } from "../../common/models";
+import { HelpRequest, LinkExperience, LinkParams, NotificationPayload, NotificationType } from "../../common/models";
 
 export type NotificationRouteParams<T extends NotificationType, P = {}> = {
     notification?: NotificationTypes<T>
@@ -25,6 +25,7 @@ export type RootStackParamList = {
     HelpRequestList: undefined;
     HelpRequestChat: undefined;
     TeamList: undefined;
+    SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -36,6 +37,7 @@ export const routerNames: TypedRouterNames = {
     home: "Home",
     signIn: "SignIn",
     signUp: "SignUp",
+    signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
     helpRequestDetails : "HelpRequestDetails",
     helpRequestMap: "HelpRequestMap",

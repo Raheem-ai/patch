@@ -285,6 +285,21 @@ export default class RequestStore implements IRequestStore {
         this.updateReq(updatedReq);
     }
 
+    async joinRequest(requestId: string) {
+        const updatedReq = await this.api.joinRequest(this.orgContext(), requestId);
+        this.updateReq(updatedReq);
+    }
+
+    async leaveRequest(requestId: string) {
+        const updatedReq = await this.api.leaveRequest(this.orgContext(), requestId);
+        this.updateReq(updatedReq);
+    }
+
+    async removeUserFromRequest(userId: string, requestId: string) {
+        const updatedReq = await this.api.removeUserFromRequest(this.orgContext(), userId, requestId);
+        this.updateReq(updatedReq);
+    }
+
     updateOrAddReq(updatedReq: HelpRequest, givenIndex?: number) {
         this.updateReq(updatedReq, givenIndex) || this.requests.push(updatedReq);
     }

@@ -19,10 +19,10 @@ export default function SignUpForm({ navigation }: Props) {
 
     const userStore = getStore<IUserStore>(IUserStore);
 
-    const signup = async () => {
-        await userStore.signUp(email, password);
-        navigateTo(routerNames.userHomePage);
-    }
+    // const signup = async () => {
+    //     await userStore.signUp(email, password);
+    //     navigateTo(routerNames.userHomePage);
+    // }
 
     return(
         <View style={styles.container}>

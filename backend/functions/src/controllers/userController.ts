@@ -22,6 +22,9 @@ export class ValidatedMinUser implements MinUser {
     
     @Required()
     password: string;
+
+    @Required()
+    name: string;
 }
 
 export class ValidatedBasicCredentials implements BasicCredentials {
@@ -36,7 +39,17 @@ export class ValidatedBasicCredentials implements BasicCredentials {
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
 
 @Controller(API.namespaces.users)
-export class UsersController implements APIController<'signUp' | 'signIn' | 'signOut' | 'reportLocation' | 'reportPushToken' | 'me' | 'refreshAuth' | 'getSecrets'> {
+export class UsersController implements APIController<
+    'signUp' 
+    | 'signIn' 
+    | 'signOut' 
+    | 'reportLocation' 
+    | 'reportPushToken' 
+    | 'me' 
+    | 'refreshAuth' 
+    | 'getSecrets'
+    | 'signUpThroughOrg'
+> {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
 
@@ -105,6 +118,30 @@ export class UsersController implements APIController<'signUp' | 'signIn' | 'sig
             // return auth tokens
             const accessToken = await createAccessToken(user.id, user.auth_etag)
             const refreshToken = await createRefreshToken(user.id, user.auth_etag)
+
+            return {
+                accessToken,
+                refreshToken
+            }
+        }
+    }
+
+    @Post(API.server.signUpThroughOrg())
+    async signUpThroughOrg(
+        @Required() @BodyParams('orgId') orgId: string,
+        @Required() @BodyParams('pendingId') pendingId: string,
+        @Required() @BodyParams('user') user: ValidatedMinUser
+    ) {
+        const existingUsers = await this.users.find({ email: user.email });
+
+        if (existingUsers && existingUsers.length) {
+            throw new BadRequest(`User with email: ${user.email} already exists`);
+        } else {
+            const [ _, newUser ] = await this.db.createUserThroughOrg(orgId, pendingId, user);
+
+            // return auth tokens
+            const accessToken = await createAccessToken(newUser.id, newUser.auth_etag)
+            const refreshToken = await createRefreshToken(newUser.id, newUser.auth_etag)
 
             return {
                 accessToken,

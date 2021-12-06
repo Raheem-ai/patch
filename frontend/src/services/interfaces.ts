@@ -3,6 +3,7 @@ import { ClientSideApi } from "../../../common/api";
 
 export interface IBaseService {
     init?(): Promise<void>
+    clear(): void
 }
 
 export interface IMapsService extends IBaseService {
@@ -22,3 +23,8 @@ export namespace IAPIService {
 export interface IAPIService extends IBaseService, ClientSideApi<'me' | 'setOnDutyStatus'> {
 
 }
+
+export const AllServices = [
+    IMapsService,
+    IAPIService
+]

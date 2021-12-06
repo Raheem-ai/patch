@@ -11,12 +11,14 @@ import { ActiveRequestTabHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import Constants from 'expo-constants';
+import AddUser from '../components/bottomDrawer/views/addUser';
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
     [BottomDrawerView.createRequest]: CreateHelpRequest,
     [BottomDrawerView.editRequest]: EditHelpRequest,
-    [BottomDrawerView.requestChat]: RequestChat
+    [BottomDrawerView.requestChat]: RequestChat,
+    [BottomDrawerView.inviteUserToOrg]: AddUser
 }
 
 const dimensions = Dimensions.get('screen')

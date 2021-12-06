@@ -36,6 +36,9 @@ export class UserModel implements User {
     name: string;
 
     @Property()
+    phone: string;
+
+    @Property()
     email: string;
 
     @Property()

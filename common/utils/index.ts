@@ -15,3 +15,11 @@ export function allEnumValues<T=any>(e: any): T[] {
 export function timestampToTime(timestamp: number) {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
+
+export function unwrap<T>(val: NotAFunction<T> | (() => NotAFunction<T>)): T {
+    return typeof val == 'function'
+        ? (val as () => NotAFunction<T>)()
+        : val;
+}
+
+type NotAFunction<T> = T extends Function ? never : T;

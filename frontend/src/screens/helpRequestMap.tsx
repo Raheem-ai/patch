@@ -129,7 +129,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                             : null }
             </MapView>
             <View style={[styles.bottomOverlay, bottomUIOffset ? { bottom: styles.bottomOverlay.bottom + bottomUIOffset } : null ]}>
-                { requestStore.activeRequest?.id != requestStore.requests?.[idx - 1]?.id
+                { !!requestStore?.activeRequest?.id && requestStore.activeRequest.id != requestStore.requests?.[idx - 1]?.id
                     ? <View style={styles.returnIconContainer} onTouchStart={goToActiveRequest}>
                         <IconButton
                             style={styles.returnIcon}
