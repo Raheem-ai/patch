@@ -95,19 +95,22 @@ const UserDetails = observer(({ navigation, route }: Props) => {
     }
 
     const currentResponse = () => {
+        if (!requestStore.currentUserActiveRequests.length) {
+            return null
+        } 
+
+
         return <View style={styles.currentResponseSection}>
             <View style={styles.currentResponseLabelContainer}>
                 <View style={styles.currentResponseIndicator}></View>
                 <Text style={styles.currentResponseText}>Responding</Text>
             </View>
             {
-                requestStore.currentUserActiveRequests.length 
-                    ? requestStore.currentUserActiveRequests.map(r => {
-                        return (
-                            <HelpRequestCard style={styles.activeRequestCard} request={r}/>
-                        )
-                    })
-                    : null
+                requestStore.currentUserActiveRequests.map(r => {
+                    return (
+                        <HelpRequestCard style={styles.activeRequestCard} request={r}/>
+                    )
+                })
             }
         </View>
     }

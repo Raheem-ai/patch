@@ -1,11 +1,13 @@
 import { observer } from "mobx-react";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, GestureResponderEvent, StyleSheet, View } from "react-native";
+import { Dimensions, GestureResponderEvent, Pressable, StyleSheet, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { IconButton } from "react-native-paper";
+import { HelpRequest } from "../../../common/models";
 import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/helpRequestCard";
 import { ActiveRequestTabHeight } from "../constants";
+import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, IBottomDrawerStore, ILocationStore, IRequestStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { ScreenProps, routerNames } from "../types";
@@ -63,6 +65,15 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         setStartTouchX(event.nativeEvent.pageX);
     }
 
+    const onCardPressed = (event: GestureResponderEvent, request: HelpRequest) => {
+        const delta = event.nativeEvent.pageX - startTouchX;
+
+        if (Math.abs(delta) < 20) {
+            requestStore.setCurrentRequest(request)
+            navigateTo(routerNames.helpRequestDetails)
+        }
+    }
+
     const onTouchEnd = (event: GestureResponderEvent) => {
         const delta = event.nativeEvent.pageX - startTouchX;
 
@@ -107,8 +118,9 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         const activeIdx = requestStore.requests.findIndex(r => r.id == requestStore.activeRequest?.id);
 
         if (activeIdx != -1) {
+            console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
             setIdx(activeIdx + 1)
-            setVisualDeltaX((activeIdx) * windowDimensions.width)
+            setVisualDeltaX(-((activeIdx) * windowDimensions.width))
             setDeltaTouchX(0)
         }
     }
@@ -139,7 +151,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     </View>
                     : null
                 }
-                <View 
+                <Pressable 
                     style={[styles.cardTrack, swipeStyle]} 
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
@@ -148,12 +160,16 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                         requestStore.requests.map(r => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
-                                    <HelpRequestCard request={r} style={styles.card} dark={requestStore.activeRequest?.id == r.id}/>
+                                    <HelpRequestCard 
+                                        onPress={onCardPressed}
+                                        request={r} 
+                                        style={styles.card} 
+                                        dark={requestStore.activeRequest?.id == r.id}/>
                                 </View>
                             )
                         })
                     }
-                </View>
+                </Pressable>
             </View>
         </>
     )

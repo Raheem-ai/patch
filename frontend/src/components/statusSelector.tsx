@@ -1,13 +1,13 @@
 import React from "react";
-import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
 import { IRequestStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 
-export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: () => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
-    [RequestStatus.Unassigned]: (onPress: () => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
+export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
+    [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
         return (
             <PartiallyAssignedIcon 
                 frontColor={dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor} 
@@ -27,7 +27,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 ]}/>
         )
     },
-    [RequestStatus.PartiallyAssigned]: (onPress: () => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
+    [RequestStatus.PartiallyAssigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
         return (
             <PartiallyAssignedIcon 
                 frontColor={(dark ? styles.darkStatusIcon : styles.statusIcon).backgroundColor} 
@@ -55,7 +55,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
 
 type StatusIconProps = { 
     status: RequestStatus, 
-    onPress: () => void, 
+    onPress: (event: GestureResponderEvent) => void, 
     style?: StyleProp<ViewStyle>,
     large?: boolean,
     dark?: boolean,

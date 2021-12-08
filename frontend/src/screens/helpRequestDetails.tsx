@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
 import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
@@ -261,6 +261,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                             const goToResponder = () => {
                                 userStore.pushCurrentUser(responder);
+                                console.log(responder.name)
                                 navigateTo(routerNames.userDetails);
                             }
                             
@@ -333,7 +334,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 return (
                     <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
-                        <View style={styles.assignmentHeader} onTouchStart={toggleOpen}>
+                        <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
                             <Text>
                                 <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
                                 <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTime(assignment.timestamp)}`}</Text>
@@ -343,7 +344,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 icon={isOpen ? 'chevron-up' : 'chevron-down'}
                                 color={styles.assignmentSelectIcon.color}
                                 size={styles.assignmentSelectIcon.width}/>
-                        </View>
+                        </Pressable>
                         { isOpen
                             ? <View>
                                 {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { observer } from "mobx-react";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../common/models";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
@@ -17,7 +17,7 @@ type Props = {
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
-    onPress?: () => void
+    onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
 
@@ -33,7 +33,8 @@ const HelpRequestCard = observer(({
     const requestStore = getStore<IRequestStore>(IRequestStore);
     const [statusOpen, setStatusOpen] = useState(false);
 
-    const openStatusSelector = () => {
+    const openStatusSelector = (event: GestureResponderEvent) => {
+        event.stopPropagation()
         setStatusOpen(true);
     }
 
@@ -41,11 +42,11 @@ const HelpRequestCard = observer(({
         setStatusOpen(false);
     }
 
-    const closeStatusOrGoToDetails = () => {
+    const onCardPress = (event: GestureResponderEvent) => {
         if (statusOpen) {
             closeStatusSelector()
         } else if (onPress) {
-            onPress();
+            onPress(event, request);
         } else {
             requestStore.setCurrentRequest(request)
             navigateTo(routerNames.helpRequestDetails)
@@ -57,7 +58,7 @@ const HelpRequestCard = observer(({
         const address = request.location.address.split(',').slice(0, 2).join()
 
         return (
-            <View style={styles.headerRow} onTouchStart={closeStatusOrGoToDetails}>
+            <View style={styles.headerRow}>
                 <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
                 <View style={styles.locationContainer}>
                     <IconButton
@@ -76,7 +77,7 @@ const HelpRequestCard = observer(({
         const notes = request.notes;
 
         return (
-            <View style={styles.detailsRow} onTouchStart={closeStatusOrGoToDetails}>
+            <View style={styles.detailsRow}>
                 <Text numberOfLines={4} style={dark ? styles.darkDetailsText : {}}>
                     <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type}: </Text>
                     <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
@@ -165,14 +166,20 @@ const HelpRequestCard = observer(({
     }
 
     return (
-        <View style={[styles.container, dark ? styles.darkContainer: null, minimal ? styles.minimalContainer: null, style]}>
-            {header()}
-            { minimal 
-                ? null
-                : details()
-            }
-            {status()}
-        </View>
+        <Pressable 
+            onPress={onCardPress} 
+            style={[
+                styles.container, 
+                dark ? styles.darkContainer: null, 
+                minimal ? styles.minimalContainer: null, style
+            ]}>
+                {header()}
+                { minimal 
+                    ? null
+                    : details()
+                }
+                {status()}
+        </Pressable>
     )
 })
 
