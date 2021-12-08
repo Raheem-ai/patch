@@ -57,6 +57,10 @@ export default class RequestStore implements IRequestStore {
         return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(this.userStore.user.id));
     }
 
+    get currentUserActiveRequests() {
+        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(this.userStore.currentUser?.id));
+    }
+
     getRequestsAfterSignin = async () => {
         await this.getRequests();
 

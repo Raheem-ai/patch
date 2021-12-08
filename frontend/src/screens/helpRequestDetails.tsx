@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Dimensions, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, ScreenProps } from "../types";
+import { Colors, routerNames, ScreenProps } from "../types";
 import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces";
@@ -14,6 +14,7 @@ import { ActiveRequestTabHeight } from "../constants";
 
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
+import { navigateTo } from "../navigation";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -127,7 +128,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             : '';
 
         const lastMessageAuthor = !!lastChatMessage
-            ? userStore.usersInOrg.get(lastChatMessage.userId)?.name
+            ? userStore.users.get(lastChatMessage.userId)?.name
             : ''
 
         const lastMessageTime = !!lastChatMessage
@@ -256,11 +257,16 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.respondersContainer}>
                     {
                         responderIds.map((id) => {
-                            const responder = userStore.usersInOrg.get(id);
+                            const responder = userStore.users.get(id);
+
+                            const goToResponder = () => {
+                                userStore.pushCurrentUser(responder);
+                                navigateTo(routerNames.userDetails);
+                            }
                             
                             return (
                                 <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-                                    <ResponderRow style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore.currentOrgId}/>
+                                    <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore.currentOrgId}/>
                                     {
                                         userStore.isDispatcher
                                             ? <IconButton
@@ -342,7 +348,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             ? <View>
                                 {
                                     assignedResponderIds.map((id) => {
-                                        const user = userStore.usersInOrg.get(id);
+                                        const user = userStore.users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -358,7 +364,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 }
                                 {
                                     declinedResponderIds.map((id) => {
-                                        const user = userStore.usersInOrg.get(id);
+                                        const user = userStore.users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -374,7 +380,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 }
                                 {
                                     pendingResponderIds.map((id) => {
-                                        const user = userStore.usersInOrg.get(id);
+                                        const user = userStore.users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -473,7 +479,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     
     return (
         <View style={{ height: height }}>
-            <WrappedScrollView>
+            <WrappedScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }

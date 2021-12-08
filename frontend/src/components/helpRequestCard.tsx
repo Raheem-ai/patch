@@ -100,7 +100,7 @@ const HelpRequestCard = observer(({
         }
 
         for (let i = 0; i < request.assignedResponderIds.length; i++) {
-            const responder = userStore.usersInOrg.get(request.assignedResponderIds[i]); 
+            const responder = userStore.users.get(request.assignedResponderIds[i]); 
             assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
         }
 

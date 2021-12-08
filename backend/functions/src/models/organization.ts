@@ -14,7 +14,7 @@ class PendingUserSchema  implements PendingUser {
 }
 
 @Model({ collection: 'organizations' })
-export class OrganizationModel implements WithRefs<Organization, 'members'> {
+export class OrganizationModel implements WithRefs<Organization, 'members' | 'removedMembers'> {
 
     id: string; // for types
 
@@ -32,6 +32,9 @@ export class OrganizationModel implements WithRefs<Organization, 'members'> {
 
     @Ref(UserModel) 
     members: Ref<UserModel>[];
+
+    @Ref(UserModel) 
+    removedMembers: Ref<UserModel>[];
 
     @CollectionOf(PendingUserSchema)
     pendingUsers: PendingUser[]

@@ -115,7 +115,10 @@ export class OrganizationController implements APIController<
         @BodyParams('userIds') userIds?: string[]
     ) {
         const org = await this.db.resolveOrganization(orgId);
-        const orgMembers = (await this.db.protectedOrganization(org)).members;
+        const protectedOrg = await this.db.protectedOrganization(org); 
+        
+        const orgMembers = protectedOrg.members;
+        const removedOrgMembers = protectedOrg.removedMembers;
 
         if (userIds && userIds.length) {
             const specificMembers: ProtectedUser[] = [];
@@ -127,7 +130,13 @@ export class OrganizationController implements APIController<
                 if (idx != -1) {
                     specificMembers.push(orgMembers[idx])
                 } else {
-                    usersNotInOrg.push(id);
+                    const removedIdx = removedOrgMembers.findIndex(member => member.id == id);
+
+                    if (removedIdx != -1) {
+                        specificMembers.push(removedOrgMembers[removedIdx])
+                    } else {
+                        usersNotInOrg.push(id);
+                    }
                 }
             }
 

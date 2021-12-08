@@ -31,14 +31,14 @@ export default class DispatchStore implements IDispatchStore {
 
     get assignableResponders() {
         return this.includeOffDuty 
-            ? Array.from(this.userStore.usersInOrg.values())
-            : Array.from(this.userStore.usersInOrg.values()).filter((user) => {
+            ? this.userStore.usersInOrg
+            : this.userStore.usersInOrg.filter((user) => {
                 return user.organizations[this.userStore.currentOrgId]?.onDuty
             });
     }
 
     get selectedResponders() {
-        return Array.from(this.selectedResponderIds.values()).map(id => this.userStore.usersInOrg.get(id));
+        return Array.from(this.selectedResponderIds.values()).map(id => this.userStore.users.get(id));
     }
 
     async toggleSelectAll() {

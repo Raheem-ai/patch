@@ -17,7 +17,7 @@ export type HeaderRouteConfig = {
 }
 
 const HeaderConfig: {
-    [route in keyof RootStackParamList]: HeaderRouteConfig
+    [route in keyof RootStackParamList]: HeaderRouteConfig | (() => HeaderRouteConfig)
  } = {
     [routerNames.home]: {
         title: 'Home'
@@ -99,18 +99,57 @@ const HeaderConfig: {
             }
         }]
     },
-    [routerNames.teamList]: {
-        title: 'Team',
-        // TODO: make this able tp be a functin so 
-        // header actions can switch for user roles
-        rightActions: [{
-            icon: 'plus',
-            callback: async () => {
-                const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-                bottomDrawerStore.show(BottomDrawerView.inviteUserToOrg, true);
-            }
-        }]
+    [routerNames.teamList]: () => {
+        const userStore = getStore<IUserStore>(IUserStore);
+        
+        const rightActions = userStore.isAdmin
+            ? [
+                {
+                    icon: 'plus',
+                    callback: async () => {
+                        const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                        bottomDrawerStore.show(BottomDrawerView.inviteUserToOrg, true);
+                    }
+                }
+            ]
+            : [];
+        
+        return {
+            title: 'Team',
+            rightActions 
+        }
     },
+    [routerNames.userDetails]: () => {
+        const userStore = getStore<IUserStore>(IUserStore);
+        const onMyProfile = userStore.user.id == userStore.currentUser?.id;
+        
+        // I'm looking at myself
+        const rightActions = !userStore.loadingCurrentUser && (onMyProfile || userStore.isAdmin)
+            ? [
+                {
+                    icon: 'pencil',
+                    callback: async () => {
+                        // open edit my profile or edit users profile depending on onMyProfile
+                        // const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                        // bottomDrawerStore.show(BottomDrawerView.inviteUserToOrg, true);
+                    }
+                }
+            ]
+            : [];
+        
+        return {
+            title: onMyProfile 
+                ? 'My profile'
+                : 'User profile',
+            leftActions: [{
+                icon: 'chevron-left',
+                callback: () => {
+                    navigationRef.current.goBack();
+                }
+            }],
+            rightActions 
+        }
+    }
 }
 
 export default HeaderConfig;

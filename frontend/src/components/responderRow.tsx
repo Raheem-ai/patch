@@ -1,25 +1,28 @@
 import React from "react";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { HelpRequest, ProtectedUser, RequestSkillToLabelMap, UserRole } from "../../../common/models";
 import SkillTag from "./skillTag";
 import UserIcon from "./userIcon";
 
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+
 type Props = {
     responder: ClientSideFormat<ProtectedUser>,
     orgId: string,
     style?: StyleProp<ViewStyle>,
     request?: HelpRequest
-    isSelected?: boolean
+    isSelected?: boolean,
+    onPress?: () => void
 }
 
-const ResponderRow = ({ responder, orgId, style, request, isSelected }: Props) => {
+const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
     const isDispatcher = responder.organizations[orgId].roles.includes(UserRole.Dispatcher);
     const skills = (responder.skills || [])
 
     return (
-        <View style={[styles.responderRow, style ]}>
+        <Pressable onPress={onPress} style={[styles.responderRow, style ]}>
             <View style={styles.userIconContainer}>
                 <UserIcon user={responder} large/>
             </View>
@@ -69,7 +72,7 @@ const ResponderRow = ({ responder, orgId, style, request, isSelected }: Props) =
                     }
                 </View>
             </View>
-        </View>
+        </Pressable>
     )
 }
 

@@ -28,17 +28,20 @@
           "remote-notification"
         ]
       },
+      "buildNumber": "0.0.1",
       "bundleIdentifier": "ai.raheem.patch",
       "config": {
         "googleMapsApiKey": "AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw"
       }
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "ai.raheem.patch"
+      "package": "ai.raheem.patch",
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"

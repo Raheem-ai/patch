@@ -55,7 +55,7 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
             <ScrollView ref={this.scrollRef}>
                 {
                     this.chat.messages.map((message) => {
-                        const user = this.userStore.usersInOrg.get(message.userId); 
+                        const user = this.userStore.users.get(message.userId); 
                         const isMe = message.userId == this.userStore.user.id;
                         const bubbleWidth = dimensions.width - (styles.userIcon.marginHorizontal * 3) - styles.userIcon.width;
 

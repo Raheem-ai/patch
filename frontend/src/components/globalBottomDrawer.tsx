@@ -120,7 +120,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
     activeRequest() {
         const onPress = () => {
-            if (this.requestStore.activeRequest?.id != this.requestStore.currentRequest?.id) {
+            if (this.requestStore.activeRequest?.id != this.requestStore.currentRequest?.id || this.bottomDrawerStore.currentRoute != routerNames.helpRequestDetails) {
                 this.requestStore.pushRequest(this.requestStore.activeRequest.id)
                 navigateTo(routerNames.helpRequestDetails)
             }

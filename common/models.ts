@@ -46,6 +46,7 @@ export interface Organization {
     lastRequestId: number;
     lastDayTimestamp: string;
     pendingUsers: PendingUser[]
+    removedMembers: ProtectedUser[]
 }
 
 export type MinOrg = AtLeast<Organization, 'name'>;
@@ -99,6 +100,7 @@ export type HelpRequest = {
     assignments: HelpRequestAssignment[]
     assignedResponderIds: string[]
     declinedResponderIds: string[]
+    // removedResponderIds: string[]
 }
 
 export enum HelpRequestFilter {

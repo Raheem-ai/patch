@@ -17,15 +17,19 @@ export default class UserStore implements IUserStore {
     private api = getService<IAPIService>(IAPIService)
 
     @persistent()
-    public user!: ClientSideFormat<Me>;
+    user!: ClientSideFormat<Me>;
 
     @persistent() 
-    public authToken: string;
+    authToken: string;
 
     @persistent()
-    public currentOrgId: string;
+    currentOrgId: string;
 
-    public usersInOrg: ObservableMap<string, ClientSideFormat<ProtectedUser>> = new ObservableMap()
+    loadingCurrentUser = false;
+
+    currentUser: ClientSideFormat<ProtectedUser>;
+
+    users: ObservableMap<string, ClientSideFormat<ProtectedUser>> = new ObservableMap()
 
     constructor() {
         makeAutoObservable(this)
@@ -46,7 +50,7 @@ export default class UserStore implements IUserStore {
             this.user = null
             this.authToken = null
             this.currentOrgId = null
-            this.usersInOrg = new ObservableMap()
+            this.users = new ObservableMap()
         })
     }
 
@@ -55,6 +59,14 @@ export default class UserStore implements IUserStore {
             token: token || this.authToken,
             orgId: this.currentOrgId
         }
+    }
+
+    get usersInOrg() {
+        return Array.from(this.users.values())
+            .filter(u => {
+                console.log(u)
+                return !!u.organizations[this.currentOrgId]
+            })
     }
 
     get isOnDuty() {
@@ -183,7 +195,7 @@ export default class UserStore implements IUserStore {
         }
 
         runInAction(() => {
-            this.usersInOrg.merge(updatedUserMap);
+            this.users.merge(updatedUserMap);
         })
     }
 
@@ -226,5 +238,22 @@ export default class UserStore implements IUserStore {
             // make you sign back in
             console.error(e)
         }
+    }
+
+    pushCurrentUser(user: ClientSideFormat<ProtectedUser>) {
+        this.currentUser = user;
+    }
+
+    // Still need to keep user for legacy ui data
+    // - old Requests they responded to
+    // - old chat messages they sent etc.
+    // - old assignments
+    async removeCurrentUserFromOrg() {
+        const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
+        
+        runInAction(() => {
+            this.users.set(user.id, user);
+            this.currentUser = null
+        })
     }
 }

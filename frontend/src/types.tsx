@@ -24,6 +24,7 @@ export type RootStackParamList = {
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
     HelpRequestChat: undefined;
+    UserDetails: undefined;
     TeamList: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
 };
@@ -39,6 +40,7 @@ export const routerNames: TypedRouterNames = {
     signUp: "SignUp",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
+    userDetails: "UserDetails",
     helpRequestDetails : "HelpRequestDetails",
     helpRequestMap: "HelpRequestMap",
     helpRequestList: "HelpRequestList",

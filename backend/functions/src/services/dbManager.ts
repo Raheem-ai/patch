@@ -66,13 +66,21 @@ export class DBManager {
     }
 
     async protectedOrganization(org: OrganizationDoc): Promise<Organization> {
-        if (!org.populated('members')) {
+        const membersPopulated = org.populated('members');
+        const removedMembersPopulated = org.populated('removedMembers');
+
+        if (!membersPopulated) {
             org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
-            return org.toJSON() as Organization
+        }
+
+        if (!removedMembersPopulated) {
+            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
         }
 
         const jsonOrg = org.toJSON() as Organization;
+
         jsonOrg.members = jsonOrg.members.map(this.protectedUser);
+        jsonOrg.removedMembers = jsonOrg.removedMembers.map(this.protectedUser);
 
         return jsonOrg;
     }
@@ -217,7 +225,7 @@ export class DBManager {
         // remove the entry in the organization map under the org key
         if (user.organizations && user.organizations[org.id]) {
             //effectively deleting
-            await this.updateUsersOrgConfig(user, org.id, (_) => undefined)
+            await this.updateUsersOrgConfig(user, org.id, (_) => null)
         } 
 
         // remove the userId from the members array
@@ -228,6 +236,9 @@ export class DBManager {
                 return m.id === userId
             }
         }), 1)
+
+        org.removedMembers ||= []
+        org.removedMembers.push(userId);
 
         // save both
         return this.transaction(async (session) => {

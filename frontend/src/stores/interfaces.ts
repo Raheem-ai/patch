@@ -20,7 +20,11 @@ export interface IUserStore extends IBaseStore {
     isAdmin: boolean;
     isOnDuty: boolean;
     currentOrgId: string;
-    usersInOrg: Map<string, ClientSideFormat<ProtectedUser>>
+    users: Map<string, ClientSideFormat<ProtectedUser>>
+    usersInOrg: ClientSideFormat<ProtectedUser>[]
+    currentUser: ClientSideFormat<ProtectedUser>
+    loadingCurrentUser: boolean
+
     signIn(email: string, password: string): Promise<void>
     signUp(minUser: MinUser): Promise<void>
     signOut(): Promise<void>
@@ -28,6 +32,8 @@ export interface IUserStore extends IBaseStore {
     toggleOnDuty(): Promise<void>
     inviteUserToOrg(email: string, phone: string, roles: UserRole[], baseUrl: string): Promise<void>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
+    pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
+    removeCurrentUserFromOrg: () => Promise<void>
 }
 
 export namespace IUserStore {
@@ -125,6 +131,7 @@ export interface IRequestStore extends IBaseStore {
     currentRequest: HelpRequest
     currentRequestIdx: number
     activeRequest: HelpRequest
+    currentUserActiveRequests: HelpRequest[]
     loading: boolean
 
     filter: HelpRequestFilter

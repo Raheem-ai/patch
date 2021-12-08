@@ -25,7 +25,7 @@ export default class TeamStore implements ITeamStore {
     }
 
     get sortedUsers() {
-        return Array.from(this.userStore.usersInOrg.values())
+        return Array.from(this.userStore.usersInOrg)
             .filter((user) => {
                 switch (this.filter) {
                     case TeamFilter.Everyone:

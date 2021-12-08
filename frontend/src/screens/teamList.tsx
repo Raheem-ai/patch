@@ -10,6 +10,7 @@ import { getStore } from "../stores/meta";
 import { ScreenProps, routerNames } from "../types";
 import { IconButton } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
+import { navigateTo } from "../navigation";
 
 type Props = ScreenProps<'TeamList'>;
 
@@ -63,7 +64,8 @@ const TeamList = observer(({ navigation, route }: Props) => {
 
     const goToResponder =  (user: ClientSideFormat<ProtectedUser>) => {
         return () => {
-            console.log(`go to ${user.name}'s' profile!`)
+            userStore.pushCurrentUser(user);
+            navigateTo(routerNames.userDetails);
         }
     }
     

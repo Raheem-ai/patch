@@ -77,6 +77,9 @@ export class HelpRequestModel implements HelpRequest {
 
     @CollectionOf(String)
     declinedResponderIds: string[]
+    
+    // @CollectionOf(String)
+    // removedResponderIds: string[]
 
     @CollectionOf(HelpRequestAssignmentSchema)
     assignments: HelpRequestAssignment[]

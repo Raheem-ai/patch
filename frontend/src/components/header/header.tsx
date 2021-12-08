@@ -12,6 +12,7 @@ import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { IHeaderStore, IUserStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { isAndroid } from '../../constants';
+import { unwrap } from '../../../../common/utils';
 
 type Props = StackHeaderProps & {};
 
@@ -21,16 +22,13 @@ const Header = observer((props: Props) => {
     const headerStore = getStore<IHeaderStore>(IHeaderStore);
 
     const dimensions = Dimensions.get('screen');
-    const config: HeaderRouteConfig = HeaderConfig[props.route.name];
+    const config: HeaderRouteConfig = unwrap(HeaderConfig[props.route.name]);
     
     const title = typeof config.title == 'string'
         ? config.title
         : config.title();
 
-    const [isOpen, setIsOpen] = useState(false);
-
     // TODO: get this from stores at some point
-    const dynamicContentToDisplay = false;
 
     const openHeader = () => {
         headerStore.open()
@@ -89,20 +87,10 @@ const Header = observer((props: Props) => {
         )
     }
 
-    const dynamicContent = () => {
-        if (dynamicContentToDisplay) {
-            return <View style={styles.dynamicContent}>
-
-            </View>
-        } else {
-            return null
-        }
-    }
-
     const mainMenuOptions = () => {
         const style = {
             ...styles.mainMenuOptions,
-            ...(!dynamicContentToDisplay ? styles.noDynamicContent : {})
+            ...styles.noDynamicContent
         }
 
         const onPress = (opt: MainMenuOption) => {
@@ -152,7 +140,6 @@ const Header = observer((props: Props) => {
             </View>
             <View style={styles.fullScreenContent}>
                 { mainMenuOptions() }
-                { dynamicContent() }
                 { subMenuOptions() }
             </View>
         </View>

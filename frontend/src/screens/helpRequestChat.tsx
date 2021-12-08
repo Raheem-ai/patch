@@ -45,7 +45,7 @@ const HelpRequestChat = observer(({ navigation, route }: Props) => {
             <ScrollView ref={scrollRef}>
                 {
                     chat.messages.map((message) => {
-                        const user = userStore.usersInOrg.get(message.userId); 
+                        const user = userStore.users.get(message.userId); 
                         const isMe = message.userId == userStore.user.id;
                         const bubbleWidth = dimensions.width - (styles.userIcon.marginHorizontal * 3) - styles.userIcon.width;
 

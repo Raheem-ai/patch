@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
+import { NumberProp } from 'react-native-svg';
 
 type Props = {
     tags: string[],
@@ -8,6 +9,9 @@ type Props = {
     dark?: boolean,
     disabled?: boolean,
     onTagDeleted?: (idx: number, tag: string) => void
+    tagContainerStyle?: StyleProp<ViewStyle>,
+    tagTextStyle?: StyleProp<TextStyle>,
+    centered?: boolean
 }
 
 export default function Tags(props: Props) {
@@ -17,7 +21,7 @@ export default function Tags(props: Props) {
     }
 
     return (
-        <View style={[styles.container, { marginTop: props.verticalMargin }]}>
+        <View style={[styles.container, { marginTop: props.verticalMargin }, props.centered ? styles.centeredContainer : null ]}>
             { 
                 props.tags.map((t, idx) => {
                     return (
@@ -32,7 +36,8 @@ export default function Tags(props: Props) {
                                         ? styles.lightDisabled.backgroundColor
                                         : styles.light.backgroundColor 
                                 },
-                                { marginBottom: props.verticalMargin }
+                                { marginBottom: props.verticalMargin },
+                                props.tagContainerStyle
                             ]}
                             key={t}
                         >
@@ -45,7 +50,8 @@ export default function Tags(props: Props) {
                                     : props.disabled 
                                         ? styles.lightDisabled.color
                                         : styles.light.color 
-                                }
+                                },
+                                props.tagTextStyle
                             ]}>{t}</Text>
                             {   
                                 props.onTagDeleted 
@@ -71,6 +77,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         // position: 'relative'
+    },
+    centeredContainer: {
+        justifyContent: 'center'
     },
     tagContainer: {
         borderRadius: 6,
