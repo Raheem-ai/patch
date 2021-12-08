@@ -199,11 +199,15 @@ export class OrganizationController implements APIController<
             msg = `You have been invited to sign up and join '${org.name}' on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join '${org.name}'.\n${link}`;
         }
 
-        twilioClient.messages.create({
+        const sentMessage = await twilioClient.messages.create({
             from: twilioConfig.phoneNumber, 
             to: phone,
             body: msg
         })
+
+        if (sentMessage.errorMessage) {
+            throw `Twilio Error: ${sentMessage.errorMessage}`
+        }
 
         return pendingUser;
     }
