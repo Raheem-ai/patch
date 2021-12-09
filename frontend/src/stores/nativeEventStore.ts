@@ -26,6 +26,10 @@ export default class NativeEventStore implements INativeEventStore {
     onKeyboardDidHide = () => {
         this.keyboardHeight = 0;
     }
+
+    get keyboardOpen() {
+        return this.keyboardHeight > 0
+    }
     
     clear() {
 

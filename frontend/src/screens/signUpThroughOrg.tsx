@@ -70,19 +70,18 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
         ],
         submit: {
             handler: async () => {
-                try {
-                    const userStore = getStore<IUserStore>(IUserStore);
+                const userStore = getStore<IUserStore>(IUserStore);
 
-                    await userStore.signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
-                        email: pendingUser.email,
-                        password: passwordVal,
-                        name: nameVal
-                    })
+                const signedUp = await userStore.signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                    email: pendingUser.email,
+                    password: passwordVal,
+                    name: nameVal
+                })
 
+                if (signedUp) {
                     navigateTo(routerNames.userHomePage)
-                } catch (e) {
-                    console.error(e)
                 }
+
             },
             label: 'Join us!'
         }

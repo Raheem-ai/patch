@@ -12,13 +12,16 @@ import { navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
+import EditUser from '../components/bottomDrawer/views/editUser';
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
     [BottomDrawerView.createRequest]: CreateHelpRequest,
     [BottomDrawerView.editRequest]: EditHelpRequest,
     [BottomDrawerView.requestChat]: RequestChat,
-    [BottomDrawerView.inviteUserToOrg]: AddUser
+    [BottomDrawerView.inviteUserToOrg]: AddUser,
+    [BottomDrawerView.editMe]: EditUser,
+    [BottomDrawerView.editUser]: EditUser
 }
 
 const dimensions = Dimensions.get('screen')

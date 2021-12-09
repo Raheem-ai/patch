@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, User, UserRole } from "common/models";
+import { Organization, PendingUser, RequestSkill, User, UserRole } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
@@ -10,6 +10,7 @@ class PendingUserSchema  implements PendingUser {
     @Required() email: string
     @Required() phone: string
     @Required() roles: UserRole[]
+    @Required() skills: RequestSkill[]
     @Required() pendingId: string
 }
 

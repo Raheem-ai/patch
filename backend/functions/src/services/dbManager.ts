@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinUser, NotificationType, Organization, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinUser, NotificationType, Organization, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -41,7 +41,7 @@ export class DBManager {
         return this.protectedUser(userJson);
     }
 
-    protectedUser(user: UserModel): ProtectedUser {
+    protectedUser(user: User): ProtectedUser {
         for (const key in UserModel.systemProperties) {
             user[key] = undefined
         }
@@ -104,10 +104,19 @@ export class DBManager {
         if (idx != -1) {
             const pendingUser = org.pendingUsers[idx];
             
-            const newUser = await this.createUser(user);
+            const newUser = await this.createUser(Object.assign(
+                {}, 
+                user, 
+                { 
+                    skills: pendingUser.skills, 
+                    email: pendingUser.email, 
+                    phone: pendingUser.phone 
+                }
+            ));
 
             org.pendingUsers.splice(idx, 1);
 
+            // TODO: if skills are vetted by org this is where they should be set
             return await this.addUserToOrganization(org, newUser, pendingUser.roles);
         } else {
             throw `Invite for user with email ${user.email} to join '${org.name}' not found`
@@ -188,6 +197,20 @@ export class DBManager {
         user.organizations[orgId] = newConfig;
 
         user.markModified('organizations');
+    }
+
+    async updateUser(userOrId: string | UserDoc, updatedUser: Partial<Omit<User, 'organizations'>>) {
+        const user = await this.resolveUser(userOrId);
+
+        for (const prop in updatedUser) {
+            if (prop == 'organizations') {
+                continue;
+            }
+
+            user[prop] = updatedUser[prop];
+        }
+
+        return await user.save()
     }
 
     async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], session?: ClientSession) {

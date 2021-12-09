@@ -4,11 +4,11 @@ import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextIn
 import { unwrap } from "../../../../../common/utils";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
-import { SectionScreenProps } from "../types";
+import { SectionScreenProps, SectionViewProps } from "../types";
 import BackButtonHeader from "./backButtonHeader";
 
 
-const TextInput = observer(({ config }: SectionScreenProps<'TextInput'>) => {
+const TextInput = observer(({ config }: SectionViewProps<'TextInput'>) => {
     return (
         <RNTextInput 
             style={[

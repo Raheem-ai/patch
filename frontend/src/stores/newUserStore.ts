@@ -43,12 +43,12 @@ export default class NewUserStore implements INewUserStore {
     }
 
     inviteNewUser = async () => {
-        await this.userStore.inviteUserToOrg(
+        return await this.userStore.inviteUserToOrg(
             this.email, 
             this.phone, 
             this.roles, 
+            this.skills,
             this.linkingStore.baseUrl
         );
     }
-   
 }

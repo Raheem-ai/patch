@@ -1,6 +1,6 @@
 import React, { ComponentType, useCallback, useState } from "react";
 import { Button, Text, List, IconButton } from 'react-native-paper';
-import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, TextInput as RNTextInput, View } from "react-native";
+import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput as RNTextInput, View } from "react-native";
 import { RequestSkill, RequestSkillCategory, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
 import { useRef } from "react";
 import { observer } from "mobx-react";
@@ -18,6 +18,9 @@ import { Colors } from "../../types";
 import ListInput from "./inputs/listInput";
 import TagListLabel from "./inputs/tagListLabel";
 import NestedListInput from "./inputs/nestedListInput";
+import { INativeEventStore } from "../../stores/interfaces";
+import { ScrollView } from "react-native-gesture-handler";
+import { wrapScrollView } from "react-native-scroll-into-view";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -55,6 +58,8 @@ const FormViewMap: FormInputViewMap = {
     }
 }
 
+const WrappedScrollView = wrapScrollView(ScrollView)
+
 @observer
 export default class Form extends React.Component<FormProps> {
 
@@ -73,48 +78,59 @@ export default class Form extends React.Component<FormProps> {
     }
     
     listView = () => {
+
+        const onPress = () => {
+            const nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
+
+            if (nativeEventStore.keyboardOpen) {
+                return Keyboard.dismiss()
+            } 
+        }
+
         return (
-            <View style={{ flex: 1 }}>
-                <View style={{
-                    paddingLeft: 20,
-                    borderStyle: 'solid',
-                    borderBottomColor: '#ccc',
-                    borderBottomWidth: 1,
-                    minHeight: 60,
-                    justifyContent: 'center',
-                    padding: 20
-                }}>
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                    }}>{this.props.headerLabel}</Text>
-                </View>
-                {
-                    this.props.inputs.map((inputConfig) => {
-                        const textLabel = unwrap(inputConfig.previewLabel) || null;
+                <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                    <Pressable onPress={onPress} style={{ flex: 1 }}>
+                        <View style={{
+                            paddingLeft: 20,
+                            borderStyle: 'solid',
+                            borderBottomColor: '#ccc',
+                            borderBottomWidth: 1,
+                            minHeight: 60,
+                            justifyContent: 'center',
+                            padding: 20
+                        }}>
+                            <Text style={{
+                                fontSize: 24,
+                                fontWeight: 'bold',
+                            }}>{this.props.headerLabel}</Text>
+                        </View>
+                        {
+                            this.props.inputs.map((inputConfig) => {
+                                const textLabel = unwrap(inputConfig.previewLabel) || null;
 
-                        const viewConfig = FormViewMap[inputConfig.type];
+                                const viewConfig = FormViewMap[inputConfig.type];
 
-                        return <Section 
-                                    viewConfig={viewConfig}
-                                    inputConfig={inputConfig}
-                                    labelComponent={viewConfig.inlineComponent || viewConfig.labelComponent || null}
-                                    openLink={this.openLink}  
-                                    linkTo={inputConfig.name} 
-                                    label={textLabel}/>
-                    })
-                }
-                {
-                    this.props.submit
-                        ? <Button 
-                            uppercase={false}
-                            onPress={this.props.submit.handler}
-                            color={styles.submitButton.color}
-                            icon='account-plus' 
-                            style={styles.submitButton}>{this.props.submit.label}</Button>
-                        : null
-                }
-            </View>
+                                return <Section 
+                                            viewConfig={viewConfig}
+                                            inputConfig={inputConfig}
+                                            labelComponent={viewConfig.inlineComponent || viewConfig.labelComponent || null}
+                                            openLink={this.openLink}  
+                                            linkTo={inputConfig.name} 
+                                            label={textLabel}/>
+                            })
+                        }
+                        {
+                            this.props.submit
+                                ? <Button 
+                                    uppercase={false}
+                                    onPress={this.props.submit.handler}
+                                    color={styles.submitButton.color}
+                                    icon='account-plus' 
+                                    style={styles.submitButton}>{this.props.submit.label}</Button>
+                                : null
+                        }
+                    </Pressable>
+                </WrappedScrollView>
         )
     }
 
@@ -146,6 +162,12 @@ function Section(props: {
 }) {
 
     const expand = () => {
+        const nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
+
+        if (nativeEventStore.keyboardOpen) {
+            return Keyboard.dismiss()
+        } 
+
         props.openLink(props.linkTo);
     }
 
@@ -158,7 +180,7 @@ function Section(props: {
     return Label
         ? <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
             <View style={{ flex: 1 }}>
-                <Label config={props.inputConfig} />
+                <Label config={props.inputConfig} expand={hasScreenView ? expand : null} />
             </View>
             { hasScreenView && !props.inputConfig.disabled
                 ? <IconButton
@@ -171,7 +193,7 @@ function Section(props: {
             }
         </View>
         : preview 
-            ? <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onTouchStart={expand}>
+            ? <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
                 <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
                 { hasScreenView && !props.inputConfig.disabled
                     ? <IconButton
@@ -182,8 +204,8 @@ function Section(props: {
                         size={30} />
                     : null
                 }
-            </View>
-            : <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onTouchStart={expand}>
+            </Pressable>
+            : <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
                 <Text style={[styles.label, styles.placeholder]}>{placeHolder}</Text>
                 { hasScreenView && !props.inputConfig.disabled
                     ? <IconButton
@@ -194,7 +216,7 @@ function Section(props: {
                         size={30} />
                     : null
                 }
-            </View>
+            </Pressable>
 }
 
 

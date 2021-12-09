@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, runInAction, when } from "mobx";
 import { getStore, Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
@@ -41,7 +41,25 @@ export default class NotificationStore implements INotificationStore {
     }
 
     clear() {
+        this.expoPushToken = null;
+    }
 
+    async init() {
+        await this.userStore.init();
+
+        if (this.userStore.signedIn) {
+            await this.handlePermissionsAfterSignin()
+        } else {
+            when(() => this.userStore.signedIn, this.handlePermissionsAfterSignin)
+        }
+    }
+
+    handlePermissionsAfterSignin = async () => {
+        await this.handlePermissions();
+
+        when(() => !this.userStore.signedIn, () => {
+            when(() => this.userStore.signedIn, this.handlePermissionsAfterSignin)
+        })
     }
 
     static async registerInteractiveNotifications() {
@@ -143,8 +161,8 @@ export default class NotificationStore implements INotificationStore {
         const token = this.userStore.authToken;
 
         if (this.expoPushToken != currentPushToken) {
-            runInAction(() => this.expoPushToken = currentPushToken);
             await this.api.reportPushToken({ token }, currentPushToken);
+            runInAction(() => this.expoPushToken = currentPushToken);
         }
     }
 

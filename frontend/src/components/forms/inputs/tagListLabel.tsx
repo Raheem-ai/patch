@@ -1,31 +1,35 @@
 import { runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
-import { StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
 import { unwrap } from "../../../../../common/utils"
 import Tags from "../../tags"
-import { SectionScreenProps } from "../types"
+import { SectionScreenProps, SectionViewProps } from "../types"
 
-const TagListLabel = observer(({ config }: SectionScreenProps<'TagList' | 'NestedTagList'>) => {
+const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 'NestedTagList'>) => {
+
+    const onPress = () => {
+        expand?.()
+    }
 
     if (!config.val() || !config.val().length) {
         return (
-            <View style={[styles.section, config.disabled ? styles.disabledSection : null]}>
+            <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
                 <Text style={[styles.label, styles.placeholder]}>{unwrap(config.headerLabel)}</Text>
-            </View>
+            </Pressable>
         )
     }
 
     return (
-        <View style={[{ minHeight: 60 }]}>
+        <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
             <Tags 
                 disabled={config.disabled}
                 dark={config.props.dark}
                 verticalMargin={12} 
                 tags={config.val().map(t => config.props.optionToLabel(t)) || []}
                 onTagDeleted={config.disabled ? null : config.props.onTagDeleted}/>
-        </View>
+        </Pressable>
     )
 })
 

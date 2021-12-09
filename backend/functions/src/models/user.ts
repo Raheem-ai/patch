@@ -54,6 +54,12 @@ export class UserModel implements User {
     race?: string
 
     @Property()
+    bio?: string
+
+    @Property()
+    pronouns?: string
+
+    @Property()
     displayColor: string
 
     @Enum(RequestSkill)

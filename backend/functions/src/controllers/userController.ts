@@ -2,14 +2,14 @@ import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
-import { Format, Required } from "@tsed/schema";
+import { Enum, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { BasicCredentials, Location, MinUser } from "common/models";
+import { BasicCredentials, EditableMe, EditableUser, Location, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, JWTMetadata } from "../auth";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
-import { APIController } from ".";
+import { APIController, OrgId } from ".";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { decode, Jwt, verify } from "jsonwebtoken";
@@ -36,6 +36,51 @@ export class ValidatedBasicCredentials implements BasicCredentials {
     password: string;
 }
 
+export class ValidatedEditableUser implements Partial<EditableUser> {
+    @Optional()
+    @Property()
+    @Enum(RequestSkill)
+    skills: RequestSkill[]
+}
+
+export class ValidatedMe implements Partial<EditableMe> {
+    @Optional()
+    @Property()
+    id: string;
+
+    @Optional()
+    @Property()
+    name: string;
+
+    @Optional()
+    @Format('email')
+    email: string;
+
+    @Optional()
+    @Property()
+    phone: string;
+
+    @Optional()
+    @Property()
+    password: string;
+
+    @Optional()
+    @Property()
+    displayColor: string
+
+    @Optional()
+    @Property()
+    race: string
+    
+    @Optional()
+    @Property()
+    pronouns: string
+
+    @Optional()
+    @Property()
+    bio: string
+}
+
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
 
 @Controller(API.namespaces.users)
@@ -49,6 +94,8 @@ export class UsersController implements APIController<
     | 'refreshAuth' 
     | 'getSecrets'
     | 'signUpThroughOrg'
+    | 'editMe'
+    | 'editUser'
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
@@ -223,6 +270,26 @@ export class UsersController implements APIController<
             // and set up CI/CD for front end deployments (https://docs.expo.dev/guides/setting-up-continuous-integration/)
             googleMapsApiKey: 'AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw'
         }
+    }
+
+    @Post(API.server.editMe())
+    @Authenticate()
+    async editMe(
+        @User() user: UserDoc,
+        @BodyParams('me') me: ValidatedMe
+    ) {
+        return await this.db.updateUser(user, me);
+    }
+
+    @Post(API.server.editUser())
+    @RequireRoles([UserRole.Admin])
+    async editUser(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('userId') userId: string,
+        @BodyParams('user') updatedUser: ValidatedEditableUser
+    ) {
+        return await this.db.updateUser(userId, updatedUser);
     }
 
 }

@@ -186,7 +186,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.secondary.alpha
     },
     bioContainer: {
-
+        alignSelf: 'center',
+        marginVertical: 12
     },
     contactIconsContainer: {
         flexDirection: 'row',

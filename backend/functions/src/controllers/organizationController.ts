@@ -2,9 +2,9 @@ import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
-import { Required } from "@tsed/schema";
+import { Format, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, Organization, PendingUser, ProtectedUser, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, Organization, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -165,9 +165,10 @@ export class OrganizationController implements APIController<
     async inviteUserToOrg(
         @OrgId() orgId: string,
         @User() user: UserDoc,
-        @Required() @BodyParams('email') email: string, 
+        @Required() @Format('email') @BodyParams('email') email: string, 
         @Required() @BodyParams('phone') phone: string, 
         @Required() @BodyParams('roles') roles: UserRole[], 
+        @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
         const org = await this.db.resolveOrganization(orgId)
@@ -178,6 +179,7 @@ export class OrganizationController implements APIController<
             email,
             phone,
             roles,
+            skills,
             pendingId: uuid.v1()
         };
 
@@ -202,6 +204,7 @@ export class OrganizationController implements APIController<
                 orgId,
                 email,
                 roles,
+                skills,
                 pendingId: pendingUser.pendingId
             });
 

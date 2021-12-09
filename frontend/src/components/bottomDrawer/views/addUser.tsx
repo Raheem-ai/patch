@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { UserRole, UserRoleToLabelMap } from "../../../../../common/models";
+import { RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { navigateTo } from "../../../navigation";
@@ -24,9 +24,11 @@ export default class AddUser extends React.Component {
             const newUserStore = getStore<INewUserStore>(INewUserStore);
             const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
 
-            await newUserStore.inviteNewUser()
+            const invited = await newUserStore.inviteNewUser()
 
-            bottomDrawerStore.hide();
+            if (invited) {
+                bottomDrawerStore.hide();
+            }
         },
         label: () => {
             return `Send Invite`
@@ -85,12 +87,32 @@ export default class AddUser extends React.Component {
                             this.newUserStore.roles.splice(idx, 1)
                         },
                     },
+                },
+                {
+                    onSave: (skills) => this.newUserStore.skills = skills,
+                    val: () => {
+                        return this.newUserStore.skills
+                    },
+                    name: 'skills',
+                    previewLabel: () => null,
+                    headerLabel: () => 'Skills',
+                    type: 'TagList',
+                    props: {
+                        options: allEnumValues(RequestSkill),
+                        optionToLabel: (opt) => RequestSkillToLabelMap[opt],
+                        multiSelect: true,
+                        onTagDeleted: (idx: number, val: any) => {
+                            this.newUserStore.skills.splice(idx, 1)
+                        },
+                        dark: true
+                    },
                 }
                 
             ] as [
                 FormInputConfig<'TextInput'>, 
                 FormInputConfig<'TextInput'>, 
-                FormInputConfig<'TagList'>
+                FormInputConfig<'TagList'>,
+                FormInputConfig<'TagList'>,
             ]
         }
     }

@@ -84,7 +84,7 @@ export class DispatcherController implements APIController<'broadcastRequest' | 
                 }
             });
         }
-
+        
         await this.notifications.sendBulk(notifications);
 
         return updatedReq

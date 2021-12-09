@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe } from '../../../common/models'
 import { RootStackParamList } from '../types';
 
 export interface IBaseStore {
@@ -30,10 +30,12 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], baseUrl: string): Promise<void>
-    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string): Promise<boolean>
+    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<boolean>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
+    editUser: (userId: string, user: Partial<EditableUser>) => Promise<boolean>
+    editMe: (user: Partial<EditableMe>) => Promise<boolean>
 }
 
 export namespace IUserStore {
@@ -211,7 +213,9 @@ export enum BottomDrawerView {
     editRequest = 'er',
     requestChat = 'rc',
     assignResponders = 'ar',
-    inviteUserToOrg ='iu'
+    inviteUserToOrg ='iu',
+    editMe = 'em',
+    editUser = 'eu',
 }
 
 export type BottomDrawerComponentClass = React.ComponentClass & {
@@ -234,6 +238,7 @@ export const BottomDrawerHandleHeight = 64;
 
 export interface INativeEventStore extends IBaseStore {
     keyboardHeight: number;
+    keyboardOpen: boolean;
 }
 
 export namespace INativeEventStore {
@@ -270,7 +275,7 @@ export namespace INewUserStore {
 
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
-    inviteNewUser: () => Promise<void>;
+    inviteNewUser: () => Promise<boolean>;
 }
 
 export namespace IEditUserStore {
@@ -278,8 +283,14 @@ export namespace IEditUserStore {
 }
 
 export interface IEditUserStore extends ITempUserStore {
-    loadUser(user: EditUserData): void
-    editUser(): Promise<void>
+    roles: UserRole[]
+    id: string;
+
+    loadMe(user: Me): void
+    loadUser(user: ClientSideFormat<ProtectedUser>): void
+
+    editMe: () => Promise<boolean>;
+    editUser: () => Promise<boolean>;
 }
 
 export const AllStores = [
@@ -296,5 +307,6 @@ export const AllStores = [
     IHeaderStore,
     ITeamStore,
     ILinkingStore,
-    INewUserStore
+    INewUserStore,
+    IEditUserStore
 ]

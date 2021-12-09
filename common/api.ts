@@ -1,5 +1,5 @@
 import { AtLeast } from '.';
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser } from './models';
+import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, EditableUser, RequestSkill } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -71,6 +71,7 @@ export interface IApiClient {
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
+    editMe: Authenticated<(me: Partial<Me>) => Promise<Me>>
 
     // must be signed in and have the correct rolls within th target org
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
@@ -82,7 +83,7 @@ export interface IApiClient {
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], baseUrl: string) => Promise<PendingUser>>
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
     
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
@@ -91,7 +92,8 @@ export interface IApiClient {
     getRequests: AuthenticatedWithOrg<(filter: HelpRequestFilter) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
-
+    
+    editUser: AuthenticatedWithOrg<(userId: string, user: Partial<EditableUser>) => Promise<ProtectedUser>>
     joinRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     leaveRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string) => Promise<HelpRequest>>
@@ -139,6 +141,9 @@ type ApiRoutes = {
         },
         me: () => {
             return `/me`
+        },
+        editMe: () => {
+            return `/editMe`
         },
         broadcastRequest: () => {
             return '/broadcastRequest'
@@ -230,6 +235,9 @@ type ApiRoutes = {
         signUpThroughOrg: () => {
             return '/signUpThroughOrg'
         },
+        editUser: () => {
+            return '/editUser'
+        },
     }
 
     client: ApiRoutes = {
@@ -251,6 +259,12 @@ type ApiRoutes = {
         },
         me: () => {
             return `${this.base}${this.namespaces.users}${this.server.me()}`
+        },
+        editMe: () => {
+            return `${this.base}${this.namespaces.users}${this.server.editMe()}`
+        },
+        editUser: () => {
+            return `${this.base}${this.namespaces.users}${this.server.editUser()}`
         },
         reportLocation: () => {
             return `${this.base}${this.namespaces.users}${this.server.reportLocation()}`

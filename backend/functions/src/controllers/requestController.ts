@@ -45,7 +45,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     }
 
     @Get(API.server.getRequest())
-    @RequireRoles([UserRole.Dispatcher, UserRole.Responder])
+    @RequireRoles([UserRole.Dispatcher, UserRole.Responder, UserRole.Admin])
     async getRequest(
         @OrgId() orgId: string,
         @User() user: UserDoc,
@@ -57,7 +57,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     }
 
     @Post(API.server.getRequests())
-    @RequireRoles([UserRole.Dispatcher, UserRole.Responder])
+    @RequireRoles([UserRole.Dispatcher, UserRole.Responder, UserRole.Admin])
     async getRequests(
         @OrgId() orgId: string,
         @User() user: UserDoc,

@@ -1,6 +1,6 @@
 import { UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
-import { BottomDrawerView, IBottomDrawerStore, ILinkingStore, IRequestStore, IUserStore } from "../../stores/interfaces"
+import { BottomDrawerView, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore } from "../../stores/interfaces"
 import { getStore } from "../../stores/meta"
 import { RootStackParamList, routerNames } from "../../types"
 
@@ -129,9 +129,16 @@ const HeaderConfig: {
                 {
                     icon: 'pencil',
                     callback: async () => {
-                        // open edit my profile or edit users profile depending on onMyProfile
-                        // const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-                        // bottomDrawerStore.show(BottomDrawerView.inviteUserToOrg, true);
+                        const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+                        const editUserStore = getStore<IEditUserStore>(IEditUserStore);
+
+                        if (onMyProfile) {
+                            editUserStore.loadMe(userStore.user);
+                            bottomDrawerStore.show(BottomDrawerView.editMe, true);
+                        } else {
+                            editUserStore.loadUser(userStore.currentUser);
+                            bottomDrawerStore.show(BottomDrawerView.editUser, true);
+                        }
                     }
                 }
             ]

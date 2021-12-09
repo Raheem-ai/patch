@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, GestureResponderEvent, GestureResponderHandlers, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
 import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
@@ -326,7 +326,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
                 })
 
-                const sendReminders = async () => {
+                const sendReminders = async (event: GestureResponderEvent) => {
+                    event.stopPropagation();
+
                     const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
                     await dispatchStore.assignRequest(request.id, pendingResponderIds);
                     setIsOpen(false)

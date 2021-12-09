@@ -1,4 +1,4 @@
-import { AllStores, IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore, ITeamStore, ILinkingStore, INewUserStore } from './interfaces';
+import { AllStores, IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore, ITeamStore, ILinkingStore, INewUserStore, IEditUserStore } from './interfaces';
 import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
@@ -15,6 +15,7 @@ import HeaderStore from './headerStore';
 import TeamStore from './teamStore';
 import LinkingStore from './linkingStore';
 import NewUserStore from './newUserStore';
+import EditUserStore from './editUserStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -30,7 +31,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IHeaderStore, HeaderStore ],
     [ ITeamStore, TeamStore ],
     [ ILinkingStore, LinkingStore ],
-    [ INewUserStore, NewUserStore ]
+    [ INewUserStore, NewUserStore ],
+    [ IEditUserStore, EditUserStore ]
 ];
 
 function validateStores() {

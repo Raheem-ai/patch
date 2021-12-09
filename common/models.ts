@@ -16,23 +16,29 @@ export interface User {
     displayColor: string
     skills: RequestSkill[]
     race?: string
-    pronouns?: string[]
+    pronouns?: string
     bio?: string
     // location?
 }
+
+export type EditableUser = Pick<ProtectedUser, 'skills'>
+export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
     onDuty: boolean
 }
 
-export type MinUser = AtLeast<User, 'email' | 'password' | 'name'>
+export type SystemProperties = 'password';
+export type PrivateProperties = 'race'
 
-export type ProtectedUser = Omit<User, 'password' | 'race'>;
+export type MinUser = AtLeast<User, 'email' | SystemProperties | 'name'>
+
+export type ProtectedUser = Omit<User, PrivateProperties | SystemProperties>;
 
 // this will change from being the same as ProtectedUser when we get
 // more profile fields
-export type Me = Omit<User, 'password'>
+export type Me = Omit<User, SystemProperties>
 
 export type BasicCredentials = {
     email: string, 
@@ -55,6 +61,7 @@ export type PendingUser = {
     email: string 
     phone: string 
     roles: UserRole[]
+    skills: RequestSkill[]
     pendingId: string
 }
 
@@ -309,6 +316,7 @@ export type LinkParams = {
         orgId: string,
         email: string,
         roles: UserRole[],
+        skills: RequestSkill[],
         pendingId: string
     },
     [LinkExperience.JoinOrganization]: {

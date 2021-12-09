@@ -115,7 +115,9 @@ const HelpRequestCard = observer(({
             && (!request.chat.userReceipts[userStore.user.id] 
                 || (request.chat.userReceipts[userStore.user.id] < request.chat.lastMessageId));
 
-        const goToChat = () => {
+        const goToChat = (event: GestureResponderEvent) => {
+            event.stopPropagation();
+
             requestStore.setCurrentRequest(request);
             navigateTo(routerNames.helpRequestChat)
         }

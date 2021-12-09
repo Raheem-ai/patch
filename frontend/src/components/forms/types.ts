@@ -2,7 +2,8 @@ import { ComponentType } from "react"
 import { AddressableLocation } from "../../../../common/models"
 
 export type SectionViewProps<Type extends FormInputType = FormInputType> = {
-    config: FormInputConfig<Type>
+    config: FormInputConfig<Type>,
+    expand?: () => void
 }
 
 export type SectionScreenProps<Type extends FormInputType = FormInputType> = {

@@ -57,104 +57,88 @@ const theme = {
 };
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
   
   // handle store binding + initialization + splash screen loading state
-  useEffect(() => {
-    bindStores();
-    bindServices();
+    useEffect(() => {
+        bindStores();
+        bindServices();
 
-    const notificationStore = getStore<INotificationStore>(INotificationStore);
-    const locationStore = getStore<ILocationStore>(ILocationStore);
+        const notificationStore = getStore<INotificationStore>(INotificationStore);
 
-    // setup notifications for both foreground/background scenarios
-    notificationStore.setup();
+        // setup notifications for both foreground/background scenarios
+        notificationStore.setup();
 
-    (async () => {
-      try {
-        await Promise.all([
-          initStores(),
-          initServices()
-        ]);
-      } catch (e) {
-        console.error('Error during initialization:', e)
-      } finally {
-        setIsLoading(false);
+        (async () => {
+            try {
+                await Promise.all([
+                initStores(),
+                initServices()
+                ]);
+            } catch (e) {
+                console.error('Error during initialization:', e)
+            } finally {
+                setIsLoading(false);
+            }
+        })()
 
-        setTimeout(() => {
-          const userStore = getStore<IUserStore>(IUserStore);
+        return () => {
+            notificationStore.teardown();
+        }
 
-          if (locationStore.hasForegroundPermission) {
-            // not awaiting this but kicking it off here so any map views that 
-            // need your current location get a head start on loading it
-            locationStore.getCurrentLocation()
-          }
+    }, []);
 
-          if (userStore.signedIn) {
-            // not awaiting this on purpose as updating the push token might take a while
-            notificationStore.handlePermissions()
-          }
-        }, 0);
-      }
-    })()
-
-    return () => {
-      notificationStore.teardown();
+    const header = (props: StackHeaderProps) => {
+        return <Header {...props} />
     }
 
-  }, []);
+    if (isLoading) {
+        return (
+            <AppLoading/>
+        )
+    }
 
-  const header = (props: StackHeaderProps) => {
-    return <Header {...props} />
-  }
+    // safe to get here because isLoading doesn't get set until after store binding/init
+    const userStore = getStore<IUserStore>(IUserStore);
+    const linkingStore = getStore<ILinkingStore>(ILinkingStore);
 
-  if (isLoading) {
+    const initialRoute = linkingStore.initialRoute
+        ? linkingStore.initialRoute
+        : userStore.signedIn
+            ? routerNames.userHomePage
+            : routerNames.signIn
+
     return (
-      <AppLoading/>
-    )
-  }
-
-  // safe to get here because isLoading doesn't get set until after store binding/init
-  const userStore = getStore<IUserStore>(IUserStore);
-  const linkingStore = getStore<ILinkingStore>(ILinkingStore);
-
-  const initialRoute = linkingStore.initialRoute
-    ? linkingStore.initialRoute
-    : userStore.signedIn
-      ? routerNames.userHomePage
-      : routerNames.signIn
-
-  return (
-    // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
-    // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
-    <Provider container={container}>
-      <PaperProvider theme={theme}>
-        <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
-          {/* <GlobalErrorBoundary> */}
-            <StatusBar
-              animated={true}
-              barStyle={'light-content'}
-              // just for android so it's behavior is *more* similiar to ios
-              translucent={true} />
-            <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
-              <Stack.Screen name={routerNames.signIn} component={SignInForm} />
-              <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
-              <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
-              <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
-              <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
-              <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
-              <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
-              <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
-              <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
-              <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
-              <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
-            </Stack.Navigator>
-            <GlobalBottomDrawer/>
-          {/* </GlobalErrorBoundary>   */}
-        </NavigationContainer>
-      </PaperProvider>
-     </Provider>
-  );
+        // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
+        // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
+        <Provider container={container}>
+            <PaperProvider theme={theme}>
+                <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
+                {/* <GlobalErrorBoundary> */}
+                    <StatusBar
+                        animated={true}
+                        barStyle={'light-content'}
+                        // just for android so it's behavior is *more* similiar to ios
+                        translucent={true} />
+                    <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
+                        <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+                        <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
+                        <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
+                        <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
+                        <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
+                        <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
+                        <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
+                        <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
+                        <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
+                        <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
+                        <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
+                    </Stack.Navigator>
+                    <GlobalBottomDrawer/>
+                {/* </GlobalErrorBoundary>   */}
+                </NavigationContainer>
+            </PaperProvider>
+        </Provider>
+    );
 }
 
 const userScreen = function(Component: (props) => JSX.Element) {

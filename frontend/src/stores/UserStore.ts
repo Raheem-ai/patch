@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, Me, MinUser, ProtectedUser, UserRole } from '../../../common/models';
+import { AuthTokens, EditableMe, EditableUser, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -168,10 +168,12 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], baseUrl: string) {
+    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
         try {
-            const pendingUser = await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, baseUrl);
+            const pendingUser = await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, skills, baseUrl);
+            return true
         } catch (e) {
+            return false
             console.error(e)
         }
     }
@@ -180,8 +182,11 @@ export default class UserStore implements IUserStore {
         try {
             const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
             await this.afterSignIn(authTokens);
+            
+            return true
         } catch (e) {
             console.error(e);
+            return false
         }
     }
 
@@ -242,6 +247,37 @@ export default class UserStore implements IUserStore {
 
     pushCurrentUser(user: ClientSideFormat<ProtectedUser>) {
         this.currentUser = user;
+    }
+
+    async editUser(userId: string, user: Partial<EditableUser>) {
+        try {
+            const updatedUser = await this.api.editUser(this.orgContext(), userId, user)
+
+            // TODO: this isn't updating details page like it should...try setting each prop
+            runInAction(() => {
+                this.users.set(updatedUser.id, updatedUser)
+            })
+
+            return true;
+        } catch (e) {
+            console.error(e)
+            return false
+        }
+    }
+    
+    async editMe(user: Partial<EditableMe>) {
+        try {
+            const me = await this.api.editMe({ token: this.authToken }, user)
+
+            runInAction(() => {
+                this.user = me;
+            })
+
+            return true
+        } catch (e) {
+            console.error(e)
+            return false
+        }
     }
 
     // Still need to keep user for legacy ui data

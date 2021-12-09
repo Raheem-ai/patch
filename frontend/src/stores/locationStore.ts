@@ -50,6 +50,14 @@ export default class LocationStore implements ILocationStore {
             console.log(e);
             runInAction(() => this.hasBackgroundPermission = false)
         }
+
+        setTimeout(() => {
+            if (this.hasForegroundPermission) {
+              // not awaiting this but kicking it off here so any map views that 
+              // need your current location get a head start on loading it
+              this.getCurrentLocation()
+            }
+        }, 0);
     }
 
     get foregroundCallbacks() {

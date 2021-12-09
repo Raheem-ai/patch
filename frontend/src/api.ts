@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -226,6 +226,16 @@ export class APIClient implements IAPIService {
         return user;
     }
 
+    async editMe(ctx: OrgContext, me: Partial<Me>): Promise<ClientSideFormat<Me>> {
+        const url = `${apiHost}${API.client.editMe()}`;
+
+        return (await this.tryPost<ClientSideFormat<Me>>(url, {
+            me
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data
+    }
+
     async signOut(ctx: TokenContext) {
         const url = `${apiHost}${API.client.signOut()}`;
 
@@ -349,16 +359,28 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
             email,
             phone,
             roles,
-            baseUrl
+            baseUrl,
+            skills
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editUser(ctx: OrgContext, userId: string, user: Partial<Pick<ClientSideFormat<ProtectedUser>, 'skills'>>): Promise<ClientSideFormat<ProtectedUser>> {
+        const url = `${apiHost}${API.client.editUser()}`;
+
+        return (await this.tryPost<ClientSideFormat<ProtectedUser>>(url, {
+            user,
+            userId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
         })).data
     }
 
