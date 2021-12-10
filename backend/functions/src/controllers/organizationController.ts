@@ -1,8 +1,8 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
-import { Format, Required } from "@tsed/schema";
+import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
 import { LinkExperience, LinkParams, MinOrg, Organization, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
@@ -166,11 +166,17 @@ export class OrganizationController implements APIController<
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @Required() @Format('email') @BodyParams('email') email: string, 
-        @Required() @BodyParams('phone') phone: string, 
+        @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
+        // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
+
+        if (!roles.length) {
+            throw new BadRequest('You must invite a user with at least one role.')
+        }
+
         const org = await this.db.resolveOrganization(orgId)
 
         const existingUser = await this.db.getUser({ email });

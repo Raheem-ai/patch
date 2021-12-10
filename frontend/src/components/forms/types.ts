@@ -27,7 +27,8 @@ export type FormInputOptions = {
     'List': {
         props: {
             options: any[]
-            optionToLabel: (opt) => string
+            optionToPreviewLabel: (opt) => string
+            optionToListLabel?: (opt) => string
             multiSelect?: boolean
         },
         type: any[]
@@ -43,7 +44,8 @@ export type FormInputOptions = {
         props: {
             categories: any[],
             optionsFromCategory: (cat: any) => any[]
-            optionToLabel: (opt) => string
+            optionToPreviewLabel: (opt) => string
+            optionToListLabel?: (opt) => string
             categoryToLabel: (opt) => string
             multiSelect?: boolean
         },
@@ -67,6 +69,7 @@ export type FormInputConfig<Type extends FormInputType = FormInputType, Val exte
     onSave?(val: Val): void // for screen fields that hold their own temp internal state until you save 
     onChange?(val: Val): void// for controlled form fields
     val(): Val
+    isValid(): boolean
     name: string
     previewLabel: string | (() => string)
     headerLabel: string | (() => string)
@@ -74,6 +77,7 @@ export type FormInputConfig<Type extends FormInputType = FormInputType, Val exte
     type: Type
     props?: FormInputOptions[Type]['props']
     disabled?: boolean
+    required?: boolean
 }
 
 export type FormInputType = keyof FormInputOptions

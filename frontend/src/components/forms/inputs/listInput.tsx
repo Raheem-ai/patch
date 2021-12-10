@@ -40,11 +40,16 @@ const ListInput = observer(({ back, config }: SectionScreenProps<'List' | 'TagLi
             <List.Section style={{margin: 0}}>
                 {config.props.options.map(opt => {
                     const chosen = vals.has(opt);
+                    
+                    const title = config.props.optionToListLabel
+                        ? config.props.optionToListLabel(opt)
+                        : config.props.optionToPreviewLabel(opt);
 
                     return <List.Item 
                                 key={opt} 
                                 onPress={() => toggleVal(opt)} 
-                                title={config.props.optionToLabel(opt)}
+                                title={title}
+                                titleNumberOfLines={2}
                                 titleStyle={chosen ? styles.chosenItem : styles.noop}
                                 style={styles.item}
                                 right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
@@ -64,7 +69,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     }, 
     noop: {
-        
+        // flexWrap: 'wrap'
     }, 
     rightCheckIcon: {
         marginTop: 0,

@@ -22,4 +22,8 @@ export function unwrap<T>(val: NotAFunction<T> | (() => NotAFunction<T>)): T {
         : val;
 }
 
+export const sleep = (ms: number) => {
+    return new Promise((res) => setTimeout(res, ms));
+}
+
 type NotAFunction<T> = T extends Function ? never : T;

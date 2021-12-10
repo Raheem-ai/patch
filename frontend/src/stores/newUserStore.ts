@@ -22,7 +22,7 @@ export default class NewUserStore implements INewUserStore {
     @persistent() bio? = ''
     @persistent() skills = []
     @persistent() roles = []
-    @persistent() pronouns? = []
+    @persistent() pronouns? = ''
 
 
     constructor() {
@@ -39,7 +39,32 @@ export default class NewUserStore implements INewUserStore {
         this.bio = ''
         this.skills = []
         this.roles = []
-        this.pronouns = []
+        this.pronouns = ''
+    }
+
+    get isValid() {
+        return this.phoneValid &&
+            this.emailValid &&
+            this.skillsValid &&
+            this.rolesValid
+    }
+
+    get phoneValid(){
+        return this.phone.length == 10
+    }
+
+    get emailValid(){
+        return this.email.includes('@')
+    }
+
+    get skillsValid(){
+        return true
+        // return !!this.skills.length
+    }
+
+    get rolesValid(){
+        // return true
+        return !!this.roles.length
     }
 
     inviteNewUser = async () => {

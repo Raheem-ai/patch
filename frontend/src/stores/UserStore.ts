@@ -169,24 +169,16 @@ export default class UserStore implements IUserStore {
     }
 
     async inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
-        try {
-            const pendingUser = await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, skills, baseUrl);
-            return true
-        } catch (e) {
-            return false
-            console.error(e)
-        }
+        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, skills, baseUrl);
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
+        const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
+        
         try {
-            const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
             await this.afterSignIn(authTokens);
-            
-            return true
         } catch (e) {
             console.error(e);
-            return false
         }
     }
 
@@ -250,34 +242,27 @@ export default class UserStore implements IUserStore {
     }
 
     async editUser(userId: string, user: Partial<EditableUser>) {
-        try {
-            const updatedUser = await this.api.editUser(this.orgContext(), userId, user)
+        const updatedUser = await this.api.editUser(this.orgContext(), userId, user)
 
-            // TODO: this isn't updating details page like it should...try setting each prop
-            runInAction(() => {
-                this.users.set(updatedUser.id, updatedUser)
-            })
+        runInAction(() => {
+            const existingUser = this.users.get(updatedUser.id);
 
-            return true;
-        } catch (e) {
-            console.error(e)
-            return false
-        }
+            for (const prop in updatedUser) {
+                existingUser[prop] = updatedUser[prop];
+            }
+        })
     }
     
     async editMe(user: Partial<EditableMe>) {
-        try {
-            const me = await this.api.editMe({ token: this.authToken }, user)
+        const me = await this.api.editMe({ token: this.authToken }, user)
 
-            runInAction(() => {
-                this.user = me;
-            })
+        runInAction(() => {
+            this.user = me;
 
-            return true
-        } catch (e) {
-            console.error(e)
-            return false
-        }
+            if (this.currentUser.id == me.id) {
+                this.currentUser = me;
+            }
+        })
     }
 
     // Still need to keep user for legacy ui data

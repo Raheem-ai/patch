@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { HelpRequest, ProtectedUser, RequestSkillToLabelMap, UserRole } from "../../../common/models";
@@ -14,7 +14,7 @@ type Props = {
     style?: StyleProp<ViewStyle>,
     request?: HelpRequest
     isSelected?: boolean,
-    onPress?: () => void
+    onPress?: (event: GestureResponderEvent) => void
 }
 
 const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {

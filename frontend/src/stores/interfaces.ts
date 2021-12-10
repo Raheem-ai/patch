@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser } from '../../../common/models'
 import { RootStackParamList } from '../types';
 
 export interface IBaseStore {
@@ -30,12 +30,12 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string): Promise<boolean>
-    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<boolean>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
-    editUser: (userId: string, user: Partial<EditableUser>) => Promise<boolean>
-    editMe: (user: Partial<EditableMe>) => Promise<boolean>
+    editUser: (userId: string, user: Partial<EditableUser>) => Promise<void>
+    editMe: (user: Partial<EditableMe>) => Promise<void>
 }
 
 export namespace IUserStore {
@@ -111,7 +111,7 @@ export namespace ICreateRequestStore {
 }
 
 export interface ICreateRequestStore extends ITempRequestStore {
-    createRequest: () => Promise<void>;
+    createRequest: () => Promise<HelpRequest>;
 }
 
 export namespace IEditRequestStore {
@@ -223,8 +223,9 @@ export type BottomDrawerComponentClass = React.ComponentClass & {
     onShow?: () => void,
     minimizeLabel?: string | (() => string),
     submit?: {
+        isValid: () => boolean
         label: string | (() => string),
-        action: () => void
+        action: () => Promise<void>
     }
     raisedHeader?: boolean | (() => boolean)
 }
@@ -275,7 +276,14 @@ export namespace INewUserStore {
 
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
-    inviteNewUser: () => Promise<boolean>;
+
+    isValid: boolean
+    phoneValid: boolean
+    emailValid: boolean
+    skillsValid: boolean
+    rolesValid: boolean
+    
+    inviteNewUser: () => Promise<PendingUser>;
 }
 
 export namespace IEditUserStore {
@@ -286,11 +294,56 @@ export interface IEditUserStore extends ITempUserStore {
     roles: UserRole[]
     id: string;
 
+    myChangesValid: boolean
+    userChangesValid: boolean
+    nameValid: boolean
+    phoneValid: boolean
+    emailValid: boolean
+    passwordValid: boolean
+    displayColorValid: boolean
+    raceValid: boolean
+    bioValid: boolean
+    skillsValid: boolean
+    rolesValid: boolean
+    pronounsValid: boolean
+
     loadMe(user: Me): void
     loadUser(user: ClientSideFormat<ProtectedUser>): void
 
-    editMe: () => Promise<boolean>;
-    editUser: () => Promise<boolean>;
+    editMe: () => Promise<void>;
+    editUser: () => Promise<void>;
+}
+
+export namespace IAlertStore {
+    export const id = Symbol('IAlertStore');
+}
+
+type PromptAction = {
+    label: string,
+    onPress: () => void
+    confirming?: boolean
+}
+
+export type PromptConfig = {
+    message: string,
+    actions: [PromptAction] | [PromptAction, PromptAction]
+}
+
+export type ToastConfig = {
+    message: string,
+    dismissable?: boolean,
+    type: 'success' | 'error'
+}
+
+export interface IAlertStore extends IBaseStore {
+    toast?: ToastConfig
+    prompt?: PromptConfig
+    
+    toastSuccess(message: string, dismissable?: boolean): void;
+    toastError(message: string, dismissable?: boolean): void;
+
+    showPrompt(config: PromptConfig): void
+    hidePrompt(): void
 }
 
 export const AllStores = [
@@ -308,5 +361,21 @@ export const AllStores = [
     ITeamStore,
     ILinkingStore,
     INewUserStore,
-    IEditUserStore
+    IEditUserStore,
+    IAlertStore
 ]
+
+/**  
+ * TODO: make this syntax smoother by exporting functions that can be used to get the store instance anywhere
+ * ie. instead of 
+ * const userStore = getStore<IUserStore>(IUserStore)
+ * userStore.doSomething()
+ * 
+ * userStore().doSomething()
+ * 
+ * benefits:
+ * - still typesafe
+ * - impl vs interface still decoupled
+ * - inversify does the caching for us
+ * - don't have to worry about nested scope of large functional components
+ */

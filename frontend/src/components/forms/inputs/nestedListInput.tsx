@@ -43,11 +43,17 @@ const NestedListInput = observer(({ back, config }: SectionScreenProps<'NestedLi
                     const items = config.props.optionsFromCategory(cat)
                                     .map(opt => {
                                         const chosen = vals.has(opt);
+
+                                        const title = config.props.optionToListLabel
+                                            ? config.props.optionToListLabel(opt)
+                                            : config.props.optionToPreviewLabel(opt);
+
                                         return <List.Item 
                                                     key={opt} 
                                                     onPress={() => toggleVal(opt)} 
-                                                    title={config.props.optionToLabel(opt)}
+                                                    title={title}
                                                     titleStyle={chosen ? styles.chosenItem : styles.noop}
+                                                    titleNumberOfLines={2}
                                                     style={styles.item}
                                                     right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
                                     })

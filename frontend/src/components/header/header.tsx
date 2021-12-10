@@ -4,7 +4,7 @@ import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
 import { useState } from 'react';
-import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOptions } from '../../navigation';
+import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
 import { RootStackParamList, routerNames } from '../../types';
 import { getStore } from '../../stores/meta';
 import { observer } from 'mobx-react';
@@ -95,6 +95,10 @@ const Header = observer((props: Props) => {
 
         const onPress = (opt: MainMenuOption) => {
             return () => {
+                if (opt.disabled) {
+                    return;
+                }
+
                 navigateTo(routerNames[opt.routeTo])
                 closeHeader()
             }
@@ -102,23 +106,31 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={style}>
-                {MainMenuOptions.map(opt => <Text key={opt.name} style={styles.mainMenuText} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {MainMenuOptions.map(opt => <Text key={opt.name} style={[styles.mainMenuText, opt.disabled ? styles.disabledMainMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
             </View>
         )
     }
 
     const subMenuOptions = () => {
+        const onPress = (opt: SubMenuOption) => {
+            return () => {
+                if (opt.disabled) {
+                    return;
+                }
+
+                if (opt.routeTo) {
+                    navigateTo(routerNames[opt.routeTo])
+                } else if (opt.onPress) {
+                    opt.onPress()
+                }
+
+                closeHeader()
+            }
+        }
+
         return (
             <View style={styles.subMenuOptions}>
-                {SubMenuOptions.map(opt => <Text key={opt.name} style={styles.subMenuText} onPress={() => {
-                    if (opt.routeTo) {
-                        navigateTo(routerNames[opt.routeTo])
-                    } else if (opt.onPress) {
-                        opt.onPress()
-                    }
-
-                    closeHeader()
-                }}>{opt.name}</Text>)}
+                {SubMenuOptions.map(opt => <Text key={opt.name} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
             </View>
         )
     }
@@ -270,9 +282,15 @@ const styles = StyleSheet.create({
         fontSize: 24, 
         fontWeight: 'bold'
     },
+    disabledMainMenuText: {
+        color: '#aaa'
+    },
     subMenuText: {
         color: '#fff',
         marginVertical: 10,
         fontSize: 18
+    },
+    disabledSubMenuText: {
+        color: '#aaa'
     }
 });

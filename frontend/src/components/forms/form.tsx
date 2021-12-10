@@ -7,12 +7,12 @@ import { observer } from "mobx-react";
 import { debounce } from "lodash";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import Tags from "../../components/tags";
-import { configure, runInAction } from "mobx";
+import { computed, configure, observable, runInAction } from "mobx";
 import { getStore } from "../../stores/meta";
 import { AddressableLocation } from "../../../../common/models";
 import { FormInputConfig, FormInputViewConfig, FormInputViewMap, SectionScreenProps, SectionViewProps } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
-import { unwrap } from "../../../../common/utils";
+import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
 import { Colors } from "../../types";
 import ListInput from "./inputs/listInput";
@@ -21,6 +21,7 @@ import NestedListInput from "./inputs/nestedListInput";
 import { INativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
+import Loader from "../loader";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -31,7 +32,7 @@ export type FormProps = {
     onBack?(): void,
     submit?: {
         label: string,
-        handler: () => void
+        handler: () => Promise<void>
     }
 }
 
@@ -63,6 +64,12 @@ const WrappedScrollView = wrapScrollView(ScrollView)
 @observer
 export default class Form extends React.Component<FormProps> {
 
+    isValid = computed<boolean>(() => {
+        return this.props.inputs.filter(i => i.required).every(i => i.isValid());
+    })
+
+    submitting = observable.box<boolean>(false)
+
     state = {
         screenId: null
     }
@@ -85,6 +92,20 @@ export default class Form extends React.Component<FormProps> {
             if (nativeEventStore.keyboardOpen) {
                 return Keyboard.dismiss()
             } 
+        }
+
+        const onSubmit = async () => {
+            if (!this.isValid.get()) {
+                return
+            }
+
+            this.submitting.set(true)
+
+            try {
+                await this.props.submit.handler()
+            } finally {
+                this.submitting.set(false)
+            }
         }
 
         return (
@@ -123,10 +144,11 @@ export default class Form extends React.Component<FormProps> {
                             this.props.submit
                                 ? <Button 
                                     uppercase={false}
-                                    onPress={this.props.submit.handler}
-                                    color={styles.submitButton.color}
-                                    icon='account-plus' 
-                                    style={styles.submitButton}>{this.props.submit.label}</Button>
+                                    onPress={onSubmit}
+                                    color={this.isValid.get() ? styles.submitButton.color : styles.disabledSubmitButton.color}
+                                    icon='account-plus'
+                                    disabled={!this.isValid.get()} 
+                                    style={[styles.submitButton, !this.isValid.get() ? styles.disabledSubmitButton : null ]}>{this.props.submit.label}</Button>
                                 : null
                         }
                     </Pressable>
@@ -136,12 +158,15 @@ export default class Form extends React.Component<FormProps> {
 
     render() {
 
+        if (this.submitting.get()) {
+            return <Loader/>
+        }
+
         if (this.state.screenId) {
             const inputConfig = this.props.inputs.find((i) => i.name == this.state.screenId);
             const viewConfig = FormViewMap[inputConfig.type];
 
             const Component: ComponentType<SectionScreenProps> = viewConfig.screenComponent;
-
             
             if (Component) {
                 return <Component back={this.back} config={inputConfig}/>
@@ -253,5 +278,9 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primary.alpha,
         justifyContent: 'center',
         margin: 20
+    },
+    disabledSubmitButton: {
+        color: '#fff',
+        backgroundColor: Colors.primary.delta,
     }
 })

@@ -173,7 +173,8 @@ const HelpRequestCard = observer(({
             style={[
                 styles.container, 
                 dark ? styles.darkContainer: null, 
-                minimal ? styles.minimalContainer: null, style
+                minimal ? styles.minimalContainer: null, 
+                style
             ]}>
                 {header()}
                 { minimal 

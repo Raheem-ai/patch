@@ -1,9 +1,10 @@
 import { Route } from "@react-navigation/routers";
 import { throws } from "assert";
+import { observable } from "mobx";
 import { observer } from "mobx-react";
 import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
-import { Button, IconButton, Text } from "react-native-paper";
+import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
 import { ActiveRequestTabHeight } from "../constants";
 import { navigateTo, navigationRef } from "../navigation";
 import { BottomDrawerHandleHeight, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore } from "../stores/interfaces";
@@ -11,6 +12,7 @@ import { getStore } from "../stores/meta";
 import { Colors, routerNames } from "../types";
 import { HeaderHeight, InteractiveHeaderHeight } from "./header/header";
 import HelpRequestCard from "./helpRequestCard";
+import Loader from "./loader";
 
 const dimensions = Dimensions.get('screen')
 
@@ -23,6 +25,8 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     userStore = getStore<IUserStore>(IUserStore);
     requestStore = getStore<IRequestStore>(IRequestStore);
     headerStore = getStore<IHeaderStore>(IHeaderStore);
+
+    submitting = observable.box<boolean>(false)
 
     toggleExpanded = () => {
         if (this.bottomDrawerStore.expanded) {
@@ -53,6 +57,18 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
         const ChildView = this.bottomDrawerStore.view;
 
+        const valid = !!this.bottomDrawerStore.view.submit?.isValid?.()
+
+        const onSubmit = async () => {
+            this.submitting.set(true)
+
+            try {
+                await this.bottomDrawerStore.view.submit.action()
+            } finally {
+                this.submitting.set(false)
+            }
+        }
+
         return (
             <Animated.View key='bottomDrawer' style={[
                 styles.container, 
@@ -64,7 +80,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                     ? null
                     : styles.minimizedHeader
             ]}>
-                { this.bottomDrawerStore.headerShowing 
+                { this.bottomDrawerStore.headerShowing && !this.submitting.get()
                     ? <View style={[
                         styles.headerContainer, 
                         hasRaisedHeader 
@@ -105,15 +121,20 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                             ? <Button 
                                 labelStyle={styles.submitButtonLabel}
                                 uppercase={false}
-                                onPress={this.bottomDrawerStore.view.submit.action}
-                                color={styles.submitButton.color}
-                                style={styles.submitButton}>{submitActionLabel}</Button>
+                                onPress={onSubmit}
+                                color={valid ? styles.submitButton.color : styles.disabledSubmitButton.color}
+                                disabled={!valid}
+                                style={[styles.submitButton, !valid ? styles.disabledSubmitButton : null]}>{submitActionLabel}</Button>
                             : null
                         }
                     </View>
                     : null
                 }
-                <ChildView/>
+                {
+                    this.submitting.get()
+                        ? <Loader/>
+                        : <ChildView/>
+                }
             </Animated.View>
         )
     }
@@ -230,6 +251,10 @@ const styles = StyleSheet.create({
         marginRight: 12,
         fontSize: 12
     },
+    disabledSubmitButton: {
+        color: '#fff',
+        backgroundColor: Colors.primary.delta,
+    },
     submitButtonLabel: {
         fontSize: 12, 
         fontWeight: '800'
@@ -255,6 +280,7 @@ const styles = StyleSheet.create({
         shadowOffset: {
             width: 0,
             height: -2
-        } 
+        },
+        paddingVertical: 8 
     }
 })

@@ -11,6 +11,9 @@ import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
 import { resolve } from "path";
+import { AjvErrorObject } from "@tsed/ajv/lib/interfaces/IAjvSettings";
+// need to upgrade to 6.95.3
+// import './errors/globalErrorFilter';
 
 const rootDir = __dirname;
 
@@ -28,7 +31,7 @@ const mongoConnectionString = config.MONGO.get().connection_string;
 @Configuration({
   rootDir,
   componentsScan: [
-    `${rootDir}/protocols/**/*.ts` // scan protocols directory
+    `${rootDir}/protocols/**/*.ts`, // scan protocols directory
   ],
   mount: {
     [API.base]: `${rootDir}/controllers/**/*.ts`
@@ -46,6 +49,17 @@ const mongoConnectionString = config.MONGO.get().connection_string;
       collection: 'jobsManager' 
     } 
   },
+  // ajv: {
+  //   errorFormatter: (error: AjvErrorObject) => {
+  //     const errMessage = `At ${error.modelName}${error.instancePath}, value '${error.data}' ${error.message}`
+
+  //     console.log(errMessage)
+
+  //     return errMessage;
+  //   },
+  //   verbose: true,
+  //   allErrors: true
+  // },
   // PORT set by Google Cloud Run
   port: process.env.PORT || 9000
 })

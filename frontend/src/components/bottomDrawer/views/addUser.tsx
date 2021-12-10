@@ -2,14 +2,16 @@ import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToLabelMap } from "../../../../../common/models";
+import { PendingUser, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
+import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
-import { IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore } from "../../../stores/interfaces";
+import { IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore } from "../../../stores/interfaces";
 import { getStore } from "../../../stores/meta";
 import { routerNames, ScreenProps } from "../../../types";
 import { FormInputConfig } from "../../forms/types";
+import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
 
 @observer
@@ -20,15 +22,26 @@ export default class AddUser extends React.Component {
     newUserStore = getStore<INewUserStore>(INewUserStore);
 
     static submit = {
+        isValid: () => {
+            const newUserStore = getStore<INewUserStore>(INewUserStore);
+            return newUserStore.isValid
+        },
         action: async () => {
             const newUserStore = getStore<INewUserStore>(INewUserStore);
             const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+            const alertStore = getStore<IAlertStore>(IAlertStore);
 
-            const invited = await newUserStore.inviteNewUser()
+            let invitedUser: PendingUser;
 
-            if (invited) {
-                bottomDrawerStore.hide();
+            try {
+                invitedUser = await newUserStore.inviteNewUser()
+            } catch (e) {
+                alertStore.toastError(resolveErrorMessage(e));
+                return
             }
+
+            alertStore.toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+            bottomDrawerStore.hide();
         },
         label: () => {
             return `Send Invite`
@@ -55,25 +68,36 @@ export default class AddUser extends React.Component {
                     val: () => {
                         return this.newUserStore.email
                     },
+                    isValid: () => {
+                        return this.newUserStore.emailValid
+                    },
                     name: 'email',
                     previewLabel: () => this.newUserStore.email,
                     headerLabel: () => 'Email',
-                    type: 'TextInput'
+                    type: 'TextInput',
+                    required: true
                 },
                 {
                     onChange: (phone) => this.newUserStore.phone = phone,
                     val: () => {
                         return this.newUserStore.phone
                     },
+                    isValid: () => {
+                        return this.newUserStore.phoneValid
+                    },
                     name: 'phone',
                     previewLabel: () => this.newUserStore.phone,
                     headerLabel: () => 'Phone',
-                    type: 'TextInput'
+                    type: 'TextInput',
+                    required: true
                 },
                 {
                     onSave: (roles) => this.newUserStore.roles = roles,
                     val: () => {
                         return this.newUserStore.roles
+                    },
+                    isValid: () => {
+                        return !!this.newUserStore.rolesValid
                     },
                     name: 'roles',
                     previewLabel: () => null,
@@ -81,17 +105,22 @@ export default class AddUser extends React.Component {
                     type: 'TagList',
                     props: {
                         options: allEnumValues(UserRole),
-                        optionToLabel: (opt) => UserRoleToLabelMap[opt],
+                        optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
+                        optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
                             this.newUserStore.roles.splice(idx, 1)
                         },
                     },
+                    required: true
                 },
                 {
                     onSave: (skills) => this.newUserStore.skills = skills,
                     val: () => {
                         return this.newUserStore.skills
+                    },
+                    isValid: () => {
+                        return this.newUserStore.skillsValid
                     },
                     name: 'skills',
                     previewLabel: () => null,
@@ -99,7 +128,7 @@ export default class AddUser extends React.Component {
                     type: 'TagList',
                     props: {
                         options: allEnumValues(RequestSkill),
-                        optionToLabel: (opt) => RequestSkillToLabelMap[opt],
+                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
                             this.newUserStore.skills.splice(idx, 1)
@@ -119,9 +148,9 @@ export default class AddUser extends React.Component {
 
     render() {
         return (
-            <View style={{ height: this.bottomDrawerStore.drawerContentHeight }}>
+            <BottomDrawerViewVisualArea>
                 <Form {...this.formProps()}/>
-            </View>
+            </BottomDrawerViewVisualArea>
         )
     }
                 

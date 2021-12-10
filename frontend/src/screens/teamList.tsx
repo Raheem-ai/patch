@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
@@ -63,7 +63,9 @@ const TeamList = observer(({ navigation, route }: Props) => {
     }
 
     const goToResponder =  (user: ClientSideFormat<ProtectedUser>) => {
-        return () => {
+        return (event: GestureResponderEvent) => {
+            event.stopPropagation()
+
             userStore.pushCurrentUser(user);
             navigateTo(routerNames.userDetails);
         }
@@ -76,15 +78,17 @@ const TeamList = observer(({ navigation, route }: Props) => {
             <ScrollView style={styles.scrollView}>
                 {
                     teamStore.sortedUsers.map(r => {
+                        const goToDetails = goToResponder(r);
+
                         return (
-                            <View onTouchStart={goToResponder(r)} style={styles.listItemContainer}>
-                                <ResponderRow style={styles.responderRow} key={r.id} responder={r} orgId={userStore.currentOrgId} />
+                            <Pressable onPress={goToDetails} style={styles.listItemContainer}>
+                                <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore.currentOrgId} />
                                 <IconButton
                                     style={styles.goToResponderIcon}
                                     icon='chevron-right' 
                                     color={styles.goToResponderIcon.color}
                                     size={styles.goToResponderIcon.width} />
-                            </View>
+                            </Pressable>
                         )
                     })
                 } 

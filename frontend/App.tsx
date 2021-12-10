@@ -42,6 +42,7 @@ import { ActiveRequestTabHeight } from './src/constants';
 import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';
+import Alerts from './src/components/alerts';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -133,6 +134,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
                     </Stack.Navigator>
+                    <Alerts/>
                     <GlobalBottomDrawer/>
                 {/* </GlobalErrorBoundary>   */}
                 </NavigationContainer>

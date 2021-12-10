@@ -23,7 +23,7 @@ export default class EditRequestStore implements IEditRequestStore  {
     type: RequestType[] = []
     notes: string = ''
     skills: RequestSkill[] = []
-    respondersNeeded: number = 0
+    respondersNeeded: number = -1
 
     constructor() {
         makeAutoObservable(this)
@@ -74,7 +74,7 @@ export default class EditRequestStore implements IEditRequestStore  {
         this.type = []
         this.notes = ''
         this.skills = []
-        this.respondersNeeded = 0
+        this.respondersNeeded = -1
     }
    
 }

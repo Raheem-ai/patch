@@ -1,8 +1,10 @@
 import React from "react";
-import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, BottomDrawerHandleHeight } from "../stores/interfaces";
+import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { observer } from "mobx-react";
 import RequestForm from "./requestForm";
+import { resolveErrorMessage } from "../errors";
+import { HelpRequest } from "../../../common/models";
 
 type Props = {}
 
@@ -15,11 +17,26 @@ class CreateHelpRequest extends React.Component<Props> {
     }
 
     static submit = {
+        isValid: () => {
+            const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
+            return !!createStore.location && !!createStore.type.length && createStore.respondersNeeded != null
+        },
         action: async () => {
             const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
             const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
+            const alertStore = getStore<IAlertStore>(IAlertStore);
             
-            await createStore.createRequest()
+            let createdReq: HelpRequest;
+
+            try {
+                createdReq = await createStore.createRequest()
+            } catch(e) {
+                alertStore.toastError(resolveErrorMessage(e))
+                return
+            }
+
+            alertStore.toastSuccess(`Successfully created request ${createdReq.displayId}`)
+
             bottomDrawerStore.hide()
         },
         label: 'Add'

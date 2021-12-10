@@ -1,4 +1,4 @@
-import {Context, Inject, Req} from "@tsed/common";
+import {Context, Inject, Req, Res} from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import {Arg, OnVerify, Protocol} from "@tsed/passport";
 import {ExtractJwt, Strategy, StrategyOptions} from "passport-jwt";
@@ -6,6 +6,7 @@ import { decode } from 'jsonwebtoken';
 import { JWTMetadata } from "../auth";
 import { UserModel } from "../models/user";
 import config from '../config';
+import { Unauthorized } from "@tsed/exceptions";
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const UserContextKey = 'AuthorizedUser';
@@ -50,9 +51,10 @@ export class JwtProtocol implements OnVerify {
 
         if (verifiedUser) {
           ctx.set(UserContextKey, verifiedUser);
+          return verifiedUser
+        } else {
+          throw new Unauthorized('Unauthorized user')
         }
-
-        return verifiedUser;
     }
 }
 

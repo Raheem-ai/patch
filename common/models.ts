@@ -77,6 +77,12 @@ export const UserRoleToLabelMap: { [key in UserRole]: string } = {
     [UserRole.Responder]: 'Responder'
 }
 
+export const UserRoleToInfoLabelMap: { [key in UserRole]: string } = {
+    [UserRole.Admin]: 'Admin: Manage org team members',
+    [UserRole.Dispatcher]: 'Dispatcher: Manage requests and their responders',
+    [UserRole.Responder]: 'Responder: Respond to requests'
+}
+
 export type AddressableLocation = {
     latitude: number,
     longitude: number,

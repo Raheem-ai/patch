@@ -27,7 +27,7 @@ const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 
                 disabled={config.disabled}
                 dark={config.props.dark}
                 verticalMargin={12} 
-                tags={config.val().map(t => config.props.optionToLabel(t)) || []}
+                tags={config.val().map(t => config.props.optionToPreviewLabel(t)) || []}
                 onTagDeleted={config.disabled ? null : config.props.onTagDeleted}/>
         </Pressable>
     )

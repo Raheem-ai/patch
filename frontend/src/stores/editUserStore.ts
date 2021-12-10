@@ -7,6 +7,7 @@ import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
+import { min } from 'react-native-reanimated';
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
@@ -26,6 +27,8 @@ export default class EditUserStore implements IEditUserStore {
     @persistent() roles = []
     @persistent() pronouns = ''
 
+    @persistent() oldMe: Me = null;
+    @persistent() oldUser: ClientSideFormat<ProtectedUser> = null;
 
     constructor() {
         makeAutoObservable(this)
@@ -43,6 +46,8 @@ export default class EditUserStore implements IEditUserStore {
         this.skills = []
         this.roles = []
         this.pronouns = ''
+        this.oldMe = null
+        this.oldUser = null
     }
 
     loadMe(user: Me) {
@@ -57,6 +62,8 @@ export default class EditUserStore implements IEditUserStore {
         this.pronouns = user.pronouns || ''
 
         this.roles = this.userStore.users.get(user.id)?.organizations[this.userStore.currentOrgId]?.roles || []
+
+        this.oldMe = user
     }
     
     loadUser(user: ClientSideFormat<ProtectedUser>) {
@@ -70,6 +77,70 @@ export default class EditUserStore implements IEditUserStore {
         this.pronouns = user.pronouns || ''
 
         this.roles = this.userStore.users.get(user.id)?.organizations[this.userStore.currentOrgId]?.roles || []
+
+        this.oldUser = user
+    }
+
+    // TODO we need the concept of touched/dirty here
+    get myChangesValid() {
+        return this.nameValid &&
+            this.emailValid &&
+            this.phoneValid &&
+            this.displayColorValid &&
+            this.raceValid &&
+            this.pronounsValid &&
+            this.bioValid 
+    }
+
+    get userChangesValid() {
+        return this.skillsValid 
+    }
+
+    get nameValid(){
+        return !!this.name.length
+    }
+
+    get phoneValid(){
+        return this.phone.length == 10
+    }
+
+    get emailValid(){
+        return this.email.includes('@')
+    }
+
+    get passwordValid(){
+        // return !!this.password.length
+        return true
+    }
+
+    get displayColorValid(){
+        // return !!this.displayColor.length
+        return true
+    }
+
+    get raceValid(){
+        // return !!this.race.length
+        return true
+    }
+
+    get bioValid(){
+        // return !!this.bio.length
+        return true
+    }
+
+    get skillsValid(){
+        return true
+        // return !!this.skills.length
+    }
+
+    get rolesValid(){
+        return true
+        // return !!this.roles.length
+    }
+
+    get pronounsValid(){
+        // return !!this.pronouns.length
+        return true
     }
 
     editUser = async () => {

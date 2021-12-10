@@ -19,20 +19,26 @@ export function navigateTo<Route extends keyof RootStackParamList>(name: Route, 
   }
 }
 
-export type MainMenuOption = { name: string, routeTo: keyof typeof routerNames }
+export type MainMenuOption = { name: string, routeTo: keyof typeof routerNames, disabled?: boolean }
 
 export const MainMenuOptions: MainMenuOption[] = [
+  {
+    name: 'Home',
+    routeTo: 'userHomePage'
+  },
   {
     name: 'Requests',
     routeTo: 'helpRequestMap'
   }, 
   {
     name: 'Resources',
-    routeTo: 'home'
+    routeTo: 'home',
+    disabled: true
   }, 
   {
     name: 'Schedule',
-    routeTo: 'signIn'
+    routeTo: 'signIn',
+    disabled: true
   }, 
   {
     name: 'Team',
@@ -43,9 +49,11 @@ export const MainMenuOptions: MainMenuOption[] = [
 export type SubMenuOption = ({ 
   name: string, 
   onPress: () => void, 
-  routeTo?: undefined 
+  routeTo?: undefined, 
+  disabled?: undefined
 } | {  
   name:string, 
+  disabled?: boolean,
   routeTo: keyof typeof routerNames, 
   onPress?: undefined 
 })
@@ -53,11 +61,13 @@ export type SubMenuOption = ({
 export const SubMenuOptions: SubMenuOption[] = [
   {
     name: 'Settings',
-    routeTo: 'createHelpRequest'
+    routeTo: 'userHomePage',
+    disabled: true
   }, 
   {
     name: 'Help',
-    routeTo: 'createHelpRequest'
+    routeTo: 'userHomePage',
+    disabled: true
   }, 
   {
     name: 'Log out',

@@ -48,8 +48,10 @@ export class APIClient implements IAPIService {
             const error = e as AxiosError;
             const status = error?.response?.status;
 
+            const errorName = error?.response?.data?.name;
+
             // we're already signed in and the error is auth based
-            const isAuthError = !!status && (status >= 400 && status < 500);
+            const isAuthError = (!!status && (status == 401 || status == 403)) || errorName == 'AuthenticationError';
             const shouldRetry = !!this.refreshToken && isAuthError;
 
             if (!shouldRetry) {
@@ -105,8 +107,10 @@ export class APIClient implements IAPIService {
             const error = e as AxiosError;
             const status = error?.response?.status;
 
+            const errorName = error?.response?.data?.name;
+
             // we're already signed in and the error is auth based
-            const isAuthError = !!status && (status >= 400 && status < 500);
+            const isAuthError = (!!status && (status == 401 || status == 403)) || errorName == 'AuthenticationError';
             const shouldRetry = !!this.refreshToken && isAuthError;
 
             if (!shouldRetry) {

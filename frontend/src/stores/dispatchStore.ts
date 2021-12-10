@@ -83,7 +83,7 @@ export default class DispatchStore implements IDispatchStore {
 
             runInAction(() => {
                 this.requestStore.updateReq(updatedReq)
-                this.clear()
+                // this.clear()
             })
         } catch (e) {
             console.error(e);

@@ -5,8 +5,9 @@ import { Text } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
 import Form, { FormProps } from "../components/forms/form";
 import { FormInputConfig } from "../components/forms/types";
+import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
-import { IBottomDrawerStore, ILinkingStore, IUserStore } from "../stores/interfaces";
+import { IAlertStore, IBottomDrawerStore, ILinkingStore, IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { routerNames, ScreenProps } from "../types";
 
@@ -47,20 +48,28 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 val() {
                     return nameVal
                 },
+                isValid: () => {
+                    return !!nameVal.length
+                },
                 name: 'name',
                 previewLabel: () => nameVal,
                 headerLabel: () => 'Name',
-                type: 'TextInput'
+                type: 'TextInput',
+                required: true
             },
             {
                 onChange: setPasswordVal,
                 val() {
                     return passwordVal
                 },
+                isValid: () => {
+                    return !!passwordVal.length
+                },
                 name: 'password',
                 previewLabel: () => passwordVal,
                 headerLabel: () => 'Password',
-                type: 'TextInput'
+                type: 'TextInput',
+                required: true
             }
         ] as [
             FormInputConfig<'TextInput'>, 
@@ -71,16 +80,22 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
         submit: {
             handler: async () => {
                 const userStore = getStore<IUserStore>(IUserStore);
+                const alertStore = getStore<IAlertStore>(IAlertStore);
 
-                const signedUp = await userStore.signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
-                    email: pendingUser.email,
-                    password: passwordVal,
-                    name: nameVal
-                })
-
-                if (signedUp) {
-                    navigateTo(routerNames.userHomePage)
+                try {
+                    await userStore.signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                        email: pendingUser.email,
+                        password: passwordVal,
+                        name: nameVal
+                    })
+                } catch(e) {
+                    alertStore.toastError(resolveErrorMessage(e));
+                    return
                 }
+
+                alertStore.toastSuccess(`Welcome to PATCH!`)
+
+                navigateTo(routerNames.userHomePage)
 
             },
             label: 'Join us!'

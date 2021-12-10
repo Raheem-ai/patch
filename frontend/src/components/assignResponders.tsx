@@ -4,7 +4,8 @@ import { Dimensions, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
 import { HelpRequest } from "../../../common/models"
-import { IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces"
+import { resolveErrorMessage } from "../errors"
+import { IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces"
 import { getStore } from "../stores/meta"
 import { Colors } from "../types"
 import ResponderRow from "./responderRow"
@@ -22,15 +23,28 @@ export default class AssignResponders extends React.Component {
     static raisedHeader = true;
 
     static submit = {
+        isValid: () => {
+            const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
+            return !!dispatchStore.selectedResponderIds.size
+        },
         action: async () => {
             const requestStore = getStore<IRequestStore>(IRequestStore);
             const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
             const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+            const alertStore = getStore<IAlertStore>(IAlertStore);
+
             const id = requestStore.currentRequest.id;
 
-            await dispatchStore.assignRequest(id, Array.from(dispatchStore.selectedResponderIds.values()))
+            try {
+                await dispatchStore.assignRequest(id, Array.from(dispatchStore.selectedResponderIds.values()))
+            } catch(e) {
+                alertStore.toastError(resolveErrorMessage(e))
+                return
+            }
 
-            bottomDrawerStore.hide();
+            alertStore.toastSuccess(`Notified ${dispatchStore.selectedResponderIds.size} responders`)
+
+            bottomDrawerStore.hide()
         },
         label: () => {
             const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
