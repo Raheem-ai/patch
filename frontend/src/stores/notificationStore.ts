@@ -35,6 +35,7 @@ export default class NotificationStore implements INotificationStore {
     // keep copy in secure store and never delete it so we'll know when it needs to be updated
     // ie. reinstalls
     @securelyPersistent() expoPushToken = null;
+    @securelyPersistent() expoPushTokenUserId: string = null;
     
     constructor() { 
         makeAutoObservable(this);
@@ -42,6 +43,7 @@ export default class NotificationStore implements INotificationStore {
 
     clear() {
         this.expoPushToken = null;
+        this.expoPushTokenUserId = null;
     }
 
     async init() {
@@ -160,9 +162,13 @@ export default class NotificationStore implements INotificationStore {
         const currentPushToken = (await Notifications.getExpoPushTokenAsync()).data;
         const token = this.userStore.authToken;
 
-        if (this.expoPushToken != currentPushToken) {
+        if (this.expoPushToken != currentPushToken || this.expoPushTokenUserId != this.userStore.user.id) {
             await this.api.reportPushToken({ token }, currentPushToken);
-            runInAction(() => this.expoPushToken = currentPushToken);
+            
+            runInAction(() => {
+                this.expoPushToken = currentPushToken
+                this.expoPushTokenUserId = this.userStore.user.id
+            });
         }
     }
 

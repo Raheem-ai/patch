@@ -224,6 +224,19 @@ export class UsersController implements APIController<
         @Required() @BodyParams('token') token: string
     ) {
         if (user.push_token != token) {
+            const usersSharingPhone = await this.db.getUsers({ push_token: token });
+
+            // make sure only one user is getting notifications on a phone at a time
+            await Promise.all(usersSharingPhone.map(async (u) => {
+                u.push_token = null;
+                
+                try {
+                    await u.save()
+                } catch (e) {
+                    console.error(e)
+                }
+            }))
+
             user.push_token = token;
             await user.save();
         }
