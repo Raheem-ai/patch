@@ -1,6 +1,7 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
@@ -37,24 +38,26 @@ const ListInput = observer(({ back, config }: SectionScreenProps<'List' | 'TagLi
     return (
         <>
             <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
-            <List.Section style={{margin: 0}}>
-                {config.props.options.map(opt => {
-                    const chosen = vals.has(opt);
-                    
-                    const title = config.props.optionToListLabel
-                        ? config.props.optionToListLabel(opt)
-                        : config.props.optionToPreviewLabel(opt);
+            <ScrollView style={{ flex: 1}}> 
+                <List.Section style={{margin: 0}}>
+                    {config.props.options.map(opt => {
+                        const chosen = vals.has(opt);
+                        
+                        const title = config.props.optionToListLabel
+                            ? config.props.optionToListLabel(opt)
+                            : config.props.optionToPreviewLabel(opt);
 
-                    return <List.Item 
-                                key={opt} 
-                                onPress={() => toggleVal(opt)} 
-                                title={title}
-                                titleNumberOfLines={2}
-                                titleStyle={chosen ? styles.chosenItem : styles.noop}
-                                style={styles.item}
-                                right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
-                })}
-            </List.Section>
+                        return <List.Item 
+                                    key={opt} 
+                                    onPress={() => toggleVal(opt)} 
+                                    title={title}
+                                    titleNumberOfLines={2}
+                                    titleStyle={chosen ? styles.chosenItem : styles.noop}
+                                    style={styles.item}
+                                    right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
+                    })}
+                </List.Section>
+            </ScrollView>
         </>
     )
 })

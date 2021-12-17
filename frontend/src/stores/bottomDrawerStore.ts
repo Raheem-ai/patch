@@ -1,5 +1,5 @@
 import {  getStore, Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IRequestStore } from './interfaces';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore } from './interfaces';
 import { Animated, Dimensions } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
@@ -30,6 +30,17 @@ const dimensions = Dimensions.get('screen')
 export default class BottomDrawerStore implements IBottomDrawerStore {
     bottomDrawerTabTop = new Animated.Value(dimensions.height)
 
+    activeRequestOffset = new Animated.Value(0)
+    minimizedHandleOffset = new Animated.Value(0)
+    headerOffset = new Animated.Value(0)
+    topUIOffset = new Animated.Value(0)
+    bottomUIOffset = Animated.add(this.activeRequestOffset, this.minimizedHandleOffset)
+
+    // TODO: should probably offload some of this to a layout store because having calculations for
+    // non bottom drawer content height here is weird
+    contentHeight = new Animated.Value(0)
+    drawerContentHeight = new Animated.Value(0)
+
     currentRoute: string = null;
     expanded: boolean = false;
     showing: boolean = false;
@@ -38,6 +49,8 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     viewIdStack: BottomDrawerView[] = []
 
     private requestStore = getStore<IRequestStore>(IRequestStore);
+    private nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
+
 
     constructor() {
         makeAutoObservable(this)
@@ -48,6 +61,65 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 this.minimize()
             }
         })
+    }
+
+    async init() {
+        await this.nativeEventStore.init();
+        await this.requestStore.init();
+
+        // reactively update content height based on bottom drawer + keyboard state
+        reaction(this.calculateContentHeight, this.animateContentHeight, {
+            equals: (a, b) => a[0] == b[0] && a[1] == b[1],
+            fireImmediately: true
+        })      
+
+        // animate to correct new height as activeRequest might have toggled existing
+        reaction(() => this.requestStore.activeRequest, (_) => {
+            if (this.showing && !this.expanded) {
+                this.minimize()
+            }
+        })
+    }
+
+    calculateContentHeight = (): [number, number] => {
+        const topUIOffset = this.minimizable
+            ? HeaderHeight
+            : HeaderHeight - InteractiveHeaderHeight;
+
+        const internalHeaderOffset = this.expandedHeaderShowing
+            ? BottomDrawerHandleHeight
+            : 0;
+
+        const minimizedHandleOffset = this.minimizedHandleShowing
+            ? BottomDrawerHandleHeight
+            : 0;
+
+        const activeRequestOffset = this.activeRequestShowing
+            ? ActiveRequestTabHeight
+            : 0; 
+
+        const bottomUIOffset = activeRequestOffset + minimizedHandleOffset;
+
+        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset;
+
+        const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - this.nativeEventStore.keyboardHeight
+
+        return [contentHeight, bottomDrawerContentHeight]
+    }
+
+    animateContentHeight = ([contentHeight, drawerContentHeight]) => {
+        Animated.parallel([
+            Animated.timing(this.contentHeight, {
+                toValue: contentHeight,
+                duration: 300,
+                useNativeDriver: false
+            }),
+            Animated.timing(this.drawerContentHeight, {
+                toValue: drawerContentHeight,
+                duration: 300,
+                useNativeDriver: false
+            })
+        ]).start()
     }
 
     get viewId() {
@@ -76,25 +148,17 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         return !!this.view && this.isMinimizable(this.view)
     }
 
-    get bottomUIOffset() {
+    get activeRequestShowing() {
         const onRequestMap = this.currentRoute == routerNames.helpRequestMap;
-
-        return (this.requestStore.activeRequest && !onRequestMap ? ActiveRequestTabHeight : 0)
-            + (this.showing && !this.expanded ? BottomDrawerHandleHeight : 0)
+        return this.requestStore.activeRequest && !onRequestMap && !this.nativeEventStore.keyboardOpen;
     }
 
-    get topUIOffset() {
-        return this.showing && this.expanded && this.headerShowing ? BottomDrawerHandleHeight : 0;
+    get minimizedHandleShowing() {
+        return this.showing && !this.expanded;
     }
 
-    // TODO: there are 2-6ish pixels off here...might be borders adding up or something
-    get drawerContentHeight() {
-        return Dimensions.get('screen').height 
-            - (this.minimizable 
-                ? HeaderHeight
-                : HeaderHeight - InteractiveHeaderHeight)
-            - this.bottomUIOffset 
-            - this.topUIOffset;
+    get expandedHeaderShowing() {
+        return this.showing && this.expanded && this.headerShowing;
     }
 
     show = (view: BottomDrawerView, expanded?: boolean) => {

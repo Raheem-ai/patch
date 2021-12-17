@@ -35,7 +35,11 @@ const HeaderConfig: {
         unauthenticated: true
     },
     [routerNames.userHomePage]: {
-        title: 'User Home Page'
+        title: () => {
+            const userStore = getStore<IUserStore>(IUserStore);
+            // TODO: get org name for here
+            return 'Home'
+        }
     },
     [routerNames.helpRequestList]: {
         title: 'Requests',

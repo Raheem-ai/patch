@@ -148,6 +148,10 @@ export class DBManager {
         return await this.findByIds(this.users, ids);
     }
 
+    async getUserById(id: string): Promise<UserDoc> {
+        return await this.findById(this.users, id);
+    }
+
     async getProtectedUser(query: Partial<UserModel>): Promise<Document<ProtectedUser>> {
         return await this.users.findOne(query).select(this.privateUserProps());
     }
@@ -520,6 +524,10 @@ export class DBManager {
         return model.find({ _id: { $in: ids } });
     }
 
+    findById<M extends Model<any>, D=DocFromModel<M>>(model: M, id: string): Query<D, D> {
+        return model.findOne({ _id: id });
+    }
+
     /**
      * Note you CANNOT use Promise.all() inside of ops...must handle each async db action sequentially
      * ie. (https://medium.com/@alkor_shikyaro/transactions-and-promises-in-node-js-ca5a3aeb6b74)
@@ -622,6 +630,7 @@ export class DBManager {
                 displayColor: "#25db00",
                 name: "Chuck LePartay",
                 race: "nunya",
+                phone: "8045166822",
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
             });
 

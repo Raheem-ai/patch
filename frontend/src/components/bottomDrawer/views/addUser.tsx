@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
-import { StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { PendingUser, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
@@ -148,9 +148,12 @@ export default class AddUser extends React.Component {
 
     render() {
         return (
-            <BottomDrawerViewVisualArea>
-                <Form {...this.formProps()}/>
-            </BottomDrawerViewVisualArea>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+                <BottomDrawerViewVisualArea>
+                    <Form {...this.formProps()}/>
+                </BottomDrawerViewVisualArea>
+            </KeyboardAvoidingView>
         )
     }
                 

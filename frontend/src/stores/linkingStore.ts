@@ -46,6 +46,18 @@ export default class LinkingStore implements ILinkingStore {
         }
     }
 
+    call = async (number: string) => {
+        const url = `tel:${number}`;
+        
+        Linking.canOpenURL(url) && await Linking.openURL(url)
+    }
+
+    mailTo = async (email: string) => {
+        const url = `mailto:${email}`;
+        
+        Linking.canOpenURL(url) && await Linking.openURL(url)
+    }
+
     clear() {
         
     }

@@ -25,6 +25,14 @@ export default class EditRequestStore implements IEditRequestStore  {
     skills: RequestSkill[] = []
     respondersNeeded: number = -1
 
+    get locationValid() {
+        return !!this.location && !!this.location.address
+    }
+
+    get typeValid() {
+        return !!this.type.length
+    }
+
     constructor() {
         makeAutoObservable(this)
     }

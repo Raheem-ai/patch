@@ -1,5 +1,6 @@
-import * as jwt from 'jsonwebtoken';
+import jwt, { decode, Jwt, verify } from 'jsonwebtoken';
 import config from './config';
+import { DBManager } from './services/dbManager';
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
@@ -58,3 +59,47 @@ export async function createAuthToken(userId: string, etag: string, secret: { ki
     return token;
 }
 
+export async function verifyRefreshToken(refreshToken: string, dbManager: DBManager) {
+    const decodedRefreshToken = decode(refreshToken, { complete: true });
+
+        if (!decodedRefreshToken) {
+            throw `malformed refresh token: ${refreshToken}`
+        }
+
+        const secret = refreshTokenSecrets.find(s => s.kid == decodedRefreshToken.header.kid);
+
+        if (!secret) {
+            throw `key not found: ${decodedRefreshToken.header.kid}`
+        }
+
+        let refreshTokenPayload;
+
+        try {
+            refreshTokenPayload = await new Promise<JWTMetadata>((resolve, reject) => {
+                verify(refreshToken, secret.value, { complete: true }, (err, jwt: Jwt) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(jwt.payload as JWTMetadata)
+                    }
+                });
+            })
+        } catch (e) {
+            const err = e as Error;
+            throw err.message
+        }
+
+        const userId = refreshTokenPayload.userId;
+
+        const user = await dbManager.getUserById(userId);
+
+        if (!user) {
+            throw `couldn't find token user`
+        }
+
+        if (user.auth_etag != refreshTokenPayload.etag) {
+            throw `etags don't match`
+        }
+
+        return user
+}

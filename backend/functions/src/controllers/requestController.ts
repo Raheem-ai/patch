@@ -14,6 +14,7 @@ import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
+import { MySocketService } from "../services/socketService";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -24,6 +25,7 @@ export class ValidatedMinOrg implements MinOrg {
 @Controller(API.namespaces.request)
 export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
     @Inject(DBManager) db: DBManager;
+    @Inject(MySocketService) mySocketService: MySocketService;
 
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;

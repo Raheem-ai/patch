@@ -22,6 +22,7 @@ import { INativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import Loader from "../loader";
+import MapInput from "./inputs/mapInput";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -56,6 +57,9 @@ const FormViewMap: FormInputViewMap = {
     'NestedTagList': {
         screenComponent: NestedListInput,
         labelComponent: TagListLabel as React.ComponentType<SectionViewProps<"NestedTagList">>
+    },
+    'Map': {
+        screenComponent: MapInput
     }
 }
 
@@ -110,7 +114,7 @@ export default class Form extends React.Component<FormProps> {
 
         return (
                 <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-                    <Pressable onPress={onPress} style={{ flex: 1 }}>
+                    <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
                         <View style={{
                             paddingLeft: 20,
                             borderStyle: 'solid',
@@ -130,6 +134,28 @@ export default class Form extends React.Component<FormProps> {
                                 const textLabel = unwrap(inputConfig.previewLabel) || null;
 
                                 const viewConfig = FormViewMap[inputConfig.type];
+
+                                // make sure any inline store updates are being run in an action 
+                                // (for convenience)
+                                if (inputConfig.onChange) {
+                                    const oldOnChange = inputConfig.onChange;
+                                    
+                                    inputConfig.onChange = (...args) => {
+                                        runInAction(() => {
+                                            return oldOnChange(...args)
+                                        })
+                                    }
+                                }
+
+                                if (inputConfig.onSave) {
+                                    const oldOnSave = inputConfig.onSave;
+                                    
+                                    inputConfig.onSave = (...args) => {
+                                        runInAction(() => {
+                                            return oldOnSave(...args)
+                                        })
+                                    }
+                                }
 
                                 return <Section 
                                             viewConfig={viewConfig}

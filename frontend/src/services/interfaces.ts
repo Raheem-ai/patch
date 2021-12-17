@@ -21,7 +21,7 @@ export namespace IAPIService {
 }
 
 export interface IAPIService extends IBaseService, ClientSideApi<'me' | 'setOnDutyStatus'> {
-
+    refreshToken: string
 }
 
 export const AllServices = [

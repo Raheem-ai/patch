@@ -12,7 +12,7 @@ const TextAreaInput = observer(({ back, config }: SectionScreenProps<'TextArea'>
     const [val, setVal] = useState(config.val())
 
     const save = () => {
-        config.onSave(val);
+        config.onSave?.(val);
         back();
     }
 

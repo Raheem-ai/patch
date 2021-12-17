@@ -1,37 +1,69 @@
 import { Store } from './meta';
 import { INativeEventStore } from './interfaces';
-import { Keyboard, KeyboardEvent } from 'react-native';
+import { Animated, Keyboard, KeyboardEvent } from 'react-native';
 import { makeAutoObservable } from 'mobx';
 
 
 @Store(INativeEventStore)
 export default class NativeEventStore implements INativeEventStore {
-    keyboardHeight = 0;
+    keyboardHeight = 0
+    keyboardOpen = false;
+    keyboardInTransition = false;
 
     constructor() {
         makeAutoObservable(this)
 
+        // covering all the bases as willHide/Show is smoother but doesn't have as much
+        // support on android
         Keyboard.addListener('keyboardDidShow', this.onKeyboardDidShow);
         Keyboard.addListener('keyboardDidHide', this.onKeyboardDidHide);
+        Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow);
+        Keyboard.addListener('keyboardWillHide', this.onKeyboardWillHide);
         Keyboard.addListener('keyboardDidChangeFrame', function (e: KeyboardEvent) {
-            console.log('frame', e.endCoordinates.height)
+            if (!this.keyboardInTransition) {
+                if (this.keyboardOpen) {
+                    this.keyboardHeight = 0;
+                    this.keyboardOpen = false;
+                } else {
+                    this.keyboardHeight = e.endCoordinates.height;
+                    this.keyboardOpen = true;
+                }
+
+                this.keyboardInTransition = true;
+            }
         })
     }
 
     onKeyboardDidShow = (e: KeyboardEvent) => {
-        console.log('did show', e.endCoordinates.height)
-        this.keyboardHeight = e.endCoordinates.height;
+        const toHeight = e.endCoordinates.height;
+        this.keyboardHeight = toHeight;
+        this.keyboardOpen = true;
+        this.keyboardInTransition = false;
     }
 
-    onKeyboardDidHide = () => {
-        this.keyboardHeight = 0;
+    onKeyboardDidHide = (e: KeyboardEvent) => {
+        this.keyboardHeight = 0
+        this.keyboardOpen = false
+        this.keyboardInTransition = false;
     }
 
-    get keyboardOpen() {
-        return this.keyboardHeight > 0
+    onKeyboardWillShow = (e: KeyboardEvent) => {
+        const toHeight = e.endCoordinates.height;
+        this.keyboardHeight = toHeight;
+        this.keyboardOpen = true;
+        this.keyboardInTransition = true;
+    }
+
+    onKeyboardWillHide = (e: KeyboardEvent) => {
+        console.log('Will hide')
+        this.keyboardHeight = 0
+        this.keyboardOpen = false
+        this.keyboardInTransition = true;
     }
     
     clear() {
-
+        this.keyboardHeight = 0
+        this.keyboardOpen = false;
+        this.keyboardInTransition = false
     }
 }

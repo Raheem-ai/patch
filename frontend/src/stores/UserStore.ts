@@ -64,7 +64,6 @@ export default class UserStore implements IUserStore {
     get usersInOrg() {
         return Array.from(this.users.values())
             .filter(u => {
-                console.log(u)
                 return !!u.organizations[this.currentOrgId]
             })
     }

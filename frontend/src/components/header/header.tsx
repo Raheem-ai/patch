@@ -274,7 +274,8 @@ const styles = StyleSheet.create({
     subMenuOptions: {
         borderTopColor: '#666',
         borderTopWidth: 1,
-        paddingVertical: 10,
+        paddingTop: 10,
+        paddingBottom: 26
     },
     mainMenuText: {
         color: '#fff',

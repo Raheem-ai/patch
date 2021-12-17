@@ -5,14 +5,13 @@ import { Authenticate, Authorize } from "@tsed/passport";
 import { Enum, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
 import { BasicCredentials, EditableMe, EditableUser, Location, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
-import { createAccessToken, createRefreshToken, JWTMetadata } from "../auth";
+import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
-import { decode, Jwt, verify } from "jsonwebtoken";
 import config from '../config';
 
 export class ValidatedMinUser implements MinUser {
@@ -104,45 +103,16 @@ export class UsersController implements APIController<
     async refreshAuth(
         @Required() @BodyParams('refreshToken') refreshToken: string
     ) {
-        const decodedRefreshToken = decode(refreshToken, { complete: true });
-
-        if (!decodedRefreshToken) {
-            throw new BadRequest(`malformed refresh token: ${refreshToken}`)
-        }
-
-        const secret = refreshTokenSecrets.find(s => s.kid == decodedRefreshToken.header.kid);
-
-        if (!secret) {
-            throw new BadRequest(`key not found: ${decodedRefreshToken.header.kid}`)
-        }
-
-        let refreshTokenPayload;
+        let user: UserDoc;
 
         try {
-            refreshTokenPayload = await new Promise<JWTMetadata>((resolve, reject) => {
-                verify(refreshToken, secret.value, { complete: true }, (err, jwt: Jwt) => {
-                    if (err) {
-                        reject(err)
-                    } else {
-                        resolve(jwt.payload as JWTMetadata)
-                    }
-                });
-            })
+            user = await verifyRefreshToken(refreshToken, this.db);
         } catch (e) {
-            const err = e as Error;
-            throw new BadRequest(err.message)
-        }
-
-        const userId = refreshTokenPayload.userId;
-
-        const user = await this.users.findById(userId);
-
-        if (!user) {
-            throw new BadRequest(`couldn't find token user`)
-        }
-
-        if (user.auth_etag != refreshTokenPayload.etag) {
-            throw new BadRequest(`etags don't match`)
+            if (typeof e == 'string') {
+                throw new BadRequest(e)
+            } else {
+                throw e
+            }
         }
 
         const accessToken = await createAccessToken(user.id, user.auth_etag)
@@ -293,3 +263,5 @@ export class UsersController implements APIController<
     }
 
 }
+
+

@@ -3,8 +3,9 @@ import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../types';
 import { getStore } from '../stores/meta';
-import { INotificationStore, IUserStore } from '../stores/interfaces';
+import { IAlertStore, INotificationStore, IUserStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
+import { resolveErrorMessage } from '../errors';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -17,7 +18,15 @@ export default function SignInForm( { navigation } : Props) {
     const userStore = getStore<IUserStore>(IUserStore);
 
     const signIn = async () => {
-        await userStore.signIn(username, password)
+
+        const alertStore = getStore<IAlertStore>(IAlertStore);
+
+        try {
+            await userStore.signIn(username, password)
+        } catch(e) {
+            alertStore.toastError(resolveErrorMessage(e))
+            return
+        }
 
         setTimeout(() => {
             const notificationStore = getStore<INotificationStore>(INotificationStore);

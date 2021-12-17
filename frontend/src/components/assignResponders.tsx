@@ -1,6 +1,6 @@
 import { observer } from "mobx-react"
 import React from "react"
-import { Dimensions, StyleSheet, View } from "react-native"
+import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
 import { HelpRequest } from "../../../common/models"
@@ -8,6 +8,7 @@ import { resolveErrorMessage } from "../errors"
 import { IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces"
 import { getStore } from "../stores/meta"
 import { Colors } from "../types"
+import { BottomDrawerViewVisualArea } from "./helpers/visualArea"
 import ResponderRow from "./responderRow"
 import SkillTag from "./skillTag"
 
@@ -105,14 +106,14 @@ export default class AssignResponders extends React.Component {
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
                     <Text style={styles.responderCountText}>{`${this.dispatchStore.assignableResponders.length} responders`}</Text>
-                    <View style={styles.selectAllContainer} onTouchStart={this.toggleSelectAll}>
+                    <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
                             icon={this.dispatchStore.selectAll ? 'check-circle' : 'check-circle-outline'}
                             color={this.dispatchStore.selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
-                    </View>
+                    </Pressable>
                 </View>
                 <View style={styles.includeOffDutyRow}>
                     <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
@@ -134,9 +135,12 @@ export default class AssignResponders extends React.Component {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
                         const isSelected = this.dispatchStore.selectedResponderIds.has(r.id);
 
+                        const chooseResponder = () => this.toggleResponder(r.id)
+
                         return (
-                            <View key={r.id} style={styles.responderRow} onTouchStart={() => this.toggleResponder(r.id)}>
+                            <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
                                 <ResponderRow 
+                                    onPress={chooseResponder}
                                     style={[styles.responderRowOverride, { maxWidth }]} 
                                     responder={r} 
                                     orgId={this.userStore.currentOrgId} 
@@ -149,7 +153,7 @@ export default class AssignResponders extends React.Component {
                                         color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
                                         size={styles.selectResponderIcon.width} />
                                 </View>
-                            </View>
+                            </Pressable>
                         )
                     })
                 }
@@ -159,11 +163,11 @@ export default class AssignResponders extends React.Component {
 
     render() {
         return (
-            <View style={{ height: this.bottomDrawerStore.drawerContentHeight }}>
+            <BottomDrawerViewVisualArea >
                 { this.header() }
                 { this.responderActions() }
                 { this.responders() }
-            </View>
+            </BottomDrawerViewVisualArea>
         )
     }
 }

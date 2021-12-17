@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, IconButton, Text } from "react-native-paper";
 import { RequestSkillToLabelMap, UserRoleToLabelMap } from "../../../common/models";
@@ -8,7 +8,7 @@ import HelpRequestCard from "../components/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
 import { navigationRef } from "../navigation";
-import { IBottomDrawerStore, IRequestStore, IUserStore } from "../stores/interfaces";
+import { IBottomDrawerStore, ILinkingStore, IRequestStore, IUserStore } from "../stores/interfaces";
 import { getStore } from "../stores/meta";
 import { Colors, ScreenProps } from "../types";
 
@@ -18,6 +18,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
     const requestStore = getStore<IRequestStore>(IRequestStore);
     const userStore = getStore<IUserStore>(IUserStore);
     const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
+    const linkingStore = getStore<ILinkingStore>(ILinkingStore);
 
     const [ loading, setLoading ] = useState(false)
 
@@ -27,6 +28,18 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             setLoading(true);
             await userStore.removeCurrentUserFromOrg();
             navigationRef.current?.goBack();
+        }
+
+        const startCall = async () => {
+            if (userStore.currentUser.phone) {
+                await linkingStore.call(userStore.currentUser.phone)
+            }
+        }
+
+        const mailTo = async () => {
+            if (userStore.currentUser.email) {
+                await linkingStore.mailTo(userStore.currentUser.email)
+            }
         }
 
         const detailsText = [
@@ -61,20 +74,20 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 <Text style={styles.detailsText}>{userStore.currentUser.bio}</Text>
             </View>
             <View style={styles.contactIconsContainer}>
-                <View style={styles.contactIconContainer}>
+                <Pressable onPress={startCall} style={styles.contactIconContainer}>
                     <IconButton
                         style={styles.contactIcon}
                         icon='phone' 
                         color={styles.contactIcon.color}
                         size={styles.contactIcon.width} />
-                </View>
-                <View style={styles.contactIconContainer}>
+                </Pressable>
+                <Pressable onPress={mailTo} style={styles.contactIconContainer}>
                     <IconButton
                         style={styles.contactIcon}
                         icon='email' 
                         color={styles.contactIcon.color}
                         size={styles.contactIcon.width} />
-                </View>
+                </Pressable>
             </View>
             {
                 userStore.isAdmin && userStore.user.id != userStore.currentUser.id 

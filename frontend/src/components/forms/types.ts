@@ -41,13 +41,10 @@ export type FormInputOptions = {
         type: any[]
     },
     'NestedList': {
-        props: {
+        props: FormInputOptions['List']['props'] & {
             categories: any[],
             optionsFromCategory: (cat: any) => any[]
-            optionToPreviewLabel: (opt) => string
-            optionToListLabel?: (opt) => string
             categoryToLabel: (opt) => string
-            multiSelect?: boolean
         },
         type: any[]
     },

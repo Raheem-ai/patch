@@ -10,6 +10,10 @@ import { SectionScreenProps, SectionViewProps } from "../types"
 const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 'NestedTagList'>) => {
 
     const onPress = () => {
+        if (config.disabled) {
+            return
+        }
+        
         expand?.()
     }
 

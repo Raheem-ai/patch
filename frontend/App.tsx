@@ -73,8 +73,8 @@ export default function App() {
         (async () => {
             try {
                 await Promise.all([
-                initStores(),
-                initServices()
+                    initStores(),
+                    initServices()
                 ]);
             } catch (e) {
                 console.error('Error during initialization:', e)

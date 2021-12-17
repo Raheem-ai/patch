@@ -18,7 +18,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
     type: RequestType[] = []
     notes: string = ''
     skills: RequestSkill[] = []
-    respondersNeeded: number = null
+    respondersNeeded: number = -1
 
     constructor() {
         makeAutoObservable(this)
@@ -30,6 +30,14 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             orgId: this.userStore.currentOrgId
         }
     }
+
+    get locationValid() {
+        return !!this.location && !!this.location.address
+    }
+
+    get typeValid() {
+        return !!this.type.length
+    }
     
     async createRequest() {
         const req: MinHelpRequest = {
@@ -37,7 +45,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             location: this.location,
             notes: this.notes,
             skills: this.skills,
-            respondersNeeded: this.respondersNeeded
+            respondersNeeded: this.respondersNeeded 
         }
 
         const createdReq = await this.api.createNewRequest(this.orgContext(), req);
@@ -56,7 +64,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
         this.type = []
         this.notes = ''
         this.skills = []
-        this.respondersNeeded = null
+        this.respondersNeeded = -1
     }
    
 }

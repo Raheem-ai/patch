@@ -15,6 +15,7 @@ import { ActiveRequestTabHeight } from "../constants";
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
 import { navigateTo } from "../navigation";
+import { VisualArea } from "../components/helpers/visualArea";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -144,7 +145,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         }
 
         return (
-            <View style={styles.chatContainer} onTouchStart={openChat}>
+            <Pressable style={styles.chatContainer} onPress={openChat}>
 
                 <View style={styles.chatLabelContainer}>
                     <IconButton
@@ -177,7 +178,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             : <Text>Start chat for this response</Text>
                     }
                 </View>
-            </View>
+            </Pressable>
         )
     }
 
@@ -190,12 +191,15 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             bottomDrawerStore.show(BottomDrawerView.assignResponders, true);
         }
 
-        const joinRequest = () => {
-            requestStore.joinRequest(request.id);
+        // TODO: this should be a reaction on activeRequest changing between
+        // existing/ not existing
+
+        const joinRequest = async () => {
+            await requestStore.joinRequest(request.id);
         }
 
-        const leaveRequest = () => {
-            requestStore.leaveRequest(request.id);
+        const leaveRequest = async () => {
+            await requestStore.leaveRequest(request.id);
         }
 
         const removeResponder = (responderId: string) => () => {
@@ -261,7 +265,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                             const goToResponder = () => {
                                 userStore.pushCurrentUser(responder);
-                                console.log(responder.name)
                                 navigateTo(routerNames.userDetails);
                             }
                             
@@ -477,11 +480,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     if (isLoading) {
         return null
     }
-
-    const height = dimensions.height - HeaderHeight - bottomDrawerStore.bottomUIOffset;
     
     return (
-        <View style={{ height: height }}>
+        <VisualArea>
             <WrappedScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsContainer}>
                     { header() }
@@ -492,7 +493,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 { statusPicker() }
                 { teamSection() }
             </WrappedScrollView>
-        </View>
+        </VisualArea>
     );
 });
 

@@ -112,6 +112,8 @@ export namespace ICreateRequestStore {
 
 export interface ICreateRequestStore extends ITempRequestStore {
     createRequest: () => Promise<HelpRequest>;
+    locationValid: boolean
+    typeValid: boolean
 }
 
 export namespace IEditRequestStore {
@@ -121,6 +123,8 @@ export namespace IEditRequestStore {
 export interface IEditRequestStore extends ITempRequestStore {
     loadRequest(req: CreateReqData): void
     editRequest(reqId: string): Promise<void>
+    locationValid: boolean
+    typeValid: boolean
 }
 
 export namespace IRequestStore {
@@ -182,7 +186,7 @@ export namespace ISecretStore {
 }
 
 export interface IBottomDrawerStore extends IBaseStore {
-    readonly bottomDrawerTabTop: Animated.Value
+    readonly bottomDrawerTabTop: Animated.AnimatedNode
     expanded: boolean
     showing: boolean
     headerShowing: boolean
@@ -191,10 +195,8 @@ export interface IBottomDrawerStore extends IBaseStore {
     view: BottomDrawerComponentClass
     currentRoute: string
 
-    bottomUIOffset: number
-    topUIOffset: number
-    drawerContentHeight: number
-
+    drawerContentHeight: Animated.AnimatedInterpolation
+    contentHeight: Animated.AnimatedInterpolation
 
     show(view: BottomDrawerView, expanded?: boolean): void;
     showHeader(): void;
@@ -238,7 +240,7 @@ export type BottomDrawerConfig = {
 export const BottomDrawerHandleHeight = 64;
 
 export interface INativeEventStore extends IBaseStore {
-    keyboardHeight: number;
+    readonly keyboardHeight: number;
     keyboardOpen: boolean;
 }
 
@@ -260,6 +262,9 @@ export interface ILinkingStore extends IBaseStore {
     baseUrl: string
     initialRoute: keyof RootStackParamList;
     initialRouteParams: any
+
+    call: (phone: string) => Promise<void>
+    mailTo: (phone: string) => Promise<void>
 }
 
 export namespace ILinkingStore {
@@ -346,6 +351,14 @@ export interface IAlertStore extends IBaseStore {
     hidePrompt(): void
 }
 
+export namespace ISocketStore {
+    export const id = Symbol('ISocketStore');
+}
+
+export interface ISocketStore extends IBaseStore {
+
+}
+
 export const AllStores = [
     IUserStore,
     ILocationStore,
@@ -362,7 +375,8 @@ export const AllStores = [
     ILinkingStore,
     INewUserStore,
     IEditUserStore,
-    IAlertStore
+    IAlertStore,
+    ISocketStore
 ]
 
 /**  
