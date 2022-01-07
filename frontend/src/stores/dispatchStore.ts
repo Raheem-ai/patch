@@ -1,17 +1,12 @@
-import { isComputed, isObservable, makeAutoObservable, ObservableSet, runInAction } from 'mobx';
-import { getStore, Store } from './meta';
-import { IDispatchStore, IRequestStore, IUserStore } from './interfaces';
+import { makeAutoObservable, ObservableSet, runInAction } from 'mobx';
+import { Store } from './meta';
+import { IDispatchStore, requestStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
 import { persistent } from '../meta';
+import { api } from '../services/interfaces';
 
 @Store(IDispatchStore)
 export default class DispatchStore implements IDispatchStore {
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private api = getService<IAPIService>(IAPIService)
-    private requestStore = getService<IRequestStore>(IRequestStore)
 
     @persistent() includeOffDuty = false;
     @persistent() selectAll = false;
@@ -24,21 +19,21 @@ export default class DispatchStore implements IDispatchStore {
 
     orgContext(): OrgContext {
         return {
-            token: this.userStore.authToken,
-            orgId: this.userStore.currentOrgId
+            token: userStore().authToken,
+            orgId: userStore().currentOrgId
         }
     }
 
     get assignableResponders() {
         return this.includeOffDuty 
-            ? this.userStore.usersInOrg
-            : this.userStore.usersInOrg.filter((user) => {
-                return user.organizations[this.userStore.currentOrgId]?.onDuty
+            ? userStore().usersInOrg
+            : userStore().usersInOrg.filter((user) => {
+                return user.organizations[userStore().currentOrgId]?.onDuty
             });
     }
 
     get selectedResponders() {
-        return Array.from(this.selectedResponderIds.values()).map(id => this.userStore.users.get(id));
+        return Array.from(this.selectedResponderIds.values()).map(id => userStore().users.get(id));
     }
 
     async toggleSelectAll() {
@@ -71,7 +66,7 @@ export default class DispatchStore implements IDispatchStore {
     
     async broadcastRequest(requestId: string, to: string[]) {
         try {
-            await this.api.broadcastRequest(this.orgContext(), requestId, to);
+            await api().broadcastRequest(this.orgContext(), requestId, to);
         } catch (e) {
             console.error(e);
         }
@@ -79,10 +74,10 @@ export default class DispatchStore implements IDispatchStore {
 
     async assignRequest(requestId: string, responderIds: string[]) {
         try {
-            const updatedReq = await this.api.assignRequest(this.orgContext(), requestId, responderIds)
+            const updatedReq = await api().assignRequest(this.orgContext(), requestId, responderIds)
 
             runInAction(() => {
-                this.requestStore.updateReq(updatedReq)
+                requestStore().updateReq(updatedReq)
                 // this.clear()
             })
         } catch (e) {

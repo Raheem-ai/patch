@@ -4,8 +4,7 @@ import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyl
 import { Button, IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../common/models";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
-import { getStore } from "../stores/meta";
-import { IRequestStore, IUserStore } from "../stores/interfaces";
+import { IRequestStore, IUserStore, requestStore, userStore } from "../stores/interfaces";
 import { navigateTo } from "../navigation";
 import { routerNames } from "../types";
 import UserIcon from "./userIcon";
@@ -29,8 +28,6 @@ const HelpRequestCard = observer(({
     minimal,
     onPress
 } : Props) => {
-    const userStore = getStore<IUserStore>(IUserStore);
-    const requestStore = getStore<IRequestStore>(IRequestStore);
     const [statusOpen, setStatusOpen] = useState(false);
 
     const openStatusSelector = (event: GestureResponderEvent) => {
@@ -48,7 +45,7 @@ const HelpRequestCard = observer(({
         } else if (onPress) {
             onPress(event, request);
         } else {
-            requestStore.setCurrentRequest(request)
+            requestStore().setCurrentRequest(request)
             navigateTo(routerNames.helpRequestDetails)
         }
     }
@@ -101,7 +98,7 @@ const HelpRequestCard = observer(({
         }
 
         for (let i = 0; i < request.assignedResponderIds.length; i++) {
-            const responder = userStore.users.get(request.assignedResponderIds[i]); 
+            const responder = userStore().users.get(request.assignedResponderIds[i]); 
             assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
         }
 
@@ -112,13 +109,13 @@ const HelpRequestCard = observer(({
             : potentialLabel(request);
 
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
-            && (!request.chat.userReceipts[userStore.user.id] 
-                || (request.chat.userReceipts[userStore.user.id] < request.chat.lastMessageId));
+            && (!request.chat.userReceipts[userStore().user.id] 
+                || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         const goToChat = (event: GestureResponderEvent) => {
             event.stopPropagation();
 
-            requestStore.setCurrentRequest(request);
+            requestStore().setCurrentRequest(request);
             navigateTo(routerNames.helpRequestChat)
         }
 
@@ -153,7 +150,7 @@ const HelpRequestCard = observer(({
                 </View>
                 {
                     statusOpen
-                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} request={request} onStatusUpdated={closeStatusSelector} requestStore={requestStore}/>
+                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} request={request} onStatusUpdated={closeStatusSelector} requestStore={requestStore()}/>
                         : <View style={styles.statusContainer}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {

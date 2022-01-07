@@ -8,8 +8,7 @@ import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/helpRequestCard";
 import { ActiveRequestTabHeight } from "../constants";
 import { navigateTo } from "../navigation";
-import { BottomDrawerHandleHeight, IBottomDrawerStore, ILocationStore, IRequestStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
 import { ScreenProps, routerNames } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
@@ -17,10 +16,6 @@ type Props = ScreenProps<'HelpRequestMap'>;
 const windowDimensions = Dimensions.get("screen");
 
 export const HelpRequestMap = observer(({ navigation, route }: Props) => {
-    const locationStore = getStore<ILocationStore>(ILocationStore);
-    const requestStore = getStore<IRequestStore>(IRequestStore);
-    const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-
     const [startTouchX, setStartTouchX] = useState(null);
     const [deltaTouchX, setDeltaTouchX] = useState(0);
     const [idx, setIdx] = useState(1);
@@ -30,15 +25,15 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     
     useEffect(() => {
-        locationStore.askForPermission().then(() => locationStore.getCurrentLocation())
+        locationStore().askForPermission().then(() => locationStore().getCurrentLocation())
     }, [])
 
     useEffect(() => {
-        if (!requestStore.requests.length) {
+        if (!requestStore().requests.length) {
             return
         }
 
-        const req = requestStore.requests[idx - 1];
+        const req = requestStore().requests[idx - 1];
 
         setTimeout(() => {
             mapInstance.current.animateCamera({ center: {
@@ -49,10 +44,10 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     }, [idx])
 
-    const initialRegion = locationStore.lastKnownLocation
+    const initialRegion = locationStore().lastKnownLocation
             ? {
-                latitude: locationStore.lastKnownLocation.coords.latitude,
-                longitude: locationStore.lastKnownLocation.coords.longitude,
+                latitude: locationStore().lastKnownLocation.coords.latitude,
+                longitude: locationStore().lastKnownLocation.coords.longitude,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             } : undefined
@@ -69,7 +64,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         const delta = event.nativeEvent.pageX - startTouchX;
 
         if (Math.abs(delta) < 20) {
-            requestStore.setCurrentRequest(request)
+            requestStore().setCurrentRequest(request)
             navigateTo(routerNames.helpRequestDetails)
         }
     }
@@ -79,7 +74,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
         if (Math.abs(delta) >= ((1/3) * windowDimensions.width)) {
             if (delta < 0) {
-                if (idx == requestStore.requests.length) {
+                if (idx == requestStore().requests.length) {
                     setDeltaTouchX(0);
                     return
                 }
@@ -108,14 +103,14 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         left: visualDeltaX + deltaTouchX 
     }
 
-    const bottomUIOffset = bottomDrawerStore.showing
+    const bottomUIOffset = bottomDrawerStore().showing
         ? BottomDrawerHandleHeight 
         : 0; 
 
     const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 
     const goToActiveRequest = () => {
-        const activeIdx = requestStore.requests.findIndex(r => r.id == requestStore.activeRequest?.id);
+        const activeIdx = requestStore().requests.findIndex(r => r.id == requestStore().activeRequest?.id);
 
         if (activeIdx != -1) {
             console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
@@ -133,15 +128,15 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                 showsUserLocation={true}
                 initialRegion={initialRegion}
                 style={{ height: height }}>
-                    { requestStore.requests.length 
+                    { requestStore().requests.length 
                             ? <Marker
                                 coordinate={{ 
-                                    latitude: requestStore.requests[idx - 1].location.latitude, 
-                                    longitude: requestStore.requests[idx - 1].location.longitude }} />
+                                    latitude: requestStore().requests[idx - 1].location.latitude, 
+                                    longitude: requestStore().requests[idx - 1].location.longitude }} />
                             : null }
             </MapView>
             <View style={[styles.bottomOverlay, bottomUIOffset ? { bottom: styles.bottomOverlay.bottom + bottomUIOffset } : null ]}>
-                { !!requestStore?.activeRequest?.id && requestStore.activeRequest.id != requestStore.requests?.[idx - 1]?.id
+                { !!requestStore()?.activeRequest?.id && requestStore().activeRequest.id != requestStore().requests?.[idx - 1]?.id
                     ? <View style={styles.returnIconContainer} onTouchStart={goToActiveRequest}>
                         <IconButton
                             style={styles.returnIcon}
@@ -157,14 +152,14 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}>
                     {
-                        requestStore.requests.map(r => {
+                        requestStore().requests.map(r => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
                                     <HelpRequestCard 
                                         onPress={onCardPressed}
                                         request={r} 
                                         style={styles.card} 
-                                        dark={requestStore.activeRequest?.id == r.id}/>
+                                        dark={requestStore().activeRequest?.id == r.id}/>
                                 </View>
                             )
                         })

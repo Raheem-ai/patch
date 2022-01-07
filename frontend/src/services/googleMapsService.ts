@@ -1,19 +1,14 @@
 import { makeAutoObservable } from 'mobx';
 import { IMapsService } from './interfaces';
 import { Service } from './meta';
-import {Client, GeocodeResult, PlaceAutocompleteRequest, PlaceAutocompleteResult} from "@googlemaps/google-maps-services-js";
-import { ILocationStore, ISecretStore } from '../stores/interfaces';
-import { getStore } from '../stores/meta';
-
+import { Client, GeocodeResult, PlaceAutocompleteRequest, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
+import { locationStore, secretStore } from '../stores/interfaces';
 
 const MetersPerMile = 1609.34;
 
 @Service(IMapsService)
 export class GoogleMapsService implements IMapsService {
     private client: Client = new Client({});
-
-    private locationStore = getStore<ILocationStore>(ILocationStore);
-    private secretStore = getStore<ISecretStore>(ISecretStore);
 
     private maxSearchRadius = MetersPerMile * 100; // 100 mile search radius
 
@@ -22,7 +17,7 @@ export class GoogleMapsService implements IMapsService {
     }
 
     async init() {
-        await this.secretStore.init();
+        await secretStore().init();
     }
 
     clear() {
@@ -35,7 +30,7 @@ export class GoogleMapsService implements IMapsService {
 
             const response = await this.client.placeDetails({
                 params: {
-                    key: this.secretStore.googleMapsApiKey || '',
+                    key: secretStore().googleMapsApiKey || '',
                     place_id: placeId,
                     fields: ['geometry']
                 }
@@ -61,12 +56,12 @@ export class GoogleMapsService implements IMapsService {
         const params: PlaceAutocompleteRequest = {
             params: {
                 input,
-                key: this.secretStore.googleMapsApiKey || ''
+                key: secretStore().googleMapsApiKey || ''
             }
         };
 
-        if (this.locationStore.lastKnownLocation) {
-            const loc = this.locationStore.lastKnownLocation;
+        if (locationStore().lastKnownLocation) {
+            const loc = locationStore().lastKnownLocation;
 
             params.params.location = {
                 lat: loc.coords.latitude,
@@ -86,7 +81,7 @@ export class GoogleMapsService implements IMapsService {
     async latLongToPlace(lat: number, long: number): Promise<GeocodeResult> {
         const result = await this.client.reverseGeocode({
             params: {
-                key: this.secretStore.googleMapsApiKey || '',
+                key: secretStore().googleMapsApiKey || '',
                 latlng: {
                     lat: lat,
                     lng: long

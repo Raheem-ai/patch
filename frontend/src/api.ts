@@ -4,8 +4,7 @@ import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from 
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
 import { securelyPersistent } from './meta';
-import { getStore } from './stores/meta';
-import { IUserStore } from './stores/interfaces';
+import { IUserStore, userStore } from './stores/interfaces';
 import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
@@ -17,13 +16,11 @@ import { AtLeast } from '../../common';
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
 let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-// let apiHost = 'http://786e-24-44-148-246.ngrok.io'
+// export let apiHost = 'http://98d6-24-44-148-246.ngrok.io'
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
     
-    private userStore: IUserStore;
-
     // TODO: move accessToken here?
 
     @securelyPersistent()
@@ -31,10 +28,6 @@ export class APIClient implements IAPIService {
 
     constructor() {
         makeAutoObservable(this)
-    }
-
-    async init() {
-        this.userStore = getStore<IUserStore>(IUserStore);
     }
 
     clear() {
@@ -58,7 +51,7 @@ export class APIClient implements IAPIService {
                 // in case refreshToken gets corrupted (should just show up in testing)
                 if (isAuthError) {
                     navigateTo(routerNames.signIn)
-                    this.userStore.clear()
+                    userStore().clear()
                 }
 
                 throw error;
@@ -76,7 +69,7 @@ export class APIClient implements IAPIService {
                 
                 navigateTo(routerNames.signIn)
 
-                this.userStore.clear()
+                userStore().clear()
 
                 throw 'User no longer signed in'
             }
@@ -93,7 +86,7 @@ export class APIClient implements IAPIService {
 
             runInAction(() => {
                 // update accessToken for later calls
-                this.userStore.authToken = accessToken
+                userStore().authToken = accessToken
             })
 
             return await axios.post<T>(url, body, updatedConfig);
@@ -117,7 +110,7 @@ export class APIClient implements IAPIService {
                 // in case refreshToken gets corrupted (should just show up in testing)
                 if (isAuthError) {
                     navigateTo(routerNames.signIn)
-                    this.userStore.clear()
+                    userStore().clear()
                 }
 
                 throw error;
@@ -135,7 +128,7 @@ export class APIClient implements IAPIService {
                 
                 navigateTo(routerNames.signIn)
 
-                this.userStore.clear()
+                userStore().clear()
 
                 throw 'User no longer signed in'
             }
@@ -152,7 +145,7 @@ export class APIClient implements IAPIService {
 
             runInAction(() => {
                 // update accessToken for later calls
-                this.userStore.authToken = accessToken
+                userStore().authToken = accessToken
             })
 
             return await axios.get<T>(url, updatedConfig);

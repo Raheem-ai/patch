@@ -7,8 +7,7 @@ import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
-import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore } from "../../../stores/interfaces";
-import { getStore } from "../../../stores/meta";
+import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
 import { FormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -16,46 +15,33 @@ import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
 @observer
 export default class EditUser extends React.Component {
-    userStore = getStore<IUserStore>(IUserStore);
-    linkingStore = getStore<ILinkingStore>(ILinkingStore);
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-    editUserStore = getStore<IEditUserStore>(IEditUserStore);
-
     static submit = {
         isValid: () => {
-            const editUserStore = getStore<IEditUserStore>(IEditUserStore);
-            const userStore = getStore<IUserStore>(IUserStore);
-
-            const onMyProfile = editUserStore.id == userStore.user.id;
+            const onMyProfile = editUserStore().id == userStore().user.id;
 
             return onMyProfile
-                ? editUserStore.myChangesValid
-                : editUserStore.userChangesValid
+                ? editUserStore().myChangesValid
+                : editUserStore().userChangesValid
         },
         action: async () => {
-            const editUserStore = getStore<IEditUserStore>(IEditUserStore);
-            const userStore = getStore<IUserStore>(IUserStore);
-            const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-            const alertStore = getStore<IAlertStore>(IAlertStore);
-
-            const onMyProfile = editUserStore.id == userStore.user.id;
+            const onMyProfile = editUserStore().id == userStore().user.id;
 
             try {
                 await (onMyProfile
-                    ? editUserStore.editMe()
-                    : editUserStore.editUser());
+                    ? editUserStore().editMe()
+                    : editUserStore().editUser());
             } catch (e) {
-                alertStore.toastError(resolveErrorMessage(e))
+                alertStore().toastError(resolveErrorMessage(e))
                 return   
             }
 
             const successMsg = onMyProfile
                 ? 'Successfully updated your profile.'
-                : `Successfully updated ${editUserStore.name}'s profile.`
+                : `Successfully updated ${editUserStore().name}'s profile.`
 
-            alertStore.toastSuccess(successMsg)
+            alertStore().toastSuccess(successMsg)
 
-            bottomDrawerStore.hide();
+            bottomDrawerStore().hide();
         },
         label: () => {
             return `Save`
@@ -63,22 +49,21 @@ export default class EditUser extends React.Component {
     }
 
     static onHide = () => {
-        const editUserStore = getStore<IEditUserStore>(IEditUserStore);
-        editUserStore.clear();
+        editUserStore().clear();
     }
 
     formProps = (): FormProps => {
-        const editingMe = this.editUserStore.id == this.userStore.user.id;
+        const editingMe = editUserStore().id == userStore().user.id;
 
         return {
             headerLabel: editingMe
                 ? 'Edit my profile'
-                : `Edit ${this.editUserStore.name}'s profile'`, 
+                : `Edit ${editUserStore().name}'s profile'`, 
             onExpand: () => {
-                this.bottomDrawerStore.hideHeader();
+                bottomDrawerStore().hideHeader();
             },
             onBack: () => {
-                this.bottomDrawerStore.showHeader();
+                bottomDrawerStore().showHeader();
             },
             inputs: editingMe
                 ? this.editMeInputs()
@@ -95,54 +80,54 @@ export default class EditUser extends React.Component {
     ] {
         return [
             {
-                onChange: (name) => this.editUserStore.name = name,
+                onChange: (name) => editUserStore().name = name,
                 val: () => {
-                    return this.editUserStore.name
+                    return editUserStore().name
                 },
                 isValid: () => {
-                    return this.editUserStore.nameValid
+                    return editUserStore().nameValid
                 },
                 name: 'name',
-                previewLabel: () => this.editUserStore.name,
+                previewLabel: () => editUserStore().name,
                 headerLabel: () => 'Name',
                 type: 'TextInput',
                 disabled: true
             },
             {
-                onChange: (email) => this.editUserStore.email = email,
+                onChange: (email) => editUserStore().email = email,
                 val: () => {
-                    return this.editUserStore.email
+                    return editUserStore().email
                 },
                 isValid: () => {
-                    return this.editUserStore.emailValid
+                    return editUserStore().emailValid
                 },
                 name: 'email',
-                previewLabel: () => this.editUserStore.email,
+                previewLabel: () => editUserStore().email,
                 headerLabel: () => 'Email',
                 type: 'TextInput',
                 disabled: true
             },
             {
-                onChange: (phone) => this.editUserStore.phone = phone,
+                onChange: (phone) => editUserStore().phone = phone,
                 val: () => {
-                    return this.editUserStore.phone
+                    return editUserStore().phone
                 },
                 isValid: () => {
-                    return this.editUserStore.phoneValid
+                    return editUserStore().phoneValid
                 },
                 name: 'phone',
-                previewLabel: () => this.editUserStore.phone,
+                previewLabel: () => editUserStore().phone,
                 headerLabel: () => 'Phone',
                 type: 'TextInput',
                 disabled: true
             },
             {
-                onSave: (roles) => this.editUserStore.roles = roles,
+                onSave: (roles) => editUserStore().roles = roles,
                 val: () => {
-                    return this.editUserStore.roles
+                    return editUserStore().roles
                 },
                 isValid: () => {
-                    return this.editUserStore.rolesValid
+                    return editUserStore().rolesValid
                 },
                 name: 'roles',
                 previewLabel: () => null,
@@ -156,17 +141,17 @@ export default class EditUser extends React.Component {
                     optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                     multiSelect: true,
                     onTagDeleted: (idx: number, val: any) => {
-                        this.editUserStore.roles.splice(idx, 1)
+                        editUserStore().roles.splice(idx, 1)
                     },
                 },
             },
             {
-                onSave: (skills) => this.editUserStore.skills = skills,
+                onSave: (skills) => editUserStore().skills = skills,
                 val: () => {
-                    return this.editUserStore.skills
+                    return editUserStore().skills
                 },
                 isValid: () => {
-                    return this.editUserStore.skillsValid
+                    return editUserStore().skillsValid
                 },
                 name: 'skills',
                 previewLabel: () => null,
@@ -177,7 +162,7 @@ export default class EditUser extends React.Component {
                     optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
                     multiSelect: true,
                     onTagDeleted: (idx: number, val: any) => {
-                        this.editUserStore.skills.splice(idx, 1)
+                        editUserStore().skills.splice(idx, 1)
                     },
                     dark: true
                 },
@@ -196,54 +181,54 @@ export default class EditUser extends React.Component {
     ] {
         return [
             {
-                onChange: (name) => this.editUserStore.name = name,
+                onChange: (name) => editUserStore().name = name,
                 val: () => {
-                    return this.editUserStore.name
+                    return editUserStore().name
                 },
                 isValid: () => {
-                    return this.editUserStore.nameValid
+                    return editUserStore().nameValid
                 },
                 name: 'name',
-                previewLabel: () => this.editUserStore.name,
+                previewLabel: () => editUserStore().name,
                 headerLabel: () => 'Name',
                 type: 'TextInput',
             },
             {
-                onChange: (email) => this.editUserStore.email = email,
+                onChange: (email) => editUserStore().email = email,
                 val: () => {
-                    return this.editUserStore.email
+                    return editUserStore().email
                 },
                 isValid: () => {
-                    return this.editUserStore.emailValid
+                    return editUserStore().emailValid
                 },
                 name: 'email',
-                previewLabel: () => this.editUserStore.email,
+                previewLabel: () => editUserStore().email,
                 headerLabel: () => 'Email',
                 type: 'TextInput',
                 // TODO: remove when we have logic for changing email
                 disabled: true
             },
             {
-                onChange: (phone) => this.editUserStore.phone = phone,
+                onChange: (phone) => editUserStore().phone = phone,
                 val: () => {
-                    return this.editUserStore.phone
+                    return editUserStore().phone
                 },
                 isValid: () => {
-                    return this.editUserStore.phoneValid
+                    return editUserStore().phoneValid
                 },
                 name: 'phone',
-                previewLabel: () => this.editUserStore.phone,
+                previewLabel: () => editUserStore().phone,
                 headerLabel: () => 'Phone',
                 type: 'TextInput',
                 required: true
             },
             {
-                onSave: (roles) => this.editUserStore.roles = roles,
+                onSave: (roles) => editUserStore().roles = roles,
                 val: () => {
-                    return this.editUserStore.roles
+                    return editUserStore().roles
                 },
                 isValid: () => {
-                    return this.editUserStore.rolesValid
+                    return editUserStore().rolesValid
                 },
                 name: 'roles',
                 previewLabel: () => null,
@@ -257,17 +242,17 @@ export default class EditUser extends React.Component {
                     optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                     multiSelect: true,
                     onTagDeleted: (idx: number, val: any) => {
-                        this.editUserStore.roles.splice(idx, 1)
+                        editUserStore().roles.splice(idx, 1)
                     },
                 },
             },
             {
-                onSave: (skills) => this.editUserStore.skills = skills,
+                onSave: (skills) => editUserStore().skills = skills,
                 val: () => {
-                    return this.editUserStore.skills
+                    return editUserStore().skills
                 },
                 isValid: () => {
-                    return this.editUserStore.skillsValid
+                    return editUserStore().skillsValid
                 },
                 name: 'skills',
                 previewLabel: () => null,
@@ -279,34 +264,34 @@ export default class EditUser extends React.Component {
                     optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
                     multiSelect: true,
                     onTagDeleted: (idx: number, val: any) => {
-                        this.editUserStore.skills.splice(idx, 1)
+                        editUserStore().skills.splice(idx, 1)
                     },
                     dark: true
                 },
             },
             {
-                onChange: (pronouns) => this.editUserStore.pronouns = pronouns,
+                onChange: (pronouns) => editUserStore().pronouns = pronouns,
                 val: () => {
-                    return this.editUserStore.pronouns
+                    return editUserStore().pronouns
                 },
                 isValid: () => {
-                    return this.editUserStore.pronounsValid
+                    return editUserStore().pronounsValid
                 },
                 name: 'pronouns',
-                previewLabel: () => this.editUserStore.pronouns,
+                previewLabel: () => editUserStore().pronouns,
                 headerLabel: () => 'Pronouns',
                 type: 'TextInput',
             },
             {
-                onSave: (bio) => this.editUserStore.bio = bio,
+                onSave: (bio) => editUserStore().bio = bio,
                 val: () => {
-                    return this.editUserStore.bio
+                    return editUserStore().bio
                 },
                 isValid: () => {
-                    return this.editUserStore.bioValid
+                    return editUserStore().bioValid
                 },
                 name: 'bio',
-                previewLabel: () => this.editUserStore.bio,
+                previewLabel: () => editUserStore().bio,
                 headerLabel: () => 'Bio',
                 type: 'TextArea',
             },

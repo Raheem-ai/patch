@@ -4,7 +4,6 @@ import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import { labelNames, RootStackParamList, routerNames, ScreenProps, styleVals } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { getStore } from '../stores/meta';
 import { IUserStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 
@@ -17,7 +16,7 @@ export default function SignUpForm({ navigation }: Props) {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
 
-    const userStore = getStore<IUserStore>(IUserStore);
+    // const userStore = getStore<IUserStore>(IUserStore);
 
     // const signup = async () => {
     //     await userStore.signUp(email, password);

@@ -1,15 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Text, View } from "react-native";
-import { Button, Menu, Provider } from "react-native-paper";
-import { getStore } from "../../stores/meta";
-import { IDispatchStore, ILocationStore, INotificationStore, IUserStore } from "../../stores/interfaces";
+import { Button } from "react-native-paper";
+import { userStore } from "../../stores/interfaces";
 import { Colors, routerNames, ScreenProps } from "../../types";
-import * as Location from 'expo-location';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NotificationType } from "../../../../common/models";
 import { navigateTo } from "../../navigation";
 import {parseFullName} from 'parse-full-name';
-
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -19,11 +14,6 @@ export default function UserHomePage({ navigation, route }: Props) {
     const openMenu = () => setVisible(true);
 
     const closeMenu = () => setVisible(false);
-
-    const userStore = getStore<IUserStore>(IUserStore);
-    const locationStore = getStore<ILocationStore>(ILocationStore);
-    const notificationStore = getStore<INotificationStore>(INotificationStore);
-    const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
 
     // useEffect(() => {
     //     (async () => {
@@ -66,7 +56,7 @@ export default function UserHomePage({ navigation, route }: Props) {
 
 
     // const signout = async () => {
-    //     await userStore.signOut();
+    //     await userStoreInst().signOut();
 
     //     navigation.reset({
     //         index: 0,
@@ -88,10 +78,10 @@ export default function UserHomePage({ navigation, route }: Props) {
     // }
 
     // const assignHelpRequest = async () => {
-    //     await dispatchStore.assignRequest('fake', [ userStore.user.id ]);
+    //     await dispatchStore.assignRequest('fake', [ userStoreInst().user.id ]);
     // }
 
-    const userName = parseFullName(userStore.user.name);
+    const userName = parseFullName(userStore().user.name);
 
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
@@ -176,7 +166,7 @@ export default function UserHomePage({ navigation, route }: Props) {
                 <Button 
                     uppercase={false}
                     onPress={() => {
-                        userStore.pushCurrentUser(userStore.user);
+                        userStore().pushCurrentUser(userStore().user);
                         navigateTo(routerNames.userDetails);
                     }}
                     color={'#fff'}

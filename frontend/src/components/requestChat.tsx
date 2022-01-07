@@ -6,8 +6,7 @@ import { HelpRequest } from "../../../common/models";
 import { HeaderHeight, InteractiveHeaderHeight } from "../components/header/header";
 import UserIcon from "../components/userIcon";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { BottomDrawerComponentClass, BottomDrawerHandleHeight, INativeEventStore, IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { BottomDrawerComponentClass, BottomDrawerHandleHeight, INativeEventStore, IRequestStore, IUserStore, nativeEventStore, requestStore, userStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 
 import { observer } from 'mobx-react'
@@ -23,10 +22,6 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
         Keyboard.dismiss()
     }
 
-    userStore = getStore<IUserStore>(IUserStore);
-    requestStore = getStore<IRequestStore>(IRequestStore);
-    nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
-
     scrollRef = React.createRef<ScrollView>();
 
     state = {
@@ -39,11 +34,11 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
             setTimeout(() => this.scrollRef?.current?.scrollToEnd({ animated: true }))
         });
 
-        await this.requestStore.updateChatReceipt(this.requestStore.currentRequest);
+        await requestStore().updateChatReceipt(requestStore().currentRequest);
     }
 
     get chat() {
-        return this.requestStore.currentRequest.chat;
+        return requestStore().currentRequest.chat;
     }
 
     messages = () => {
@@ -55,8 +50,8 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
             <ScrollView ref={this.scrollRef}>
                 {
                     this.chat.messages.map((message) => {
-                        const user = this.userStore.users.get(message.userId); 
-                        const isMe = message.userId == this.userStore.user.id;
+                        const user = userStore().users.get(message.userId); 
+                        const isMe = message.userId == userStore().user.id;
                         const bubbleWidth = dimensions.width - (styles.userIcon.marginHorizontal * 3) - styles.userIcon.width;
 
                         return (
@@ -77,7 +72,7 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
         this.setState({ loading: true })
         
         try {
-            await this.requestStore.sendMessage(this.requestStore.currentRequest, this.state.message)
+            await requestStore().sendMessage(requestStore().currentRequest, this.state.message)
             // this.loading = false
             // this.message = ''
             this.setState({
@@ -99,7 +94,7 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
     }
 
     render() {
-        const targetHeight = dimensions.height - styles.inputContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - this.nativeEventStore.keyboardHeight;
+        const targetHeight = dimensions.height - styles.inputContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - nativeEventStore().keyboardHeight;
 
         return (
             <KeyboardAvoidingView

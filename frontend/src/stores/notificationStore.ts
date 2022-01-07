@@ -1,29 +1,25 @@
 import { makeAutoObservable, runInAction, when } from "mobx";
-import { getStore, Store } from "./meta";
+import { Store } from "./meta";
 import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
-import { INotificationStore, IUserStore } from "./interfaces";
+import { INotificationStore, IUserStore, userStore } from "./interfaces";
 import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
 import * as uuid from 'uuid';
 import * as Device from 'expo-device';
-import { getService } from "../services/meta";
-import { IAPIService } from "../services/interfaces";
 import Constants from "expo-constants";
 import { securelyPersistent } from "../meta";
+import { api } from "../services/interfaces";
 // import Constants from 'expo-constants';
 
 @Store(INotificationStore)
 export default class NotificationStore implements INotificationStore {
     
     // TODO: set badge number on app 
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private api = getService<IAPIService>(IAPIService)
 
     private notificationCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  notification: Notification) => void) }>();
     private notificationResponseCallbacks = new Map<NotificationType, { [id: string]: ((data: NotificationPayload<any>,  res: NotificationResponse) => void) }>();
@@ -47,20 +43,20 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async init() {
-        await this.userStore.init();
+        await userStore().init();
 
-        if (this.userStore.signedIn) {
+        if (userStore().signedIn) {
             await this.handlePermissionsAfterSignin()
         } else {
-            when(() => this.userStore.signedIn, this.handlePermissionsAfterSignin)
+            when(() => userStore().signedIn, this.handlePermissionsAfterSignin)
         }
     }
 
     handlePermissionsAfterSignin = async () => {
         await this.handlePermissions();
 
-        when(() => !this.userStore.signedIn, () => {
-            when(() => this.userStore.signedIn, this.handlePermissionsAfterSignin)
+        when(() => !userStore().signedIn, () => {
+            when(() => userStore().signedIn, this.handlePermissionsAfterSignin)
         })
     }
 
@@ -160,14 +156,14 @@ export default class NotificationStore implements INotificationStore {
 
     async updatePushToken() {
         const currentPushToken = (await Notifications.getExpoPushTokenAsync()).data;
-        const token = this.userStore.authToken;
+        const token = userStore().authToken;
 
-        if (this.expoPushToken != currentPushToken || this.expoPushTokenUserId != this.userStore.user.id) {
-            await this.api.reportPushToken({ token }, currentPushToken);
+        if (this.expoPushToken != currentPushToken || this.expoPushTokenUserId != userStore().user.id) {
+            await api().reportPushToken({ token }, currentPushToken);
             
             runInAction(() => {
                 this.expoPushToken = currentPushToken
-                this.expoPushTokenUserId = this.userStore.user.id
+                this.expoPushTokenUserId = userStore().user.id
             });
         }
     }
@@ -291,17 +287,14 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
         if (Device.brand == "Apple") {
             const notification = data['UIApplicationLaunchOptionsRemoteNotificationKey'].body as NotificationPayload<any> & { type : NotificationType };
 
-            const userStore = getStore<IUserStore>(IUserStore);
-            const api = getService<IAPIService>(IAPIService)
+            await userStore().init()
 
-            await userStore.init()
-
-            const token = userStore.authToken;
+            const token = userStore().authToken;
             
             switch (notification.type) {
                 case NotificationType.AssignedIncident:
                     const orgId = (notification as NotificationPayload<NotificationType.AssignedIncident>).orgId
-                    await api.declineRequestAssignment({ token, orgId }, notification)
+                    await api().declineRequestAssignment({ token, orgId }, notification)
                     break;
             
                 default:

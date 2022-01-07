@@ -1,6 +1,5 @@
 import React from "react";
-import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../errors";
 import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
@@ -17,41 +16,31 @@ type Props = {}
 class CreateHelpRequest extends React.Component<Props> {
 
     static onHide = () => {
-        const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-        createStore.clear();
+        createRequestStore().clear();
     }
 
     static submit = {
         isValid: () => {
-            const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-            return !!createStore.location && !!createStore.type.length && createStore.respondersNeeded != null
+            return !!createRequestStore().location && !!createRequestStore().type.length && createRequestStore().respondersNeeded != null
         },
         action: async () => {
-            const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-            const createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-            const alertStore = getStore<IAlertStore>(IAlertStore);
-            
             let createdReq: HelpRequest;
 
             try {
-                createdReq = await createStore.createRequest()
+                createdReq = await createRequestStore().createRequest()
             } catch(e) {
-                alertStore.toastError(resolveErrorMessage(e))
+                alertStore().toastError(resolveErrorMessage(e))
                 return
             }
 
-            alertStore.toastSuccess(`Successfully created request ${createdReq.displayId}`)
+            alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
 
-            bottomDrawerStore.hide()
+            bottomDrawerStore().hide()
         },
         label: 'Add'
     }
 
     static minimizeLabel = 'Create Request';
-
-    createStore = getStore<ICreateRequestStore>(ICreateRequestStore);
-    requestStore = getStore<IRequestStore>(IRequestStore);
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
 
     headerLabel = () => {
         return 'Create Request'
@@ -61,33 +50,33 @@ class CreateHelpRequest extends React.Component<Props> {
         return {
             headerLabel: this.headerLabel(), 
             onExpand: () => {
-                this.bottomDrawerStore.hideHeader();
+                bottomDrawerStore().hideHeader();
             },
             onBack: () => {
-                this.bottomDrawerStore.showHeader();
+                bottomDrawerStore().showHeader();
             },
             inputs: [
                 {
-                    onSave: (location) => this.createStore.location = location,
+                    onSave: (location) => createRequestStore().location = location,
                     val: () => {
-                        return this.createStore.location
+                        return createRequestStore().location
                     },
                     isValid: () => {
-                        return this.createStore.locationValid
+                        return createRequestStore().locationValid
                     },
                     name: 'location',
-                    previewLabel: () => this.createStore.location?.address,
+                    previewLabel: () => createRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
                 {
-                    onSave: (type) => this.createStore.type = type,
+                    onSave: (type) => createRequestStore().type = type,
                     val: () => {
-                        return this.createStore.type
+                        return createRequestStore().type
                     },
                     isValid: () => {
-                        return this.createStore.typeValid
+                        return createRequestStore().typeValid
                     },
                     name: 'type',
                     previewLabel: () => null,
@@ -99,28 +88,28 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.createStore.type.splice(idx, 1)
+                            createRequestStore().type.splice(idx, 1)
                         },
                         dark: true
                     }
                 },
                 {
-                    onSave: (notes) => this.createStore.notes = notes,
+                    onSave: (notes) => createRequestStore().notes = notes,
                     val: () => {
-                        return this.createStore.notes
+                        return createRequestStore().notes
                     },
                     isValid: () => {
-                        return !!this.createStore.notes
+                        return !!createRequestStore().notes
                     },
                     name: 'notes',
-                    previewLabel: () => this.createStore.notes,
+                    previewLabel: () => createRequestStore().notes,
                     headerLabel: () => 'Notes',
                     type: 'TextArea',
                 },
                 {
-                    onSave: (skills) => this.createStore.skills = skills,
+                    onSave: (skills) => createRequestStore().skills = skills,
                     val: () => {
-                        return this.createStore.skills
+                        return createRequestStore().skills
                     },
                     isValid: () => {
                         return true
@@ -137,20 +126,20 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.createStore.skills.splice(idx, 1)
+                            createRequestStore().skills.splice(idx, 1)
                         },
                     },
                 },
                 {
-                    onSave: (responders) => this.createStore.respondersNeeded = responders.length ? responders[0] : -1,
+                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
                     val: () => {
-                        return [this.createStore.respondersNeeded]
+                        return [createRequestStore().respondersNeeded]
                     },
                     isValid: () => {
-                        return typeof this.createStore.respondersNeeded == 'number' && this.createStore.respondersNeeded > -1
+                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
                     },
                     name: 'responders',
-                    previewLabel: () => this.createStore.respondersNeeded >= 0 ? `${this.createStore.respondersNeeded}` : null,
+                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
                     headerLabel: () => 'Responders needed',
                     type: 'List',
                     props: {

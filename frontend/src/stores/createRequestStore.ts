@@ -1,19 +1,13 @@
 import { makeAutoObservable } from 'mobx';
-import { getStore, Store } from './meta';
-import { ICreateRequestStore, IRequestStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { ICreateRequestStore, requestStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
 import { AddressableLocation, MinHelpRequest, RequestSkill, RequestType } from '../../../common/models';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
+import { api } from '../services/interfaces';
 
 
 @Store(ICreateRequestStore)
 export default class CreateRequestStore implements ICreateRequestStore  {
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private requestStore = getStore<IRequestStore>(IRequestStore);
-    private api = getService<IAPIService>(IAPIService)
-    
     location: AddressableLocation = null
     type: RequestType[] = []
     notes: string = ''
@@ -26,8 +20,8 @@ export default class CreateRequestStore implements ICreateRequestStore  {
 
     orgContext(): OrgContext {
         return {
-            token: this.userStore.authToken,
-            orgId: this.userStore.currentOrgId
+            token: userStore().authToken,
+            orgId: userStore().currentOrgId
         }
     }
 
@@ -48,10 +42,10 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             respondersNeeded: this.respondersNeeded 
         }
 
-        const createdReq = await this.api.createNewRequest(this.orgContext(), req);
+        const createdReq = await api().createNewRequest(this.orgContext(), req);
 
         try {
-            await this.requestStore.getRequests()
+            await requestStore().getRequests()
         } catch (e) {
             console.error(e);
         }

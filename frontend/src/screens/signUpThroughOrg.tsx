@@ -7,8 +7,7 @@ import Form, { FormProps } from "../components/forms/form";
 import { FormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
-import { IAlertStore, IBottomDrawerStore, ILinkingStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { alertStore, IAlertStore, ILinkingStore, IUserStore, linkingStore, userStore } from "../stores/interfaces";
 import { routerNames, ScreenProps } from "../types";
 
 type Props = ScreenProps<'SignUpThroughOrg'>;
@@ -16,15 +15,13 @@ type Props = ScreenProps<'SignUpThroughOrg'>;
 const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     const [pendingUser, setPendingUser] = useState<LinkParams[LinkExperience.SignUpThroughOrganization]>(null);
-    // const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
     // const [textAreaVal, setTextAreaVal] = useState('')
     const [nameVal, setNameVal] = useState('')
     const [passwordVal, setPasswordVal] = useState('')
 
     useEffect(() => {
         (async () => {
-            const linkingStore = getStore<ILinkingStore>(ILinkingStore);
-            const params = route.params || linkingStore.initialRouteParams;
+            const params = route.params || linkingStore().initialRouteParams;
 
             setPendingUser(params)
         })();
@@ -79,21 +76,18 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
         ],
         submit: {
             handler: async () => {
-                const userStore = getStore<IUserStore>(IUserStore);
-                const alertStore = getStore<IAlertStore>(IAlertStore);
-
                 try {
-                    await userStore.signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                    await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
                         email: pendingUser.email,
                         password: passwordVal,
                         name: nameVal
                     })
                 } catch(e) {
-                    alertStore.toastError(resolveErrorMessage(e));
+                    alertStore().toastError(resolveErrorMessage(e));
                     return
                 }
 
-                alertStore.toastSuccess(`Welcome to PATCH!`)
+                alertStore().toastSuccess(`Welcome to PATCH!`)
 
                 navigateTo(routerNames.userHomePage)
 

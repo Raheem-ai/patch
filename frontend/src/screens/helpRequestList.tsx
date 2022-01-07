@@ -6,8 +6,7 @@ import { HelpRequestFilter, HelpRequestSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import HelpRequestCard from "../components/helpRequestCard";
 import ListHeader, { ListHeaderProps } from "../components/listHeader";
-import { IRequestStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { IRequestStore, requestStore } from "../stores/interfaces";
 import { ScreenProps, routerNames } from "../types";
 
 type Props = ScreenProps<'HelpRequestList'>;
@@ -26,15 +25,13 @@ const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
 }
 
 const HelpRequestList = observer(({ navigation, route }: Props) => {
-    const requestStore = getStore<IRequestStore>(IRequestStore);
-
     const allFilters = allEnumValues<HelpRequestFilter>(HelpRequestFilter);
     const allSortBys = allEnumValues<HelpRequestSortBy>(HelpRequestSortBy)
 
     const headerProps: ListHeaderProps<HelpRequestFilter, HelpRequestSortBy> = {
         openHeaderLabel: 'Requests to show',
-        chosenFilter: requestStore.filter,
-        chosenSortBy: requestStore.sortBy,
+        chosenFilter: requestStore().filter,
+        chosenSortBy: requestStore().sortBy,
     
         filters: allFilters,
         sortBys: allSortBys,
@@ -48,8 +45,8 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
         filterToOptionLabel: (filter: HelpRequestFilter) => HelpRequestFilterToLabelMap[filter],
         sortByToOptionLabel: (sortBy: HelpRequestSortBy) => HelpRequestSortByToLabelMap[sortBy],
     
-        onFilterUpdate: requestStore.setFilter,
-        onSortByUpdate: requestStore.setSortBy,
+        onFilterUpdate: requestStore().setFilter,
+        onSortByUpdate: requestStore().setSortBy,
 
         closedHeaderStyles: styles.closedFilterHeader
     }
@@ -60,7 +57,7 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
                 { ...headerProps } />
             <ScrollView style={{ flex: 1}}>
                 {
-                    requestStore.sortedRequests.map(r => {
+                    requestStore().sortedRequests.map(r => {
                         return (
                             <HelpRequestCard style={styles.card} key={r.id} request={r} />
                         )

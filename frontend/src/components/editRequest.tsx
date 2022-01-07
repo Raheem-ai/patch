@@ -1,6 +1,5 @@
 import React from "react";
-import { IEditRequestStore, IRequestStore, IBottomDrawerStore, BottomDrawerHandleHeight, IAlertStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../errors";
 import Form, { FormProps } from "./forms/form";
@@ -17,78 +16,67 @@ type Props = {}
 class EditHelpRequest extends React.Component<Props> {
 
     static onHide = () => {
-        const editStore = getStore<IEditRequestStore>(IEditRequestStore);
-        editStore.clear();
+        editRequestStore().clear();
     }
 
     static submit = {
         isValid: () => {
-            const editStore = getStore<IEditRequestStore>(IEditRequestStore);
-            return !!editStore.location && !!editStore.type.length && editStore.respondersNeeded >= 0
+            return !!editRequestStore().location && !!editRequestStore().type.length && editRequestStore().respondersNeeded >= 0
         },
         action: async () => {
-            const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-            const editStore = getStore<IEditRequestStore>(IEditRequestStore);
-            const requestStore = getStore<IRequestStore>(IRequestStore);
-            const alertStore = getStore<IAlertStore>(IAlertStore);
-
             try {
-                await editStore.editRequest(requestStore.currentRequest.id)
+                await editRequestStore().editRequest(requestStore().currentRequest.id)
             } catch (e) {
-                alertStore.toastError(resolveErrorMessage(e))
+                alertStore().toastError(resolveErrorMessage(e))
                 return
             }
 
-            alertStore.toastSuccess(`Successfully updated request ${requestStore.currentRequest.displayId}`)
+            alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
 
-            bottomDrawerStore.hide()
+            bottomDrawerStore().hide()
         },
         label: 'Save'
     }
 
-    editStore = getStore<IEditRequestStore>(IEditRequestStore);
-    requestStore = getStore<IRequestStore>(IRequestStore);
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-
     async componentDidMount() {
-        this.editStore.loadRequest(this.requestStore.currentRequest);
+        editRequestStore().loadRequest(requestStore().currentRequest);
     }
 
     headerLabel = () => {
-        return `Edit Request ${this.requestStore.currentRequest.displayId}`
+        return `Edit Request ${requestStore().currentRequest.displayId}`
     }
     
     formProps = (): FormProps => {
         return {
             headerLabel: this.headerLabel(), 
             onExpand: () => {
-                this.bottomDrawerStore.hideHeader();
+                bottomDrawerStore().hideHeader();
             },
             onBack: () => {
-                this.bottomDrawerStore.showHeader();
+                bottomDrawerStore().showHeader();
             },
             inputs: [
                 {
-                    onSave: (location) => this.editStore.location = location,
+                    onSave: (location) => editRequestStore().location = location,
                     val: () => {
-                        return this.editStore.location
+                        return editRequestStore().location
                     },
                     isValid: () => {
-                        return this.editStore.locationValid
+                        return editRequestStore().locationValid
                     },
                     name: 'location',
-                    previewLabel: () => this.editStore.location?.address,
+                    previewLabel: () => editRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
                 {
-                    onSave: (type) => this.editStore.type = type,
+                    onSave: (type) => editRequestStore().type = type,
                     val: () => {
-                        return this.editStore.type
+                        return editRequestStore().type
                     },
                     isValid: () => {
-                        return this.editStore.typeValid
+                        return editRequestStore().typeValid
                     },
                     name: 'type',
                     previewLabel: () => null,
@@ -100,28 +88,28 @@ class EditHelpRequest extends React.Component<Props> {
                         optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.editStore.type.splice(idx, 1)
+                            editRequestStore().type.splice(idx, 1)
                         },
                         dark: true
                     }
                 },
                 {
-                    onSave: (notes) => this.editStore.notes = notes,
+                    onSave: (notes) => editRequestStore().notes = notes,
                     val: () => {
-                        return this.editStore.notes
+                        return editRequestStore().notes
                     },
                     isValid: () => {
-                        return !!this.editStore.notes
+                        return !!editRequestStore().notes
                     },
                     name: 'notes',
-                    previewLabel: () => this.editStore.notes,
+                    previewLabel: () => editRequestStore().notes,
                     headerLabel: () => 'Notes',
                     type: 'TextArea',
                 },
                 {
-                    onSave: (skills) => this.editStore.skills = skills,
+                    onSave: (skills) => editRequestStore().skills = skills,
                     val: () => {
-                        return this.editStore.skills
+                        return editRequestStore().skills
                     },
                     isValid: () => {
                         return true
@@ -138,20 +126,20 @@ class EditHelpRequest extends React.Component<Props> {
                         optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.editStore.skills.splice(idx, 1)
+                            editRequestStore().skills.splice(idx, 1)
                         },
                     },
                 },
                 {
-                    onSave: (responders) => this.editStore.respondersNeeded = responders.length ? responders[0] : -1,
+                    onSave: (responders) => editRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
                     val: () => {
-                        return [this.editStore.respondersNeeded]
+                        return [editRequestStore().respondersNeeded]
                     },
                     isValid: () => {
-                        return typeof this.editStore.respondersNeeded == 'number' && this.editStore.respondersNeeded > -1
+                        return typeof editRequestStore().respondersNeeded == 'number' && editRequestStore().respondersNeeded > -1
                     },
                     name: 'responders',
-                    previewLabel: () => `${this.editStore.respondersNeeded}`,
+                    previewLabel: () => `${editRequestStore().respondersNeeded}`,
                     headerLabel: () => 'Responders needed',
                     type: 'List',
                     props: {

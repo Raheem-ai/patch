@@ -1,32 +1,28 @@
-import { makeAutoObservable, runInAction, when } from 'mobx';
-import { getStore, Store } from './meta';
-import { ISocketStore, IUserStore } from './interfaces';
+import { makeAutoObservable, when } from 'mobx';
+import { Store } from './meta';
+import { ISocketStore, userStore } from './interfaces';
 import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../api';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
+import { api } from '../services/interfaces';
 
 @Store(ISocketStore)
 export default class SocketStore implements ISocketStore {
     // defaultToastTime = 1000 * 4;
 
     private socket: Socket;
-
-    private userStore = getStore<IUserStore>(IUserStore)
-    private api = getService<IAPIService>(IAPIService)
     
     constructor() {
         makeAutoObservable(this)
     }
 
     async init() {
-        await this.userStore.init()
+        await userStore().init()
 
-        if (this.userStore.signedIn) {
+        if (userStore().signedIn) {
             await this.connectAfterSignIn()
         } else {
-            when(() => this.userStore.signedIn, this.connectAfterSignIn)
+            when(() => userStore().signedIn, this.connectAfterSignIn)
         }
 
         AppState.addEventListener('change', async (state: AppStateStatus) => {
@@ -48,7 +44,7 @@ export default class SocketStore implements ISocketStore {
         this.socket = io(apiHost, {
             path: '/socket.io/',
             auth: {
-                token: this.api.refreshToken
+                token: api().refreshToken
             }
         })
 
@@ -90,10 +86,10 @@ export default class SocketStore implements ISocketStore {
 
         })
 
-        when(() => !this.userStore.signedIn, () => {
+        when(() => !userStore().signedIn, () => {
             this.disconnect()
 
-            when(() => this.userStore.signedIn, this.connectAfterSignIn)
+            when(() => userStore().signedIn, this.connectAfterSignIn)
         })
     }
 
@@ -102,7 +98,7 @@ export default class SocketStore implements ISocketStore {
     }
 
     ensureConnected() {
-        if (this.userStore.signedIn && !this.socket.connected) {
+        if (userStore().signedIn && !this.socket.connected) {
             this.socket.connect()
         }
     }

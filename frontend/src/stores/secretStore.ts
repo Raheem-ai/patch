@@ -1,15 +1,11 @@
 import { makeAutoObservable, runInAction, when } from 'mobx';
-import { getStore, Store } from './meta';
-import { ISecretStore, IUserStore } from './interfaces';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
+import {  Store } from './meta';
+import { ISecretStore, userStore } from './interfaces';
 import { securelyPersistent } from '../meta';
+import { api } from '../services/interfaces';
 
 @Store(ISecretStore)
 export default class SecretStore implements ISecretStore {
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private api = getService<IAPIService>(IAPIService)
 
     @securelyPersistent()
     googleMapsApiKey: string;
@@ -19,17 +15,17 @@ export default class SecretStore implements ISecretStore {
     }
 
     async init() {
-        await this.userStore.init();
+        await userStore().init();
 
-        if (this.userStore.signedIn) {
+        if (userStore().signedIn) {
             await this.fetchSecrets();
         } else {
-            when(() => this.userStore.signedIn, this.fetchSecrets)
+            when(() => userStore().signedIn, this.fetchSecrets)
         }
     }
 
     fetchSecrets = async () => {
-        const secrets = await this.api.getSecrets({ token: this.userStore.authToken });
+        const secrets = await api().getSecrets({ token: userStore().authToken });
 
         runInAction(() => {
             for (const prop in secrets) {
@@ -38,8 +34,8 @@ export default class SecretStore implements ISecretStore {
         })
 
         // handle refetching when signing out and signing back in
-        when(() => !this.userStore.signedIn, () => {
-            when(() => this.userStore.signedIn, this.fetchSecrets)
+        when(() => !userStore().signedIn, () => {
+            when(() => userStore().signedIn, this.fetchSecrets)
         })
     }
 

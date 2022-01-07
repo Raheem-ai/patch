@@ -7,8 +7,7 @@ import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
-import { IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore } from "../../../stores/interfaces";
-import { getStore } from "../../../stores/meta";
+import { alertStore, bottomDrawerStore, IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore, newUserStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
 import { FormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -16,32 +15,23 @@ import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
 @observer
 export default class AddUser extends React.Component {
-    userStore = getStore<IUserStore>(IUserStore);
-    linkingStore = getStore<ILinkingStore>(ILinkingStore);
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-    newUserStore = getStore<INewUserStore>(INewUserStore);
-
     static submit = {
         isValid: () => {
-            const newUserStore = getStore<INewUserStore>(INewUserStore);
-            return newUserStore.isValid
+            return newUserStore().isValid
         },
         action: async () => {
-            const newUserStore = getStore<INewUserStore>(INewUserStore);
-            const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-            const alertStore = getStore<IAlertStore>(IAlertStore);
 
             let invitedUser: PendingUser;
 
             try {
-                invitedUser = await newUserStore.inviteNewUser()
+                invitedUser = await newUserStore().inviteNewUser()
             } catch (e) {
-                alertStore.toastError(resolveErrorMessage(e));
+                alertStore().toastError(resolveErrorMessage(e));
                 return
             }
 
-            alertStore.toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
-            bottomDrawerStore.hide();
+            alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+            bottomDrawerStore().hide();
         },
         label: () => {
             return `Send Invite`
@@ -49,55 +39,54 @@ export default class AddUser extends React.Component {
     }
 
     static onHide = () => {
-        const newUserStore = getStore<INewUserStore>(INewUserStore);
-        newUserStore.clear();
+        newUserStore().clear();
     }
 
     formProps = (): FormProps => {
         return {
             headerLabel: 'Invite a user to join your org by providing their email and phone number!', 
             onExpand: () => {
-                this.bottomDrawerStore.hideHeader();
+                bottomDrawerStore().hideHeader();
             },
             onBack: () => {
-                this.bottomDrawerStore.showHeader();
+                bottomDrawerStore().showHeader();
             },
             inputs: [
                 {
-                    onChange: (email) => this.newUserStore.email = email,
+                    onChange: (email) => newUserStore().email = email,
                     val: () => {
-                        return this.newUserStore.email
+                        return newUserStore().email
                     },
                     isValid: () => {
-                        return this.newUserStore.emailValid
+                        return newUserStore().emailValid
                     },
                     name: 'email',
-                    previewLabel: () => this.newUserStore.email,
+                    previewLabel: () => newUserStore().email,
                     headerLabel: () => 'Email',
                     type: 'TextInput',
                     required: true
                 },
                 {
-                    onChange: (phone) => this.newUserStore.phone = phone,
+                    onChange: (phone) => newUserStore().phone = phone,
                     val: () => {
-                        return this.newUserStore.phone
+                        return newUserStore().phone
                     },
                     isValid: () => {
-                        return this.newUserStore.phoneValid
+                        return newUserStore().phoneValid
                     },
                     name: 'phone',
-                    previewLabel: () => this.newUserStore.phone,
+                    previewLabel: () => newUserStore().phone,
                     headerLabel: () => 'Phone',
                     type: 'TextInput',
                     required: true
                 },
                 {
-                    onSave: (roles) => this.newUserStore.roles = roles,
+                    onSave: (roles) => newUserStore().roles = roles,
                     val: () => {
-                        return this.newUserStore.roles
+                        return newUserStore().roles
                     },
                     isValid: () => {
-                        return !!this.newUserStore.rolesValid
+                        return !!newUserStore().rolesValid
                     },
                     name: 'roles',
                     previewLabel: () => null,
@@ -109,18 +98,18 @@ export default class AddUser extends React.Component {
                         optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.newUserStore.roles.splice(idx, 1)
+                            newUserStore().roles.splice(idx, 1)
                         },
                     },
                     required: true
                 },
                 {
-                    onSave: (skills) => this.newUserStore.skills = skills,
+                    onSave: (skills) => newUserStore().skills = skills,
                     val: () => {
-                        return this.newUserStore.skills
+                        return newUserStore().skills
                     },
                     isValid: () => {
-                        return this.newUserStore.skillsValid
+                        return newUserStore().skillsValid
                     },
                     name: 'skills',
                     previewLabel: () => null,
@@ -131,7 +120,7 @@ export default class AddUser extends React.Component {
                         optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            this.newUserStore.skills.splice(idx, 1)
+                            newUserStore().skills.splice(idx, 1)
                         },
                         dark: true
                     },

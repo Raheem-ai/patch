@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from './meta';
-import { ILinkingStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { ILinkingStore, IUserStore, linkingStore, userStore } from './interfaces';
 import * as Linking from 'expo-linking'
 import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
@@ -9,7 +9,6 @@ import { routerNames } from '../types';
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
 
-    userStore = getStore<IUserStore>(IUserStore);
     initialRoute = null;
     initialRouteParams = null;
 
@@ -23,7 +22,7 @@ export default class LinkingStore implements ILinkingStore {
 
     init = async () => {
         //make sure login is settled so linking handlers have access to that info
-        await this.userStore.init();
+        await userStore().init();
 
         Linking.addEventListener('url', this.handleLink)
 
@@ -76,11 +75,9 @@ const LinkConfig: LinkExperiences = {
     [LinkExperience.SignUpThroughOrganization]: {
         run: (params) => {
             if (!navigationRef.current) {
-                const linkingStore = getStore<ILinkingStore>(ILinkingStore);
-                    
                 runInAction(() => {
-                    linkingStore.initialRoute = routerNames.signUpThroughOrg;
-                    linkingStore.initialRouteParams = params;
+                    linkingStore().initialRoute = routerNames.signUpThroughOrg;
+                    linkingStore().initialRouteParams = params;
                 })
             } else {
                 navigateTo(routerNames.signUpThroughOrg, params)

@@ -1,17 +1,13 @@
 import { autorun, makeAutoObservable, reaction, runInAction, set, when } from 'mobx';
-import { getStore, Store } from './meta';
-import { IRequestStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { IRequestStore, IUserStore, userStore } from './interfaces';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { HelpRequest, HelpRequestFilter, HelpRequestSortBy, RequestStatus, ResponderRequestStatuses } from '../../../common/models';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
+import { api, IAPIService } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private api = getService<IAPIService>(IAPIService)
 
     loading = false;
 
@@ -25,12 +21,12 @@ export default class RequestStore implements IRequestStore {
     }
 
     async init() {
-        await this.userStore.init();
+        await userStore().init();
 
-        if (this.userStore.signedIn) {
+        if (userStore().signedIn) {
             await this.getRequestsAfterSignin()
         } else {
-            when(() => this.userStore.signedIn, this.getRequestsAfterSignin)
+            when(() => userStore().signedIn, this.getRequestsAfterSignin)
         }
     }
     
@@ -54,18 +50,18 @@ export default class RequestStore implements IRequestStore {
     }
 
     get activeRequests() {
-        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(this.userStore.user.id));
+        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().user.id));
     }
 
     get currentUserActiveRequests() {
-        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(this.userStore.currentUser?.id));
+        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().currentUser?.id));
     }
 
     getRequestsAfterSignin = async () => {
         await this.getRequests();
 
-        when(() => !this.userStore.signedIn, () => {
-            when(() => this.userStore.signedIn, this.getRequestsAfterSignin)
+        when(() => !userStore().signedIn, () => {
+            when(() => userStore().signedIn, this.getRequestsAfterSignin)
         })
     }
 
@@ -81,8 +77,8 @@ export default class RequestStore implements IRequestStore {
 
     orgContext(orgId?: string): OrgContext {
         return {
-            token: this.userStore.authToken,
-            orgId: orgId || this.userStore.currentOrgId
+            token: userStore().authToken,
+            orgId: orgId || userStore().currentOrgId
         }
     }
 
@@ -131,7 +127,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async confirmRequestAssignment(orgId: string, reqId: string) {
-        const req = await this.api.confirmRequestAssignment(this.orgContext(orgId), reqId);
+        const req = await api().confirmRequestAssignment(this.orgContext(orgId), reqId);
 
         runInAction(() => { 
             this.updateOrAddReq(req);
@@ -159,7 +155,7 @@ export default class RequestStore implements IRequestStore {
         try {
             this.loading = true;
 
-            const req = await this.api.getRequest(this.orgContext(), requestId);
+            const req = await api().getRequest(this.orgContext(), requestId);
 
             const userIdSet = new Set<string>();
 
@@ -172,7 +168,7 @@ export default class RequestStore implements IRequestStore {
 
             // TODO: might be worth having a common response type that returns 
             // related objects to save us a round trip call for this and other tings
-            await this.userStore.updateOrgUsers(Array.from(userIdSet.values()));
+            await userStore().updateOrgUsers(Array.from(userIdSet.values()));
 
             let idx = this.requests.findIndex((r => r.id == req.id));
 
@@ -204,7 +200,7 @@ export default class RequestStore implements IRequestStore {
             const oldCurrentReqId = this.currentRequest?.id;
             let possibleUpdatedCurrentReq:  HelpRequest;
 
-            const requests = await this.api.getRequests(this.orgContext(), this.filter);
+            const requests = await api().getRequests(this.orgContext(), this.filter);
 
             const userIdSet = new Set<string>();
 
@@ -223,7 +219,7 @@ export default class RequestStore implements IRequestStore {
 
             // TODO: might be worth having a common response type that returns 
             // related objects to save us a round trip call for this and other tings
-            await this.userStore.updateOrgUsers(Array.from(userIdSet.values()));
+            await userStore().updateOrgUsers(Array.from(userIdSet.values()));
 
             runInAction(() => {
                 this.requests = requests;
@@ -257,23 +253,23 @@ export default class RequestStore implements IRequestStore {
     }
 
     async setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void> {
-        const req = await this.api.setRequestStatus(this.requestContext(requestId), status);
+        const req = await api().setRequestStatus(this.requestContext(requestId), status);
         this.updateReq(req);
     }
 
     async resetRequestStatus(requestId: string): Promise<void> {
-        const req = await this.api.resetRequestStatus(this.requestContext(requestId));
+        const req = await api().resetRequestStatus(this.requestContext(requestId));
         this.updateReq(req);
     }
 
     async updateChatReceipt(request: HelpRequest): Promise<void> {
         const chat = request.chat;
 
-        if (!!chat && chat.lastMessageId > chat.userReceipts[this.userStore.user.id]) {
-            const updatedReq = await this.api.updateRequestChatReceipt({
+        if (!!chat && chat.lastMessageId > chat.userReceipts[userStore().user.id]) {
+            const updatedReq = await api().updateRequestChatReceipt({
                 requestId: request.id,
                 orgId: request.orgId,
-                token: this.userStore.authToken
+                token: userStore().authToken
             }, chat.lastMessageId)
 
             this.updateReq(updatedReq)
@@ -281,7 +277,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async sendMessage(request: HelpRequest, message: string) {
-        const updatedReq = await this.api.sendChatMessage(
+        const updatedReq = await api().sendChatMessage(
             this.requestContext(request.id, request.orgId), 
             message
         );
@@ -290,17 +286,17 @@ export default class RequestStore implements IRequestStore {
     }
 
     async joinRequest(requestId: string) {
-        const updatedReq = await this.api.joinRequest(this.orgContext(), requestId);
+        const updatedReq = await api().joinRequest(this.orgContext(), requestId);
         this.updateReq(updatedReq);
     }
 
     async leaveRequest(requestId: string) {
-        const updatedReq = await this.api.leaveRequest(this.orgContext(), requestId);
+        const updatedReq = await api().leaveRequest(this.orgContext(), requestId);
         this.updateReq(updatedReq);
     }
 
     async removeUserFromRequest(userId: string, requestId: string) {
-        const updatedReq = await this.api.removeUserFromRequest(this.orgContext(), userId, requestId);
+        const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId);
         this.updateReq(updatedReq);
     }
 

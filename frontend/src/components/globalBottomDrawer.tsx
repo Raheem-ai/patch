@@ -5,10 +5,10 @@ import { observer } from "mobx-react";
 import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
+import { unwrap } from "../../../common/utils";
 import { ActiveRequestTabHeight } from "../constants";
 import { navigateTo, navigationRef } from "../navigation";
-import { BottomDrawerHandleHeight, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, routerNames } from "../types";
 import { HeaderHeight, InteractiveHeaderHeight } from "./header/header";
 import HelpRequestCard from "./helpRequestCard";
@@ -20,50 +20,39 @@ type BottomDrawerProps = { }
 
 @observer
 export default class GlobalBottomDrawer extends React.Component<BottomDrawerProps> {
-
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-    userStore = getStore<IUserStore>(IUserStore);
-    requestStore = getStore<IRequestStore>(IRequestStore);
-    headerStore = getStore<IHeaderStore>(IHeaderStore);
-
     submitting = observable.box<boolean>(false)
 
     toggleExpanded = () => {
-        if (this.bottomDrawerStore.expanded) {
-            this.bottomDrawerStore.minimize()
+        if (bottomDrawerStore().expanded) {
+            bottomDrawerStore().minimize()
         } else {
-            this.bottomDrawerStore.expand()
+            bottomDrawerStore().expand()
         }
     }
 
     drawer() {
-        const submitActionLabel = this.bottomDrawerStore.view.submit?.label
-            ? typeof this.bottomDrawerStore.view.submit.label == 'function'
-                ? this.bottomDrawerStore.view.submit.label()
-                : this.bottomDrawerStore.view.submit.label
+
+        const submitActionLabel = bottomDrawerStore().view.submit?.label
+            ? unwrap(bottomDrawerStore().view.submit.label)
             : null
 
-        const minimizeLabel = this.bottomDrawerStore.view.minimizeLabel
-            ? typeof this.bottomDrawerStore.view.minimizeLabel == 'function'
-                ? this.bottomDrawerStore.view.minimizeLabel()
-                : this.bottomDrawerStore.view.minimizeLabel
+        const minimizeLabel = bottomDrawerStore().view.minimizeLabel
+            ? unwrap(bottomDrawerStore().view.minimizeLabel)
             : null;
 
-        const hasRaisedHeader = this.bottomDrawerStore.view.raisedHeader
-            ? typeof this.bottomDrawerStore.view.raisedHeader == 'function'
-                ? this.bottomDrawerStore.view.raisedHeader()
-                : this.bottomDrawerStore.view.raisedHeader
+        const hasRaisedHeader = bottomDrawerStore().view.raisedHeader
+            ? unwrap(bottomDrawerStore().view.raisedHeader)
             : false;
 
-        const ChildView = this.bottomDrawerStore.view;
+        const ChildView = bottomDrawerStore().view;
 
-        const valid = !!this.bottomDrawerStore.view.submit?.isValid?.()
+        const valid = !!bottomDrawerStore().view.submit?.isValid?.()
 
         const onSubmit = async () => {
             this.submitting.set(true)
 
             try {
-                await this.bottomDrawerStore.view.submit.action()
+                await bottomDrawerStore().view.submit.action()
             } finally {
                 this.submitting.set(false)
             }
@@ -73,27 +62,27 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
             <Animated.View key='bottomDrawer' style={[
                 styles.container, 
                 { 
-                    top: this.bottomDrawerStore.bottomDrawerTabTop,
+                    top: bottomDrawerStore().bottomDrawerTabTop,
                     height: dimensions.height - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight)
                 },
-                this.bottomDrawerStore.expanded 
+                bottomDrawerStore().expanded 
                     ? null
                     : styles.minimizedHeader
             ]}>
-                { this.bottomDrawerStore.headerShowing && !this.submitting.get()
+                { bottomDrawerStore().headerShowing && !this.submitting.get()
                     ? <View style={[
                         styles.headerContainer, 
                         hasRaisedHeader 
                             ? styles.raisedHeader 
                             : null,
-                        this.bottomDrawerStore.expanded 
+                        bottomDrawerStore().expanded 
                             ? null
                             : styles.minimizedHeader
                     ]}>
-                        { this.bottomDrawerStore.expanded
+                        { bottomDrawerStore().expanded
                             ? <View style={styles.closeIconContainer}>
                                 <IconButton
-                                    onPress={this.bottomDrawerStore.hide}
+                                    onPress={bottomDrawerStore().hide}
                                     style={styles.closeIcon}
                                     icon='close' 
                                     color={styles.closeIcon.color}
@@ -110,14 +99,14 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                                 <IconButton
                                     onPress={this.toggleExpanded}
                                     style={styles.toggleExpandedIcon}
-                                    icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
-                                    // icon={ this.bottomDrawerStore.expanded ? 'chevron-down' : 'chevron-up'} 
+                                    icon={ bottomDrawerStore().expanded ? 'chevron-down' : 'chevron-up'} 
+                                    // icon={ bottomDrawerStoreInst().expanded ? 'chevron-down' : 'chevron-up'} 
                                     color={styles.toggleExpandedIcon.color}
                                     size={styles.toggleExpandedIcon.width} />
                             </View>
                             : null
                         }
-                        { this.bottomDrawerStore.view.submit && this.bottomDrawerStore.expanded 
+                        { bottomDrawerStore().view.submit && bottomDrawerStore().expanded 
                             ? <Button 
                                 labelStyle={styles.submitButtonLabel}
                                 uppercase={false}
@@ -141,8 +130,8 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
     activeRequest() {
         const onPress = () => {
-            if (this.requestStore.activeRequest?.id != this.requestStore.currentRequest?.id || this.bottomDrawerStore.currentRoute != routerNames.helpRequestDetails) {
-                this.requestStore.pushRequest(this.requestStore.activeRequest.id)
+            if (requestStore().activeRequest?.id != requestStore().currentRequest?.id || bottomDrawerStore().currentRoute != routerNames.helpRequestDetails) {
+                requestStore().pushRequest(requestStore().activeRequest.id)
                 navigateTo(routerNames.helpRequestDetails)
             }
         }
@@ -151,7 +140,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
             <HelpRequestCard 
                 key='activeRequestTab' 
                 onPress={onPress}
-                request={this.requestStore.activeRequest} 
+                request={requestStore().activeRequest} 
                 style={[
                     styles.activeRequestCard,
                     { zIndex: styles.container.zIndex }
@@ -162,21 +151,21 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     }
 
     render() {
-        if (!this.userStore.signedIn || this.headerStore.isOpen) {
+        if (!userStore().signedIn || headerStore().isOpen) {
             return null
         }
 
-        const onRequestMap = this.bottomDrawerStore.currentRoute == routerNames.helpRequestMap;
+        const onRequestMap = bottomDrawerStore().currentRoute == routerNames.helpRequestMap;
 
         return (
             <>
                 {
-                    !this.bottomDrawerStore.view
+                    !bottomDrawerStore().view
                         ? null
                         : this.drawer()
                 }
                 {
-                    this.requestStore.activeRequest && !onRequestMap
+                    requestStore().activeRequest && !onRequestMap
                         ? this.activeRequest()
                         : null
                 }

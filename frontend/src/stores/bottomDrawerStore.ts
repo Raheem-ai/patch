@@ -1,8 +1,8 @@
-import {  getStore, Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore } from './interfaces';
+import { Store } from './meta';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
-import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import RequestChat from '../components/requestChat';
 import EditHelpRequest from '../components/editRequest';
 import AssignResponders from '../components/assignResponders';
@@ -48,8 +48,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     viewIdStack: BottomDrawerView[] = []
 
-    private requestStore = getStore<IRequestStore>(IRequestStore);
-    private nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
+    disposeOfAnimationReactions: () => void = null;
+
+    // private requestStore = getStore<IRequestStore>(IRequestStore);
+    // private nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
 
 
     constructor() {
@@ -64,20 +66,40 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     async init() {
-        await this.nativeEventStore.init();
-        await this.requestStore.init();
+        await nativeEventStore().init();
+        await requestStore().init();
+        await userStore().init();
 
-        // reactively update content height based on bottom drawer + keyboard state
-        reaction(this.calculateContentHeight, this.animateContentHeight, {
-            equals: (a, b) => a[0] == b[0] && a[1] == b[1],
-            fireImmediately: true
-        })      
+        if (userStore().signedIn) {
+            this.setupAnimationReactions()
+        } else {
+            when(() => userStore().signedIn, this.setupAnimationReactions)
+        }
+        
+    }
 
-        // animate to correct new height as activeRequest might have toggled existing
-        reaction(() => this.requestStore.activeRequest, (_) => {
-            if (this.showing && !this.expanded) {
-                this.minimize()
-            }
+    setupAnimationReactions = () => {
+        const disposers = [
+            // reactively update content height based on bottom drawer + keyboard state
+            reaction(this.calculateContentHeight, this.animateContentHeight, {
+                equals: (a, b) => a[0] == b[0] && a[1] == b[1],
+                fireImmediately: true
+            }),      
+            // animate to correct new height as activeRequest might have toggled existing
+            reaction(() => { requestStore().activeRequest }, (_) => {
+                if (this.showing && !this.expanded) {
+                    this.minimize()
+                }
+            })
+        ]
+        
+        this.disposeOfAnimationReactions = () => {
+            disposers.forEach(d => d());
+        }
+
+        when(() => !userStore().signedIn, () => {
+            this.disposeOfAnimationReactions?.();
+            when(() => userStore().signedIn, this.setupAnimationReactions)
         })
     }
 
@@ -102,7 +124,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset;
 
-        const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - this.nativeEventStore.keyboardHeight
+        const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - nativeEventStore().keyboardHeight
 
         return [contentHeight, bottomDrawerContentHeight]
     }
@@ -150,7 +172,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     get activeRequestShowing() {
         const onRequestMap = this.currentRoute == routerNames.helpRequestMap;
-        return this.requestStore.activeRequest && !onRequestMap && !this.nativeEventStore.keyboardOpen;
+        return requestStore().activeRequest && !onRequestMap && !nativeEventStore().keyboardOpen;
     }
 
     get minimizedHandleShowing() {
@@ -286,7 +308,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: dimensions.height 
                 - BottomDrawerHandleHeight 
-                - ((this.requestStore.activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
+                - ((requestStore().activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
                 - (isAndroid ? Constants.statusBarHeight - 1 : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations

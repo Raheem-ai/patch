@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from './meta';
-import { ITeamStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { ITeamStore, userStore } from './interfaces';
 import { ClientSideFormat } from '../../../common/api';
 import { ProtectedUser, TeamFilter, TeamSortBy } from '../../../common/models';
 import { persistent } from '../meta';
@@ -8,8 +8,6 @@ import {parseFullName} from 'parse-full-name';
 
 @Store(ITeamStore)
 export default class TeamStore implements ITeamStore {
-
-    private userStore = getStore<IUserStore>(IUserStore);
 
     loading = false;
 
@@ -25,7 +23,7 @@ export default class TeamStore implements ITeamStore {
     }
 
     get sortedUsers() {
-        return Array.from(this.userStore.usersInOrg)
+        return Array.from(userStore().usersInOrg)
             .filter((user) => {
                 switch (this.filter) {
                     case TeamFilter.Everyone:
@@ -53,11 +51,11 @@ export default class TeamStore implements ITeamStore {
     }
 
     filterOffDuty = (user: ClientSideFormat<ProtectedUser>): boolean => {
-        return !user.organizations[this.userStore.currentOrgId].onDuty;
+        return !user.organizations[userStore().currentOrgId].onDuty;
     }
 
     filterOnDuty = (user: ClientSideFormat<ProtectedUser>): boolean => {
-        return user.organizations[this.userStore.currentOrgId].onDuty;
+        return user.organizations[userStore().currentOrgId].onDuty;
     }
 
     sortByFirstName = (a: ClientSideFormat<ProtectedUser>, b: ClientSideFormat<ProtectedUser>): number => {
@@ -103,7 +101,7 @@ export default class TeamStore implements ITeamStore {
 
     async refreshUsers() {
         try {
-            await this.userStore.updateOrgUsers([])
+            await userStore().updateOrgUsers([])
         } catch (e) {
             console.error(e)
         }

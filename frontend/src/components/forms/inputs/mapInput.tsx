@@ -4,8 +4,7 @@ import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Press
 import { IconButton, List, Text } from "react-native-paper";
 import { IMapsService } from "../../../services/interfaces";
 import { getService } from "../../../services/meta";
-import { IBottomDrawerStore, ILocationStore } from "../../../stores/interfaces";
-import { getStore } from "../../../stores/meta";
+import { locationStore } from "../../../stores/interfaces";
 import { SectionScreenProps } from "../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -13,8 +12,6 @@ import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../common/models";
 
 const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
-    const locationStore = getStore<ILocationStore>(ILocationStore);
-    const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
     const mapsService = getService<IMapsService>(IMapsService);
 
     const [suggestions, setSuggestions] = useState<PlaceAutocompleteResult[]>([]);
@@ -30,10 +27,10 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
     // react native papers types are broken here
     const textInputInstance = useRef<RNTextInput>();
     
-    const initialRegion = locationStore.lastKnownLocation
+    const initialRegion = locationStore().lastKnownLocation
         ? {
-            latitude: locationStore.lastKnownLocation.coords.latitude,
-            longitude: locationStore.lastKnownLocation.coords.longitude,
+            latitude: locationStore().lastKnownLocation.coords.latitude,
+            longitude: locationStore().lastKnownLocation.coords.longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
         } : undefined

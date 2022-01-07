@@ -1,9 +1,11 @@
 import { Inject } from "@tsed/common";
-import {Input, IO, Nsp, Socket, SocketService, SocketSession} from "@tsed/socketio";
+import {Input, IO, Nsp, Socket, SocketErr, SocketService, SocketSession} from "@tsed/socketio";
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc } from "../models/user";
 import { DBManager } from "./dbManager";
+
+type RaheemSocket = SocketIO.Socket<any, any, any, { refreshToken: string }>;
 
 @SocketService()
 export class MySocketService {
@@ -11,14 +13,18 @@ export class MySocketService {
     @Inject(DBManager) db: DBManager;
 
     @Nsp nsp: SocketIO.Namespace;
+    
+    // public clients: Map<string, RaheemSocket> = new Map();
 
-    constructor(@IO private io: SocketIO.Server) { }
+    constructor(
+        @IO private io: SocketIO.Server
+    ) { }
 
     $onNamespaceInit(nsp: SocketIO.Namespace) {
         console.log(`namespace ${nsp.name} initted`)
     }
 
-    async $onConnection(@Socket socket: SocketIO.Socket, @SocketSession session: SocketSession) {
+    async $onConnection(@Socket socket: RaheemSocket, @SocketSession session: SocketSession) {
         const refreshToken = socket.handshake?.auth?.token;
         
         if (!refreshToken) {
@@ -35,7 +41,13 @@ export class MySocketService {
                 return
             }
 
-            // put socket in room userId so we can refer to it later
+            // make sure old socket linked to user is removed from room
+            this.io.in(user.id).socketsLeave(user.id);
+
+            // add refresh token metadata and put socket in room <userId> 
+            // so we can look it up from any websocket server in the cluster
+            socket.data.refreshToken = refreshToken;
+            socket.join(user.id);
 
             // set the time this should expire in the context 
             // & check the time when pushing to any socket...force disconnect if the time has past
@@ -49,24 +61,22 @@ export class MySocketService {
         console.log(`Socket disconnected ${socket.id}`)
     }
 
-    send(socket: SocketIO.Socket, params: any) {
+    async send(socket: SocketIO.Socket, params: any): Promise<boolean> {
         if (!socket.connected) {
-            return;
+            return false;
         }
         
         // check time to make sure not expired
-        const expired = false;
+        const expired = await verifyRefreshToken(socket.data?.refreshToken, this.db);
 
         if (expired) {
+            // should send force logout here?
             socket.disconnect(true);
-            return;
+            return false;
         }
 
         socket.send(params);
-    }
 
-    @Input('hello')
-    hello() {
-
+        return true;
     }
 }

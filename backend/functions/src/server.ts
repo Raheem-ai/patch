@@ -13,7 +13,8 @@ import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
 import { resolve } from "path";
-import { AjvErrorObject } from "@tsed/ajv/lib/interfaces/IAjvSettings";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
 // need to upgrade to 6.95.3
 // import './errors/globalErrorFilter';
 
@@ -29,6 +30,12 @@ if (process.env.PATCH_LOCAL_ENV) {
 
 const isProd = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.prod];
 const mongoConnectionString = config.MONGO.get().connection_string;
+const redisConnectionString = config.REDIS.get().connection_string
+
+const socketIOPubClient = createClient({ 
+  url: redisConnectionString
+});
+const socketIOSubClient = socketIOPubClient.duplicate();
 
 @Configuration({
   rootDir,
@@ -53,6 +60,7 @@ const mongoConnectionString = config.MONGO.get().connection_string;
   },
   socketIO: {
     serveClient: false,
+    adapter: createAdapter(socketIOPubClient, socketIOSubClient)
     // cors: true
   },
   // ajv: {
@@ -89,5 +97,9 @@ export class Server {
       .use(bodyParser.urlencoded({
         extended: true
       }));
+  }
+
+  async $beforeInit() {
+    await Promise.all([socketIOPubClient.connect(), socketIOSubClient.connect()])
   }
 }

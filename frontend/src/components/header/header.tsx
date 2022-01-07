@@ -6,10 +6,9 @@ import { IconButton, Switch, Text } from 'react-native-paper';
 import { useState } from 'react';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
 import { RootStackParamList, routerNames } from '../../types';
-import { getStore } from '../../stores/meta';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { IHeaderStore, IUserStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
@@ -17,9 +16,6 @@ import { unwrap } from '../../../../common/utils';
 type Props = StackHeaderProps & {};
 
 const Header = observer((props: Props) => {
-
-    const userStore = getStore<IUserStore>(IUserStore);
-    const headerStore = getStore<IHeaderStore>(IHeaderStore);
 
     const dimensions = Dimensions.get('screen');
     const config: HeaderRouteConfig = unwrap(HeaderConfig[props.route.name]);
@@ -31,10 +27,10 @@ const Header = observer((props: Props) => {
     // TODO: get this from stores at some point
 
     const openHeader = () => {
-        headerStore.open()
+        headerStore().open()
     }
 
-    const closeHeader = () => headerStore.close()
+    const closeHeader = () => headerStore().close()
 
     const headerBar = () => {
         const leftActions = config.leftActions && config.leftActions.length
@@ -68,10 +64,10 @@ const Header = observer((props: Props) => {
                     <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 20 }]}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
-                    { userStore.isResponder
+                    { userStore().isResponder
                         ? <View style={styles.onDutyStatusContainer}>
-                            <View style={[styles.onDutyStatusOutline, { borderColor: userStore.isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>
-                                <Text style={[styles.onDutyStatusText, { color: userStore.isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>{userStore.isOnDuty ? 'READY': 'OFF-DUTY'}</Text>
+                            <View style={[styles.onDutyStatusOutline, { borderColor: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>
+                                <Text style={[styles.onDutyStatusText, { color: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>{userStore().isOnDuty ? 'READY': 'OFF-DUTY'}</Text>
                             </View>
                         </View>
                         : null
@@ -142,11 +138,11 @@ const Header = observer((props: Props) => {
                     <IconButton icon='close' size={iconSize} color='#fff' onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
-                    <Text style={[styles.onDutyText, userStore.isOnDuty ? {} : styles.offDutyText]}>{userStore.isOnDuty ? 'Ready to go' : 'Off duty'}</Text>
+                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Ready to go' : 'Off duty'}</Text>
                     <Switch
-                        value={userStore.isOnDuty} 
-                        disabled={!userStore.isResponder}
-                        onValueChange={() => userStore.toggleOnDuty()} 
+                        value={userStore().isOnDuty} 
+                        disabled={!userStore().isResponder}
+                        onValueChange={() => userStore().toggleOnDuty()} 
                         color='#32D74B'/>
                 </View>
             </View>
@@ -156,7 +152,7 @@ const Header = observer((props: Props) => {
             </View>
         </View>
 
-    return headerStore.isOpen
+    return headerStore().isOpen
         ? fullScreenHeader()
         : headerBar()
 })

@@ -1,18 +1,12 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from './meta';
-import { ILinkingStore, IEditUserStore, IUserStore } from './interfaces';
-import * as Linking from 'expo-linking'
-import { LinkExperience, LinkParams, Me, ProtectedUser } from '../../../common/models';
-import { navigateTo, navigationRef } from '../navigation';
-import { routerNames } from '../types';
+import { makeAutoObservable } from 'mobx';
+import { Store } from './meta';
+import { IEditUserStore, IUserStore, userStore } from './interfaces';
+import { Me, ProtectedUser } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
-import { min } from 'react-native-reanimated';
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
-
-    userStore = getStore<IUserStore>(IUserStore);
 
     @persistent() id = ''
 
@@ -61,7 +55,7 @@ export default class EditUserStore implements IEditUserStore {
         this.skills = user.skills || []
         this.pronouns = user.pronouns || ''
 
-        this.roles = this.userStore.users.get(user.id)?.organizations[this.userStore.currentOrgId]?.roles || []
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roles || []
 
         this.oldMe = user
     }
@@ -76,7 +70,7 @@ export default class EditUserStore implements IEditUserStore {
         this.skills = user.skills || []
         this.pronouns = user.pronouns || ''
 
-        this.roles = this.userStore.users.get(user.id)?.organizations[this.userStore.currentOrgId]?.roles || []
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roles || []
 
         this.oldUser = user
     }
@@ -145,14 +139,14 @@ export default class EditUserStore implements IEditUserStore {
 
     editUser = async () => {
         // TODO: add roles to this
-        return await this.userStore.editUser(this.id, {
+        return await userStore().editUser(this.id, {
             skills: this.skills,
 
         })
     }
 
     editMe = async () => {
-        return await this.userStore.editMe({
+        return await userStore().editMe({
             name: this.name || undefined,
             email: this.email || undefined,
             phone: this.phone || undefined,

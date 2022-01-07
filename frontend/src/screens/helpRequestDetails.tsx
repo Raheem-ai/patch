@@ -1,16 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import { Dimensions, GestureResponderEvent, GestureResponderHandlers, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
 import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { bottomDrawerStore, BottomDrawerView, dispatchStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import ResponderRow from "../components/responderRow";
 import { timestampToTime } from "../../../common/utils";
-import { HeaderHeight } from "../components/header/header";
-import { ActiveRequestTabHeight } from "../constants";
 
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
@@ -24,14 +21,10 @@ type Props = ScreenProps<'HelpRequestDetails'>;
 const dimensions = Dimensions.get('screen');
 
 const HelpRequestDetails = observer(({ navigation, route }: Props) => {
-    const requestStore = getStore<IRequestStore>(IRequestStore);
-    const userStore = getStore<IUserStore>(IUserStore);
-    const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-
     const [notification, setNotification] = useState<Props['route']['params']['notification']>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const request = requestStore.currentRequest;
+    const request = requestStore().currentRequest;
 
     useEffect(() => {
         (async () => {
@@ -49,7 +42,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 // call store method to get helprequest from api (so we have latest value)
                 // and update it's state while this shows loading ui
-                await requestStore.pushRequest(params.notification.payload.id);
+                await requestStore().pushRequest(params.notification.payload.id);
                 setNotification(params.notification);
                 setIsLoading(false);
             } else {
@@ -60,7 +53,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }, []);
 
     const notesSection = () => {
-        const notes = requestStore.currentRequest.notes;
+        const notes = requestStore().currentRequest.notes;
         
         return (
             <View style={styles.notesSection}>
@@ -70,9 +63,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const timeAndPlace = () => {
-        const address = requestStore.currentRequest.location.address.split(',').slice(0, 2).join();
+        const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
 
-        const time = new Date(requestStore.currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
         return (
             <View style={styles.timeAndPlaceSection}>
@@ -97,10 +90,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const header = () => {
-        const tags = requestStore.currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
+        const tags = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
         const edit = () => {
-            bottomDrawerStore.show(BottomDrawerView.editRequest, true)
+            bottomDrawerStore().show(BottomDrawerView.editRequest, true)
         }
 
         return (
@@ -122,26 +115,26 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const chatPreview = () => {
 
-        const lastChatMessage = requestStore.currentRequest.chat?.messages[requestStore.currentRequest.chat.messages.length - 1];
+        const lastChatMessage = requestStore().currentRequest.chat?.messages[requestStore().currentRequest.chat.messages.length - 1];
 
         const chatMessageText = !!lastChatMessage
             ? lastChatMessage.message
             : '';
 
         const lastMessageAuthor = !!lastChatMessage
-            ? userStore.users.get(lastChatMessage.userId)?.name
+            ? userStore().users.get(lastChatMessage.userId)?.name
             : ''
 
         const lastMessageTime = !!lastChatMessage
             ? timestampToTime(lastChatMessage.timestamp)
             : ''
 
-        const hasUnreadMessages = (requestStore.currentRequest.chat && requestStore.currentRequest.chat.messages.length) 
-            && (!requestStore.currentRequest.chat.userReceipts[userStore.user.id] 
-                || (requestStore.currentRequest.chat.userReceipts[userStore.user.id] < requestStore.currentRequest.chat.lastMessageId));
+        const hasUnreadMessages = (requestStore().currentRequest.chat && requestStore().currentRequest.chat.messages.length) 
+            && (!requestStore().currentRequest.chat.userReceipts[userStore().user.id] 
+                || (requestStore().currentRequest.chat.userReceipts[userStore().user.id] < requestStore().currentRequest.chat.lastMessageId));
 
         const openChat = () => {
-            bottomDrawerStore.show(BottomDrawerView.requestChat, true);
+            bottomDrawerStore().show(BottomDrawerView.requestChat, true);
         }
 
         return (
@@ -184,26 +177,26 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const teamSection = () => {
         const responderIds = request?.assignedResponderIds || [];
-        const canJoin = userStore.isResponder && !request.assignedResponderIds.includes(userStore.user.id)
-        const canLeave = userStore.isResponder && request.assignedResponderIds.includes(userStore.user.id)
+        const canJoin = userStore().isResponder && !request.assignedResponderIds.includes(userStore().user.id)
+        const canLeave = userStore().isResponder && request.assignedResponderIds.includes(userStore().user.id)
 
         const addResponders = () => {
-            bottomDrawerStore.show(BottomDrawerView.assignResponders, true);
+            bottomDrawerStore().show(BottomDrawerView.assignResponders, true);
         }
 
         // TODO: this should be a reaction on activeRequest changing between
         // existing/ not existing
 
         const joinRequest = async () => {
-            await requestStore.joinRequest(request.id);
+            await requestStore().joinRequest(request.id);
         }
 
         const leaveRequest = async () => {
-            await requestStore.leaveRequest(request.id);
+            await requestStore().leaveRequest(request.id);
         }
 
         const removeResponder = (responderId: string) => () => {
-            requestStore.removeUserFromRequest(responderId, request.id)
+            requestStore().removeUserFromRequest(responderId, request.id)
         }
 
         const teamHeader = () => {
@@ -218,7 +211,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <Text style={styles.teamLabel}>TEAM</Text>
                     </View>
                     <View>
-                        { userStore.isDispatcher
+                        { userStore().isDispatcher
                             ? <IconButton 
                                 onPress={addResponders}
                                 style={styles.addResponderIcon}
@@ -261,18 +254,18 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.respondersContainer}>
                     {
                         responderIds.map((id) => {
-                            const responder = userStore.users.get(id);
+                            const responder = userStore().users.get(id);
 
                             const goToResponder = () => {
-                                userStore.pushCurrentUser(responder);
+                                userStore().pushCurrentUser(responder);
                                 navigateTo(routerNames.userDetails);
                             }
                             
                             return (
                                 <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-                                    <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore.currentOrgId}/>
+                                    <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore().currentOrgId}/>
                                     {
-                                        userStore.isDispatcher
+                                        userStore().isDispatcher
                                             ? <IconButton
                                                 onPress={removeResponder(id)}
                                                 style={styles.responderRowActionIcon}    
@@ -332,8 +325,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 const sendReminders = async (event: GestureResponderEvent) => {
                     event.stopPropagation();
 
-                    const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-                    await dispatchStore.assignRequest(request.id, pendingResponderIds);
+                    await dispatchStore().assignRequest(request.id, pendingResponderIds);
                     setIsOpen(false)
                 }
 
@@ -354,7 +346,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             ? <View>
                                 {
                                     assignedResponderIds.map((id) => {
-                                        const user = userStore.users.get(id);
+                                        const user = userStore().users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -370,7 +362,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 }
                                 {
                                     declinedResponderIds.map((id) => {
-                                        const user = userStore.users.get(id);
+                                        const user = userStore().users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -386,7 +378,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 }
                                 {
                                     pendingResponderIds.map((id) => {
-                                        const user = userStore.users.get(id);
+                                        const user = userStore().users.get(id);
 
                                         return (
                                             <View style={styles.assignmentRow}>
@@ -435,7 +427,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 { teamHeader() }
                 { responders() }
                 { assignments() }
-                { userStore.isDispatcher
+                { userStore().isDispatcher
                     ? <Button 
                         uppercase={false}
                         onPress={addResponders}
@@ -472,7 +464,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 height: 85, 
                 backgroundColor: '#454343'
             }}>
-                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore} />
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
             </View>
         )
     }

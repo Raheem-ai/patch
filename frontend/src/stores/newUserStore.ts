@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { getStore, Store } from './meta';
-import { ILinkingStore, INewUserStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { ILinkingStore, INewUserStore, IUserStore, linkingStore, userStore } from './interfaces';
 import * as Linking from 'expo-linking'
 import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
@@ -9,9 +9,6 @@ import { persistent } from '../meta';
 
 @Store(INewUserStore)
 export default class NewUserStore implements INewUserStore {
-
-    userStore = getStore<IUserStore>(IUserStore);
-    linkingStore = getStore<ILinkingStore>(ILinkingStore);
 
     @persistent() name = ''
     @persistent() phone = ''
@@ -68,12 +65,12 @@ export default class NewUserStore implements INewUserStore {
     }
 
     inviteNewUser = async () => {
-        return await this.userStore.inviteUserToOrg(
+        return await userStore().inviteUserToOrg(
             this.email, 
             this.phone, 
             this.roles, 
             this.skills,
-            this.linkingStore.baseUrl
+            linkingStore().baseUrl
         );
     }
 }

@@ -1,7 +1,7 @@
 require('module-alias/register');
 
 import config, { 
-    RaheemConfig 
+    RaheemConfig, RedisConfig 
 } from 'infra/src/config';
 
 import {
@@ -16,7 +16,8 @@ const environmentConfig = {
     SESSION: new PatchSessionSecret(),
     MONGO: new PatchMongoDBCredentials(),
     EXPO: new ExpoCredentials(),
-    TWILIO: new PatchTwilioSecret()
+    TWILIO: new PatchTwilioSecret(),
+    REDIS: new RedisConfig()
 }
 
 export { environmentConfig };

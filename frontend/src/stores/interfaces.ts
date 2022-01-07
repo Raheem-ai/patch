@@ -4,6 +4,7 @@ import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
 import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser } from '../../../common/models'
 import { RootStackParamList } from '../types';
+import { getStore } from './meta';
 
 export interface IBaseStore {
     init?(): Promise<void>,
@@ -63,7 +64,6 @@ export namespace ILocationStore {
     export const BACKGROUND_LOCATION_TASK = 'BACKGROUND_LOCATION_TASK'
     export const SHIFT_END_TIME = 'SHIFT_END_TIME'
 }
-
 
 export interface INotificationStore extends IBaseStore {
     // hasPermission: boolean;
@@ -186,7 +186,7 @@ export namespace ISecretStore {
 }
 
 export interface IBottomDrawerStore extends IBaseStore {
-    readonly bottomDrawerTabTop: Animated.AnimatedNode
+    readonly bottomDrawerTabTop: Animated.Value
     expanded: boolean
     showing: boolean
     headerShowing: boolean
@@ -358,6 +358,24 @@ export namespace ISocketStore {
 export interface ISocketStore extends IBaseStore {
 
 }
+
+export const userStore = () => getStore<IUserStore>(IUserStore);
+export const locationStore = () => getStore<ILocationStore>(ILocationStore);
+export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
+export const dispatchStore = () => getStore<IDispatchStore>(IDispatchStore);
+export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateRequestStore);
+export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
+export const requestStore = () => getStore<IRequestStore>(IRequestStore);
+export const teamStore = () => getStore<ITeamStore>(ITeamStore);
+export const secretStore = () => getStore<ISecretStore>(ISecretStore);
+export const bottomDrawerStore = () => getStore<IBottomDrawerStore>(IBottomDrawerStore);
+export const nativeEventStore = () => getStore<INativeEventStore>(INativeEventStore);
+export const headerStore = () => getStore<IHeaderStore>(IHeaderStore);
+export const linkingStore = () => getStore<ILinkingStore>(ILinkingStore);
+export const newUserStore = () => getStore<INewUserStore>(INewUserStore);
+export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
+export const alertStore = () => getStore<IAlertStore>(IAlertStore);
+export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 
 export const AllStores = [
     IUserStore,

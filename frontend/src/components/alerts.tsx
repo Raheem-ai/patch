@@ -3,16 +3,13 @@ import React from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import { IAlertStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { alertStore, IAlertStore } from "../stores/interfaces";
 import { HeaderHeight } from "./header/header";
 
 
 
 export const Alerts = observer(() => {
-    const alertStore = getStore<IAlertStore>(IAlertStore);
-
-    const alertsToShow = !!alertStore.prompt || !!alertStore.toast;
+    const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
 
     const prompt = () => {
         const dimensions = Dimensions.get('screen');
@@ -20,18 +17,18 @@ export const Alerts = observer(() => {
         const top = dimensions.height / 3;
         const left = 20;
 
-        // const singleAction = alertStore.prompt.actions.length == 1;
+        // const singleAction = alertStoreInst().prompt.actions.length == 1;
 
-        return !!alertStore.prompt
+        return !!alertStore().prompt
             ? <View style={[styles.promptContainer, { width, top, left }]}>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <Text style={styles.promptMessageLabel}>{alertStore.prompt.message}</Text>
+                    <Text style={styles.promptMessageLabel}>{alertStore().prompt.message}</Text>
                 </ScrollView>
                 <View style={[styles.promptActionsContainer]}>
                     { 
-                        alertStore.prompt.actions.map(a => {
+                        alertStore().prompt.actions.map(a => {
                             const onPress = () => {
-                                alertStore.hidePrompt()
+                                alertStore().hidePrompt()
                                 a.onPress()
                             }
 
@@ -55,10 +52,10 @@ export const Alerts = observer(() => {
         const top = HeaderHeight + 20;
         const left = 20;
 
-        return !!alertStore.toast
+        return !!alertStore().toast
             ? <View style={[styles.toastContainer, { width, top, left }]}>
                 <ScrollView>
-                    <Text style={{ color: '#fff' }}>{alertStore.toast.message}</Text>
+                    <Text style={{ color: '#fff' }}>{alertStore().toast.message}</Text>
                 </ScrollView>
             </View>
             : null

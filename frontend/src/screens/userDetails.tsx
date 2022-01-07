@@ -8,44 +8,38 @@ import HelpRequestCard from "../components/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
 import { navigationRef } from "../navigation";
-import { IBottomDrawerStore, ILinkingStore, IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { linkingStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
 
 type Props = ScreenProps<'UserDetails'>;
 
 const UserDetails = observer(({ navigation, route }: Props) => {
-    const requestStore = getStore<IRequestStore>(IRequestStore);
-    const userStore = getStore<IUserStore>(IUserStore);
-    const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-    const linkingStore = getStore<ILinkingStore>(ILinkingStore);
-
     const [ loading, setLoading ] = useState(false)
 
     const header = () => {
 
         const removeUserFromOrg = async () => {
             setLoading(true);
-            await userStore.removeCurrentUserFromOrg();
+            await userStore().removeCurrentUserFromOrg();
             navigationRef.current?.goBack();
         }
 
         const startCall = async () => {
-            if (userStore.currentUser.phone) {
-                await linkingStore.call(userStore.currentUser.phone)
+            if (userStore().currentUser.phone) {
+                await linkingStore().call(userStore().currentUser.phone)
             }
         }
 
         const mailTo = async () => {
-            if (userStore.currentUser.email) {
-                await linkingStore.mailTo(userStore.currentUser.email)
+            if (userStore().currentUser.email) {
+                await linkingStore().mailTo(userStore().currentUser.email)
             }
         }
 
         const detailsText = [
-            userStore.currentUser.pronouns,
+            userStore().currentUser.pronouns,
             // TODO: add location here?
-            ...userStore.currentUser.organizations[userStore.currentOrgId].roles.map(r => UserRoleToLabelMap[r])
+            ...userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r])
         ].filter(text => !!text).join(` ${visualDelim} `);
 
         return <View style={styles.headerContainer}>
@@ -57,7 +51,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                     size={styles.profilePhotoIcon.width} />
             </View>
             <View style={styles.nameContainer}>
-                <Text style={styles.nameText}>{userStore.currentUser.name}</Text>
+                <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
             </View>
             <View style={styles.detailsContainer}>
                 <Text style={styles.detailsText}>{detailsText}</Text>
@@ -65,13 +59,13 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.skillsContainer}>
                 <Tags 
                 centered
-                    tags={userStore.currentUser.skills.map(skill => RequestSkillToLabelMap[skill])} 
+                    tags={userStore().currentUser.skills.map(skill => RequestSkillToLabelMap[skill])} 
                     verticalMargin={12} 
                     tagTextStyle={{ color: styles.skillTag.color }}
                     tagContainerStyle={{ backgroundColor: styles.skillTag.backgroundColor }}/>
             </View>
             <View style={styles.bioContainer}>
-                <Text style={styles.detailsText}>{userStore.currentUser.bio}</Text>
+                <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
             </View>
             <View style={styles.contactIconsContainer}>
                 <Pressable onPress={startCall} style={styles.contactIconContainer}>
@@ -90,7 +84,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 </Pressable>
             </View>
             {
-                userStore.isAdmin && userStore.user.id != userStore.currentUser.id 
+                userStore().isAdmin && userStore().user.id != userStore().currentUser.id 
                     ? <View style={styles.actionButtonsContainer}>
                         <Button 
                             mode= 'outlined'
@@ -108,7 +102,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
     }
 
     const currentResponse = () => {
-        if (!requestStore.currentUserActiveRequests.length) {
+        if (!requestStore().currentUserActiveRequests.length) {
             return null
         } 
 
@@ -119,7 +113,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 <Text style={styles.currentResponseText}>Responding</Text>
             </View>
             {
-                requestStore.currentUserActiveRequests.map(r => {
+                requestStore().currentUserActiveRequests.map(r => {
                     return (
                         <HelpRequestCard style={styles.activeRequestCard} request={r}/>
                     )

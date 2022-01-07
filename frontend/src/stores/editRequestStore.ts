@@ -1,10 +1,9 @@
 import { makeAutoObservable } from 'mobx';
-import { getStore, Store } from './meta';
-import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore } from './interfaces';
+import { Store } from './meta';
+import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore } from './interfaces';
 import { AddressableLocation, MinHelpRequest, RequestSkill, RequestType } from '../../../common/models';
 import { OrgContext, RequestContext } from '../../../common/api';
-import { getService } from '../services/meta';
-import { IAPIService } from '../services/interfaces';
+import { api } from '../services/interfaces';
 
 
 // TODO: turn this into UpsertRequestStore and have a computed 
@@ -14,10 +13,6 @@ import { IAPIService } from '../services/interfaces';
 // notes they wont conflict
 @Store(IEditRequestStore)
 export default class EditRequestStore implements IEditRequestStore  {
-
-    private userStore = getStore<IUserStore>(IUserStore);
-    private requestStore = getStore<IRequestStore>(IRequestStore);
-    private api = getService<IAPIService>(IAPIService)
 
     location: AddressableLocation = null
     type: RequestType[] = []
@@ -39,8 +34,8 @@ export default class EditRequestStore implements IEditRequestStore  {
 
     orgContext(): OrgContext {
         return {
-            token: this.userStore.authToken,
-            orgId: this.userStore.currentOrgId
+            token: userStore().authToken,
+            orgId: userStore().currentOrgId
         }
     }
 
@@ -62,8 +57,8 @@ export default class EditRequestStore implements IEditRequestStore  {
                 respondersNeeded: this.respondersNeeded
             }
 
-            const updatedReq = await this.api.editRequest(this.requestContext(reqId), req);
-            this.requestStore.updateReq(updatedReq);
+            const updatedReq = await api().editRequest(this.requestContext(reqId), req);
+            requestStore().updateReq(updatedReq);
         } catch (e) {
             console.error(e);
         }

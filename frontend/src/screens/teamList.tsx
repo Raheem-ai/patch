@@ -5,8 +5,7 @@ import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
 import ListHeader, { ListHeaderProps } from "../components/listHeader";
-import { ITeamStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { ITeamStore, IUserStore, teamStore, userStore } from "../stores/interfaces";
 import { ScreenProps, routerNames } from "../types";
 import { IconButton } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
@@ -27,20 +26,17 @@ const TeamSortByToLabelMap: { [key in TeamSortBy] : string } = {
 }
 
 const TeamList = observer(({ navigation, route }: Props) => {
-    const teamStore = getStore<ITeamStore>(ITeamStore);
-    const userStore = getStore<IUserStore>(IUserStore);
-
     const allFilters = allEnumValues<TeamFilter>(TeamFilter);
     const allSortBys = allEnumValues<TeamSortBy>(TeamSortBy);
 
     useEffect(() => {
-        teamStore.refreshUsers();
+        teamStore().refreshUsers();
     }, [])
 
     const headerProps: ListHeaderProps<TeamFilter, TeamSortBy> = {
         openHeaderLabel: 'People to show',
-        chosenFilter: teamStore.filter,
-        chosenSortBy: teamStore.sortBy,
+        chosenFilter: teamStore().filter,
+        chosenSortBy: teamStore().sortBy,
     
         filters: allFilters,
         sortBys: allSortBys,
@@ -56,8 +52,8 @@ const TeamList = observer(({ navigation, route }: Props) => {
         filterToOptionLabel: (filter: TeamFilter) => TeamFilterToLabelMap[filter],
         sortByToOptionLabel: (sortBy: TeamSortBy) => TeamSortByToLabelMap[sortBy],
     
-        onFilterUpdate: teamStore.setFilter,
-        onSortByUpdate: teamStore.setSortBy,
+        onFilterUpdate: teamStore().setFilter,
+        onSortByUpdate: teamStore().setSortBy,
 
         closedHeaderStyles: styles.closedFilterHeader
     }
@@ -66,7 +62,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
         return (event: GestureResponderEvent) => {
             event.stopPropagation()
 
-            userStore.pushCurrentUser(user);
+            userStore().pushCurrentUser(user);
             navigateTo(routerNames.userDetails);
         }
     }
@@ -77,12 +73,12 @@ const TeamList = observer(({ navigation, route }: Props) => {
                 { ...headerProps } />
             <ScrollView style={styles.scrollView}>
                 {
-                    teamStore.sortedUsers.map(r => {
+                    teamStore().sortedUsers.map(r => {
                         const goToDetails = goToResponder(r);
 
                         return (
                             <Pressable onPress={goToDetails} style={styles.listItemContainer}>
-                                <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore.currentOrgId} />
+                                <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
                                 <IconButton
                                     style={styles.goToResponderIcon}
                                     icon='chevron-right' 

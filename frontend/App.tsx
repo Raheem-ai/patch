@@ -8,7 +8,6 @@ import { StyleSheet, Text, View, Modal, Alert, StatusBar, SafeAreaView, Dimensio
 import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
-import { getStore } from './src/stores/meta';
 
 // // component imports
 import SignInForm from './src/components/SignInForm';
@@ -26,7 +25,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, notificationStore, userStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -65,10 +64,8 @@ export default function App() {
         bindStores();
         bindServices();
 
-        const notificationStore = getStore<INotificationStore>(INotificationStore);
-
         // setup notifications for both foreground/background scenarios
-        notificationStore.setup();
+        notificationStore().setup();
 
         (async () => {
             try {
@@ -84,7 +81,7 @@ export default function App() {
         })()
 
         return () => {
-            notificationStore.teardown();
+            notificationStore().teardown();
         }
 
     }, []);
@@ -100,12 +97,9 @@ export default function App() {
     }
 
     // safe to get here because isLoading doesn't get set until after store binding/init
-    const userStore = getStore<IUserStore>(IUserStore);
-    const linkingStore = getStore<ILinkingStore>(ILinkingStore);
-
-    const initialRoute = linkingStore.initialRoute
-        ? linkingStore.initialRoute
-        : userStore.signedIn
+    const initialRoute = linkingStore().initialRoute
+        ? linkingStore().initialRoute
+        : userStore().signedIn
             ? routerNames.userHomePage
             : routerNames.signIn
 
@@ -144,10 +138,8 @@ export default function App() {
 }
 
 const userScreen = function(Component: (props) => JSX.Element) {
-  return observer(function(props) {
-    const userStore = getStore<IUserStore>(IUserStore);
-    
-    return userStore.signedIn
+  return observer(function(props) {    
+    return userStore().signedIn
       ? <Component {...props} />
       : null
   })
@@ -158,8 +150,7 @@ const updateBottomDrawerRoute = function(state: NavigationState) {
 
   if (routeName) {
     runInAction(() => {
-      const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-      bottomDrawerStore.currentRoute = routeName
+      bottomDrawerStore().currentRoute = routeName
     })
   }
 }

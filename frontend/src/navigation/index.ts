@@ -1,7 +1,6 @@
 import { NavigationContainerRef, StackActions } from '@react-navigation/native';
 import React from 'react';
-import { IUserStore } from '../stores/interfaces';
-import { getStore } from '../stores/meta';
+import { IUserStore, userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
@@ -72,8 +71,7 @@ export const SubMenuOptions: SubMenuOption[] = [
   {
     name: 'Log out',
     onPress: () => {
-      const userStore = getStore<IUserStore>(IUserStore);
-      userStore.signOut();
+      userStore().signOut();
     }
   }
 ]

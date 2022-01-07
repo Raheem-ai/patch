@@ -5,16 +5,13 @@ import { IconButton, Text } from "react-native-paper";
 import { HeaderHeight } from "../components/header/header";
 import UserIcon from "../components/userIcon";
 import { useKeyboard } from "../hooks/useKeyboard";
-import { IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
+import { IRequestStore, IUserStore, requestStore, userStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 
 type Props = ScreenProps<'HelpRequestChat'>;
 
 const HelpRequestChat = observer(({ navigation, route }: Props) => {
-    const userStore = getStore<IUserStore>(IUserStore);
-    const requestStore = getStore<IRequestStore>(IRequestStore);
-    const request = requestStore.currentRequest;
+    const request = requestStore().currentRequest;
     const chat = request.chat;
     
     const dimensions = Dimensions.get('screen');
@@ -32,7 +29,7 @@ const HelpRequestChat = observer(({ navigation, route }: Props) => {
         });
 
         (async () => {
-            await requestStore.updateChatReceipt(request);
+            await requestStore().updateChatReceipt(request);
         })()
     }, [])
 
@@ -45,8 +42,8 @@ const HelpRequestChat = observer(({ navigation, route }: Props) => {
             <ScrollView ref={scrollRef}>
                 {
                     chat.messages.map((message) => {
-                        const user = userStore.users.get(message.userId); 
-                        const isMe = message.userId == userStore.user.id;
+                        const user = userStore().users.get(message.userId); 
+                        const isMe = message.userId == userStore().user.id;
                         const bubbleWidth = dimensions.width - (styles.userIcon.marginHorizontal * 3) - styles.userIcon.width;
 
                         return (
@@ -67,7 +64,7 @@ const HelpRequestChat = observer(({ navigation, route }: Props) => {
         setLoading(true)
         
         try {
-            await requestStore.sendMessage(request, message)
+            await requestStore().sendMessage(request, message)
             setLoading(false)
             setMessage('')
 

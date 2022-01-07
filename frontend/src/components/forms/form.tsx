@@ -1,14 +1,12 @@
 import React, { ComponentType, useCallback, useState } from "react";
 import { Button, Text, List, IconButton } from 'react-native-paper';
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput as RNTextInput, View } from "react-native";
-import { RequestSkill, RequestSkillCategory, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
 import { useRef } from "react";
 import { observer } from "mobx-react";
 import { debounce } from "lodash";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
-import { getStore } from "../../stores/meta";
 import { AddressableLocation } from "../../../../common/models";
 import { FormInputConfig, FormInputViewConfig, FormInputViewMap, SectionScreenProps, SectionViewProps } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
@@ -18,7 +16,7 @@ import { Colors } from "../../types";
 import ListInput from "./inputs/listInput";
 import TagListLabel from "./inputs/tagListLabel";
 import NestedListInput from "./inputs/nestedListInput";
-import { INativeEventStore } from "../../stores/interfaces";
+import { INativeEventStore, nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import Loader from "../loader";
@@ -91,9 +89,7 @@ export default class Form extends React.Component<FormProps> {
     listView = () => {
 
         const onPress = () => {
-            const nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
-
-            if (nativeEventStore.keyboardOpen) {
+            if (nativeEventStore().keyboardOpen) {
                 return Keyboard.dismiss()
             } 
         }
@@ -213,9 +209,7 @@ function Section(props: {
 }) {
 
     const expand = () => {
-        const nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
-
-        if (nativeEventStore.keyboardOpen) {
+        if (nativeEventStore().keyboardOpen) {
             return Keyboard.dismiss()
         } 
 

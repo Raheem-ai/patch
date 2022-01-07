@@ -1,10 +1,8 @@
 import { NotificationPayload, NotificationType } from "../../../common/models";
 import { NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
-import { IRequestStore, IUserStore } from "../stores/interfaces";
-import { getStore } from "../stores/meta";
-import { getService } from "../services/meta";
-import { IAPIService } from "../services/interfaces";
+import { requestStore, userStore } from "../stores/interfaces";
+import { api } from "../services/interfaces";
 
 export class NotificationHandlerDefinition<T extends NotificationType = any> {
     defaultRouteTo?: keyof RootStackParamList
@@ -34,10 +32,9 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            const requestStore = getStore<IRequestStore>(IRequestStore);
-                            await requestStore.init();
+                            await requestStore().init();
 
-                            await requestStore.confirmRequestAssignment(payload.orgId, payload.id);
+                            await requestStore().confirmRequestAssignment(payload.orgId, payload.id);
 
                         } catch (e) {
                             console.error(e);
@@ -54,14 +51,12 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            const api = getService<IAPIService>(IAPIService);
-                            await api.init();
+                            await api().init();
                             
-                            const userStore = getStore<IUserStore>(IUserStore);
-                            await userStore.init();
+                            await userStore().init();
 
-                            await api.declineRequestAssignment({ 
-                                token: userStore.authToken, 
+                            await api().declineRequestAssignment({ 
+                                token: userStore().authToken, 
                                 orgId: payload.orgId
                             }, payload.id);
                             

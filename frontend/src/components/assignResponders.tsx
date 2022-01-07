@@ -5,8 +5,7 @@ import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
 import { HelpRequest } from "../../../common/models"
 import { resolveErrorMessage } from "../errors"
-import { IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore } from "../stores/interfaces"
-import { getStore } from "../stores/meta"
+import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../stores/interfaces"
 import { Colors } from "../types"
 import { BottomDrawerViewVisualArea } from "./helpers/visualArea"
 import ResponderRow from "./responderRow"
@@ -16,60 +15,47 @@ const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
-    userStore = getStore<IUserStore>(IUserStore);
-    dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-    requestStore = getStore<IRequestStore>(IRequestStore);
-    bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-
     static raisedHeader = true;
 
     static submit = {
         isValid: () => {
-            const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-            return !!dispatchStore.selectedResponderIds.size
+            return !!dispatchStore().selectedResponderIds.size
         },
         action: async () => {
-            const requestStore = getStore<IRequestStore>(IRequestStore);
-            const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-            const bottomDrawerStore = getStore<IBottomDrawerStore>(IBottomDrawerStore);
-            const alertStore = getStore<IAlertStore>(IAlertStore);
-
-            const id = requestStore.currentRequest.id;
+            const id = requestStore().currentRequest.id;
 
             try {
-                await dispatchStore.assignRequest(id, Array.from(dispatchStore.selectedResponderIds.values()))
+                await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
             } catch(e) {
-                alertStore.toastError(resolveErrorMessage(e))
+                alertStore().toastError(resolveErrorMessage(e))
                 return
             }
 
-            alertStore.toastSuccess(`Notified ${dispatchStore.selectedResponderIds.size} responders`)
+            alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responders`)
 
-            bottomDrawerStore.hide()
+            bottomDrawerStore().hide()
         },
         label: () => {
-            const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-            const count = dispatchStore.selectedResponderIds.size;
+            const count = dispatchStore().selectedResponderIds.size;
             
             return `Notify ${count || 'selected'} responders`
         }
     }
 
     static onHide = () => {
-        const dispatchStore = getStore<IDispatchStore>(IDispatchStore);
-        dispatchStore.clear()
+        dispatchStore().clear()
     }
 
     toggleSelectAll = () => {
-        this.dispatchStore.toggleSelectAll();
+        dispatchStore().toggleSelectAll();
     }
 
     toggleResponder = (userId) => {
-        this.dispatchStore.toggleResponder(userId)
+        dispatchStore().toggleResponder(userId)
     }
     
     header = () => {
-        const displayIdParts = this.requestStore.currentRequest.displayId.split('-');
+        const displayIdParts = requestStore().currentRequest.displayId.split('-');
 
         return (
             <View style={styles.header}>
@@ -81,14 +67,14 @@ export default class AssignResponders extends React.Component {
                 </View>
                 <View>
                     <Text style={styles.headerSubTitle}>
-                        <Text style={styles.importantText}>Need {this.requestStore.currentRequest.respondersNeeded} people</Text>
+                        <Text style={styles.importantText}>Need {requestStore().currentRequest.respondersNeeded} people</Text>
                         <Text> with these skills:</Text>
                     </Text>
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap'}}>
                         { 
-                            this.requestStore.currentRequest.skills.map((s) => {
-                                const fulfilled = this.dispatchStore.selectedResponders.some(r => r.skills.includes(s));
+                            requestStore().currentRequest.skills.map((s) => {
+                                const fulfilled = dispatchStore().selectedResponders.some(r => r.skills.includes(s));
 
                                 return (
                                     <SkillTag style={{marginTop: 12, marginRight: 6}} skill={s} large type={fulfilled ? 'fulfilled': 'needed'} />
@@ -101,16 +87,16 @@ export default class AssignResponders extends React.Component {
     }
 
     responderActions = () => {
-        const selectAllText = this.dispatchStore.selectAll ? 'unselect all' : 'select all';
+        const selectAllText = dispatchStore().selectAll ? 'unselect all' : 'select all';
         return (
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{`${this.dispatchStore.assignableResponders.length} responders`}</Text>
+                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responders`}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
-                            icon={this.dispatchStore.selectAll ? 'check-circle' : 'check-circle-outline'}
-                            color={this.dispatchStore.selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
+                            icon={dispatchStore().selectAll ? 'check-circle' : 'check-circle-outline'}
+                            color={dispatchStore().selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
                     </Pressable>
@@ -118,8 +104,8 @@ export default class AssignResponders extends React.Component {
                 <View style={styles.includeOffDutyRow}>
                     <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
                         <Switch
-                            value={this.dispatchStore.includeOffDuty} 
-                            onValueChange={() => this.dispatchStore.toggleIncludeOffDuty()} 
+                            value={dispatchStore().includeOffDuty} 
+                            onValueChange={() => dispatchStore().toggleIncludeOffDuty()} 
                             color='#32D74B'/>
                 </View>
             </View>
@@ -131,9 +117,9 @@ export default class AssignResponders extends React.Component {
         return (
             <ScrollView style={{ flex: 1 }}>
                 { 
-                    this.dispatchStore.assignableResponders.map((r) => {
+                    dispatchStore().assignableResponders.map((r) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
-                        const isSelected = this.dispatchStore.selectedResponderIds.has(r.id);
+                        const isSelected = dispatchStore().selectedResponderIds.has(r.id);
 
                         const chooseResponder = () => this.toggleResponder(r.id)
 
@@ -143,8 +129,8 @@ export default class AssignResponders extends React.Component {
                                     onPress={chooseResponder}
                                     style={[styles.responderRowOverride, { maxWidth }]} 
                                     responder={r} 
-                                    orgId={this.userStore.currentOrgId} 
-                                    request={this.requestStore.currentRequest}
+                                    orgId={userStore().currentOrgId} 
+                                    request={requestStore().currentRequest}
                                     isSelected={isSelected}/>
                                 <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
                                     <IconButton
