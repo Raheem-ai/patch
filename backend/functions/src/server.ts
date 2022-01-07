@@ -12,9 +12,11 @@ import "@tsed/socketio";
 import config from './config';
 import { EnvironmentId } from "infra/src/environment";
 import dotenv from 'dotenv';
-import { resolve } from "path";
+import { join, resolve } from "path";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
+import { env } from "process";
+import { homedir } from "os";
 // need to upgrade to 6.95.3
 // import './errors/globalErrorFilter';
 
@@ -28,7 +30,7 @@ if (process.env.PATCH_LOCAL_ENV) {
   })
 }
 
-const isProd = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.prod];
+const isLocal = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.local];
 const mongoConnectionString = config.MONGO.get().connection_string;
 const redisConnectionString = config.REDIS.get().connection_string
 
@@ -36,6 +38,14 @@ const socketIOPubClient = createClient({
   url: redisConnectionString
 });
 const socketIOSubClient = socketIOPubClient.duplicate();
+
+if (isLocal) {
+  const root = process.env.RAHEEM_INFRA_ROOT || resolve(homedir(), '.raheem_infra');
+  // TODO: Document this
+  const googleCredsPath = join(root, '/config/raheem-staging-adc.json');
+
+  env.GOOGLE_APPLICATION_CREDENTIALS = googleCredsPath
+}
 
 @Configuration({
   rootDir,

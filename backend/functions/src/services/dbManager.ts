@@ -15,6 +15,7 @@ import timespace from '@mapbox/timespace';
 import { AtLeast } from "common";
 import moment from 'moment';
 import Notifications, { NotificationMetadata } from "./notifications";
+import { PubSubService } from "./pubSubService";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -27,6 +28,7 @@ export class DBManager {
     @Inject(HelpRequestModel) requests: Model<HelpRequestModel>
 
     @Inject(MongooseService) db: MongooseService;
+    @Inject(PubSubService) pubSub: PubSubService;
     // @Inject(Notifications) notifications: Notifications;
 
     // the 'me' api handles returning non-system props along with personal
