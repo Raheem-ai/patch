@@ -2,7 +2,7 @@ import { BodyParams, Controller, Inject, Post, Req } from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { UserOrgConfig, UserRole } from "common/models";
+import { PatchEventType, UserOrgConfig, UserRole } from "common/models";
 import { request } from "express";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
@@ -10,12 +10,14 @@ import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
+import { PubSubService } from "../services/pubSubService";
 
 @Controller(API.namespaces.responder)
 export class ResponderController implements APIController<'confirmRequestAssignment' | 'declineRequestAssignment' | 'setOnDutyStatus' | 'joinRequest' | 'leaveRequest'> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
+    @Inject(PubSubService) pubSub: PubSubService;
 
     @Post(API.server.confirmRequestAssignment())
     @RequireRoles([UserRole.Responder])
@@ -24,7 +26,14 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.confirmRequestAssignment(requestId, user.id);
+        const res = await this.db.confirmRequestAssignment(requestId, user.id);
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersAccepted, {
+            responderId: user.id,
+            requestId
+        })
+
+        return res;
     }
 
     @Post(API.server.declineRequestAssignment())
@@ -34,7 +43,14 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.declineRequestAssignment(requestId, user.id);
+        const res = await this.db.declineRequestAssignment(requestId, user.id);
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersDeclined, {
+            responderId: user.id,
+            requestId
+        })
+
+        return res;
     }
 
     @Post(API.server.setOnDutyStatus())
@@ -51,6 +67,10 @@ export class ResponderController implements APIController<'confirmRequestAssignm
 
         const updatedUser = await user.save();
 
+        await this.pubSub.sys(onDuty ? PatchEventType.UserOnDuty : PatchEventType.UserOffDuty, {
+            userId: user.id
+        })
+
         return this.db.me(updatedUser);
     }
 
@@ -61,7 +81,14 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.confirmRequestAssignment(requestId, user.id)
+        const res = await this.db.confirmRequestAssignment(requestId, user.id)
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
+            responderId: user.id,
+            requestId
+        })
+
+        return res;
     }
 
     @Post(API.server.leaveRequest())
@@ -71,6 +98,13 @@ export class ResponderController implements APIController<'confirmRequestAssignm
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
-        return await this.db.declineRequestAssignment(requestId, user.id)
+        const res = await this.db.declineRequestAssignment(requestId, user.id)
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersLeft, {
+            responderId: user.id,
+            requestId
+        })
+
+        return res;
     }
 }

@@ -69,8 +69,8 @@ export default class UserStore implements IUserStore {
     }
 
     get isOnDuty() {
-        if (!this.isResponder) {
-            return false;
+        if (!this.currentOrgId) {
+            return false
         }
 
         const org = this.user.organizations[this.currentOrgId];

@@ -393,18 +393,14 @@ export class DBManager {
         return this.requests.find(query);
     }
 
-    async getActiveRequests(orgId: string): Promise<HelpRequestDoc[]> {
+    async getSpecificRequests(orgId: string, requestIds: string[]): Promise<HelpRequestDoc[]> {
         return this.getRequests({ orgId })
-            .where('status').ne(RequestStatus.Done);
-    }
-
-    async getFinishedRequests(orgId: string): Promise<HelpRequestDoc[]> {
-        return this.getRequests({ orgId })
-            .where('status').equals(RequestStatus.Done);
+            .where({ _id: { $in: requestIds } });
     }
 
     async getAllRequests(orgId: string): Promise<HelpRequestDoc[]> {
-        return this.getRequests({ orgId });
+        return this.getRequests({ orgId })
+            .sort({ createdAt: 'asc' });
     }
 
     async sendMessageToReq(user: UserDoc, helpRequest: HelpRequestDoc, message: string): Promise<HelpRequestDoc> {

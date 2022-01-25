@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { makePersistable } from "mobx-persist-store";
-import { persistentKey, PersistentStorage, securelyPersistentKey } from "../meta";
+import { persistentKey, persistentPropConfigKey, PersistentStorage, securelyPersistentKey } from "../meta";
 import { getStore } from "../stores/meta";
 
 export function Service({ id }: { id: Symbol }) {
@@ -19,6 +19,7 @@ export function Service({ id }: { id: Symbol }) {
                 initPromise = (async () => {
                     const persistentProps = ctr.prototype[persistentKey] || [];
                     const securelyPersistentProps = ctr.prototype[securelyPersistentKey] || [];
+                    const persistentPropConfigs = ctr.prototype[persistentPropConfigKey] || {};
 
                     const allPersistentProps = [...persistentProps, ...securelyPersistentProps]
 
@@ -26,7 +27,8 @@ export function Service({ id }: { id: Symbol }) {
                         await makePersistable(this, { 
                             name: id.toString(), 
                             properties: allPersistentProps,
-                            storage: new PersistentStorage(securelyPersistentProps)
+                            stringify: false,
+                            storage: new PersistentStorage(securelyPersistentProps, persistentPropConfigs)
                         });
                     }
 

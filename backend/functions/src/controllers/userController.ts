@@ -4,7 +4,7 @@ import { MongooseModel } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
 import { Enum, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { BasicCredentials, EditableMe, EditableUser, Location, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
+import { BasicCredentials, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -13,6 +13,7 @@ import { APIController, OrgId } from ".";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import config from '../config';
+import { PubSubService } from "../services/pubSubService";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -98,6 +99,7 @@ export class UsersController implements APIController<
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
+    @Inject(PubSubService) pubSub: PubSubService;
 
     @Post(API.server.refreshAuth())
     async refreshAuth(
@@ -160,10 +162,17 @@ export class UsersController implements APIController<
             const accessToken = await createAccessToken(newUser.id, newUser.auth_etag)
             const refreshToken = await createRefreshToken(newUser.id, newUser.auth_etag)
 
-            return {
+            const res = {
                 accessToken,
                 refreshToken
             }
+
+            await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
+                userId: newUser.id,
+                orgId: orgId
+            })
+
+            return res
         }
     }
 
@@ -261,7 +270,13 @@ export class UsersController implements APIController<
         @User() user: UserDoc,
         @BodyParams('me') me: ValidatedMe
     ) {
-        return await this.db.updateUser(user, me);
+        const res = await this.db.updateUser(user, me);
+
+        await this.pubSub.sys(PatchEventType.UserEdited, { 
+            userId: user.id,
+        })
+
+        return res;
     }
 
     @Post(API.server.editUser())
@@ -272,7 +287,13 @@ export class UsersController implements APIController<
         @BodyParams('userId') userId: string,
         @BodyParams('user') updatedUser: ValidatedEditableUser
     ) {
-        return await this.db.updateUser(userId, updatedUser);
+        const res = await this.db.updateUser(userId, updatedUser);
+
+        await this.pubSub.sys(PatchEventType.UserEdited, { 
+            userId,
+        })
+
+        return res;
     }
 
 }

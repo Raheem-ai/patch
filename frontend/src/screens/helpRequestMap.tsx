@@ -29,11 +29,11 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     }, [])
 
     useEffect(() => {
-        if (!requestStore().requests.length) {
+        if (!requestStore().filteredSortedRequests.length) {
             return
         }
 
-        const req = requestStore().requests[idx - 1];
+        const req = requestStore().filteredSortedRequests[idx - 1];
 
         setTimeout(() => {
             mapInstance.current.animateCamera({ center: {
@@ -74,7 +74,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
         if (Math.abs(delta) >= ((1/3) * windowDimensions.width)) {
             if (delta < 0) {
-                if (idx == requestStore().requests.length) {
+                if (idx == requestStore().filteredSortedRequests.length) {
                     setDeltaTouchX(0);
                     return
                 }
@@ -110,7 +110,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 
     const goToActiveRequest = () => {
-        const activeIdx = requestStore().requests.findIndex(r => r.id == requestStore().activeRequest?.id);
+        const activeIdx = requestStore().filteredSortedRequests.findIndex(r => r.id == requestStore().activeRequest?.id);
 
         if (activeIdx != -1) {
             console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
@@ -128,15 +128,15 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                 showsUserLocation={true}
                 initialRegion={initialRegion}
                 style={{ height: height }}>
-                    { requestStore().requests.length 
+                    { requestStore().filteredSortedRequests.length 
                             ? <Marker
                                 coordinate={{ 
-                                    latitude: requestStore().requests[idx - 1].location.latitude, 
-                                    longitude: requestStore().requests[idx - 1].location.longitude }} />
+                                    latitude: requestStore().filteredSortedRequests[idx - 1].location.latitude, 
+                                    longitude: requestStore().filteredSortedRequests[idx - 1].location.longitude }} />
                             : null }
             </MapView>
             <View style={[styles.bottomOverlay, bottomUIOffset ? { bottom: styles.bottomOverlay.bottom + bottomUIOffset } : null ]}>
-                { !!requestStore()?.activeRequest?.id && requestStore().activeRequest.id != requestStore().requests?.[idx - 1]?.id
+                { !!requestStore()?.activeRequest?.id && requestStore().activeRequest.id != requestStore().filteredSortedRequests?.[idx - 1]?.id
                     ? <View style={styles.returnIconContainer} onTouchStart={goToActiveRequest}>
                         <IconButton
                             style={styles.returnIcon}
@@ -152,7 +152,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}>
                     {
-                        requestStore().requests.map(r => {
+                        requestStore().filteredSortedRequests.map(r => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
                                     <HelpRequestCard 

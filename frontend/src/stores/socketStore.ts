@@ -1,10 +1,11 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { ISocketStore, userStore } from './interfaces';
+import { ISocketStore, requestStore, updateStore, userStore } from './interfaces';
 import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../api';
 import { api } from '../services/interfaces';
+import { PatchEventType, PatchUIEvent, PatchUIEventPacket, PatchUIEventParams } from '../../../common/models';
 
 @Store(ISocketStore)
 export default class SocketStore implements ISocketStore {
@@ -56,22 +57,14 @@ export default class SocketStore implements ISocketStore {
             console.log('disconnect', args)
         })
 
-        this.socket.on('message', (args, cb?) => {
+        this.socket.on('message', async (args, cb?) => {
             cb?.()
-            console.log('message', args)
+            await updateStore().onUIEvent(args);
         })
 
         // reconnection tings
         this.socket.io.on('reconnect', (...args) => {
             console.log('reconnect', args)
-        })
-        
-        this.socket.io.on('reconnect_attempt', (attempt) => {
-            console.log('reconnect_attempt', attempt)
-
-            if (attempt > 3) {
-                this.socket.close()
-            }
         })
         
         this.socket.io.on('reconnect_error', (args) => {
@@ -80,10 +73,6 @@ export default class SocketStore implements ISocketStore {
         
         this.socket.io.on('reconnect_failed', (...args) => {
             console.log('reconnect_failed', args)
-        })
-
-        this.socket.on('HELLO', () => {
-
         })
 
         when(() => !userStore().signedIn, () => {

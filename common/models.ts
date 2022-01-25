@@ -292,7 +292,8 @@ export type Location = {
 
 export enum NotificationType {
     AssignedIncident = 'ai',
-    BroadCastedIncident = 'bi'
+    BroadCastedIncident = 'bi',
+    UIUpdate = 'uiu'
 }
 
 export type NotificationPayloads = {
@@ -303,6 +304,9 @@ export type NotificationPayloads = {
     [NotificationType.BroadCastedIncident]: {
         id: string,
         orgId: string
+    },
+    [NotificationType.UIUpdate]: {
+        uiEvent: PatchUIEventPacket
     }
 }
 
@@ -332,3 +336,133 @@ export type LinkParams = {
         pendingId: string
     } 
 } 
+
+export enum PatchEventType {
+    // User.System.<_>
+    UserForceLogout = '0.0.0',
+    UserCreated = '0.0.1',
+    UserEdited = '0.0.2',
+    UserDeleted = '0.0.3',
+
+    // User.Org.<_>
+    UserAddedToOrg = '0.1.0',
+    UserRemovedFromOrg = '0.1.1',
+    UserChangedRolesInOrg = '0.1.2',
+
+    // User.Duty.<_>
+    UserOnDuty = '0.2.0',
+    UserOffDuty = '0.2.1',
+
+    // Request.System.<_>
+    RequestCreated = '1.0.0',
+    RequestEdited =	'1.0.1',
+    RequestDeleted = '1.0.2',
+
+    // Request.Responders.<_>
+    RequestRespondersAssigned =	'1.1.0',
+    RequestRespondersAccepted =	'1.1.1',
+    RequestRespondersJoined =	'1.1.2',
+    RequestRespondersDeclined =	'1.1.3',
+    RequestRespondersLeft =	'1.1.4',
+    RequestRespondersRemoved =	'1.1.5',
+
+    // Request.Chat.<_>
+    RequestChatNewMessage =	'1.2.0',
+}
+
+export type PatchEventParams = {
+    [PatchEventType.UserForceLogout]: {
+        userId: string
+    },
+    [PatchEventType.UserCreated]: {}
+    [PatchEventType.UserEdited]: {
+        userId: string
+    },
+    [PatchEventType.UserDeleted]: {
+        userId: string
+    }, 
+    [PatchEventType.UserAddedToOrg]: {
+        userId: string,
+        orgId: string
+    }, 
+    [PatchEventType.UserRemovedFromOrg]: {
+        userId: string,
+        orgId: string
+    }, 
+    [PatchEventType.UserChangedRolesInOrg]: {
+        userId: string,
+        orgId: string
+    }, 
+    [PatchEventType.UserOnDuty]: {
+        userId: string
+    }, 
+    [PatchEventType.UserOffDuty]: {
+        userId: string
+    }, 
+    [PatchEventType.RequestCreated]: {
+        requestId: string
+    }, 
+    [PatchEventType.RequestEdited]: {
+        requestId: string
+    }, 
+    [PatchEventType.RequestDeleted]: {
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersAssigned]: {
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersAccepted]: {
+        responderId: string,
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersJoined]: {
+        responderId: string,
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersDeclined]: {
+        responderId: string,
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersLeft]: {
+        responderId: string,
+        requestId: string
+    }, 
+    [PatchEventType.RequestRespondersRemoved]: {
+        responderId: string,
+        requestId: string
+    }, 
+    [PatchEventType.RequestChatNewMessage]: {
+        requestId: string,
+        userId: string
+    }, 
+}
+
+export type PatchEventPacket<T extends PatchEventType = any> = {
+    event: T,
+    params: PatchEventParams[T]
+}
+
+export enum PatchUIEvent {
+    ForceLogout = 'fl',
+    UpdateResource = 'ur'
+}
+
+export type PatchUIEventParams = {
+    [PatchUIEvent.ForceLogout]: {
+        refreshToken: string
+    },
+    [PatchUIEvent.UpdateResource]: {
+        orgId?: string
+        requestId?: string
+        userId?: string
+        userList?: boolean,
+        requestList?: boolean
+    },
+}
+
+export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent extends PatchEventType = any> = {
+    event: UIEvent
+    params: PatchUIEventParams[UIEvent]
+    sysEvent: SysEvent
+    sysParams: PatchEventParams[SysEvent]
+}

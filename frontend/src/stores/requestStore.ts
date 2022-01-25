@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, reaction, runInAction, set, when } from 'mobx';
+import { autorun, makeAutoObservable, ObservableMap, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
 import { IRequestStore, IUserStore, userStore } from './interfaces';
 import { OrgContext, RequestContext } from '../../../common/api';
@@ -11,8 +11,19 @@ export default class RequestStore implements IRequestStore {
 
     loading = false;
 
-    @securelyPersistent() requests: HelpRequest[] = [];
-    @persistent() currentRequestIdxStack: number[] = [-1];
+    @securelyPersistent({
+        // TODO: create standard decorators to handle this de/serialization
+        // Could also allow for serialization into classes from raw json 
+        resolvers: {
+            toJSON: (val: ObservableMap) => {
+                return val.entries ? val.entries() : {}
+            },
+            fromJSON: (entries) => new ObservableMap(entries)
+        }
+    }) requests: Map<string, HelpRequest> = new ObservableMap();
+    
+    // make this a stack of req ids
+    @persistent() currentRequestIdStack: string[] = [];
     @persistent() filter = HelpRequestFilter.Active;
     @persistent() sortBy = HelpRequestSortBy.ByTime;
 
@@ -29,18 +40,31 @@ export default class RequestStore implements IRequestStore {
             when(() => userStore().signedIn, this.getRequestsAfterSignin)
         }
     }
+
+    get requestsArray() {
+        return Array.from(this.requests.values());
+    }
     
-    get currentRequestIdx() {
-        return this.currentRequestIdxStack[this.currentRequestIdxStack.length - 1];
+    get currentRequestId() {
+        const idx = this.currentRequestIdStack.length - 1;
+        
+        return idx >= 0 
+            ? this.currentRequestIdStack[idx]
+            : null;
     }
 
-    set currentRequestIdx(idx) {
-        this.currentRequestIdxStack[this.currentRequestIdxStack.length - 1] = idx;
+    set currentRequestId(id) {
+        const idx = this.currentRequestIdStack.length - 1;
+
+        if (idx >= 0) {
+            this.currentRequestIdStack[this.currentRequestIdStack.length - 1] = id;
+        } else {
+            this.currentRequestIdStack.push(id)
+        }
     }
 
     get currentRequest() {
-        const idx = this.currentRequestIdx + 1;
-        return this.requests.length && (idx <= this.requests.length - 1) ? this.requests[idx] : null;
+        return this.requests.get(this.currentRequestId) || null
     }
 
     get activeRequest() {
@@ -50,11 +74,11 @@ export default class RequestStore implements IRequestStore {
     }
 
     get activeRequests() {
-        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().user.id));
+        return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().user.id));
     }
 
     get currentUserActiveRequests() {
-        return this.requests.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().currentUser?.id));
+        return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().currentUser?.id));
     }
 
     getRequestsAfterSignin = async () => {
@@ -67,9 +91,9 @@ export default class RequestStore implements IRequestStore {
 
     clear() {
         runInAction(() => {
-            this.requests = []
+            this.requests.clear();
             // this.currentRequest = null
-            this.currentRequestIdxStack = [-1]
+            this.currentRequestIdStack = []
             // this.activeRequest = null
             // this.activeRequests = []
         })
@@ -89,8 +113,21 @@ export default class RequestStore implements IRequestStore {
         } 
     }
 
-    get sortedRequests(): HelpRequest[] {
-        return this.requests.slice().sort((a, b) => {
+    get filteredRequests(): HelpRequest[] {
+        return this.requestsArray.filter((r) => {
+            switch (this.filter) {
+                case HelpRequestFilter.Active:
+                    return r.status != RequestStatus.Done
+                case HelpRequestFilter.Finished:
+                    return r.status == RequestStatus.Done
+                case HelpRequestFilter.All:
+                    return true;
+            }
+        })
+    }
+
+    get filteredSortedRequests(): HelpRequest[] {
+        return this.filteredRequests.sort((a, b) => {
             switch (this.sortBy) {
                 case HelpRequestSortBy.ByTime:
                     return this.sortByTime(a, b)
@@ -142,8 +179,8 @@ export default class RequestStore implements IRequestStore {
     async tryPopRequest() {
         // TODO: this being used for the map index and for the current request for other views
         // is making the header flash old reqeuest ids when you go detailsA > ActiveRequesDetails > back > back
-        if (this.currentRequestIdxStack.length > 1) {
-            this.currentRequestIdxStack.pop();
+        if (this.currentRequestIdStack.length > 1) {
+            this.currentRequestIdStack.pop();
         }
     }
     
@@ -170,19 +207,12 @@ export default class RequestStore implements IRequestStore {
             // related objects to save us a round trip call for this and other tings
             await userStore().updateOrgUsers(Array.from(userIdSet.values()));
 
-            let idx = this.requests.findIndex((r => r.id == req.id));
+            // let idx = this.requestsArray.findIndex((r => r.id == req.id));
 
-            runInAction(() => {
-                if (idx < 0) {
-                    // add request if we don't have it already
-                    this.requests.push(req);
-                    idx = this.requests.length - 1;
-                } else {
-                    // update req if we have it already
-                    this.updateReq(req, idx);
-                }
+            runInAction(() => {                
+                this.updateOrAddReq(req);
                 
-                this.currentRequestIdxStack.push(idx - 1);
+                this.currentRequestIdStack.push(req.id);
 
                 this.loading = false
             })
@@ -195,12 +225,12 @@ export default class RequestStore implements IRequestStore {
         }
     }
     
-    async getRequests(): Promise<void> {
+    async getRequests(requestIds?: string[]): Promise<void> {
         try {
             const oldCurrentReqId = this.currentRequest?.id;
             let possibleUpdatedCurrentReq:  HelpRequest;
 
-            const requests = await api().getRequests(this.orgContext(), this.filter);
+            const requests = await api().getRequests(this.orgContext(), requestIds);
 
             const userIdSet = new Set<string>();
 
@@ -222,7 +252,7 @@ export default class RequestStore implements IRequestStore {
             await userStore().updateOrgUsers(Array.from(userIdSet.values()));
 
             runInAction(() => {
-                this.requests = requests;
+                requests.forEach(r => this.updateOrAddReq(r))
                 this.setCurrentRequest(possibleUpdatedCurrentReq)
             })
         } catch (e) {
@@ -230,36 +260,45 @@ export default class RequestStore implements IRequestStore {
         }
     }
 
+    async getRequest(requestId: string) {
+        const req = await api().getRequest(this.orgContext(), requestId);
+
+        const userIdSet = new Set<string>();
+
+        const allAssignedUserIds = req.assignments.reduce<string[]>((arr, r) => { 
+            arr.push(...r.responderIds);
+            return arr;
+        }, []);
+
+        [ req.dispatcherId, ...req.assignedResponderIds, ...req.declinedResponderIds, ...allAssignedUserIds].forEach(id => userIdSet.add(id));
+
+        // TODO: might be worth having a common response type that returns 
+        // related objects to save us a round trip call for this and other tings
+        await userStore().updateOrgUsers(Array.from(userIdSet.values()));
+
+        runInAction(() => {
+            this.updateOrAddReq(req)
+        })
+    }
+
     setCurrentRequest(request?: HelpRequest) {
         if (!request) {
-            return runInAction(() => {
-                this.currentRequestIdx = -1;
-            })
-        }
-
-        const idx = this.requests.findIndex(r => r.id == request.id);
-
-        if (idx < 0) {
-            console.error('THIS SHOULD NEVER HAPPEN')
-            
-            return runInAction(() => {
-                this.currentRequestIdx = -1;
-            })
+            return
         }
 
         runInAction(() => {
-            this.currentRequestIdx = idx - 1;
+            this.currentRequestId = request.id;
         })
     }
 
     async setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void> {
         const req = await api().setRequestStatus(this.requestContext(requestId), status);
-        this.updateReq(req);
+        this.updateOrAddReq(req);
     }
 
     async resetRequestStatus(requestId: string): Promise<void> {
         const req = await api().resetRequestStatus(this.requestContext(requestId));
-        this.updateReq(req);
+        this.updateOrAddReq(req);
     }
 
     async updateChatReceipt(request: HelpRequest): Promise<void> {
@@ -272,7 +311,7 @@ export default class RequestStore implements IRequestStore {
                 token: userStore().authToken
             }, chat.lastMessageId)
 
-            this.updateReq(updatedReq)
+            this.updateOrAddReq(updatedReq)
         }
     }
 
@@ -282,43 +321,43 @@ export default class RequestStore implements IRequestStore {
             message
         );
 
-        this.updateReq(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async joinRequest(requestId: string) {
         const updatedReq = await api().joinRequest(this.orgContext(), requestId);
-        this.updateReq(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async leaveRequest(requestId: string) {
         const updatedReq = await api().leaveRequest(this.orgContext(), requestId);
-        this.updateReq(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async removeUserFromRequest(userId: string, requestId: string) {
         const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId);
-        this.updateReq(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
-    updateOrAddReq(updatedReq: HelpRequest, givenIndex?: number) {
-        this.updateReq(updatedReq, givenIndex) || this.requests.push(updatedReq);
+    updateOrAddReq(updatedReq: HelpRequest) {
+        this.requests.set(updatedReq.id, updatedReq);
     }
 
-    updateReq(updatedReq: HelpRequest, givenIndex?: number) {
-        const index = typeof givenIndex == 'number' 
-            ? givenIndex
-            : this.requests.findIndex(r => r.id == updatedReq.id);
+    // updateReq(updatedReq: HelpRequest, givenIndex?: number) {
+    //     const index = typeof givenIndex == 'number' 
+    //         ? givenIndex
+    //         : this.requestsArray.findIndex(r => r.id == updatedReq.id);
 
-        if (index != -1) {
-            runInAction(() => {
-                for (const prop in updatedReq) {
-                    this.requests[index][prop] = updatedReq[prop]
-                }
-            })
+    //     if (index != -1) {
+    //         runInAction(() => {
+    //             for (const prop in updatedReq) {
+    //                 this.requestsArray[index][prop] = updatedReq[prop]
+    //             }
+    //         })
 
-            return true;
-        } else {
-            return false;
-        }
-    }
+    //         return true;
+    //     } else {
+    //         return false;
+    //     }
+    // }
 }

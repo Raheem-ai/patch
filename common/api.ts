@@ -89,7 +89,7 @@ export interface IApiClient {
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
     getRespondersOnDuty: AuthenticatedWithOrg<() => Promise<ProtectedUser[]>>
-    getRequests: AuthenticatedWithOrg<(filter: HelpRequestFilter) => Promise<HelpRequest[]>>
+    getRequests: AuthenticatedWithOrg<(requestIds?: string[]) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
     

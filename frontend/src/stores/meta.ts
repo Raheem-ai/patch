@@ -1,6 +1,6 @@
 import { Container, injectable } from "inversify";
 import { getPersistedStore, makePersistable } from 'mobx-persist-store';
-import { container, persistentKey, PersistentStorage, securelyPersistentKey } from "../meta";
+import { container, persistentKey, persistentPropConfigKey, PersistentStorage, securelyPersistentKey } from "../meta";
 
 export function getStore<T>({ id }: { id: symbol }): T {
     return container.get(id);
@@ -22,6 +22,7 @@ export function Store({ id }: { id: Symbol }) {
                 initPromise = (async () => {
                     const persistentProps = ctr.prototype[persistentKey] || [];
                     const securelyPersistentProps = ctr.prototype[securelyPersistentKey] || [];
+                    const persistentPropConfigs = ctr.prototype[persistentPropConfigKey] || {};
 
                     const allPersistentProps = [...persistentProps, ...securelyPersistentProps]
 
@@ -30,7 +31,8 @@ export function Store({ id }: { id: Symbol }) {
                             // to get around the minification of constructor names for prod
                             name: id.toString(), 
                             properties: allPersistentProps,
-                            storage: new PersistentStorage(securelyPersistentProps)
+                            stringify: false,
+                            storage: new PersistentStorage(securelyPersistentProps, persistentPropConfigs)
                         });
                     }
 

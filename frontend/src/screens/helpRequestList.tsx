@@ -57,7 +57,7 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
                 { ...headerProps } />
             <ScrollView style={{ flex: 1}}>
                 {
-                    requestStore().sortedRequests.map(r => {
+                    requestStore().filteredSortedRequests.map(r => {
                         return (
                             <HelpRequestCard style={styles.card} key={r.id} request={r} />
                         )

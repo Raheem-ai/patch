@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -132,10 +132,11 @@ export namespace IRequestStore {
 }
 
 export interface IRequestStore extends IBaseStore {
-    requests: HelpRequest[]
-    sortedRequests: HelpRequest[]
+    requests: Map<string, HelpRequest>
+    requestsArray: HelpRequest[]
+    filteredSortedRequests: HelpRequest[]
     currentRequest: HelpRequest
-    currentRequestIdx: number
+    currentRequestId: string
     activeRequest: HelpRequest
     currentUserActiveRequests: HelpRequest[]
     loading: boolean
@@ -145,7 +146,8 @@ export interface IRequestStore extends IBaseStore {
 
     setSortBy(sortBy: HelpRequestSortBy): void
     setFilter(filter: HelpRequestFilter): Promise<void>
-    getRequests(): Promise<void>
+    getRequests(requestIds?: string[]): Promise<void>
+    getRequest(requestId: string): Promise<void>
     pushRequest(requestId: string): Promise<void>
     tryPopRequest(): Promise<void>
     setCurrentRequest(request: HelpRequest): void;
@@ -153,7 +155,8 @@ export interface IRequestStore extends IBaseStore {
     resetRequestStatus(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
-    updateReq(updatedReq: HelpRequest): void
+    // updateReq(updatedReq: HelpRequest): void
+    updateOrAddReq(updatedReq: HelpRequest): void
     confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
     joinRequest(reqId: string): Promise<void>
     leaveRequest(reqId: string): Promise<void>
@@ -359,6 +362,14 @@ export interface ISocketStore extends IBaseStore {
 
 }
 
+export namespace IUpdateStore {
+    export const id = Symbol('IUpdateStore');
+}
+
+export interface IUpdateStore extends IBaseStore {
+    onUIEvent(packet: PatchUIEventPacket) : Promise<void>
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -376,6 +387,7 @@ export const newUserStore = () => getStore<INewUserStore>(INewUserStore);
 export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
 export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
+export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
 
 export const AllStores = [
     IUserStore,
@@ -394,7 +406,8 @@ export const AllStores = [
     INewUserStore,
     IEditUserStore,
     IAlertStore,
-    ISocketStore
+    ISocketStore,
+    IUpdateStore
 ]
 
 /**  

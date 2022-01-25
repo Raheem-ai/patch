@@ -64,13 +64,12 @@ const Header = observer((props: Props) => {
                     <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 20 }]}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
-                    { userStore().isResponder
-                        ? <View style={styles.onDutyStatusContainer}>
+                    { 
+                        <View style={styles.onDutyStatusContainer}>
                             <View style={[styles.onDutyStatusOutline, { borderColor: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>
                                 <Text style={[styles.onDutyStatusText, { color: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>{userStore().isOnDuty ? 'READY': 'OFF-DUTY'}</Text>
                             </View>
                         </View>
-                        : null
                     }
                     <View style={styles.rightIconContainer}>
                         {

@@ -26,4 +26,4 @@ export const sleep = (ms: number) => {
     return new Promise((res) => setTimeout(res, ms));
 }
 
-type NotAFunction<T> = T extends Function ? never : T;
+export type NotAFunction<T> = T extends Function ? never : T;

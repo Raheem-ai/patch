@@ -4,7 +4,7 @@ import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
-import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, ResponderRequestStatuses, UserRole } from "common/models";
+import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, PatchEventType, ResponderRequestStatuses, UserRole } from "common/models";
 import { assignedResponderBasedRequestStatus } from "common/utils/requestUtils";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
@@ -14,7 +14,8 @@ import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
-import { MySocketService } from "../services/socketService";
+import { PubSubService } from "../services/pubSubService";
+import { UIUpdateService } from "../services/uiUpdateService";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -25,10 +26,13 @@ export class ValidatedMinOrg implements MinOrg {
 @Controller(API.namespaces.request)
 export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
     @Inject(DBManager) db: DBManager;
-    @Inject(MySocketService) mySocketService: MySocketService;
+
+    // TODO: find a better place to inject this so it is instantiated
+    @Inject(UIUpdateService) uiUpdateService: UIUpdateService;
 
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;
+    @Inject(PubSubService) pubSub: PubSubService;
 
     includeVirtuals(helpRequest: HelpRequestDoc): HelpRequest {
         return helpRequest.toObject({ virtuals: true });
@@ -43,7 +47,11 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     ) {
         const createdReq = await this.db.createRequest(request, orgId, user.id);
 
-        return this.includeVirtuals(createdReq);
+        const res = this.includeVirtuals(createdReq);
+
+        await this.pubSub.sys(PatchEventType.RequestCreated, { requestId: res.id });
+
+        return res;
     }
 
     @Get(API.server.getRequest())
@@ -55,7 +63,9 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         // path params
         @RequestId() requestId: string
     ) {
-        return this.includeVirtuals((await this.db.resolveRequest(requestId)))
+        const res = this.includeVirtuals((await this.db.resolveRequest(requestId)))
+
+        return res;
     }
 
     @Post(API.server.getRequests())
@@ -63,15 +73,12 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     async getRequests(
         @OrgId() orgId: string,
         @User() user: UserDoc,
-        @BodyParams('filter') filter: HelpRequestFilter
+        @BodyParams('requestIds') requestIds?: string[]
     ) {
-        switch (filter) {
-            case HelpRequestFilter.Active:
-                return (await this.db.getActiveRequests(orgId)).map(this.includeVirtuals);
-            case HelpRequestFilter.Finished: 
-                return (await this.db.getFinishedRequests(orgId)).map(this.includeVirtuals)
-            case HelpRequestFilter.All:
-                return (await this.db.getAllRequests(orgId)).map(this.includeVirtuals)
+        if (requestIds && requestIds.length) {
+            return (await this.db.getSpecificRequests(orgId, requestIds)).map(this.includeVirtuals)
+        } else {
+            return (await this.db.getAllRequests(orgId)).map(this.includeVirtuals)
         }
     }
 
@@ -83,7 +90,11 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @HelpReq() helpRequest: HelpRequestDoc,
         @BodyParams('requestUpdates') requestUpdates: AtLeast<HelpRequest, 'id'>,
     ) {
-        return this.includeVirtuals((await this.db.editRequest(helpRequest, requestUpdates)))
+        const res = this.includeVirtuals((await this.db.editRequest(helpRequest, requestUpdates)))
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+
+        return res;
     }
 
     @Post(API.server.unAssignRequest())
@@ -110,7 +121,14 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('message') message: string,
     ) {
-        return this.includeVirtuals(await this.db.sendMessageToReq(user, helpRequest, message));
+        const res =  this.includeVirtuals(await this.db.sendMessageToReq(user, helpRequest, message));
+
+        await this.pubSub.sys(PatchEventType.RequestChatNewMessage, { 
+            requestId: res.id,
+            userId: user.id 
+        });
+
+        return res;
     }
 
     @Post(API.server.updateRequestChatReceipt())
@@ -133,7 +151,11 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @Required() @BodyParams('status') status: ResponderRequestStatuses,
     ) {
         helpRequest.status = status;
-        return await helpRequest.save();
+        const res = await helpRequest.save();
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+
+        return res
     }
 
     @Post(API.server.resetRequestStatus())
@@ -144,7 +166,11 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @HelpReq() helpRequest: HelpRequestDoc,
     ) {
         helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
-        return await helpRequest.save();
+        const res = await helpRequest.save();
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+
+        return res
     }
     
 }

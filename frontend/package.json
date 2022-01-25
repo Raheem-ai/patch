@@ -60,6 +60,7 @@
     "@babel/core": "^7.12.9",
     "@expo/ngrok": "^2.5.0",
     "@types/google.maps": "^3.45.6",
+    "@types/lodash": "^4.14.178",
     "@types/react": "~17.0.21",
     "@types/react-native": "^0.64.19",
     "@types/react-router-dom": "^5.1.8",

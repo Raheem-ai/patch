@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, Organization, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, Organization, PatchEventType, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -15,6 +15,7 @@ import * as uuid from 'uuid';
 import { Twilio } from 'twilio';
 import * as querystring from 'querystring'
 import config from '../config';
+import { PubSubService } from "../services/pubSubService";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -39,6 +40,7 @@ export class OrganizationController implements APIController<
 
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;
+    @Inject(PubSubService) pubSub: PubSubService;
 
     @Post(API.server.createOrg())
     @Authenticate()
@@ -64,10 +66,17 @@ export class OrganizationController implements APIController<
     ) {
         const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles);
 
-        return {
+        const res = {
             org: await this.db.protectedOrganization(org),
             user: this.db.protectedUserFromDoc(user)
         }
+
+        await this.pubSub.sys(PatchEventType.UserAddedToOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
     }
     
     @Post(API.server.removeUserFromOrg())
@@ -79,10 +88,17 @@ export class OrganizationController implements APIController<
     ) {
         const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId);
 
-        return {
+        const res = {
             org: await this.db.protectedOrganization(org),
             user: this.db.protectedUserFromDoc(removedUser)
         }
+
+        await this.pubSub.sys(PatchEventType.UserRemovedFromOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
     }
     
     @Post(API.server.removeUserRoles())
@@ -93,7 +109,14 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[]
     ) {
-        return this.db.protectedUserFromDoc(await this.db.removeUserRoles(orgId, userId, roles));
+        const res = this.db.protectedUserFromDoc(await this.db.removeUserRoles(orgId, userId, roles));
+
+        await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
     }
     
     @Post(API.server.addUserRoles())
@@ -104,7 +127,14 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[]
     ) {
-        return this.db.protectedUserFromDoc(await this.db.addUserRoles(orgId, userId, roles));
+        const res = this.db.protectedUserFromDoc(await this.db.addUserRoles(orgId, userId, roles));
+
+        await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
     }
 
     @Post(API.server.getTeamMembers())

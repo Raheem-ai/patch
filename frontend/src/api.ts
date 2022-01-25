@@ -15,8 +15,8 @@ import { AtLeast } from '../../common';
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-// export let apiHost = 'http://98d6-24-44-148-246.ngrok.io'
+export let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
+// export let apiHost = 'http://f653-24-44-148-246.ngrok.io'
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
@@ -452,11 +452,11 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async getRequests(ctx: OrgContext, filter: HelpRequestFilter): Promise<HelpRequest[]> {
+    async getRequests(ctx: OrgContext, requestIds?: string[]): Promise<HelpRequest[]> {
         const url = `${apiHost}${API.client.getRequests()}`;
 
         return (await this.tryPost<HelpRequest[]>(url, {
-            filter
+            requestIds
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
