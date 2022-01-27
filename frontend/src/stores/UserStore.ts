@@ -236,6 +236,7 @@ export default class UserStore implements IUserStore {
         }
     }
 
+    // TODO: remove this as a concept (should change routing to handle userId in route path)
     pushCurrentUser(user: ClientSideFormat<ProtectedUser>) {
         this.currentUser = user;
     }

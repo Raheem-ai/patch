@@ -469,7 +469,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    if (isLoading) {
+    if (isLoading || !request) {
         return null
     }
     

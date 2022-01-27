@@ -36,10 +36,13 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         const req = requestStore().filteredSortedRequests[idx - 1];
 
         setTimeout(() => {
-            mapInstance.current.animateCamera({ center: {
-                latitude: req.location.latitude,
-                longitude: req.location.longitude
-            }})
+            mapInstance.current?.animateCamera({ 
+                center: {
+                    latitude: req.location.latitude,
+                    longitude: req.location.longitude
+                }, 
+                zoom: 12
+            })
         }, 100)
 
     }, [idx])

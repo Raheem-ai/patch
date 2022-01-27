@@ -6,10 +6,11 @@ import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
 import { unwrap } from "../../../common/utils";
-import { ActiveRequestTabHeight } from "../constants";
+import { isAndroid } from "../constants";
 import { navigateTo, navigationRef } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, routerNames } from "../types";
+import { BOTTOM_BAR_HEIGHT } from "../utils/dimensions";
 import { HeaderHeight, InteractiveHeaderHeight } from "./header/header";
 import HelpRequestCard from "./helpRequestCard";
 import Loader from "./loader";
@@ -63,7 +64,9 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                 styles.container, 
                 { 
                     top: bottomDrawerStore().bottomDrawerTabTop,
-                    height: dimensions.height - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight)
+                    height: dimensions.height 
+                        - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight) 
+                        - (isAndroid ? BOTTOM_BAR_HEIGHT : 0)
                 },
                 bottomDrawerStore().expanded 
                     ? null

@@ -35,13 +35,18 @@
       }
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "ai.raheem.patch",
-      "permissions": []
+      "permissions": [],
+      "config": {
+        "googleMaps": { 
+          "apiKey": "AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
