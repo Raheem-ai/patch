@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 import * as React from "react";
 import { NavigationContainer } from '@react-navigation/native';
-import { routerNames, SignInNavigationProp, SignUpNavigationProp, styleVals } from "../types";
+import { routerNames, SignInNavigationProp } from "../types";
 import { navigateTo } from "../navigation";
 
 // IMPORTANT NOTE: what should the type of navigation be when there are multiple routes?
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: styleVals.fontSizes.large,
+        fontSize: 25,
         fontWeight: "bold",
         textAlign: 'center',
     },

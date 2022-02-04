@@ -19,7 +19,7 @@
         "args": [
             "config",
             "--file=.gitmodules", 
-            "submodule.backend/functions/infra.url",
+            "submodule.backend/infra.url",
             "git@github.com:Raheem-ai/raheem-infra.git"
         ],
         "volumes": [{
@@ -78,7 +78,7 @@
     },
     {
         "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
-        "entrypoint": "/app/backend/functions/infra/bin/run",
+        "entrypoint": "/app/backend/infra/bin/run",
         "args": [
             "config:generate",
             "-e",
@@ -91,7 +91,7 @@
     },
     {
         "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
-        "entrypoint": "/app/backend/functions/infra/bin/run",
+        "entrypoint": "/app/backend/infra/bin/run",
         "args": [
             "config:generate",
             "-e",
@@ -115,7 +115,7 @@
         "name": "gcr.io/cloud-builders/gcloud",
         "entrypoint": "bash",
         "args": [
-            "backend/functions/deployment/gc.sh"
+            "backend/deployment/gc.sh"
         ],
         "env": [
             "PROJECT_ID=$PROJECT_ID"

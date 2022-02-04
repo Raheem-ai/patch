@@ -1,18 +1,18 @@
 {
   "name": "functions",
   "scripts": {
-    "build": "tsc",
-    "serve": "npm run build && firebase emulators:start --only functions",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
+    "build": "tsc -b",
+    "serve": "yarn run build && firebase emulators:start --only functions",
+    "shell": "yarn run build && firebase functions:shell",
+    "start": "yarn run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "dev": "npm run build && PATCH_LOCAL_ENV=local node lib/backend/functions/src/index.js"
+    "dev": "yarn run build && PATCH_LOCAL_ENV=local node lib/backend/src/index.js"
   },
   "engines": {
     "node": "12"
   },
-  "main": "lib/backend/functions/src/firebase.js",
+  "main": "lib/backend/src/index.js",
   "dependencies": {
     "@google-cloud/pubsub": "^2.18.4",
     "@mapbox/timespace": "^2.0.4",
@@ -60,6 +60,7 @@
   "devDependencies": {
     "@types/express-session": "^1.17.4",
     "@types/jsonwebtoken": "^8.5.5",
+    "@types/mongodb": "^4.0.7",
     "@types/passport": "^1.0.7",
     "@types/passport-local": "^1.0.34",
     "@types/uuid": "^8.3.1",
@@ -70,5 +71,9 @@
   "_moduleAliases": {
     "common": "./lib/common",
     "infra/src": "./infra/lib/src"
-  }
+  },
+  "workspaces": [
+    "infra"
+  ],
+  "packageManager": "yarn@3.1.1"
 }

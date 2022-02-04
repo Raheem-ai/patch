@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { Header } from 'react-native/Libraries/NewAppScreen';
-import { labelNames, RootStackParamList, routerNames, ScreenProps, styleVals } from '../types';
+import { labelNames, RootStackParamList, routerNames, ScreenProps } from '../types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { IUserStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
@@ -42,12 +42,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        fontSize: styleVals.fontSizes.large,
+        fontSize: 25,
         fontWeight: "bold",
         textAlign: 'center',
     },
     spacing: {
-        paddingHorizontal: styleVals.paddingVals.medium,
-        paddingBottom: styleVals.paddingVals.large,
+        paddingHorizontal: 10,
+        paddingBottom: 15,
     },
 });

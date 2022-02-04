@@ -1,9 +1,9 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { Button } from "react-native-paper";
-import { userStore } from "../../stores/interfaces";
-import { Colors, routerNames, ScreenProps } from "../../types";
-import { navigateTo } from "../../navigation";
+import { userStore } from "../stores/interfaces";
+import { Colors, routerNames, ScreenProps } from "../types";
+import { navigateTo } from "../navigation";
 import {parseFullName} from 'parse-full-name';
 
 type Props = ScreenProps<'UserHomePage'>;

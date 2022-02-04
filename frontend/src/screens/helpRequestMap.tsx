@@ -5,7 +5,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { IconButton } from "react-native-paper";
 import { HelpRequest } from "../../../common/models";
 import { HeaderHeight } from "../components/header/header";
-import HelpRequestCard from "../components/helpRequestCard";
+import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import { ActiveRequestTabHeight } from "../constants";
 import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";

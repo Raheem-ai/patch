@@ -2,11 +2,9 @@ import React from "react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { HelpRequest, ProtectedUser, RequestSkillToLabelMap, UserRole } from "../../../common/models";
+import { HelpRequest, ProtectedUser, UserRole } from "../../../common/models";
 import SkillTag from "./skillTag";
 import UserIcon from "./userIcon";
-
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type Props = {
     responder: ClientSideFormat<ProtectedUser>,

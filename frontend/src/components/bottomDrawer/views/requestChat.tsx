@@ -2,12 +2,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest } from "../../../common/models";
-import { HeaderHeight, InteractiveHeaderHeight } from "../components/header/header";
-import UserIcon from "../components/userIcon";
-import { useKeyboard } from "../hooks/useKeyboard";
-import { BottomDrawerComponentClass, BottomDrawerHandleHeight, INativeEventStore, IRequestStore, IUserStore, nativeEventStore, requestStore, userStore } from "../stores/interfaces";
-import { ScreenProps } from "../types";
+import { HelpRequest } from "../../../../../common/models";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../header/header";
+import UserIcon from "../../userIcon";
+import { useKeyboard } from "../../../hooks/useKeyboard";
+import { BottomDrawerComponentClass, BottomDrawerHandleHeight, INativeEventStore, IRequestStore, IUserStore, nativeEventStore, requestStore, userStore } from "../../../stores/interfaces";
+import { ScreenProps } from "../../../types";
 
 import { observer } from 'mobx-react'
 import { observable } from "mobx";

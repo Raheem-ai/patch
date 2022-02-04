@@ -37,10 +37,7 @@ export default class NotificationStore implements INotificationStore {
         makeAutoObservable(this);
     }
 
-    clear() {
-        this.expoPushToken = null;
-        this.expoPushTokenUserId = null;
-    }
+    clear() {}
 
     async init() {
         await userStore().init();

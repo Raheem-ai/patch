@@ -409,18 +409,3 @@ export const AllStores = [
     ISocketStore,
     IUpdateStore
 ]
-
-/**  
- * TODO: make this syntax smoother by exporting functions that can be used to get the store instance anywhere
- * ie. instead of 
- * const userStore = getStore<IUserStore>(IUserStore)
- * userStore.doSomething()
- * 
- * userStore().doSomething()
- * 
- * benefits:
- * - still typesafe
- * - impl vs interface still decoupled
- * - inversify does the caching for us
- * - don't have to worry about nested scope of large functional components
- */

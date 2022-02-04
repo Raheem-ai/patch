@@ -3,8 +3,8 @@ import React from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import { alertStore, IAlertStore } from "../stores/interfaces";
-import { HeaderHeight } from "./header/header";
+import { alertStore, IAlertStore } from "../../stores/interfaces";
+import { HeaderHeight } from "../header/header";
 
 
 

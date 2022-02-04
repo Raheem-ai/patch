@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
-import { NumberProp } from 'react-native-svg';
 
 type Props = {
     tags: string[],

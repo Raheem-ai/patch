@@ -10,10 +10,10 @@ import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
 
 // // component imports
-import SignInForm from './src/components/SignInForm';
-import WelcomePage from './src/components/WelcomePage';
-import SignUpForm from './src/components/SignUpForm';
-import UserHomePage from './src/components/userside/UserHomePage';
+import SignInForm from './src/screens/SignInForm';
+import WelcomePage from './src/screens/WelcomePage';
+import SignUpForm from './src/screens/SignUpForm';
+import UserHomePage from './src/screens/UserHomePage';
 import Header, { HeaderHeight } from './src/components/header/header';
 
 import HelpRequestMap from './src/screens/helpRequestMap';
@@ -32,7 +32,7 @@ import { useEffect } from 'react';
 import AppLoading from 'expo-app-loading';
 import { bindStores, initStores } from './src/stores';
 import { container } from './src/meta';
-import GlobalBottomDrawer from './src/components/globalBottomDrawer';
+import GlobalBottomDrawer from './src/components/bottomDrawer/globalBottomDrawer';
 import GlobalErrorBoundary from './src/globalErrorBoundary';
 import { observer } from 'mobx-react';
 import { runInAction } from 'mobx';
@@ -41,7 +41,7 @@ import { ActiveRequestTabHeight } from './src/constants';
 import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';
-import Alerts from './src/components/alerts';
+import Alerts from './src/components/alerts/alerts';
 
 
 const Stack = createStackNavigator<RootStackParamList>();

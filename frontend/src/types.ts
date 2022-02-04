@@ -9,12 +9,6 @@ type NotificationTypes<T extends NotificationType> = T extends any
     ? { type: T, payload: NotificationPayload<T> } 
     : never;
 
-// type ReverseType<T extends keyof RootStackParamList> = RootStackParamList[T] extends NotificationRouteParams<infer NType>
-//     ? { t: NType }
-//     : never;
-
-// type a = ReverseType<'UserHomePage'>
-
 export type RootStackParamList = {
     Home: undefined;
     SignIn: undefined;
@@ -54,27 +48,13 @@ export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'Sign
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
+// TODO: fully flush out using resource strings so we can translate :)
 export const labelNames = {
     username: 'Username',
     password: 'Password',
     firstname: 'First Name',
     lastname: 'Last Name',
     email: 'Email',
-};
-
-// style constants
-export const styleVals = {
-    fontSizes: {
-        large: 25,
-    },
-    fontWeights: {
-        heavy: "bold",
-        regular: "normal",
-    },
-    paddingVals: {
-        large: 15,
-        medium: 10,
-    },
 };
 
 export const Colors = {

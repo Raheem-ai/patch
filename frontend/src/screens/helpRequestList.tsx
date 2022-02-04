@@ -1,13 +1,12 @@
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { List } from "react-native-paper";
 import { HelpRequestFilter, HelpRequestSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
-import HelpRequestCard from "../components/helpRequestCard";
+import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderProps } from "../components/listHeader";
-import { IRequestStore, requestStore } from "../stores/interfaces";
-import { ScreenProps, routerNames } from "../types";
+import { requestStore } from "../stores/interfaces";
+import { ScreenProps } from "../types";
 
 type Props = ScreenProps<'HelpRequestList'>;
 

@@ -4,7 +4,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { PendingUser, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../../components/forms/form";
+import Form, { FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
 import { alertStore, bottomDrawerStore, IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore, newUserStore } from "../../../stores/interfaces";

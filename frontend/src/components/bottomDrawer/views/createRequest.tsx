@@ -1,49 +1,49 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../stores/interfaces";
+import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
-import { resolveErrorMessage } from "../errors";
-import Form, { FormProps } from "./forms/form";
-import { RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../common/models";
-import { allEnumValues } from "../../../common/utils";
-import { FormInputConfig } from "./forms/types";
-import { BottomDrawerViewVisualArea } from "./helpers/visualArea";
-import { ResponderCountRange } from "../constants";
+import { resolveErrorMessage } from "../../../errors";
+import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import Form, { FormProps } from "../../forms/form";
+import { allEnumValues } from "../../../../../common/utils";
+import { FormInputConfig } from "../../forms/types";
+import { ResponderCountRange } from "../../../constants";
+import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
 type Props = {}
 
 @observer
-class EditHelpRequest extends React.Component<Props> {
+class CreateHelpRequest extends React.Component<Props> {
 
     static onHide = () => {
-        editRequestStore().clear();
+        createRequestStore().clear();
     }
 
     static submit = {
         isValid: () => {
-            return !!editRequestStore().location && !!editRequestStore().type.length && editRequestStore().respondersNeeded >= 0
+            return !!createRequestStore().location && !!createRequestStore().type.length && createRequestStore().respondersNeeded != null
         },
         action: async () => {
+            let createdReq: HelpRequest;
+
             try {
-                await editRequestStore().editRequest(requestStore().currentRequest.id)
-            } catch (e) {
+                createdReq = await createRequestStore().createRequest()
+            } catch(e) {
                 alertStore().toastError(resolveErrorMessage(e))
                 return
             }
 
-            alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
+            alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
 
             bottomDrawerStore().hide()
         },
-        label: 'Save'
+        label: 'Add'
     }
 
-    async componentDidMount() {
-        editRequestStore().loadRequest(requestStore().currentRequest);
-    }
+    static minimizeLabel = 'Create Request';
 
     headerLabel = () => {
-        return `Edit Request ${requestStore().currentRequest.displayId}`
+        return 'Create Request'
     }
     
     formProps = (): FormProps => {
@@ -57,26 +57,26 @@ class EditHelpRequest extends React.Component<Props> {
             },
             inputs: [
                 {
-                    onSave: (location) => editRequestStore().location = location,
+                    onSave: (location) => createRequestStore().location = location,
                     val: () => {
-                        return editRequestStore().location
+                        return createRequestStore().location
                     },
                     isValid: () => {
-                        return editRequestStore().locationValid
+                        return createRequestStore().locationValid
                     },
                     name: 'location',
-                    previewLabel: () => editRequestStore().location?.address,
+                    previewLabel: () => createRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
                 {
-                    onSave: (type) => editRequestStore().type = type,
+                    onSave: (type) => createRequestStore().type = type,
                     val: () => {
-                        return editRequestStore().type
+                        return createRequestStore().type
                     },
                     isValid: () => {
-                        return editRequestStore().typeValid
+                        return createRequestStore().typeValid
                     },
                     name: 'type',
                     previewLabel: () => null,
@@ -88,28 +88,28 @@ class EditHelpRequest extends React.Component<Props> {
                         optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().type.splice(idx, 1)
+                            createRequestStore().type.splice(idx, 1)
                         },
                         dark: true
                     }
                 },
                 {
-                    onSave: (notes) => editRequestStore().notes = notes,
+                    onSave: (notes) => createRequestStore().notes = notes,
                     val: () => {
-                        return editRequestStore().notes
+                        return createRequestStore().notes
                     },
                     isValid: () => {
-                        return !!editRequestStore().notes
+                        return !!createRequestStore().notes
                     },
                     name: 'notes',
-                    previewLabel: () => editRequestStore().notes,
+                    previewLabel: () => createRequestStore().notes,
                     headerLabel: () => 'Notes',
                     type: 'TextArea',
                 },
                 {
-                    onSave: (skills) => editRequestStore().skills = skills,
+                    onSave: (skills) => createRequestStore().skills = skills,
                     val: () => {
-                        return editRequestStore().skills
+                        return createRequestStore().skills
                     },
                     isValid: () => {
                         return true
@@ -126,20 +126,20 @@ class EditHelpRequest extends React.Component<Props> {
                         optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().skills.splice(idx, 1)
+                            createRequestStore().skills.splice(idx, 1)
                         },
                     },
                 },
                 {
-                    onSave: (responders) => editRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
+                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
                     val: () => {
-                        return [editRequestStore().respondersNeeded]
+                        return [createRequestStore().respondersNeeded]
                     },
                     isValid: () => {
-                        return typeof editRequestStore().respondersNeeded == 'number' && editRequestStore().respondersNeeded > -1
+                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
                     },
                     name: 'responders',
-                    previewLabel: () => `${editRequestStore().respondersNeeded}`,
+                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
                     headerLabel: () => 'Responders needed',
                     type: 'List',
                     props: {
@@ -170,4 +170,4 @@ class EditHelpRequest extends React.Component<Props> {
     }
 }
 
-export default EditHelpRequest
+export default CreateHelpRequest

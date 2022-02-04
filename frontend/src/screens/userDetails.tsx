@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, IconButton, Text } from "react-native-paper";
 import { RequestSkillToLabelMap, UserRoleToLabelMap } from "../../../common/models";
-import HelpRequestCard from "../components/helpRequestCard";
+import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
 import { navigationRef } from "../navigation";

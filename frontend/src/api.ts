@@ -9,14 +9,25 @@ import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
+import { manifest, releaseChannel } from 'expo-updates';
+import * as Constants from 'expo-constants'
 
 // TODO: the port and non local host need to come from config somehow
 // let apiHost = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-export let apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' //'http://6e73-24-44-148-246.ngrok.io' 
-// export let apiHost = 'http://f653-24-44-148-246.ngrok.io'
+export let apiHost = releaseChannel == 'prod'
+    ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'  // TODO: update when we have prod env
+    : releaseChannel == 'staging' 
+        ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' 
+        : releaseChannel == 'default' // it's always default in expo go
+            ? Constants.default.manifest.extra.devUrl // put dev url here
+            : '' // what should be the default for an unknown release channel? 
+
+if (!apiHost) {
+    // do something?
+}
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {

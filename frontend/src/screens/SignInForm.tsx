@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp, styleVals } from '../types';
+import { labelNames, routerNames, SignInNavigationProp } from '../types';
 import { alertStore, IAlertStore, INotificationStore, IUserStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
         paddingTop: 20
     },
     title: {
-        fontSize: styleVals.fontSizes.large,
+        fontSize: 25,
         fontWeight: "bold",
         textAlign: 'center',
     },

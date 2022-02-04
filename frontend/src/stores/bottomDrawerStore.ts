@@ -3,10 +3,10 @@ import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeigh
 import { Animated, Dimensions } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
-import RequestChat from '../components/requestChat';
-import EditHelpRequest from '../components/editRequest';
-import AssignResponders from '../components/assignResponders';
-import CreateHelpRequest from '../components/createRequest';
+import RequestChat from '../components/bottomDrawer/views/requestChat';
+import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
+import AssignResponders from '../components/bottomDrawer/views/assignResponders';
+import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
 import { ActiveRequestTabHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
 import { routerNames } from '../types';

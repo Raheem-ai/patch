@@ -50,6 +50,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "devUrl": "https://d48a-24-44-149-184.ngrok.io"
     }
   }
 }
