@@ -19,7 +19,8 @@
     "esModuleInterop": true,
     "paths": {
       "common/*": ["../common/*"],
-      "common": ["../common/index.ts"]
+      "common": ["../common/index.ts"],
+      "infra/src/*": ["./infra/lib/src/*"]
     }
   },
   "compileOnSave": true,

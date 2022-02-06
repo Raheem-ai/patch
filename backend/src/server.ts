@@ -20,10 +20,11 @@ import { homedir } from "os";
 // need to upgrade to 6.95.3
 // import './errors/globalErrorFilter';
 
+// *** rootdir is from output lib file structure not src ***
 const rootDir = __dirname;
 
 if (process.env.PATCH_LOCAL_ENV) {
-  const dotEnvPath = resolve(rootDir, `../../../../env/.env.${process.env.PATCH_LOCAL_ENV}`);
+  const dotEnvPath = resolve(rootDir, `../../../env/.env.${process.env.PATCH_LOCAL_ENV}`);
   
   dotenv.config( {
     path: dotEnvPath
