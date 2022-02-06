@@ -7,7 +7,7 @@ WORKDIR app
 COPY .yarnrc.yml .
 RUN yarn set version berry
 
-WORKDIR app/backend/infra
+WORKDIR backend/infra
 
 # Make sure infra dependencies are cached until changed(infrequently)
 COPY backend/infra/package.json .
