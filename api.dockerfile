@@ -1,9 +1,13 @@
 # FROM node:16
 FROM node:12
 
-WORKDIR app/backend/infra
+WORKDIR app
 
+# Setup yarn env
+COPY .yarnrc.yml .
 RUN yarn set version berry
+
+WORKDIR app/backend/infra
 
 # Make sure infra dependencies are cached until changed(infrequently)
 COPY backend/infra/package.json .
@@ -14,7 +18,7 @@ RUN yarn install
 COPY backend/infra/tsconfig.json .
 COPY backend/infra/src ./src
 COPY backend/infra/bin ./bin
-# RUN yarn run build
+RUN yarn run build
 
 WORKDIR ..
 
