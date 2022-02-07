@@ -3,6 +3,12 @@
 - `backend/` houses the code for the api server. See it's [readme](./backend/README.md) for more details.
 - `common/` houses types and code that are shared between the front end and backend. Currently no dependencies are allowed in `common`.
 
+# Cloning the repo
+`--recurse-submodules` will init and clone all nested submodules in the project
+```sh
+git clone --recurse-submodules https://github.com/Raheem-ai/patch.git
+```
+
 # Local Development
 
 ## Dependencies/Setup
