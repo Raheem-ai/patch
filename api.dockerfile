@@ -5,7 +5,7 @@ WORKDIR app
 
 # Setup yarn env
 COPY .yarnrc.yml .
-RUN yarn set version berry
+COPY .yarn/releases .yarn/releases
 
 WORKDIR backend/infra
 
