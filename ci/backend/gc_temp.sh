@@ -22,13 +22,16 @@ clean_dup_images(){
 }
 
 clean_old_images(){
-    DATE=$(date -v -3d '+%Y-%m-%d')
-    for digest in $(gcloud container images list-tags ${BASE_IMAGE} --limit=999999 --sort-by=~TIMESTAMP --filter="timestamp.datetime < '${DATE}'" --format='get(digest)'); do
-        (
-            echo deleting ${digest}
-            gcloud container images delete -q --force-delete-tags "${BASE_IMAGE}@${digest}"
-        )
-    done
+    date --help
+    date --date="3 day ago"
+    date --date="3 day ago" + "+%Y-%m-%d"
+    # DATE=$(date -v -3d '+%Y-%m-%d')
+    # for digest in $(gcloud container images list-tags ${BASE_IMAGE} --limit=999999 --sort-by=~TIMESTAMP --filter="timestamp.datetime < '${DATE}'" --format='get(digest)'); do
+    #     (
+    #         echo deleting ${digest}
+    #         gcloud container images delete -q --force-delete-tags "${BASE_IMAGE}@${digest}"
+    #     )
+    # done
 }
 
 

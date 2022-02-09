@@ -1,7 +1,6 @@
 IMAGE_REPO=patch-tmp
 IMAGE=gcr.io/$PROJECT_ID/$IMAGE_REPO:$BRANCH_NAME
-# STAGING_IMAGE=gcr.io/$PROJECT_ID/patch-rc:latest
-STAGING_IMAGE=gcr.io/$PROJECT_ID/patch:rc-latest
+STAGING_IMAGE=gcr.io/$PROJECT_ID/patch-rc:latest
 
 build_temp () {
     # try and pull tmp image from registry
