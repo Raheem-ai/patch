@@ -61,65 +61,6 @@
             "gcr.io/$PROJECT_ID/patch:rc-latest",
             "."
          ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/docker",
-        "args": [
-            "push",
-            "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/docker",
-        "args": [
-            "push",
-            "gcr.io/$PROJECT_ID/patch:rc-latest"
-        ]
-    },
-    {
-        "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
-        "entrypoint": "/app/backend/infra/bin/run",
-        "args": [
-            "config:generate",
-            "-e",
-            "$_ENVIRONMENT",
-            "--toFile",
-            "secretConfig.txt",
-            "--secretVersionList",
-            "--noComments"
-        ]
-    },
-    {
-        "name": "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
-        "entrypoint": "/app/backend/infra/bin/run",
-        "args": [
-            "config:generate",
-            "-e",
-            "$_ENVIRONMENT",
-            "--toFile",
-            "config.txt",
-            "--delim=##",
-            "--configList",
-            "--noComments"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/gcloud",
-        "entrypoint": "bash",
-        "args": [
-            "-c",
-            "gcloud beta run deploy $_SERVICE --image=gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA --region=us-central1 --set-secrets=$(cat secretConfig.txt) --set-env-vars=^##^$(cat config.txt)"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/gcloud",
-        "entrypoint": "bash",
-        "args": [
-            "backend/deployment/gc.sh"
-        ],
-        "env": [
-            "PROJECT_ID=$PROJECT_ID"
-        ]
     }],
     "availableSecrets": {
         "secretManager": [
