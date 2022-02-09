@@ -67,6 +67,7 @@ $> yarn run dev
 Start frontend
 ```sh
 # from `frontend/`
+$> yarn install 
 $> expo start --no-https 
 ``` 
 
