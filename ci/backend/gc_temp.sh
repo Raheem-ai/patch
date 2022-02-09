@@ -23,13 +23,13 @@ clean_dup_images(){
 
 clean_old_images(){
     DATE=$(date --date="3 day ago" "+%Y-%m-%d")
-    echo $DATE
-    # for digest in $(gcloud container images list-tags ${BASE_IMAGE} --limit=999999 --sort-by=~TIMESTAMP --filter="timestamp.datetime < '${DATE}'" --format='get(digest)'); do
-    #     (
-    #         echo deleting ${digest}
-    #         gcloud container images delete -q --force-delete-tags "${BASE_IMAGE}@${digest}"
-    #     )
-    # done
+    echo removing tmp images created before $DATE
+    for digest in $(gcloud container images list-tags ${BASE_IMAGE} --limit=999999 --sort-by=~TIMESTAMP --filter="timestamp.datetime < '${DATE}'" --format='get(digest)'); do
+        (
+            echo deleting ${digest}
+            gcloud container images delete -q --force-delete-tags "${BASE_IMAGE}@${digest}"
+        )
+    done
 }
 
 
