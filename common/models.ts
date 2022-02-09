@@ -204,8 +204,18 @@ export enum RequestSkill {
     TraumaCounseling = RequestSkillCategory.CounselingAndMediation + ':tc',
     
     // langs
-    Spanish = RequestSkillCategory.Languages + ':sp',
-    French = RequestSkillCategory.Languages + ':fr'
+    // ISO 639-3 Language Codes: https://iso639-3.sil.org/code_tables/639/data
+    Amharic = RequestSkillCategory.Languages + ':amh',
+    Arabic = RequestSkillCategory.Languages + ':ara',
+    Bengali = RequestSkillCategory.Languages + ':ben',
+    Cantonese = RequestSkillCategory.Languages + ':yue',
+    French = RequestSkillCategory.Languages + ':fra',
+    Hindi = RequestSkillCategory.Languages + ':hin',
+    Mandarin = RequestSkillCategory.Languages + ':cmn',
+    Portuguese = RequestSkillCategory.Languages + ':por',
+    Spanish = RequestSkillCategory.Languages + ':spa',
+    Tagalog = RequestSkillCategory.Languages + ':tgl',
+    Vietnamese = RequestSkillCategory.Languages + ':vie'
 }
 
 export function requestSkillToCategory(skill: RequestSkill): RequestSkillCategory {
@@ -237,8 +247,17 @@ export const RequestSkillToLabelMap: { [key in RequestSkill]: string } = {
     [RequestSkill.DomesticViolence]: 'Domestic Violence',
     [RequestSkill.RestorativeJustice]: 'Restorative Justice',
     [RequestSkill.TraumaCounseling]: 'Trauma Counseling',
-    [RequestSkill.Spanish]: 'Spanish',
+    [RequestSkill.Amharic]: 'Amharic',
+    [RequestSkill.Arabic]: 'Arabic',
+    [RequestSkill.Bengali]: 'Bengali',
+    [RequestSkill.Cantonese]: 'Cantonese',
     [RequestSkill.French]: 'French',
+    [RequestSkill.Hindi]: 'Hindi',
+    [RequestSkill.Mandarin]: 'Mandarin',
+    [RequestSkill.Portuguese]: 'Portuguese',
+    [RequestSkill.Spanish]: 'Spanish',
+    [RequestSkill.Tagalog]: 'Tagalog',
+    [RequestSkill.Vietnamese]: 'Vietnamese'
 }
 
 export const RequestSkillCategoryToLabelMap: { [key in RequestSkillCategory]: string } = {
