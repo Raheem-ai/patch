@@ -43,24 +43,23 @@
         "name": "gcr.io/cloud-builders/docker",
         "entrypoint": "bash",
         "args": [
-            "-c",
-            "docker pull gcr.io/$PROJECT_ID/patch:rc-latest || exit 0"
-         ]
+            "ci/backend/build_temp.sh"
+        ],
+        "env": [
+            "PROJECT_ID=$PROJECT_ID",
+            "BRANCH_NAME=$BRANCH_NAME"
+        ]
     },
     {
-        "name": "gcr.io/cloud-builders/docker",
+        "name": "gcr.io/cloud-builders/gcloud",
+        "entrypoint": "bash",
         "args": [
-            "build",
-            "-t",
-            "gcr.io/$PROJECT_ID/patch:rc-$SHORT_SHA",
-            "-t",
-            "gcr.io/$PROJECT_ID/patch:rc-latest",
-            "-f",
-            "api.dockerfile",
-            "--cache-from",
-            "gcr.io/$PROJECT_ID/patch:rc-latest",
-            "."
-         ]
+            "ci/backend/gc_temp.sh"
+        ],
+        "env": [
+            "PROJECT_ID=$PROJECT_ID",
+            "BRANCH_NAME=$BRANCH_NAME"
+        ]
     }],
     "availableSecrets": {
         "secretManager": [
