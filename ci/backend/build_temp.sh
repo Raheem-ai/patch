@@ -6,14 +6,14 @@ build_temp () {
     # try and pull tmp image from registry
     if docker pull $IMAGE ; then
         # build using cache from this branch
-        docker build -t $IMAGE --label branch=$BRANCH_NAME -f api.dockerfile --cache-from $IMAGE .
+        docker build -t $IMAGE -f api.dockerfile --cache-from $IMAGE .
     else
         if docker pull $STAGING_IMAGE ; then
             # build using cache from staging (which this branch should have forked from)
-            docker build -t $IMAGE --label branch=$BRANCH_NAME -f api.dockerfile --cache-from $STAGING_IMAGE .
+            docker build -t $IMAGE -f api.dockerfile --cache-from $STAGING_IMAGE .
         else 
             # build fresh
-            docker build -t $IMAGE --label branch=$BRANCH_NAME -f api.dockerfile --cache-from $IMAGE .
+            docker build -t $IMAGE -f api.dockerfile --cache-from $IMAGE .
         fi
     fi
 }
