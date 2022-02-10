@@ -18,7 +18,7 @@ clean_dup_images(){
 #     )
 #     let C=C+1
 #   done
-gcloud container images list ${BASE_IMAGE} --limit=999999 --sort-by=~TIMESTAMP
+gcloud container images list ${BASE_IMAGE}
 }
 
 clean_old_images(){
