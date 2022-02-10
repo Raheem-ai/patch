@@ -1,3 +1,4 @@
+#  TODO update this to publish from commit
 FILES=$(git diff-tree --no-commit-id --name-only -r 0dd9fbb6c1f6f750cc322e552a1f9718994532b1)
 FILES_TO_IGNORE=("frontend/README.md")
 
