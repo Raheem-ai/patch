@@ -6,7 +6,7 @@ IMAGES_TO_KEEP="1"
 # only keep one copy of each tmp image
 clean_dup_images(){
   local C=0
-  for digest in $(gcloud container images list ${BASE_IMAGE} --filter label=branch=$BRANCH_NAME --limit=999999 --sort-by=~TIMESTAMP --format='get(digest)'); do
+  for digest in $(gcloud container images list ${BASE_IMAGE} --filter label=branch=$BRANCH_NAME --limit=999999 --sort-by=~TIMESTAMP); do
     (
         if [ $C -lt $IMAGES_TO_KEEP ]
         then
