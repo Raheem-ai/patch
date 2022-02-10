@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { StyleProp, StyleSheet, TouchableWithoutFeedback, View, ViewStyle } from "react-native"
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
 
 export type ListHeaderProps<F, S> = {
@@ -39,7 +39,7 @@ const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
             ].filter(val => !!val).join(' · ')
 
         return (
-            <TouchableWithoutFeedback onPress={toggleHeader}>
+            <Pressable onPress={toggleHeader}>
                 <View style={[styles.headerContainer, isOpen ? props.openHeaderStyles : props.closedHeaderStyles]}>
                     <Text style={[styles.headerLabel, isOpen ? styles.openHeaderLabel : null ]}>{label}</Text>
                     <IconButton 
@@ -48,7 +48,7 @@ const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
                         color={'#999'}
                         icon={isOpen ? 'chevron-up' : 'chevron-down'}/>
                 </View>
-            </TouchableWithoutFeedback>
+            </Pressable>
         )
     }
 
