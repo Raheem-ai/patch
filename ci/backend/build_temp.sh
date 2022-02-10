@@ -13,7 +13,7 @@ build_temp () {
             docker build -t $IMAGE -f api.dockerfile --cache-from $STAGING_IMAGE .
         else 
             # build fresh
-            docker build -t $IMAGE -f api.dockerfile --cache-from $IMAGE .
+            docker build -t $IMAGE -f api.dockerfile .
         fi
     fi
 }
