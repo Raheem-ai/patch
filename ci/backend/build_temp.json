@@ -1,0 +1,72 @@
+{
+    "timeout": "1200s",
+    "steps": [
+    {
+        "name": "gcr.io/cloud-builders/git",
+        "secretEnv": ["SSH_KEY"],
+        "entrypoint": "bash",
+        "args": [
+            "-c",
+            "echo \"$$SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
+        ],
+        "volumes": [{
+            "name": "ssh",
+            "path": "/root/.ssh"
+        }]
+    },
+    {
+        "name": "gcr.io/cloud-builders/git",
+        "args": [
+            "config",
+            "--file=.gitmodules", 
+            "submodule.backend/infra.url",
+            "git@github.com:Raheem-ai/raheem-infra.git"
+        ],
+        "volumes": [{
+            "name": "ssh",
+            "path": "/root/.ssh"
+        }]
+    },
+    {
+        "name": "gcr.io/cloud-builders/git",
+        "args": [
+            "submodule",
+            "update", 
+            "--init"
+        ],
+        "volumes": [{
+            "name": "ssh",
+            "path": "/root/.ssh"
+        }]
+    },
+    {
+        "name": "gcr.io/cloud-builders/docker",
+        "entrypoint": "bash",
+        "args": [
+            "ci/backend/build_temp.sh"
+        ],
+        "env": [
+            "PROJECT_ID=$PROJECT_ID",
+            "BRANCH_NAME=$BRANCH_NAME"
+        ]
+    },
+    {
+        "name": "gcr.io/cloud-builders/gcloud",
+        "entrypoint": "bash",
+        "args": [
+            "ci/backend/gc_temp.sh"
+        ],
+        "env": [
+            "PROJECT_ID=$PROJECT_ID",
+            "BRANCH_NAME=$BRANCH_NAME"
+        ]
+    }],
+    "availableSecrets": {
+        "secretManager": [
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",
+                "env": "SSH_KEY"
+            }
+        ] 
+    }
+}
