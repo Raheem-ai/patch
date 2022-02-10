@@ -18,7 +18,7 @@ clean_dup_images(){
 #     )
 #     let C=C+1
 #   done
-gcloud container images list ${BASE_IMAGE}
+gcloud container images list-tags ${BASE_IMAGE} --filter='-tags:*'  --format='get(digest)' --limit=999999
 }
 
 clean_old_images(){
