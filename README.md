@@ -104,3 +104,7 @@ $> expo publish --release-channel <prod | staging>
     - google maps api for Android
     - google place api
     - google geocoding api 
+- set up build hooks (if we wanT ci/cd on it)
+- add secrets to secret store
+    - expo build-deploy-bot-secret 
+        - TODO: add to infra defs
