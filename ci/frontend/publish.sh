@@ -1,5 +1,7 @@
 # files that were changed in the commit
-FILES=$(git diff-tree --no-commit-id --name-only -r $COMMIT_SHA)
+echo $COMMIT_SHA
+echo $$COMMIT_SHA
+FILES=$(git diff-tree --no-commit-id --name-only -r "$COMMIT_SHA")
 # files that should trigger a publish
 FILES_TO_INCLUDE=("common/*" "frontend/*" "ci/*")
 # files that shouldn't trigger a publish
