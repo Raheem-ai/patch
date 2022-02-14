@@ -15,7 +15,10 @@
     },
     {
         "name": "gcr.io/cloud-builders/git",
-        "args": [ "fetch" ],
+        "args": [ 
+            "fetch",
+            "git@github.com:Raheem-ai/patch.git"
+        ],
         "volumes": [{
             "name": "ssh",
             "path": "/root/.ssh"
