@@ -2,11 +2,11 @@
     "timeout": "1200s",
     "steps": [{
         "name": "gcr.io/cloud-builders/git",
-        "secretEnv": ["PATCH_SSH_KEY"],
+        "secretEnv": ["PATCH_SSH_KEY", "INFRA_SSH_KEY"],
         "entrypoint": "bash",
         "args": [
             "-c",
-            "echo \"$$PATCH_SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
+            "echo \"$$PATCH_SSH_KEY\" >> /root/.ssh/id_rsa\n echo \"$$INFRA_SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
         ],
         "volumes": [{
             "name": "ssh",
