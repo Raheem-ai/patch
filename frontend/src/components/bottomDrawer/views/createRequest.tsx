@@ -56,6 +56,21 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
+                // Notes
+                {
+                    onSave: (notes) => createRequestStore().notes = notes,
+                    val: () => {
+                        return createRequestStore().notes
+                    },
+                    isValid: () => {
+                        return !!createRequestStore().notes
+                    },
+                    name: 'notes',
+                    previewLabel: () => createRequestStore().notes,
+                    headerLabel: () => 'Notes',
+                    type: 'TextArea',
+                },
+                // Location
                 {
                     onSave: (location) => createRequestStore().location = location,
                     val: () => {
@@ -70,6 +85,50 @@ class CreateHelpRequest extends React.Component<Props> {
                     type: 'Map',
                     required: true
                 },
+                // Skills required
+                {
+                    onSave: (skills) => createRequestStore().skills = skills,
+                    val: () => {
+                        return createRequestStore().skills
+                    },
+                    isValid: () => {
+                        return true
+                    },
+                    name: 'skills',
+                    previewLabel: () => null,
+                    headerLabel: () => 'Skills required',
+                    type: 'NestedTagList',
+                    props: {
+                        options: allEnumValues(RequestSkill),
+                        categories: Object.keys(RequestSkillCategoryMap), 
+                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
+                        categoryToLabel: (cat) => RequestSkillCategoryToLabelMap[cat],
+                        optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
+                        multiSelect: true,
+                        onTagDeleted: (idx: number, val: any) => {
+                            createRequestStore().skills.splice(idx, 1)
+                        },
+                    },
+                },
+                // Number of Responders
+                {
+                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
+                    val: () => {
+                        return [createRequestStore().respondersNeeded]
+                    },
+                    isValid: () => {
+                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
+                    },
+                    name: 'responders',
+                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
+                    headerLabel: () => 'Number of responders',
+                    type: 'List',
+                    props: {
+                        options: ResponderCountRange,
+                        optionToPreviewLabel: (opt) => opt
+                    },
+                },
+                // Type of request
                 {
                     onSave: (type) => createRequestStore().type = type,
                     val: () => {
@@ -92,68 +151,13 @@ class CreateHelpRequest extends React.Component<Props> {
                         },
                         dark: true
                     }
-                },
-                {
-                    onSave: (notes) => createRequestStore().notes = notes,
-                    val: () => {
-                        return createRequestStore().notes
-                    },
-                    isValid: () => {
-                        return !!createRequestStore().notes
-                    },
-                    name: 'notes',
-                    previewLabel: () => createRequestStore().notes,
-                    headerLabel: () => 'Notes',
-                    type: 'TextArea',
-                },
-                {
-                    onSave: (skills) => createRequestStore().skills = skills,
-                    val: () => {
-                        return createRequestStore().skills
-                    },
-                    isValid: () => {
-                        return true
-                    },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills',
-                    type: 'NestedTagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        categories: Object.keys(RequestSkillCategoryMap), 
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        categoryToLabel: (cat) => RequestSkillCategoryToLabelMap[cat],
-                        optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            createRequestStore().skills.splice(idx, 1)
-                        },
-                    },
-                },
-                {
-                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
-                    val: () => {
-                        return [createRequestStore().respondersNeeded]
-                    },
-                    isValid: () => {
-                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
-                    },
-                    name: 'responders',
-                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
-                    headerLabel: () => 'Responders needed',
-                    type: 'List',
-                    props: {
-                        options: ResponderCountRange,
-                        optionToPreviewLabel: (opt) => opt
-                    },
                 }
-                
             ] as [
-                FormInputConfig<'Map'>, 
-                FormInputConfig<'TagList'>, 
                 FormInputConfig<'TextArea'>,
+                FormInputConfig<'Map'>, 
                 FormInputConfig<'NestedTagList'>,
                 FormInputConfig<'List'>,
+                FormInputConfig<'TagList'>, 
             ]
         }
     }

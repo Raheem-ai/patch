@@ -34,5 +34,8 @@ COPY common ../common/
 
 RUN yarn run build
 
+# copy in build scripts + config
+COPY ci /app/ci
+
 # Run locally with > docker run --rm --env-file ./backend/env/.env.local <imageId>
 CMD yarn node lib/backend/src/index.js
