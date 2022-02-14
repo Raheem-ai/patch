@@ -40,6 +40,18 @@
         }]
     },
     {
+        "name": "gcr.io/cloud-builders/git",
+        "entrypoint": "bash",
+        "args": [
+            "-c",
+            "git diff-tree --no-commit-id --name-only -r $_MERGED_SHA >> changedFiles.txt"
+        ],
+        "volumes": [{
+            "name": "ssh",
+            "path": "/root/.ssh"
+        }]
+    },
+    {
         "name": "gcr.io/cloud-builders/docker",
         "entrypoint": "bash",
         "args": [
