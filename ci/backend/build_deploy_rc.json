@@ -41,17 +41,17 @@
     },
     {
         "name": "gcr.io/cloud-builders/git",
+        "entrypoint": "bash",
         "args": [
-            "diff-tree" 
-            ,"--no-commit-id",
-            "--name-only",
-            "-r",
-            "$_MERGED_SHA"
+            "ci/common/generate_changed_files.sh"
         ],
         "volumes": [{
             "name": "ssh",
             "path": "/root/.ssh"
-        }]
+        }],
+        "env": [
+            "_MERGED_SHA=$_MERGED_SHA"
+        ]
     },
     {
         "name": "gcr.io/cloud-builders/docker",
