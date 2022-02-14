@@ -3,11 +3,11 @@
     "steps": [
     {
         "name": "gcr.io/cloud-builders/git",
-        "secretEnv": ["SSH_KEY"],
+        "secretEnv": ["INFRA_SSH_KEY"],
         "entrypoint": "bash",
         "args": [
             "-c",
-            "echo \"$$SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
+            "echo \"$$INFRA_SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
         ],
         "volumes": [{
             "name": "ssh",
@@ -42,6 +42,7 @@
     {
         "name": "gcr.io/cloud-builders/git",
         "entrypoint": "bash",
+        "secretEnv": ["PATCH_SSH_KEY"],
         "args": [
             "ci/common/generate_changed_files.sh"
         ],
@@ -118,7 +119,11 @@
         "secretManager": [
             {
                 "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",
-                "env": "SSH_KEY"
+                "env": "INFRA_SSH_KEY"
+            },
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/patch-git-ssh-key/versions/latest",
+                "env": "PATCH_SSH_KEY"
             },
             {
                 "versionName": "projects/$PROJECT_ID/secrets/expo-build-deploy-bot-secret/versions/latest",
