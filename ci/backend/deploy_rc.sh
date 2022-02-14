@@ -1,5 +1,6 @@
 echo $COMMIT_SHA
 echo $_MERGED_SHA
+echo $(cat changedFiles.txt)
 
 # files that were changed in the commit
 FILES=$(git diff-tree --no-commit-id --name-only -r $_MERGED_SHA)
