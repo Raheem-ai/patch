@@ -1,6 +1,8 @@
+echo $COMMIT_SHA
+echo $_MERGED_SHA
 
 # files that were changed in the commit
-FILES=$(git diff-tree --no-commit-id --name-only -r $COMMIT_SHA)
+FILES=$(git diff-tree --no-commit-id --name-only -r $_MERGED_SHA)
 # files that should trigger a publish
 FILES_TO_INCLUDE=("common/*" "backend/*" "ci/*")
 # files that shouldn't trigger a publish

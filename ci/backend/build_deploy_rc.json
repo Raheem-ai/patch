@@ -71,6 +71,7 @@
             "PROJECT_ID=$PROJECT_ID",
             "COMMIT_SHA=$COMMIT_SHA",
             "SHORT_SHA=$SHORT_SHA",
+            "_MERGED_SHA=$_MERGED_SHA",
             "_SERVICE=$_SERVICE"
         ]
     },
@@ -84,6 +85,7 @@
         "env": [
             "PROJECT_ID=$PROJECT_ID",
             "COMMIT_SHA=$COMMIT_SHA",
+            "_MERGED_SHA=$_MERGED_SHA",
             "_ENVIRONMENT=$_ENVIRONMENT"
         ]
     },
