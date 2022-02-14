@@ -1,6 +1,9 @@
 {
     "timeout": "1200s",
-    "steps": [
+    "steps": [{
+            "name": "gcr.io/cloud-builders/git",
+            "args": [ "fetch" ]
+    },
     {
         "name": "gcr.io/cloud-builders/git",
         "secretEnv": ["SSH_KEY"],
