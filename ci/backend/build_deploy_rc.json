@@ -41,10 +41,12 @@
     },
     {
         "name": "gcr.io/cloud-builders/git",
-        "entrypoint": "bash",
         "args": [
-            "-c",
-            "git diff-tree --no-commit-id --name-only -r $_MERGED_SHA >> changedFiles.txt"
+            "diff-tree" 
+            ,"--no-commit-id",
+            "--name-only",
+            "-r",
+            "$_MERGED_SHA"
         ],
         "volumes": [{
             "name": "ssh",
