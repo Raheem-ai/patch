@@ -1,120 +1,120 @@
 {
     "timeout": "1200s",
     "steps": [
-    {
-        "name": "gcr.io/cloud-builders/git",
-        "secretEnv": ["INFRA_SSH_KEY"],
-        "entrypoint": "bash",
-        "args": [
-            "-c",
-            "echo \"$$INFRA_SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }]
-    },
-    {
-        "name": "gcr.io/cloud-builders/git",
-        "args": [
-            "config",
-            "--file=.gitmodules", 
-            "submodule.backend/infra.url",
-            "git@github.com:Raheem-ai/raheem-infra.git"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }]
-    },
-    {
-        "name": "gcr.io/cloud-builders/git",
-        "args": [
-            "submodule",
-            "update", 
-            "--init"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }]
-    },
-    {
-        "name": "gcr.io/cloud-builders/git",
-        "entrypoint": "bash",
-        "secretEnv": ["PATCH_SSH_KEY"],
-        "args": [
-            "ci/common/generate_changed_files.sh"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }],
-        "env": [
-            "_MERGED_SHA=$_MERGED_SHA"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/docker",
-        "entrypoint": "bash",
-        "args": [
-            "ci/backend/build_rc.sh"
-        ],
-        "env": [
-            "PROJECT_ID=$PROJECT_ID",
-            "SHORT_SHA=$SHORT_SHA",
-            "_MERGED_BRANCH=$_MERGED_BRANCH"
-        ]
-    },
-    {
-        "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
-        "entrypoint": "bash",
-        "args": [
-            "/app/ci/backend/generate_rc_config.sh"
-        ],
-        "env": [ 
-            "_ENVIRONMENT=$_ENVIRONMENT"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/gcloud",
-        "entrypoint": "bash",
-        "args": [
-            "ci/backend/deploy_rc.sh"
-        ],
-        "env": [
-            "PROJECT_ID=$PROJECT_ID",
-            "COMMIT_SHA=$COMMIT_SHA",
-            "SHORT_SHA=$SHORT_SHA",
-            "_MERGED_SHA=$_MERGED_SHA",
-            "_SERVICE=$_SERVICE"
-        ]
-    },
-    {
-        "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
-        "entrypoint": "bash",
-        "secretEnv": ["EXPO_TOKEN"],
-        "args": [
-            "ci/frontend/publish.sh"
-        ],
-        "env": [
-            "PROJECT_ID=$PROJECT_ID",
-            "COMMIT_SHA=$COMMIT_SHA",
-            "_MERGED_SHA=$_MERGED_SHA",
-            "_ENVIRONMENT=$_ENVIRONMENT"
-        ]
-    },
-    {
-        "name": "gcr.io/cloud-builders/gcloud",
-        "entrypoint": "bash",
-        "args": [
-            "ci/backend/gc.sh"
-        ],
-        "env": [
-            "PROJECT_ID=$PROJECT_ID",
-            "BRANCH_NAME=$BRANCH_NAME"
-        ]
-    }],
+        {
+            "name": "gcr.io/cloud-builders/git",
+            "secretEnv": ["PATCH_SSH_KEY", "INFRA_SSH_KEY"],
+            "entrypoint": "bash",
+            "args": [
+                "-c",
+                "echo \"$$PATCH_SSH_KEY\" >> /root/.ssh/patch_rsa\n echo \"$$INFRA_SSH_KEY\" >> /root/.ssh/infra_rsa\n chmod 600 /root/.ssh/patch_rsa\n chmod 600 /root/.ssh/infra_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts\n cp ci/common/ssh_config /root/.ssh/config"
+            ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }]
+        },
+        {
+            "name": "gcr.io/cloud-builders/git",
+            "args": [
+                "config",
+                "--file=.gitmodules", 
+                "submodule.backend/infra.url",
+                "infra:Raheem-ai/raheem-infra.git"
+            ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }]
+        },
+        {
+            "name": "gcr.io/cloud-builders/git",
+            "args": [
+                "submodule",
+                "update", 
+                "--init"
+            ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }]
+        },
+        {
+            "name": "gcr.io/cloud-builders/git",
+            "entrypoint": "bash",
+            "args": [
+                "ci/common/generate_changed_files.sh"
+            ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }],
+            "env": [
+                "_MERGED_SHA=$_MERGED_SHA"
+            ]
+        },
+        {
+            "name": "gcr.io/cloud-builders/docker",
+            "entrypoint": "bash",
+            "args": [
+                "ci/backend/build_rc.sh"
+            ],
+            "env": [
+                "PROJECT_ID=$PROJECT_ID",
+                "SHORT_SHA=$SHORT_SHA",
+                "_MERGED_BRANCH=$_MERGED_BRANCH"
+            ]
+        },
+        {
+            "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
+            "entrypoint": "bash",
+            "args": [
+                "/app/ci/backend/generate_rc_config.sh"
+            ],
+            "env": [ 
+                "_ENVIRONMENT=$_ENVIRONMENT"
+            ]
+        },
+        {
+            "name": "gcr.io/cloud-builders/gcloud",
+            "entrypoint": "bash",
+            "args": [
+                "ci/backend/deploy_rc.sh"
+            ],
+            "env": [
+                "PROJECT_ID=$PROJECT_ID",
+                "COMMIT_SHA=$COMMIT_SHA",
+                "SHORT_SHA=$SHORT_SHA",
+                "_MERGED_SHA=$_MERGED_SHA",
+                "_SERVICE=$_SERVICE"
+            ]
+        },
+        {
+            "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
+            "entrypoint": "bash",
+            "secretEnv": ["EXPO_TOKEN"],
+            "args": [
+                "ci/frontend/publish.sh"
+            ],
+            "env": [
+                "PROJECT_ID=$PROJECT_ID",
+                "COMMIT_SHA=$COMMIT_SHA",
+                "_MERGED_SHA=$_MERGED_SHA",
+                "_ENVIRONMENT=$_ENVIRONMENT"
+            ]
+        },
+        {
+            "name": "gcr.io/cloud-builders/gcloud",
+            "entrypoint": "bash",
+            "args": [
+                "ci/backend/gc.sh"
+            ],
+            "env": [
+                "PROJECT_ID=$PROJECT_ID",
+                "BRANCH_NAME=$BRANCH_NAME"
+            ]
+        }
+    ],
     "availableSecrets": {
         "secretManager": [
             {

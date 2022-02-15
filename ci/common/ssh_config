@@ -1,0 +1,11 @@
+# ~/.ssh/config
+
+Host patch
+HostName github.com
+User git
+IdentityFile ~/.ssh/patch_rsa
+
+Host infra
+HostName github.com
+User git
+IdentityFile ~/.ssh/infra_rsa

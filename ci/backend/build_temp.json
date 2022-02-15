@@ -1,13 +1,12 @@
 {
     "timeout": "1200s",
-    "steps": [
-    {
+    "steps": [{
         "name": "gcr.io/cloud-builders/git",
-        "secretEnv": ["SSH_KEY"],
+        "secretEnv": ["PATCH_SSH_KEY", "INFRA_SSH_KEY"],
         "entrypoint": "bash",
         "args": [
             "-c",
-            "echo \"$$SSH_KEY\" >> /root/.ssh/id_rsa\n chmod 600 /root/.ssh/id_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts"
+            "echo \"$$PATCH_SSH_KEY\" >> /root/.ssh/patch_rsa\n echo \"$$INFRA_SSH_KEY\" >> /root/.ssh/infra_rsa\n chmod 600 /root/.ssh/patch_rsa\n chmod 600 /root/.ssh/infra_rsa\n ssh-keyscan -t rsa github.com > known_hosts.github\n cp known_hosts.github /root/.ssh/known_hosts\n cp ci/common/ssh_config /root/.ssh/config"
         ],
         "volumes": [{
             "name": "ssh",
@@ -20,7 +19,7 @@
             "config",
             "--file=.gitmodules", 
             "submodule.backend/infra.url",
-            "git@github.com:Raheem-ai/raheem-infra.git"
+            "infra:Raheem-ai/raheem-infra.git"
         ],
         "volumes": [{
             "name": "ssh",
@@ -65,7 +64,11 @@
         "secretManager": [
             {
                 "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",
-                "env": "SSH_KEY"
+                "env": "INFRA_SSH_KEY"
+            },
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/patch-git-ssh-key/versions/latest",
+                "env": "PATCH_SSH_KEY"
             }
         ] 
     }
