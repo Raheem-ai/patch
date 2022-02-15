@@ -2,6 +2,9 @@ in_files_to_ignore () {
     local file=$1
     local FILES_TO_IGNORE=$2
 
+    echo 'File: ' $file
+    echo 'To Ignore: ' $FILES_TO_IGNORE
+
     for to_ignore in $FILES_TO_IGNORE
     do
         if [[ $to_ignore == $file ]];
@@ -28,15 +31,15 @@ should_publish () {
     echo "Files that should cause publish: ${files_to_include[*]}"
     echo "Files that shouldn't cause publish: ${files_to_ignore[*]}"
 
-    for file in $files
+    for file in ${files[@]}
     do
         # 1 = false 
         local publishable=1
 
-        for to_include in $files_to_include
+        for to_include in ${files_to_include[@]}
         do 
-            echo $file "$to_include"
-            if [[ $file =~ "$to_include" ]] ;
+            echo $file $to_include
+            if [[ $file =~ $to_include ]] ;
             then
                 publishable=0
                 break
