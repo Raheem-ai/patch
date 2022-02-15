@@ -15,27 +15,6 @@
     },
     {
         "name": "gcr.io/cloud-builders/git",
-        "args": [ 
-            "fetch",
-            "patch:Raheem-ai/patch.git"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }]
-    },
-    {
-        "name": "gcr.io/cloud-builders/git",
-        "args": [ 
-            "log"
-        ],
-        "volumes": [{
-            "name": "ssh",
-            "path": "/root/.ssh"
-        }]
-    },
-    {
-        "name": "gcr.io/cloud-builders/git",
         "args": [
             "config",
             "--file=.gitmodules", 
