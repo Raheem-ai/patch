@@ -35,12 +35,14 @@ should_publish () {
 
         for to_include in $files_to_include
         do 
+            echo $file "$to_include"
             if [[ $file =~ "$to_include" ]] ;
             then
                 publishable=0
                 break
             fi
 
+            echo $publishable
         done
 
         if [[ $publishable == 0 ]] && !(in_files_to_ignore $file $files_to_ignore) ;
