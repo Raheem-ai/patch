@@ -39,7 +39,7 @@ should_publish () {
         for to_include in ${files_to_include[@]}
         do 
             echo $file $to_include
-            if [[ $file =~ $to_include ]] ;
+            if [[ $file =~ ^$to_include$ ]] ;
             then
                 publishable=0
                 break
