@@ -58,3 +58,25 @@ should_publish () {
     # 1 = false
     return 1
 }
+
+# rc_files_changed () {
+#     # git tag -a rc 53ec403 -m 'rc-53ec403'
+#     # git tag -a rc 3c4c0fd -m 'rc-3c4c0fd'
+
+    
+
+#     # gets me the list of tags with the latest first
+#     tagString=$(git tag --list "rc-*" --sort=creatordate)
+#     tags=($(echo $tagString | tr " " "\n"))
+
+#     # choose latest tag
+#     tag=${tags[0]}
+
+#     # gets the commit for the tag
+#     rc_commit=$(git rev-parse tags/$tag~0) 
+
+#     # echo $rc_commit
+#     # echo $(git diff --name-only $rc_commit)
+# }
+
+# rc_files_changed

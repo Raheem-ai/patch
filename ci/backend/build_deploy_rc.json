@@ -50,7 +50,7 @@
                 "path": "/root/.ssh"
             }],
             "env": [
-                "_MERGED_SHA=$_MERGED_SHA"
+                "SHORT_SHA=$SHORT_SHA"
             ]
         },
         {
