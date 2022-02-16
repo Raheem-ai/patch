@@ -17,7 +17,7 @@ in_files_to_ignore () {
     return 1
 }
 
-should_publish () {
+should_deploy () {
     files_param=$1[@]
     to_include_param=$2[@]
     to_ignore_param=$3[@]
@@ -26,29 +26,29 @@ should_publish () {
     files_to_include=("${!to_include_param}")
     files_to_ignore=("${!to_ignore_param}")
 
-    echo "Checking if we should publish: "
+    echo "Checking if we should deploy: "
     echo "Files to check: ${files[*]}"
-    echo "Files that should cause publish: ${files_to_include[*]}"
-    echo "Files that shouldn't cause publish: ${files_to_ignore[*]}"
+    echo "Files that should cause deploy: ${files_to_include[*]}"
+    echo "Files that shouldn't cause deploy: ${files_to_ignore[*]}"
 
     for file in ${files[@]}
     do
         # 1 = false 
-        local publishable=1
+        local deployable=1
 
         for to_include in ${files_to_include[@]}
         do 
             echo $file $to_include
             if [[ $file =~ ^$to_include$ ]] ;
             then
-                publishable=0
+                deployable=0
                 break
             fi
 
-            echo $publishable
+            echo $deployable
         done
 
-        if [[ $publishable == 0 ]] && !(in_files_to_ignore $file $files_to_ignore) ;
+        if [[ $deployable == 0 ]] && !(in_files_to_ignore $file $files_to_ignore) ;
         then
             # 0 = true
             return 0
