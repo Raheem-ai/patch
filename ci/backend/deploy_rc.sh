@@ -16,6 +16,12 @@ then
     echo "# deploying new service revision"
     gcloud beta run deploy $_SERVICE --image=gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA --region=us-central1 --set-secrets=$(cat secretConfig.txt) "--set-env-vars=^##^$(cat config.txt)"
     
+    echo git remote get-url origin
+    git remote get-url origin
+
+    echo git remote set-url origin "patch:Raheem-ai/patch.git"
+    git remote set-url origin "patch:Raheem-ai/patch.git"
+
     git config --global user.email "${_CI_EMAIL}" && git config --global user.name "${_CI_USERNAME}"
 
     # todo tag current commit with rc-$SHORT_SHA
