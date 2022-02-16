@@ -82,6 +82,10 @@
             "args": [
                 "ci/backend/deploy_rc.sh"
             ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
                 "COMMIT_SHA=$COMMIT_SHA",
