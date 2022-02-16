@@ -1,5 +1,5 @@
 # files that should trigger a publish
-FILES_TO_INCLUDE=("common/*" "frontend/*" "ci/*")
+FILES_TO_INCLUDE=("common/**/*" "frontend/**/*" "ci/**/*")
 
 # files that shouldn't trigger a publish
 FILES_TO_IGNORE=("frontend/README.md")
