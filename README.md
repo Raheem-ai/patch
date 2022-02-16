@@ -2,6 +2,7 @@
 - `frontend/` houses the code for the React Native app. See it's [readme](./frontend/README.md) for more details.
 - `backend/` houses the code for the api server. See it's [readme](./backend/README.md) for more details.
 - `common/` houses types and code that are shared between the front end and backend. Currently no dependencies are allowed in `common`.
+- `ci/` houses shell scripts and build definitions (currently running on [Google Cloud Build](https://cloud.google.com/build/docs)). See it's [readme](./ci/README.md) for more details.
 
 # Cloning the repo
 `--recurse-submodules` will init and clone all nested submodules in the project
