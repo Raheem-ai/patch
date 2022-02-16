@@ -80,3 +80,27 @@ should_deploy () {
 # }
 
 # rc_files_changed
+
+# test () {
+#     file="ci/backend/build_deploy_rc.json"
+
+#     dir_param=$1[@]
+#     dirs=("${!dir_param}")
+
+#     echo ${dirs[*]}
+
+#     for dir in ${dirs[@]}
+#     do 
+#         echo $file $dir
+#         if [[ $file =~ ^$dir$ ]] ;
+#         then
+#             echo match
+#             break
+#         else
+#             echo no match
+#         fi
+#     done
+# }
+
+# test_args=("common/**/*" "frontend/**/*" "ci/**/*")
+# test test_args
