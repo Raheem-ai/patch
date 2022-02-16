@@ -108,3 +108,18 @@ $> expo publish --release-channel <prod | staging>
 - add secrets to secret store
     - expo build-deploy-bot-secret 
         - TODO: add to infra defs
+    - infra git deploy key (write perms): 'infra-git-ssh-key'
+    - patch git deploy key (write perms): 'patch-git-ssh-key'
+
+
+# Dev Ops Tasks
+
+## Creating git deploy key
+1) Create the pub/priv key pair
+```sh
+ssh-keygen -t ed25519 -C "what's this key for?"
+```
+
+2) [Add](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) pub key to target repo's deploy keys.
+
+3) put prive key in the secret store so it can be securely accessed at build/deploy time 
