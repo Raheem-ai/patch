@@ -50,7 +50,8 @@
                 "path": "/root/.ssh"
             }],
             "env": [
-                "SHORT_SHA=$SHORT_SHA"
+                "SHORT_SHA=$SHORT_SHA",
+                "COMMIT_SHA=$COMMIT_SHA"
             ]
         },
         {
