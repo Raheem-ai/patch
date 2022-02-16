@@ -38,14 +38,11 @@ should_deploy () {
 
         for to_include in ${files_to_include[@]}
         do 
-            echo $file $to_include
             if [[ $file =~ ^$to_include$ ]] ;
             then
                 deployable=0
-                break
+                echo $file changed
             fi
-
-            echo $deployable
         done
 
         if [[ $deployable == 0 ]] && !(in_files_to_ignore $file $files_to_ignore) ;
@@ -58,49 +55,3 @@ should_deploy () {
     # 1 = false
     return 1
 }
-
-# rc_files_changed () {
-#     # git tag -a rc 53ec403 -m 'rc-53ec403'
-#     # git tag -a rc 3c4c0fd -m 'rc-3c4c0fd'
-
-    
-
-#     # gets me the list of tags with the latest first
-#     tagString=$(git tag --list "rc-*" --sort=creatordate)
-#     tags=($(echo $tagString | tr " " "\n"))
-
-#     # choose latest tag
-#     tag=${tags[0]}
-
-#     # gets the commit for the tag
-#     rc_commit=$(git rev-parse tags/$tag~0) 
-
-#     # echo $rc_commit
-#     # echo $(git diff --name-only $rc_commit)
-# }
-
-# rc_files_changed
-
-# test () {
-#     file="ci/backend/build_deploy_rc.json"
-
-#     dir_param=$1[@]
-#     dirs=("${!dir_param}")
-
-#     echo ${dirs[*]}
-
-#     for dir in ${dirs[@]}
-#     do 
-#         echo $file $dir
-#         if [[ $file =~ ^$dir$ ]] ;
-#         then
-#             echo match
-#             break
-#         else
-#             echo no match
-#         fi
-#     done
-# }
-
-# test_args=("common/**/*" "frontend/**/*" "ci/**/*")
-# test test_args
