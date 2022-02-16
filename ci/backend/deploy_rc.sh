@@ -17,7 +17,7 @@ then
     gcloud beta run deploy $_SERVICE --image=gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA --region=us-central1 --set-secrets=$(cat secretConfig.txt) "--set-env-vars=^##^$(cat config.txt)"
     
     # todo tag current commit with rc-$SHORT_SHA
-    git tag -a rc-$SHORT_SHA -m "Patch Release Candidate $SHORT_SHA" $SHORT_SHA
+    git tag -a rc-$SHORT_SHA -m "Patch Release Candidate $SHORT_SHA" $SHORT_SHA || echo tagging failed
 
     # todo push tags
 else
