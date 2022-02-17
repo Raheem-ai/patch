@@ -15,8 +15,8 @@ if should_deploy FILES FILES_TO_INCLUDE FILES_TO_IGNORE;
 then
     cd frontend
 
-    echo "# installing frontend deps for publish"
-    yarn install
+    # echo "# installing frontend deps for publish"
+    # yarn install
 
     echo "# logging into expo"
     node_modules/expo-cli/bin/expo.js login --non-interactive 
