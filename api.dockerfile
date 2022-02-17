@@ -44,6 +44,8 @@ COPY frontend/yarn.lock .
 # TODO: get this to only install the locked expo-cli
 RUN yarn install
 
+COPY frontend .
+
 # /app
 WORKDIR ..
 
@@ -54,5 +56,5 @@ COPY ci ./ci
 WORKDIR backend
 
 # Build locally with > docker build -f api.dockerfile .
-# Run locally with > docker run --rm --env-file ./backend/env/.env.local <imageId>
+# Run locally with > docker run --rm -it --env-file ./backend/env/.env.local <imageId>
 CMD yarn node lib/backend/src/index.js
