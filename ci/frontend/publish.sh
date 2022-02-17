@@ -13,7 +13,12 @@ FILES=$(cat changedFiles.txt)
 
 if should_deploy FILES FILES_TO_INCLUDE FILES_TO_IGNORE;
 then
-    cd frontend
+    echo $(pwd)
+
+    echo cd /app/frontend
+    cd /app/frontend
+
+    echo $(pwd)
 
     # echo "# installing frontend deps for publish"
     # yarn install
