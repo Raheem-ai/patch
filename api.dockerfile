@@ -7,6 +7,7 @@ WORKDIR app
 COPY .yarnrc.yml .
 COPY .yarn/releases .yarn/releases
 
+# /app/backend/infra
 WORKDIR backend/infra
 
 # Make sure infra dependencies are cached until changed(infrequently)
@@ -20,7 +21,8 @@ COPY backend/infra/src ./src
 COPY backend/infra/bin ./bin
 RUN yarn run build
 
-WORKDIR ..
+# /app/backend
+WORKDIR .. 
 
 # Make sure service dependencies are cached until changed(infrequently)
 COPY backend/package.json .
@@ -34,8 +36,23 @@ COPY common ../common/
 
 RUN yarn run build
 
-# copy in build scripts + config
-COPY ci /app/ci
+# /app/frontend
+WORKDIR ../frontend
 
+COPY frontend/package.json .
+COPY frontend/yarn.lock .
+# TODO: get this to only install the locked expo-cli
+RUN yarn install
+
+# /app
+WORKDIR ..
+
+# copy in build scripts + config
+COPY ci ./ci
+
+# /app/backend
+WORKDIR backend
+
+# Build locally with > docker build -f api.dockerfile .
 # Run locally with > docker run --rm --env-file ./backend/env/.env.local <imageId>
 CMD yarn node lib/backend/src/index.js
