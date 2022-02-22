@@ -88,9 +88,7 @@
             }],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
-                "COMMIT_SHA=$COMMIT_SHA",
                 "SHORT_SHA=$SHORT_SHA",
-                "_MERGED_SHA=$_MERGED_SHA",
                 "_SERVICE=$_SERVICE", 
                 "_CI_EMAIL=$_CI_EMAIL",
                 "_CI_USERNAME=$_CI_USERNAME"
@@ -104,9 +102,6 @@
                 "ci/frontend/publish.sh"
             ],
             "env": [
-                "PROJECT_ID=$PROJECT_ID",
-                "COMMIT_SHA=$COMMIT_SHA",
-                "_MERGED_SHA=$_MERGED_SHA",
                 "_ENVIRONMENT=$_ENVIRONMENT"
             ]
         },
