@@ -16,12 +16,18 @@ type Props = {}
 @observer
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
+    headerReactionDisposer;
     componentDidMount = () => {
         // Set up reaction to monitor any time our form instance changes from the home page
         // or the header visibility changes.
-        reaction(this.checkStateChange, this.checkHeaderShowing, {
+        this.headerReactionDisposer = reaction(this.checkStateChange, this.checkHeaderShowing, {
                     equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
                 });
+    }
+
+    componentWillUnmount(): void {
+        // dispose
+        this.headerReactionDisposer();
     }
     
     static onHide = () => {
@@ -77,6 +83,8 @@ class CreateHelpRequest extends React.Component<Props> {
         if (isExpanded && headerShowing && !formIsHome) {
             bottomDrawerStore().hideHeader();
         } else if (!isExpanded && !formIsHome && !headerShowing) {
+            bottomDrawerStore().showHeader();
+        } else if (formIsHome && !headerShowing && isExpanded) {
             bottomDrawerStore().showHeader();
         }
     }
