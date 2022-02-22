@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { IComputedValue, reaction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
@@ -14,9 +15,25 @@ type Props = {}
 
 @observer
 class CreateHelpRequest extends React.Component<Props> {
-
+    formInstance = React.createRef<Form>();
+    componentDidMount = () => {
+        // Set up reaction to monitor any time our form instance changes from the home page
+        // or the header visibility changes.
+        reaction(this.checkStateChange, this.checkHeaderShowing, {
+                    equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
+                });
+    }
+    
     static onHide = () => {
+        console.log('createRequest.onHide');
         createRequestStore().clear();
+    }
+
+    static onShow = () => {
+        // TO DO
+        // If on form home page, show header
+        // If on on sub page, hide header
+        console.log('createRequest.onShow');
     }
 
     static submit = {
@@ -45,14 +62,36 @@ class CreateHelpRequest extends React.Component<Props> {
     headerLabel = () => {
         return 'Create Request'
     }
-    
+
+    checkStateChange = (): [boolean, boolean, boolean] => {
+        // maybe need to track if it's minimized as well...
+        // Return the current state of the form instance and header visibility
+        return [this.formInstance?.current?.isHome.get(), bottomDrawerStore().headerShowing, bottomDrawerStore().expanded];
+    }
+
+    checkHeaderShowing = ([formIsHome, headerShowing, isExpanded]) => {
+        console.log('Form Instance: %s', this.formInstance?.current);
+        console.log('createRequest.checkHeaderShowing. formHomePage: %s. headerShowing: %s. isExpanded: %s', formIsHome, headerShowing, isExpanded);
+        // If the form is on the home page the header should be showing.
+        // If the form is anywhere but the home page, the header should not be showing, unless it's minimized.
+        if (isExpanded && headerShowing && !formIsHome) {
+            bottomDrawerStore().hideHeader();
+        } else if (!isExpanded && !formIsHome && !headerShowing) {
+            bottomDrawerStore().showHeader();
+        }
+    }
+
     formProps = (): FormProps => {
         return {
             headerLabel: this.headerLabel(), 
             onExpand: () => {
+                console.log('createRequest.onExpand')
                 bottomDrawerStore().hideHeader();
+                // when: bottom drawer store is expanded and form is expanded
+                // and bottom drawer view is this view, hide header.
             },
             onBack: () => {
+                console.log('createRequest.onBack')
                 bottomDrawerStore().showHeader();
             },
             inputs: [
@@ -167,7 +206,7 @@ class CreateHelpRequest extends React.Component<Props> {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
+                    <Form ref={this.formInstance} {...this.formProps()}/>
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
