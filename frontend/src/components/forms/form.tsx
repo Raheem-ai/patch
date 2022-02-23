@@ -81,13 +81,11 @@ export default class Form extends React.Component<FormProps> {
 
     openLink = (id: string) => {
         this.setState({ screenId: id });
-        // set isHome = False;
         this.props.onExpand?.()
     }
 
     back = () => {
         this.setState({ screenId: null });
-        // set isHome true
         this.props.onBack?.()
     }
     
