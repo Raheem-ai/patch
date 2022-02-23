@@ -1,8 +1,12 @@
-# Design Doc for Shifts
+# Design Doc for Shifts + Chats
 
 ## Type Definitions + Assumptions
 ```ts
 
+/**
+ * Disclaimer: all Permissions are subject to change/re-arrange to a set that makes sense 
+ * for our final mental model
+ * */
 enum Permissions {
     ReadRequests
     EditRequests
@@ -24,6 +28,8 @@ type TagCategory = {
 }
 
 type Shift = {
+    id: string
+
     positions: ShiftPosition[]
     requiredTags: string[] // string representation of the Tag which also acts as a unique id
     requiredRoles: string[] // id of required Roles 
@@ -68,6 +74,75 @@ type TimeConstraints = {
 
 type RepeatableTimeConstraints = TimeConstraints & {
     repeatEvery?: 'day' | 'week' | 'month' //...something like this
+}
+
+type PrivateChat = {
+    id: string,
+    allowedUsers: string[],
+
+    // how long a chat should live for 
+    timeConstraints: TimeConstraints,
+    // how long the data for a chat should be stored (read retrievable)
+    dataRetentionWindowInMins?: number,
+}
+    
+type Chat = PrivateChat & {
+    allowedRoles: Role[],
+    allowedTags: string[],
+    allowedShifts: string[],
+
+    // how long users without Permissions.EncryptionAdmin can see the chat data
+    dataAccessWindowInMins?: number,
+
+    // What to do when a User is no longer in the set we defined for the chat. Could 
+    // also let you choose between "Boot From Chat", "Notify Admins", and "Do Nothing"
+    // would only show this in UI when you have a Role, Tag, or Shift specified
+    autoBoot?: boolean,
+
+    /**
+     * 
+     * Each Chat acts as a smart abstraction around any set of Users having End2End 
+     * encrypted communication for a configurable amount of time. Users can be added by 
+     * any User with Permissions.ManageChat. Users can be removed by themselves, any 
+     * ChatManager, and by the Chat itself depending on how it was set up.
+     * 
+     * At a base level any User with Permissions.CreateGroupChat (seperate from 
+     * Permissions.CreateChat to dm another User) can create a new Chat. When they 
+     * create it they have to tell us what Users have access to it. This could be 
+     * *any mix of* directly choosing users like you would starting any adhock groupchat 
+     * (or dm for that matter), being based off of Tags/Roles, or Users in a Shift. We 
+     * *could* even go so far as to let you add specific Positions in a Shift. The 
+     * point is we can go as deep as we want in terms of how we let you describe your
+     * target group of Users but once you set it up we should handle all updates of when 
+     * User loses a Role or Tag or cancels on a Shift and we need to remove them from the  
+     * Chat. That could also be a setting if that's too severe of a default.
+     * 
+     * In terms of data retention, I think we should have a setting for 
+     * timeConstraints (how long a Chat can last and if it repeats), an *optional* 
+     * data retention window and an *optional* data access window. In terms of semantics:
+     * 
+     * *** disclaimer: these would be under "Advanced Settings" or otherwise out of the way ***
+     * 
+     * - Chat timeConstraints >= data retention window >= data access window
+     * - data retention/access windows default to the full life of the chat
+     *      -> if you never set anything the chat will run indefinately with everyone 
+     *      in it having access to the whole chat forever (though I vote we have policies 
+     *      around this because of storage costs/liability to be subpoenaed)
+     *      -> if this is just two Users it's a DM (only they are in charge of their 
+     *      encryption keys for that chat)
+     * - if a Chat doesn't have an explicit end time, it's end time is treated as infinity 
+     * meaning the data retention/access windows can be arbitrarily long lived 
+     *      -> ie. MHFirst wants their chat to last week over week updating who has access 
+     *      based on who's on shift so the equipment people can coordinate but they also 
+     *      have their data retention time set to 7 days and their data access time set to 
+     *      12 hours. Users with Permissions.EncryptionAdmin 
+     *      can see/export up to last 7 days but all other users can only see the last 12 
+     *      hours of the chat at any given time
+     * - You can export a chat if enough Users with Permissions.EncryptionAdmin sign off on it.
+     * - When a chat is deleted all data is deleted along with it. 
+     * - Any User can create a DM (A Chat with only two Users where they are in control of their 
+     * keys (ie they can delete the data))
+     * */
 }
 
 ```
@@ -135,6 +210,7 @@ const Equipment: ShiftPosition = {
 }
  
 const WeekendEast: Shift = {
+    id: 'WeekendEast-xxx-yyy', 
     positions: [
         ObserverResponder,
         DriverResponder,
@@ -150,6 +226,38 @@ const WeekendEast: Shift = {
         // 2) Repeat every week
         // ...
     }
+}
+
+const WeekendEastShiftChat: Chat = {
+    id: 'WeekendEastShiftChat-xxx-yyy',
+    
+    allowedRoles: [],
+    allowedTags: [],
+    allowedUsers: [],
+    allowedShifts: [
+        'WeekendEast-xxx-yyy'
+    ],
+
+    timeConstraints: {
+        start: new Date(/* create time */),
+        end: null
+    },
+    dataRetentionWindowInMins: 7 * 24 * 60,
+    dataAccessWindowInMins: 12 * 60,
+    autoBoot: true
+}
+
+const JenMeiAndVChat: PrivateChat = {
+    id: 'JenMeiAndVChat-xxx-yyy',
+    allowedUsers: [
+        'JenMei-xxx-yyy',
+        'V-xxx-yyy'
+    ],
+    timeConstraints: {
+        start: new Date(/* create time */),
+        end: null
+    },
+    dataRetentionWindowInMins: null,
 }
 ```
 ### DASHR
@@ -209,6 +317,7 @@ const Volunteer: ShiftPosition = {
 }
  
 const WeekendEast: Shift = {
+    id: 'WeekendEast-xxx-yyy',
     positions: [
         DeLaRazaRep,
         OtherOrgRep,
@@ -222,9 +331,32 @@ const WeekendEast: Shift = {
         // ...
     }
 }
+
+// completely open chat that is end to end encrypted for anyone who doesn't
+// leave or get booted by an admin 
+const DASHROrgwideChat: Chat = {
+    id: 'DASHROrgwideChat-xxx-yyy',
+    
+    allowedRoles: [
+        'Anyone-xxx-yyy'
+    ],
+    allowedTags: [],
+    allowedUsers: [],
+    allowedShifts: [],
+
+    timeConstraints: {
+        start: new Date(/* create time */),
+        end: null
+    },
+    dataRetentionWindowInMins: null,
+    dataAccessWindowInMins: null,
+    autoBoot: false
+}
 ```
 
 ### What this doesn't cover:
 - There is no concept of "ShiftTeams" within a Shift that contain a set of Positions ie. In the `MHFirst` example can't say I 1 Shift with two ShiftTeams, that each have 2 ObserverResponders and 1 DriverResponder, that start/end at different times. That would mean EITHER
     - creating a seperate shift for responders with a different star/end time...which means having to duplicate all of the support :/
     - OR (preferred as a "ShiftTeams" workaround) creating seperate positions for the different start/end times ie. ```const DriverResponderEarly: ShiftPosition = ...```, ```const DriverResponderLate: ShiftPosition = ...```, ```const ObserverResponderEarly: ShiftPosition = ...``` and ```const ObserverResponderLate: ShiftPosition = ...```
+- being able to say Users have access to a Chat for an exact time window ie. from 4PM Fri to 8PM Sun every week.
+- Users can't create a Chat (non DM) unless they have the right "admin level" Permissions
