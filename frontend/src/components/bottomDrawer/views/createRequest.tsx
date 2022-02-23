@@ -18,28 +18,22 @@ class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
     headerReactionDisposer;
     componentDidMount = () => {
-        // Set up reaction to monitor any time our form instance changes from the home page
-        // or the header visibility changes.
+        // checkStateChange gets called any time the form page, header visibility, or the expanded
+        // state of the bottom drawer is updated. If any of these values have changed since the
+        // last check, checkHeaderShowing is called to make sure the header is being properly
+        // displayed or hidden based on the form page and expanded state.
         this.headerReactionDisposer = reaction(this.checkStateChange, this.checkHeaderShowing, {
                     equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
                 });
     }
 
     componentWillUnmount(): void {
-        // dispose
+        // Dispose of the reaction to prevent memory leaks.
         this.headerReactionDisposer();
     }
     
     static onHide = () => {
-        console.log('createRequest.onHide');
         createRequestStore().clear();
-    }
-
-    static onShow = () => {
-        // TO DO
-        // If on form home page, show header
-        // If on on sub page, hide header
-        console.log('createRequest.onShow');
     }
 
     static submit = {
@@ -70,21 +64,28 @@ class CreateHelpRequest extends React.Component<Props> {
     }
 
     checkStateChange = (): [boolean, boolean, boolean] => {
-        // maybe need to track if it's minimized as well...
-        // Return the current state of the form instance and header visibility
+        // This function returns an array of the following information:
+        // 1. Is the current form on its home page (or a sub-page).
+        // 2. Is the header showing.
+        // 3. Is the bottom drawer expanded.
         return [this.formInstance?.current?.isHome.get(), bottomDrawerStore().headerShowing, bottomDrawerStore().expanded];
     }
 
     checkHeaderShowing = ([formIsHome, headerShowing, isExpanded]) => {
-        console.log('Form Instance: %s', this.formInstance?.current);
-        console.log('createRequest.checkHeaderShowing. formHomePage: %s. headerShowing: %s. isExpanded: %s', formIsHome, headerShowing, isExpanded);
-        // If the form is on the home page the header should be showing.
-        // If the form is anywhere but the home page, the header should not be showing, unless it's minimized.
-        if (isExpanded && headerShowing && !formIsHome) {
-            bottomDrawerStore().hideHeader();
+        if (isExpanded) {
+            // The bottom drawer is expanded.
+            // We show the header if and only if
+            // the form is on its home page.
+            if (!formIsHome && headerShowing) {
+                bottomDrawerStore().hideHeader();
+            } else if (formIsHome && !headerShowing) {
+                bottomDrawerStore().showHeader();
+            }
         } else if (!isExpanded && !formIsHome && !headerShowing) {
-            bottomDrawerStore().showHeader();
-        } else if (formIsHome && !headerShowing && isExpanded) {
+            // If the bottom drawer is minimized, the header should be showing.
+            // The header would already be visible if the form is on the home page,
+            // so we can add a condition to only consider executing this block if we're
+            // not on the home page.
             bottomDrawerStore().showHeader();
         }
     }
@@ -93,13 +94,9 @@ class CreateHelpRequest extends React.Component<Props> {
         return {
             headerLabel: this.headerLabel(), 
             onExpand: () => {
-                console.log('createRequest.onExpand')
                 bottomDrawerStore().hideHeader();
-                // when: bottom drawer store is expanded and form is expanded
-                // and bottom drawer view is this view, hide header.
             },
             onBack: () => {
-                console.log('createRequest.onBack')
                 bottomDrawerStore().showHeader();
             },
             inputs: [

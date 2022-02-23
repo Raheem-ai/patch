@@ -66,7 +66,6 @@ const WrappedScrollView = wrapScrollView(ScrollView)
 @observer
 export default class Form extends React.Component<FormProps> {
     isHome = computed<boolean>(() => {
-        console.log('isHome: %s %s', this.state.screenId, !this.state.screenId)
         return !this.state.screenId;
     })
     isValid = computed<boolean>(() => {
