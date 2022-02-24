@@ -65,13 +65,16 @@ const WrappedScrollView = wrapScrollView(ScrollView)
 
 @observer
 export default class Form extends React.Component<FormProps> {
-
+    isHome = computed<boolean>(() => {
+        return !this.state.screenId;
+    })
     isValid = computed<boolean>(() => {
         return this.props.inputs.filter(i => i.required).every(i => i.isValid());
     })
 
     submitting = observable.box<boolean>(false)
 
+    // screenId == null means we're on home page
     state = {
         screenId: null
     }

@@ -1,5 +1,6 @@
 import React from "react";
 import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { reaction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
@@ -14,7 +15,23 @@ type Props = {}
 
 @observer
 class CreateHelpRequest extends React.Component<Props> {
+    formInstance = React.createRef<Form>();
+    headerReactionDisposer = null;
+    componentDidMount = () => {
+        // checkStateChange gets called any time the form page, header visibility, or the expanded
+        // state of the bottom drawer is updated. If any of these values have changed since the
+        // last check, checkHeaderShowing is called to make sure the header is being properly
+        // displayed or hidden based on the form page and expanded state.
+        this.headerReactionDisposer = reaction(this.checkStateChange, this.checkHeaderShowing, {
+            equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
+        });
+    }
 
+    componentWillUnmount(): void {
+        // Dispose of the reaction to prevent memory leaks.
+        this.headerReactionDisposer();
+    }
+    
     static onHide = () => {
         createRequestStore().clear();
     }
@@ -45,7 +62,34 @@ class CreateHelpRequest extends React.Component<Props> {
     headerLabel = () => {
         return 'Create Request'
     }
-    
+
+    checkStateChange = (): [boolean, boolean, boolean] => {
+        // This function returns an array of the following information:
+        // 1. Is the current form on its home page (or a sub-page).
+        // 2. Is the header showing.
+        // 3. Is the bottom drawer expanded.
+        return [this.formInstance?.current?.isHome.get(), bottomDrawerStore().headerShowing, bottomDrawerStore().expanded];
+    }
+
+    checkHeaderShowing = ([formIsHome, headerShowing, isExpanded]) => {
+        if (isExpanded) {
+            // The bottom drawer is expanded.
+            // We show the header if and only if
+            // the form is on its home page.
+            if (!formIsHome && headerShowing) {
+                bottomDrawerStore().hideHeader();
+            } else if (formIsHome && !headerShowing) {
+                bottomDrawerStore().showHeader();
+            }
+        } else if (!isExpanded && !formIsHome && !headerShowing) {
+            // If the bottom drawer is minimized, the header should be showing.
+            // The header would already be visible if the form is on the home page,
+            // so we can add a condition to only consider executing this block if we're
+            // not on the home page.
+            bottomDrawerStore().showHeader();
+        }
+    }
+
     formProps = (): FormProps => {
         return {
             headerLabel: this.headerLabel(), 
@@ -167,7 +211,7 @@ class CreateHelpRequest extends React.Component<Props> {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
+                    <Form ref={this.formInstance} {...this.formProps()}/>
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
