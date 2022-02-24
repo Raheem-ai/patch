@@ -20,7 +20,6 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
     const [targetCoords, setTargetCoords] = useState<LatLngLiteral>(null);
     const [inputActive, setInputActive] = useState(false);
     const [manuallyChosenLocation, setManuallyChosenLocation] = useState<GeocodeResult>(null);
-    console.log('manuallyChosenLocation initialization: %s', manuallyChosenLocation);
 
     const mapInstance = useRef<MapView>();
 
@@ -126,10 +125,6 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
 
     const save = () => {
         if (isSaveable) {
-            console.log('isSaveable: %s', isSaveable);
-            console.log('manuallyChosenLocation: %s', manuallyChosenLocation);
-            console.log('chosenSuggestion: %s', chosenSuggestion);
-
             const loc: AddressableLocation = {
                 latitude: targetCoords.lat,
                 longitude: targetCoords.lng,
