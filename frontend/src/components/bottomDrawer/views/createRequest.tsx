@@ -16,7 +16,7 @@ type Props = {}
 @observer
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
-    headerReactionDisposer;
+    headerReactionDisposer = null;
     componentDidMount = () => {
         // checkStateChange gets called any time the form page, header visibility, or the expanded
         // state of the bottom drawer is updated. If any of these values have changed since the
