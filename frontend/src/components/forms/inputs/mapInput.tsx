@@ -117,12 +117,6 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
         setInputActive(false)
     }
 
-    const chooseLocationOnMap = () => {
-        setInputActive(false)
-        setChosenSuggestion(null)
-        Keyboard.dismiss()
-    }
-
     const save = () => {
         if (isSaveable) {
             const loc: AddressableLocation = {
