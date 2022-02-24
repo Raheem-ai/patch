@@ -19,8 +19,8 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
     const [searchText, setSearchText] = useState('');
     const [targetCoords, setTargetCoords] = useState<LatLngLiteral>(null);
     const [inputActive, setInputActive] = useState(false);
-    const [inManualMode, setInManualMode] = useState(false);
     const [manuallyChosenLocation, setManuallyChosenLocation] = useState<GeocodeResult>(null);
+    console.log('manuallyChosenLocation initialization: %s', manuallyChosenLocation);
 
     const mapInstance = useRef<MapView>();
 
@@ -35,7 +35,7 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
             longitudeDelta: 0.0421,
         } : undefined
 
-    const isSaveable = (inManualMode && manuallyChosenLocation) || (!inManualMode && chosenSuggestion);
+    const isSaveable = manuallyChosenLocation || chosenSuggestion;
 
     const dimensions = Dimensions.get("screen");
 
@@ -46,9 +46,8 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
 
     const onTextUpdated = (text: string) => {
         updateSuggestions(text);
-        setSearchText(text)
-        setInManualMode(false);
-        setManuallyChosenLocation(null)
+        setSearchText(text);
+        setManuallyChosenLocation(null);
     }
 
     const manuallySetLocation = async (coords: LatLngLiteralVerbose) => {
@@ -78,19 +77,15 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
     }
 
     const mapPressed = async (event: MapEvent) => {
-        const coords = event.nativeEvent.coordinate;
-
-        if (inManualMode) {
-            await manuallySetLocation(coords)
-        } else {
-            Keyboard.dismiss();
-        }
+        await manuallySetLocation(event.nativeEvent.coordinate)
+        Keyboard.dismiss();
     }
 
     const clear = () => {
         setSearchText('')
         setSuggestions([])
         setChosenSuggestion(null)
+        setManuallyChosenLocation(null)
         setTargetCoords(null)
     }
 
@@ -124,7 +119,6 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
     }
 
     const chooseLocationOnMap = () => {
-        setInManualMode(true)
         setInputActive(false)
         setChosenSuggestion(null)
         Keyboard.dismiss()
@@ -132,11 +126,14 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
 
     const save = () => {
         if (isSaveable) {
+            console.log('isSaveable: %s', isSaveable);
+            console.log('manuallyChosenLocation: %s', manuallyChosenLocation);
+            console.log('chosenSuggestion: %s', chosenSuggestion);
 
             const loc: AddressableLocation = {
                 latitude: targetCoords.lat,
                 longitude: targetCoords.lng,
-                address: inManualMode ? manuallyChosenLocation.formatted_address : chosenSuggestion.description
+                address: manuallyChosenLocation ? manuallyChosenLocation.formatted_address : chosenSuggestion.description
             }
 
             config.onSave?.(loc)
@@ -157,9 +154,9 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
                     { targetCoords 
                         ? <Marker
                             coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
-                            title={inManualMode ? undefined : chosenSuggestion.structured_formatting.main_text}
-                            description={inManualMode ? undefined : chosenSuggestion.structured_formatting.secondary_text}
-                            draggable={inManualMode}
+                            title={chosenSuggestion ? chosenSuggestion.structured_formatting.main_text : undefined }
+                            description={chosenSuggestion ?chosenSuggestion.structured_formatting.secondary_text : undefined}
+                            // draggable={inManualMode}
                             onDragEnd={(e) => manuallySetLocation(e.nativeEvent.coordinate)}
                         />
                         : null }
@@ -221,24 +218,6 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
                             {suggestions.map(s => {
                                 return <Suggestion suggestion={s} onPress={() => chooseSuggestion(s)}/>
                             })}
-                            <View style={{
-                                // marginBottom: 16,
-                                borderTopColor: '#999',
-                                borderTopWidth: 1,
-                                flexDirection: 'row'
-                            }}>
-                                <IconButton
-                                    style={{ alignSelf: 'center', width: 25}}
-                                    icon='map-marker' 
-                                    color={'#999'}
-                                    size={25} />
-                                <Text 
-                                    onPress={chooseLocationOnMap}
-                                    style={{
-                                        fontSize: 16,
-                                        alignSelf: 'center'
-                                }}>Pick location on map</Text>
-                            </View>
                         </View>
                         : null }
             </Animated.View>
