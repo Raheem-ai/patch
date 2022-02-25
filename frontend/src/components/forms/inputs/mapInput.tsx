@@ -145,7 +145,7 @@ const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
                             coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
                             title={chosenSuggestion ? chosenSuggestion.structured_formatting.main_text : undefined }
                             description={chosenSuggestion ?chosenSuggestion.structured_formatting.secondary_text : undefined}
-                            // draggable={inManualMode}
+                            draggable
                             onDragEnd={(e) => manuallySetLocation(e.nativeEvent.coordinate)}
                         />
                         : null }
