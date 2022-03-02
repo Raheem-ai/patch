@@ -103,7 +103,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     }
 
     const swipeStyle = {
-        left: visualDeltaX + deltaTouchX 
+        left: 15 * (idx * 2 - 1) + visualDeltaX + deltaTouchX
     }
 
     const bottomUIOffset = bottomDrawerStore().showing
@@ -187,8 +187,8 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end'
     },
     cardContainer: {
-        width: windowDimensions.width - (2 * 20),
-        margin: 20
+        width: windowDimensions.width - (2 * 5) - (2 * 15),
+        margin: 5
     },
     card: {
         borderRadius: 8,
