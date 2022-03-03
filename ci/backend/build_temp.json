@@ -1,5 +1,5 @@
 {
-    "timeout": "1200s",
+    "timeout": "3600s",
     "steps": [{
         "name": "gcr.io/cloud-builders/git",
         "secretEnv": ["PATCH_SSH_KEY", "INFRA_SSH_KEY"],
