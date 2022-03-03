@@ -14,8 +14,9 @@ import { ScreenProps, routerNames } from "../types";
 type Props = ScreenProps<'HelpRequestMap'>;
 
 const windowDimensions = Dimensions.get("screen");
-const CARD_SIDE_WIDTH = 15;
-const REQUEST_CARD_MARGIN = 5;
+const CARD_SIDE_TAB_WIDTH = 15;
+const REQUEST_CARD_MARGIN_HORIZONTAL = 5;
+const REQUEST_CARD_MARGIN_VERTICAL = 20;
 
 export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     const [startTouchX, setStartTouchX] = useState(null);
@@ -105,7 +106,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     }
 
     const swipeStyle = {
-        left: visualDeltaX + deltaTouchX + CARD_SIDE_WIDTH * (idx * 2 - 1)
+        left: visualDeltaX + deltaTouchX + (CARD_SIDE_TAB_WIDTH * ((idx * 2) - 1))
     }
 
     const bottomUIOffset = bottomDrawerStore().showing
@@ -189,8 +190,9 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end'
     },
     cardContainer: {
-        width: windowDimensions.width - (2 * REQUEST_CARD_MARGIN) - (2 * CARD_SIDE_WIDTH),
-        margin: REQUEST_CARD_MARGIN
+        width: windowDimensions.width - (2 * (REQUEST_CARD_MARGIN_HORIZONTAL + CARD_SIDE_TAB_WIDTH)),
+        marginHorizontal: REQUEST_CARD_MARGIN_HORIZONTAL,
+        marginVertical: REQUEST_CARD_MARGIN_VERTICAL
     },
     card: {
         borderRadius: 8,
