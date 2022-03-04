@@ -50,7 +50,7 @@ export default class DispatchStore implements IDispatchStore {
         if (this.includeOffDuty) {
             this.selectedResponders.filter((user) => {
                 let userCurrentOrgConfig = user.organizations[userStore().currentOrgId];
-                return userCurrentOrgConfig && userCurrentOrgConfig.onDuty;
+                return userCurrentOrgConfig && !userCurrentOrgConfig.onDuty;
             }).map((user) => {
                 this.toggleResponder(user.id);
             });
