@@ -32,7 +32,7 @@ if (process.env.PATCH_LOCAL_ENV) {
 }
 
 const isLocal = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.local];
-const mongoConnectionString = config.MONGO.get().connection_string;
+const mongoConnectionString = config.MONGO_CONNECTION_STRING.get().connection_string;
 const redisConnectionString = config.REDIS.get().connection_string
 
 const socketIOPubClient = createClient({ 
