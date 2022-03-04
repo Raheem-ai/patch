@@ -53,6 +53,7 @@ export default class AssignResponders extends React.Component {
     toggleResponder = (userId) => {
         dispatchStore().toggleResponder(userId)
     }
+    
     header = () => {
         const displayIdParts = requestStore().currentRequest.displayId.split('-');
 
