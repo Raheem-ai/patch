@@ -84,6 +84,17 @@ export default class DispatchStore implements IDispatchStore {
         }
     }
 
+    async removeOffDutyResponders() {
+        if (this.includeOffDuty) {
+            this.selectedResponders.filter((user) => {
+                let userCurrentOrgConfig = user.organizations[userStore().currentOrgId];
+                return userCurrentOrgConfig && userCurrentOrgConfig.onDuty;
+            }).map((user) => {
+                this.toggleResponder(user.id);
+            });
+        }
+    }
+
     clear() {
         this.selectedResponderIds.clear()
     }

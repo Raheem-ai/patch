@@ -53,6 +53,11 @@ export default class AssignResponders extends React.Component {
     toggleResponder = (userId) => {
         dispatchStore().toggleResponder(userId)
     }
+
+    toggleIncludeOffDuty = () => {
+        dispatchStore().removeOffDutyResponders();
+        dispatchStore().toggleIncludeOffDuty();
+    }
     
     header = () => {
         const displayIdParts = requestStore().currentRequest.displayId.split('-');
@@ -105,7 +110,7 @@ export default class AssignResponders extends React.Component {
                     <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
                         <Switch
                             value={dispatchStore().includeOffDuty} 
-                            onValueChange={() => dispatchStore().toggleIncludeOffDuty()} 
+                            onValueChange={this.toggleIncludeOffDuty} 
                             color='#32D74B'/>
                 </View>
             </View>
