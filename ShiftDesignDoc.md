@@ -64,12 +64,12 @@ type ShiftPosition = {
     // optional
     max?: number // defaults to min if you don't explicitely set...-1 == inifity
     name?: string
-    timeConstraints?: TimeConstraints // defaults to containing Shifts time constraints ie. full day event analogy
+    timeConstraints?: TimeConstraints // defaults to containing Shift's time constraints ie. full day event analogy
 }
 
 type TimeConstraints = {
-    start: Date
-    end: Date
+    start: Date | null // default = now
+    end: Date | null // default = infinity
 }
 
 type RepeatableTimeConstraints = TimeConstraints & {
@@ -80,7 +80,7 @@ type PrivateChat = {
     id: string,
     allowedUsers: string[],
 
-    // how long a chat should live for 
+    // start/end time for chat to exist
     timeConstraints: TimeConstraints,
     // how long the data for a chat should be stored (read retrievable)
     dataRetentionWindowInMins?: number,
@@ -118,7 +118,7 @@ type Chat = PrivateChat & {
      * Chat. That could also be a setting if that's too severe of a default.
      * 
      * In terms of data retention, I think we should have a setting for 
-     * timeConstraints (how long a Chat can last and if it repeats), an *optional* 
+     * timeConstraints (if a chat has a start/end date), an *optional* 
      * data retention window and an *optional* data access window. In terms of semantics:
      * 
      * *** disclaimer: these would be under "Advanced Settings" or otherwise out of the way ***
