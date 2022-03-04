@@ -47,6 +47,15 @@ export default class DispatchStore implements IDispatchStore {
     }
     
     async toggleIncludeOffDuty() {
+        if (this.includeOffDuty) {
+            this.selectedResponders.filter((user) => {
+                let userCurrentOrgConfig = user.organizations[userStore().currentOrgId];
+                return userCurrentOrgConfig && userCurrentOrgConfig.onDuty;
+            }).map((user) => {
+                this.toggleResponder(user.id);
+            });
+        }
+
         this.includeOffDuty = !this.includeOffDuty
     }
 
@@ -81,17 +90,6 @@ export default class DispatchStore implements IDispatchStore {
             })
         } catch (e) {
             console.error(e);
-        }
-    }
-
-    async removeOffDutyResponders() {
-        if (this.includeOffDuty) {
-            this.selectedResponders.filter((user) => {
-                let userCurrentOrgConfig = user.organizations[userStore().currentOrgId];
-                return userCurrentOrgConfig && userCurrentOrgConfig.onDuty;
-            }).map((user) => {
-                this.toggleResponder(user.id);
-            });
         }
     }
 

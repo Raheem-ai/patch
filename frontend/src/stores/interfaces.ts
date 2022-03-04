@@ -90,7 +90,6 @@ export namespace IDispatchStore {
 export interface IDispatchStore extends IBaseStore {
     broadcastRequest(requestId: string, to: string[]): Promise<void>
     assignRequest(requestId: string, to: string[]): Promise<void>
-    removeOffDutyResponders(): Promise<void>;
     toggleSelectAll(): Promise<void>;
     toggleIncludeOffDuty(): Promise<void>;
     toggleResponder(userId: string): Promise<void>;
