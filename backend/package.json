@@ -1,5 +1,5 @@
 {
-  "name": "functions",
+  "name": "patch-api",
   "scripts": {
     "build": "tsc -b",
     "serve": "yarn run build && firebase emulators:start --only functions",

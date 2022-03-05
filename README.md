@@ -124,3 +124,13 @@ ssh-keygen -t ed25519 -C "what's this key for?"
 2) [Add](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) pub key to target repo's deploy keys.
 
 3) put prive key in the secret store so it can be securely accessed at build/deploy time 
+
+
+
+## Setting up infra admin credentials on mongo db so we can programatically update it
+1) go to cloud.mongodb.com and [create a new API Key](https://docs.atlas.mongodb.com/configure-api-access/)
+2) install mongocli in mongo dockerfile
+```sh
+# TODO: not sure how to rotate this infra level key programatically but that's okay for now
+
+```
