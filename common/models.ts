@@ -537,73 +537,61 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
         name: 'Edit organization settings',
         description: 'Edit organization name, data, and privacy settings.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.RoleAdmin]: {
         name: 'Role admin',
         description: 'Create, edit, and delete organization Roles.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.AttributeAdmin]: {
         name: 'Attribute admin',
         description: 'Create, edit, and delete organization Attributes.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.TagAdmin]: {
         name: 'Tad admin',
         description: 'Create, edit, and delete organization Tags.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.ExportData]: {
         name: 'Export data',
         description: 'Export organization data.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.InviteToOrg]: {
         name: 'Invite people to organization',
         description: 'Invite people to join organization.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.RemoveFromOrg]: {
         name: 'Remove users from organization',
         description: 'Remove users from organization.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.AssignRoles]: {
         name: 'Assign Roles',
         description: 'Assign Roles to people in organization.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.AssignAttributes]: {
         name: 'Assign Attributes',
         description: 'Assign Attributes to people in organization.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.ChatAdmin]: {
         name: 'Chat admin',
         description: 'Create and manage organization chats.',
         forcedPermissions: [PatchPermissions.InviteToChat],
-        internal: false
     },
     [PatchPermissions.InviteToChat]: {
         name: 'Invite to chat',
         description: 'Invite people to chats a user has access to.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.SeeAllChats]: {
         name: 'See chats',
         description: 'See all chats in organization, include Request and Shift chats.',
         forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.SeeShiftChats],
-        internal: false
     },
     [PatchPermissions.SeeRequestChats]: {
         name: 'See Request chats',
@@ -621,24 +609,20 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
         name: 'Shift admin',
         description: 'Create, edit, and delete Shifts. Approve requests to join Shifts, notify users on Shifts, and see all Shift chats.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.RequestAdmin]: {
         name: 'Request admin',
         description: 'Create, edit, close, and delete Requests. Notify users on requests, approve requests to join Requests, and see all Request chats.',
         forcedPermissions: [PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
-        internal: false
     },
     [PatchPermissions.EditRequestData]: {
         name: 'Edit Request data',
         description: 'Edit data associated with a Request.',
         forcedPermissions: [],
-        internal: false
     },
     [PatchPermissions.CloseRequests]: {
         name: 'Close Request',
         description: 'Close Requests that a user is on.',
         forcedPermissions: [],
-        internal: false
     }
 }
