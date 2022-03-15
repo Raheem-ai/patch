@@ -608,12 +608,12 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
     [PatchPermissions.ShiftAdmin]: {
         name: 'Shift admin',
         description: 'Create, edit, and delete Shifts. Approve requests to join Shifts, notify users on Shifts, and see all Shift chats.',
-        forcedPermissions: [],
+        forcedPermissions: [PatchPermissions.SeeShiftChats],
     },
     [PatchPermissions.RequestAdmin]: {
         name: 'Request admin',
         description: 'Create, edit, close, and delete Requests. Notify users on requests, approve requests to join Requests, and see all Request chats.',
-        forcedPermissions: [PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
+        forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
     },
     [PatchPermissions.EditRequestData]: {
         name: 'Edit Request data',
