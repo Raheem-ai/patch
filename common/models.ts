@@ -485,3 +485,44 @@ export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent exte
     sysEvent: SysEvent
     sysParams: PatchEventParams[SysEvent]
 }
+
+export enum PatchPermissions {
+    // Edit organization settings
+    EditOrgSettings = 'editOrgSettings',
+    // Create, edit, and delete org Roles
+    RoleAdmin = 'roleAdmin',
+    // Create, edit, and delete org Attributes
+    AttributeAdmin = 'attributeAdmin',
+    // Create, edit, and delete org Tags
+    TagAdmin = 'tagAdmin',
+    // Export org data
+    ExportData = 'exportData',
+    // Invite people to org
+    InviteToOrg = 'inviteToOrg',
+    // Remove people from org
+    RemoveFromOrg = 'removeFromOrg',
+    // Assign Roles to people in org
+    AssignRoles = 'assignRoles',
+    // Assign Attributes to people in org
+    AssignAttributes = 'assignAttributes',
+    // Delete my account from PATCH
+    DeleteMyAccount = 'deleteMyAccount',
+    // Edit my own PATCH profile
+    EditMyProfile = 'editMyProfile',
+    // Remove myself from org
+    RemoveSelfFromOrg = 'removeSelfFromOrg',
+    // Create and manage chats
+    ChatAdmin = 'chatAdmin',
+    // Invite people to chats (user can see)
+    InviteToChat = 'inviteToChat',
+    // See all chats in org (incl. all request/shift chats)
+    SeeAllChats = 'seeAllChats',
+    // Create and manage shifts
+    ShiftAdmin = 'shiftAdmin',
+    // Create and manage all requests
+    RequestAdmin = 'requestAdmin',
+    // Edit data for requests (user is on)
+    EditRequestData = 'editRequestData',
+    // Close requests (user is on)
+    CloseRequests = 'closeRequests'
+}
