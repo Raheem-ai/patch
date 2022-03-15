@@ -488,41 +488,35 @@ export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent exte
 
 export enum PatchPermissions {
     // Edit organization settings
-    EditOrgSettings = 'editOrgSettings',
+    EditOrgSettings = 'eos',
     // Create, edit, and delete org Roles
-    RoleAdmin = 'roleAdmin',
+    RoleAdmin = 'ra',
     // Create, edit, and delete org Attributes
-    AttributeAdmin = 'attributeAdmin',
+    AttributeAdmin = 'attra',
     // Create, edit, and delete org Tags
-    TagAdmin = 'tagAdmin',
+    TagAdmin = 'ta',
     // Export org data
-    ExportData = 'exportData',
+    ExportData = 'ed',
     // Invite people to org
-    InviteToOrg = 'inviteToOrg',
+    InviteToOrg = 'ito',
     // Remove people from org
-    RemoveFromOrg = 'removeFromOrg',
+    RemoveFromOrg = 'rfo',
     // Assign Roles to people in org
-    AssignRoles = 'assignRoles',
+    AssignRoles = 'ar',
     // Assign Attributes to people in org
-    AssignAttributes = 'assignAttributes',
-    // Delete my account from PATCH
-    DeleteMyAccount = 'deleteMyAccount',
-    // Edit my own PATCH profile
-    EditMyProfile = 'editMyProfile',
-    // Remove myself from org
-    RemoveSelfFromOrg = 'removeSelfFromOrg',
+    AssignAttributes = 'aattr',
     // Create and manage chats
-    ChatAdmin = 'chatAdmin',
+    ChatAdmin = 'ca',
     // Invite people to chats (user can see)
-    InviteToChat = 'inviteToChat',
+    InviteToChat = 'itc',
     // See all chats in org (incl. all request/shift chats)
-    SeeAllChats = 'seeAllChats',
+    SeeAllChats = 'sac',
     // Create and manage shifts
-    ShiftAdmin = 'shiftAdmin',
+    ShiftAdmin = 'sa',
     // Create and manage all requests
-    RequestAdmin = 'requestAdmin',
+    RequestAdmin = 'reqa',
     // Edit data for requests (user is on)
-    EditRequestData = 'editRequestData',
+    EditRequestData = 'erd',
     // Close requests (user is on)
-    CloseRequests = 'closeRequests'
+    CloseRequests = 'cr'
 }
