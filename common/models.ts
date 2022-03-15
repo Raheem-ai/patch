@@ -511,7 +511,11 @@ export enum PatchPermissions {
     InviteToChat = 'itc',
     // See all chats in org (incl. all request/shift chats)
     SeeAllChats = 'sac',
-    // Create and manage shifts
+    // See all Shift chats
+    SeeShiftChats = 'ssc',
+    // See all Request chats
+    SeeRequestChats = 'src',
+    // Create and manage shifts,
     ShiftAdmin = 'sa',
     // Create and manage all requests
     RequestAdmin = 'reqa',
@@ -522,90 +526,119 @@ export enum PatchPermissions {
 }
 
 export type PatchPermissionMetadata = {
-    displayName: string
+    name: string
     description: string
-    forcedPermissions: PatchPermissions[]
+    forcedPermissions: PatchPermissions[],
+    internal?: boolean
 }
 
 export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPermissionMetadata } = {
     [PatchPermissions.EditOrgSettings]: {
-        displayName: 'Edit organization settings',
+        name: 'Edit organization settings',
         description: 'Edit organization name, data, and privacy settings.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.RoleAdmin]: {
-        displayName: 'Role admin',
+        name: 'Role admin',
         description: 'Create, edit, and delete organization Roles.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.AttributeAdmin]: {
-        displayName: 'Attribute admin',
+        name: 'Attribute admin',
         description: 'Create, edit, and delete organization Attributes.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.TagAdmin]: {
-        displayName: 'Tad admin',
+        name: 'Tad admin',
         description: 'Create, edit, and delete organization Tags.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.ExportData]: {
-        displayName: 'Export data',
+        name: 'Export data',
         description: 'Export organization data.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.InviteToOrg]: {
-        displayName: 'Invite people to organization',
+        name: 'Invite people to organization',
         description: 'Invite people to join organization.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.RemoveFromOrg]: {
-        displayName: 'Remove users from organization',
+        name: 'Remove users from organization',
         description: 'Remove users from organization.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.AssignRoles]: {
-        displayName: 'Assign Roles',
+        name: 'Assign Roles',
         description: 'Assign Roles to people in organization.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.AssignAttributes]: {
-        displayName: 'Assign Attributes',
+        name: 'Assign Attributes',
         description: 'Assign Attributes to people in organization.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.ChatAdmin]: {
-        displayName: 'Chat admin',
+        name: 'Chat admin',
         description: 'Create and manage organization chats.',
-        forcedPermissions: [PatchPermissions.InviteToChat]
+        forcedPermissions: [PatchPermissions.InviteToChat],
+        internal: false
     },
     [PatchPermissions.InviteToChat]: {
-        displayName: 'Invite to chat',
-        description: 'Invite people to chats user has access to.',
-        forcedPermissions: []
+        name: 'Invite to chat',
+        description: 'Invite people to chats a user has access to.',
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.SeeAllChats]: {
-        displayName: 'See chats',
+        name: 'See chats',
         description: 'See all chats in organization, include Request and Shift chats.',
-        forcedPermissions: []
+        forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.SeeShiftChats],
+        internal: false
+    },
+    [PatchPermissions.SeeRequestChats]: {
+        name: 'See Request chats',
+        description: 'See all Request chats in organization.',
+        forcedPermissions: [],
+        internal: true
+    },
+    [PatchPermissions.SeeShiftChats]: {
+        name: 'See Shift chats',
+        description: 'See all Shift chats in organization.',
+        forcedPermissions: [],
+        internal: true
     },
     [PatchPermissions.ShiftAdmin]: {
-        displayName: 'Shift admin',
+        name: 'Shift admin',
         description: 'Create, edit, and delete Shifts. Approve requests to join Shifts, notify users on Shifts, and see all Shift chats.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.RequestAdmin]: {
-        displayName: 'Request admin',
+        name: 'Request admin',
         description: 'Create, edit, close, and delete Requests. Notify users on requests, approve requests to join Requests, and see all Request chats.',
-        forcedPermissions: [PatchPermissions.EditRequestData, PatchPermissions.CloseRequests]
+        forcedPermissions: [PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
+        internal: false
     },
     [PatchPermissions.EditRequestData]: {
-        displayName: 'Edit Request data',
+        name: 'Edit Request data',
         description: 'Edit data associated with a Request.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     },
     [PatchPermissions.CloseRequests]: {
-        displayName: 'Close Request',
+        name: 'Close Request',
         description: 'Close Requests that a user is on.',
-        forcedPermissions: []
+        forcedPermissions: [],
+        internal: false
     }
 }
