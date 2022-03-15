@@ -16,7 +16,16 @@ type Props = {
 
 /**
  *  Used as top level of screen component
- *  <TabbedScreen defaultTab='BAR' tabs={[ 
+ * 
+ * NOTE: currently the state around the selected tab only
+ * lasts as long as this component. This can be pulled into stores later
+ * 
+ * NOTE: labels also double as the key that is used to
+ * keep track of the active/default tab. Having duplicate labels
+ * will cause errors.
+ * 
+ *  @example 
+ * <TabbedScreen defaultTab='BAR' tabs={[ 
         { label: 'FOO', view: fooContent() },  
         { label: 'BAR', view: barContent() }, 
         { label: 'BAZ', view: bazContent() }
