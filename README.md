@@ -107,8 +107,7 @@ $> expo publish --release-channel <prod | staging>
     - google geocoding api 
 - set up build hooks (if we wanT ci/cd on it)
 - add secrets to secret store
-    - expo build-deploy-bot-secret 
-        - TODO: add to infra defs
+    - expo build-deploy-bot-secret
     - infra git deploy key (write perms): 'infra-git-ssh-key'
     - patch git deploy key (write perms): 'patch-git-ssh-key'
 
