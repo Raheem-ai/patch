@@ -485,3 +485,144 @@ export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent exte
     sysEvent: SysEvent
     sysParams: PatchEventParams[SysEvent]
 }
+
+export enum PatchPermissions {
+    // Edit organization settings
+    EditOrgSettings = 'eos',
+    // Create, edit, and delete org Roles
+    RoleAdmin = 'ra',
+    // Create, edit, and delete org Attributes
+    AttributeAdmin = 'attra',
+    // Create, edit, and delete org Tags
+    TagAdmin = 'ta',
+    // Export org data
+    ExportData = 'ed',
+    // Invite people to org
+    InviteToOrg = 'ito',
+    // Remove people from org
+    RemoveFromOrg = 'rfo',
+    // Assign Roles to people in org
+    AssignRoles = 'ar',
+    // Assign Attributes to people in org
+    AssignAttributes = 'aattr',
+    // Create and manage chats
+    ChatAdmin = 'ca',
+    // Invite people to chats (user can see)
+    InviteToChat = 'itc',
+    // See all chats in org (incl. all request/shift chats)
+    SeeAllChats = 'sac',
+    // See all Shift chats
+    SeeShiftChats = 'ssc',
+    // See all Request chats
+    SeeRequestChats = 'src',
+    // Create and manage shifts,
+    ShiftAdmin = 'sa',
+    // Create and manage all requests
+    RequestAdmin = 'reqa',
+    // Edit data for requests (user is on)
+    EditRequestData = 'erd',
+    // Close requests (user is on)
+    CloseRequests = 'cr'
+}
+
+export type PatchPermissionMetadata = {
+    name: string
+    description: string
+    forcedPermissions: PatchPermissions[],
+    internal?: boolean
+}
+
+export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPermissionMetadata } = {
+    [PatchPermissions.EditOrgSettings]: {
+        name: 'Edit organization settings',
+        description: 'Edit organization name, data, and privacy settings.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.RoleAdmin]: {
+        name: 'Role admin',
+        description: 'Create, edit, and delete organization Roles.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.AttributeAdmin]: {
+        name: 'Attribute admin',
+        description: 'Create, edit, and delete organization Attributes.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.TagAdmin]: {
+        name: 'Tad admin',
+        description: 'Create, edit, and delete organization Tags.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.ExportData]: {
+        name: 'Export data',
+        description: 'Export organization data.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.InviteToOrg]: {
+        name: 'Invite people to organization',
+        description: 'Invite people to join organization.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.RemoveFromOrg]: {
+        name: 'Remove users from organization',
+        description: 'Remove users from organization.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.AssignRoles]: {
+        name: 'Assign Roles',
+        description: 'Assign Roles to people in organization.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.AssignAttributes]: {
+        name: 'Assign Attributes',
+        description: 'Assign Attributes to people in organization.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.ChatAdmin]: {
+        name: 'Chat admin',
+        description: 'Create and manage organization chats.',
+        forcedPermissions: [PatchPermissions.InviteToChat],
+    },
+    [PatchPermissions.InviteToChat]: {
+        name: 'Invite to chat',
+        description: 'Invite people to chats a user has access to.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.SeeAllChats]: {
+        name: 'See chats',
+        description: 'See all chats in organization, include Request and Shift chats.',
+        forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.SeeShiftChats],
+    },
+    [PatchPermissions.SeeRequestChats]: {
+        name: 'See Request chats',
+        description: 'See all Request chats in organization.',
+        forcedPermissions: [],
+        internal: true
+    },
+    [PatchPermissions.SeeShiftChats]: {
+        name: 'See Shift chats',
+        description: 'See all Shift chats in organization.',
+        forcedPermissions: [],
+        internal: true
+    },
+    [PatchPermissions.ShiftAdmin]: {
+        name: 'Shift admin',
+        description: 'Create, edit, and delete Shifts. Approve requests to join Shifts, notify users on Shifts, and see all Shift chats.',
+        forcedPermissions: [PatchPermissions.SeeShiftChats],
+    },
+    [PatchPermissions.RequestAdmin]: {
+        name: 'Request admin',
+        description: 'Create, edit, close, and delete Requests. Notify users on requests, approve requests to join Requests, and see all Request chats.',
+        forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
+    },
+    [PatchPermissions.EditRequestData]: {
+        name: 'Edit Request data',
+        description: 'Edit data associated with a Request.',
+        forcedPermissions: [],
+    },
+    [PatchPermissions.CloseRequests]: {
+        name: 'Close Request',
+        description: 'Close Requests that a user is on.',
+        forcedPermissions: [],
+    }
+}
