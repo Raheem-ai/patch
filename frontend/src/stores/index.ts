@@ -1,4 +1,3 @@
-import { AllStores, IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore, ITeamStore, ILinkingStore, INewUserStore, IEditUserStore, IAlertStore, ISocketStore, IUpdateStore, IOrganizationStore } from './interfaces';
 import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
@@ -20,6 +19,29 @@ import AlertStore from './alertStore';
 import SocketStore from './socketStore';
 import UpdateStore from './updateStore';
 import OrganizationStore from './organizationStore';
+import {
+    AllStores,
+    IBaseStore,
+    IBottomDrawerStore,
+    ICreateRequestStore,
+    IDispatchStore,
+    ILocationStore,
+    INativeEventStore,
+    INotificationStore,
+    IRequestStore,
+    ISecretStore,
+    IEditRequestStore,
+    IUserStore,
+    IHeaderStore,
+    ITeamStore,
+    ILinkingStore,
+    INewUserStore,
+    IEditUserStore,
+    IAlertStore,
+    ISocketStore,
+    IUpdateStore,
+    IOrganizationStore
+} from './interfaces';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
