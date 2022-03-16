@@ -35,6 +35,7 @@ export class OrganizationController implements APIController<
     | 'getTeamMembers' 
     | 'getRespondersOnDuty'
     | 'inviteUserToOrg'
+    | 'getOrgMetadata'
 > {
     @Inject(DBManager) db: DBManager;
 
@@ -258,6 +259,18 @@ export class OrganizationController implements APIController<
         }
 
         return pendingUser;
+    }
+
+    @Get(API.server.getOrgMetadata())
+    @Authenticate()
+    async getOrgMetadata(
+        @OrgId() orgId: string,
+    ) {
+        const org = await this.db.resolveOrganization(orgId);
+        return {
+            name: org.name,
+            orgId: orgId
+        }
     }
 
     getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
