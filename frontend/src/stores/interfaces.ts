@@ -370,6 +370,16 @@ export interface IUpdateStore extends IBaseStore {
     onUIEvent(packet: PatchUIEventPacket) : Promise<void>
 }
 
+export namespace IOrganizationStore {
+    export const id = Symbol('IOrganizationStore');
+}
+
+export interface IOrganizationStore extends IBaseStore {
+    orgId: string;
+    name: string;
+}
+
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -388,6 +398,7 @@ export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
 export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
+export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 
 export const AllStores = [
     IUserStore,
@@ -407,5 +418,6 @@ export const AllStores = [
     IEditUserStore,
     IAlertStore,
     ISocketStore,
-    IUpdateStore
+    IUpdateStore,
+    IOrganizationStore
 ]
