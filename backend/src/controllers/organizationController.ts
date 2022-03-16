@@ -1,5 +1,5 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
@@ -265,7 +265,13 @@ export class OrganizationController implements APIController<
     @Authenticate()
     async getOrgMetadata(
         @OrgId() orgId: string,
+        @User() user: UserDoc,
     ) {
+        const orgConfig = user.organizations && user.organizations[orgId];
+        if (!orgConfig) {
+            throw new Forbidden(`You do not have access to the requested org.`);
+        }
+
         const org = await this.db.resolveOrganization(orgId);
         return {
             name: org.name,
