@@ -25,6 +25,7 @@ export default class OrganizationStore implements IOrganizationStore {
     }
 
     clear() {
-
+        this.orgId = null;
+        this.name = null;
     }
 }
