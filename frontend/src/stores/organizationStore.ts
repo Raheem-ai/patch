@@ -20,7 +20,6 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-
     getOrgDataAfterSignin = async () => {
         this.orgId = userStore().currentOrgId;
     }
