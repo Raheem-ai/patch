@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -283,6 +283,13 @@ export class APIClient implements IAPIService {
     }
 
     // org scoped apis
+
+    async getOrgMetadata(ctx: OrgContext): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.getOrgMetadata()}`;
+        return (await this.tryGet<OrganizationMetadata>(url, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
 
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
