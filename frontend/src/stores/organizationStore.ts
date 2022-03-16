@@ -1,11 +1,12 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
+import { api } from '../services/interfaces';
+import { OrganizationMetadata } from '../../../common/models';
 
 @Store(IOrganizationStore)
 export default class OrganizationStore implements IOrganizationStore {
-    orgId = null;
-    name = null;
+    metadata: OrganizationMetadata;
 
     constructor() {
         makeAutoObservable(this)
@@ -21,11 +22,17 @@ export default class OrganizationStore implements IOrganizationStore {
     }
 
     getOrgDataAfterSignin = async () => {
-        this.orgId = userStore().currentOrgId;
+        try {
+            this.metadata = await api().getOrgMetadata({
+                token: userStore().authToken,
+                orgId: userStore().currentOrgId
+            })
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     clear() {
-        this.orgId = null;
-        this.name = null;
+        this.metadata = null;
     }
 }
