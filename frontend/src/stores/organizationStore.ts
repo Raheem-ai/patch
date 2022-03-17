@@ -1,4 +1,4 @@
-import { makeAutoObservable, when } from 'mobx';
+import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
@@ -23,9 +23,13 @@ export default class OrganizationStore implements IOrganizationStore {
 
     getOrgDataAfterSignin = async () => {
         try {
-            this.metadata = await api().getOrgMetadata({
+            const data = await api().getOrgMetadata({
                 token: userStore().authToken,
                 orgId: userStore().currentOrgId
+            })
+
+            runInAction(() => {
+                this.metadata = data;
             })
         } catch (e) {
             console.error(e);
