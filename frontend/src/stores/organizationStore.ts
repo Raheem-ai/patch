@@ -15,13 +15,13 @@ export default class OrganizationStore implements IOrganizationStore {
     async init() {
         await userStore().init();
         if (userStore().signedIn) {
-            await this.getOrgDataAfterSignin();
+            await this.getOrgData();
         } else {
-            when(() => userStore().signedIn, this.getOrgDataAfterSignin)
+            when(() => userStore().signedIn, this.getOrgData)
         }
     }
 
-    getOrgDataAfterSignin = async () => {
+    async getOrgData(): Promise<void> {
         try {
             const data = await api().getOrgMetadata({
                 token: userStore().authToken,

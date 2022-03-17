@@ -376,6 +376,8 @@ export namespace IOrganizationStore {
 
 export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
+
+    getOrgData(): Promise<void>;
 }
 
 
