@@ -55,6 +55,11 @@ export interface Organization {
     removedMembers: ProtectedUser[]
 }
 
+export interface OrganizationMetadata {
+    name: string;
+    orgId: string;
+}
+
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type PendingUser = {

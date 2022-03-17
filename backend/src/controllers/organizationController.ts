@@ -1,5 +1,5 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
@@ -35,6 +35,7 @@ export class OrganizationController implements APIController<
     | 'getTeamMembers' 
     | 'getRespondersOnDuty'
     | 'inviteUserToOrg'
+    | 'getOrgMetadata'
 > {
     @Inject(DBManager) db: DBManager;
 
@@ -258,6 +259,24 @@ export class OrganizationController implements APIController<
         }
 
         return pendingUser;
+    }
+
+    @Get(API.server.getOrgMetadata())
+    @Authenticate()
+    async getOrgMetadata(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+    ) {
+        const orgConfig = user.organizations && user.organizations[orgId];
+        if (!orgConfig) {
+            throw new Forbidden(`You do not have access to the requested org.`);
+        }
+
+        const org = await this.db.resolveOrganization(orgId);
+        return {
+            name: org.name,
+            orgId: orgId
+        }
     }
 
     getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {

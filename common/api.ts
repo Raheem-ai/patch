@@ -1,5 +1,27 @@
 import { AtLeast } from '.';
-import { User, HelpRequest, Location, Me, Organization, UserRole, MinOrg, ProtectedUser, MinUser, BasicCredentials, MinHelpRequest, ChatMessage, ResponderRequestStatuses, RequestType, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, EditableUser, RequestSkill } from './models';
+import {
+    User,
+    HelpRequest,
+    Location,
+    Me,
+    Organization,
+    OrganizationMetadata,
+    UserRole,
+    MinOrg,
+    ProtectedUser,
+    MinUser,
+    BasicCredentials,
+    MinHelpRequest,
+    ChatMessage,
+    ResponderRequestStatuses,
+    RequestType,
+    HelpRequestFilter,
+    AuthTokens,
+    AppSecrets,
+    PendingUser,
+    EditableUser,
+    RequestSkill
+} from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
 // changing args to be a single object would fix this and allow for specific apis to take extra params for things
@@ -70,10 +92,11 @@ export interface IApiClient {
     reportLocation: Authenticated<(locations: Location[]) => Promise<void>>
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
+    getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     editMe: Authenticated<(me: Partial<Me>) => Promise<Me>>
 
-    // must be signed in and have the correct rolls within th target org
+    // must be signed in and have the correct roles within the target org
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
     confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
@@ -84,7 +107,7 @@ export interface IApiClient {
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
     inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
-    
+
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
@@ -165,6 +188,9 @@ type ApiRoutes = {
         }, 
         createOrg: () => {
             return '/createOrg'
+        },
+        getOrgMetadata: () => {
+            return '/getOrgMetadata'
         },
         addUserToOrg: () => {
             return '/addUserToOrg'
@@ -310,6 +336,9 @@ type ApiRoutes = {
         // organization
         createOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.createOrg()}`
+        },
+        getOrgMetadata: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.getOrgMetadata()}`
         },
         addUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addUserToOrg()}`

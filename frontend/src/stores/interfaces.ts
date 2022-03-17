@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -370,6 +370,17 @@ export interface IUpdateStore extends IBaseStore {
     onUIEvent(packet: PatchUIEventPacket) : Promise<void>
 }
 
+export namespace IOrganizationStore {
+    export const id = Symbol('IOrganizationStore');
+}
+
+export interface IOrganizationStore extends IBaseStore {
+    metadata: OrganizationMetadata
+
+    getOrgData(): Promise<void>;
+}
+
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -388,6 +399,7 @@ export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
 export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
+export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 
 export const AllStores = [
     IUserStore,
@@ -407,5 +419,6 @@ export const AllStores = [
     IEditUserStore,
     IAlertStore,
     ISocketStore,
-    IUpdateStore
+    IUpdateStore,
+    IOrganizationStore
 ]

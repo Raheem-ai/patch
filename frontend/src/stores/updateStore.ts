@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { IUpdateStore, requestStore, userStore } from './interfaces';
+import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
 import { PatchEventType, PatchUIEvent, PatchUIEventPacket, PatchUIEventParams } from '../../../common/models';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
@@ -25,7 +25,7 @@ export default class UpdateStore implements IUpdateStore {
     }
 
     private orgState = {
-
+        specificId: null
     }
 
     constructor() {
@@ -44,7 +44,7 @@ export default class UpdateStore implements IUpdateStore {
                     const params = packet.params as PatchUIEventParams[PatchUIEvent.UpdateResource]
 
                     if (params.orgId) {
-                        // update org api doesn't exist yet
+                        await this.updateOrg(params, packet);
                     }
 
                     if (params.requestId) {
@@ -96,7 +96,7 @@ export default class UpdateStore implements IUpdateStore {
         params: PatchUIEventParams[PatchUIEvent.UpdateResource],
         packet: PatchUIEventPacket
     ) => {
-        await userStore().updateOrgUsers(Array.from(this.userState.specificIds))
+        await userStore().updateOrgUsers(Array.from(this.userState.specificIds.values()))
     }, {
         minWait: this.minWait,
         maxWait: this.maxWait,
@@ -112,13 +112,31 @@ export default class UpdateStore implements IUpdateStore {
                 state.specificIds.add(params.userId)
             }
              
-            if (params.requestList) {
+            if (params.userList) {
                 state.list = true
             }
         },
         afterCall: (state, params) => {
             state.list = false
             state.specificIds.clear()
+        }
+    })
+
+    updateOrg = stateFullMemoDebounce(async (
+        params: PatchUIEventParams[PatchUIEvent.UpdateResource],
+        packet: PatchUIEventPacket
+    ) => {
+        await organizationStore().getOrgData()
+    }, {
+        minWait: this.minWait,
+        maxWait: this.maxWait,
+        paramsToMemoCacheKey: () => this.UPDATE_ORG,
+        initialState: this.orgState,
+        beforeCall: (state, params, packet) => {
+            state.specificId = params.orgId;
+        },
+        afterCall: (state, params) => {
+            state.specificId = null;
         }
     })
 
