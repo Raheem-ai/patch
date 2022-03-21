@@ -21,6 +21,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import Loader from "../loader";
 import MapInput from "./inputs/mapInput";
+import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -58,6 +59,9 @@ const FormViewMap: FormInputViewMap = {
     },
     'Map': {
         screenComponent: MapInput
+    },
+    'DateTimeRange': {
+        inlineComponent: DateTimeRangeInput
     }
 }
 

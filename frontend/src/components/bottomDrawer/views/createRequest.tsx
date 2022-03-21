@@ -1,6 +1,6 @@
 import React from "react";
 import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
-import { reaction } from 'mobx';
+import { observable, reaction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
@@ -17,6 +17,12 @@ type Props = {}
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
     headerReactionDisposer = null;
+
+    testDate = observable.box({
+        startDate: new Date('03/12/2022 22:05'),
+        endDate: new Date('03/13/2022 00:05')
+    });
+
     componentDidMount = () => {
         // checkStateChange gets called any time the form page, header visibility, or the expanded
         // state of the bottom drawer is updated. If any of these values have changed since the
@@ -100,6 +106,24 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
+                // TEST DATETIMERANGE
+                {
+                    onSave: (data) => console.log('save', data.startDate.toLocaleString(), data.endDate.toLocaleString()),
+                    onChange: (data) => {
+                        this.testDate.set(data)
+                        console.log('change', data.startDate.toLocaleString(), data.endDate.toLocaleString())
+                    },
+                    val: () => {
+                        return this.testDate.get()
+                    },
+                    isValid: () => {
+                        return true
+                    },
+                    name: 'time',
+                    previewLabel: () => null,
+                    headerLabel: () => null,
+                    type: 'DateTimeRange',
+                },
                 // Notes
                 {
                     onSave: (notes) => createRequestStore().notes = notes,
@@ -197,6 +221,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     }
                 }
             ] as [
+                FormInputConfig<'DateTimeRange'>,
                 FormInputConfig<'TextArea'>,
                 FormInputConfig<'Map'>, 
                 FormInputConfig<'NestedTagList'>,

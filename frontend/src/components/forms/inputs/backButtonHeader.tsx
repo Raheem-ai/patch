@@ -2,6 +2,7 @@ import { observer } from "mobx-react"
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import { Button, IconButton, Text } from "react-native-paper"
+import { Colors } from "../../../types"
 
 const BackButtonHeader = observer(({ 
     back, 
@@ -17,17 +18,19 @@ const BackButtonHeader = observer(({
         : label;
     
     return <View style={styles.backButtonHeader}>
-        <IconButton
-            icon='chevron-left' 
-            color='#000'
-            onPress={back}
-            size={35} 
-            style={{ margin: 0, width: 35 }}/>
         <Text style={{ flex: 1, fontSize: 18 }} onPress={back}>{textLabel}</Text>
-        <Button 
-            color='orange'
+        <Button
+            uppercase={false} 
+            color={Colors.primary.alpha}
+            mode='text'
+            onPress={back}
+            style={styles.headerCancelButton}>Cancel</Button>
+        <Button
+            uppercase={false} 
+            color={Colors.primary.alpha}
+            mode='outlined'
             onPress={save}
-            style={styles.headerSaveButton}>save</Button>
+            style={styles.headerDoneButton}>Done</Button>
     </View>
 })
 
@@ -39,18 +42,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         margin: 0,
-        // marginBottom: ,
-        // borderBottomWidth: 1,
-        // borderBottomColor: '#000',
-
-        // textAlign: 'center',
-        // textAlignVertical: 'center'
-        
+        padding: 15
     },
-    headerSaveButton: {
-        // height: 40,
-        // borderRadius: 10,
-        // backgroundColor: 'orange',
-        // color: 'orange'
+    headerCancelButton: {
+
+    },
+    headerDoneButton: {
+        borderWidth: 1,
+        borderColor: Colors.primary.alpha,
+        borderRadius: 32
     }
 })    

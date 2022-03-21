@@ -1,5 +1,5 @@
 import { ComponentType } from "react"
-import { AddressableLocation } from "../../../../common/models"
+import { AddressableLocation, DateTimeRange } from "../../../../common/models"
 
 export type SectionViewProps<Type extends FormInputType = FormInputType> = {
     config: FormInputConfig<Type>,
@@ -23,6 +23,10 @@ export type FormInputOptions = {
     'Map': {
         props: {},
         type: AddressableLocation
+    },
+    'DateTimeRange': {
+        props: {},
+        type: DateTimeRange
     },
     'List': {
         props: {
@@ -63,8 +67,14 @@ export type FormInputOptions = {
 // TODO: figure out how to separate props for a screen view vs label view vs inline view for better
 // type safety between combinations of the three ie. list vs nested list + tag label views
 export type FormInputConfig<Type extends FormInputType = FormInputType, Val extends FormInputOptions[Type]['type'] = FormInputOptions[Type]['type']> = {
-    onSave?(val: Val): void // for screen fields that hold their own temp internal state until you save 
-    onChange?(val: Val): void// for controlled form fields
+    /**
+     *  for screen fields that hold their own temp internal state until you save 
+     * */
+    onSave?(val: Val): void 
+    /**
+     *  for controlled form fields
+     * */
+    onChange?(val: Val): void
     val(): Val
     isValid(): boolean
     name: string

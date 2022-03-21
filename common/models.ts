@@ -485,3 +485,39 @@ export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent exte
     sysEvent: SysEvent
     sysParams: PatchEventParams[SysEvent]
 }
+
+export type DateTimeRange = {
+    startDate: Date
+    endDate: Date
+}
+
+export enum RecurringTimePeriod {
+    Day = 'd',
+    Week = 'w',
+    Month = 'm',
+}
+
+export enum Days {
+    Monday = 'mo',
+    Tuesday = 'tu',
+    Wednesday = 'we',
+    Thursday = 'th',
+    Friday = 'fr',
+    Saturday = 'sa',
+    Sunday = 'su'
+}
+
+export type RecurringTimePeriodConfig = ({
+    period: RecurringTimePeriod.Month,
+    dayScope?: boolean,
+    weekScope?: boolean
+} | {
+    period: RecurringTimePeriod.Week,
+    days: Days[]
+} | {
+    period: RecurringTimePeriod.Day
+}) & { numberOf: number }
+
+export type RecurringTimeConstraints = {
+    every?: RecurringTimePeriodConfig
+}

@@ -12,8 +12,22 @@ export function allEnumValues<T=any>(e: any): T[] {
     }
 }
 
-export function timestampToTime(timestamp: number) {
-    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+export function timestampToTimeString(timestamp: number) {
+    return dateToTimeString(new Date(timestamp))
+}
+
+export function dateToTimeString(date: Date) {
+    // https://www.jsman.net/manual/Standard-Global-Objects/Date/toLocaleTimeString
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+export function dateToDateString(date: Date) {
+    return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: '2-digit' })
+}
+
+export function dateToDateYearString(date: Date) {
+    console.log('dateToDateYearString', date)
+    return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: '2-digit', year: 'numeric' })
 }
 
 export function unwrap<T>(val: NotAFunction<T> | (() => NotAFunction<T>)): T {
