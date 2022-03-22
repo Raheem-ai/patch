@@ -48,18 +48,23 @@ export type BasicCredentials = {
 // Organizations
 export interface Organization {
     name: string;
+    id: string;
     members: ProtectedUser[];
     lastRequestId: number;
     lastDayTimestamp: string;
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
+    roleDefinitions: Role[]
 }
 
-export interface OrganizationMetadata {
-    name: string;
-    orgId: string;
-}
+// TODO: Introduce 'tags', 'attributes'
+export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions'>;
 
+export type Role = {
+    id: string,
+    name: string,
+    permissions: PatchPermissions[]
+}
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type PendingUser = {
@@ -392,6 +397,16 @@ export enum PatchEventType {
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
+
+    // Organization.System.<_>
+    OrganizationEdited = '2.0.0',
+    OrganizationDeleted = '2.0.1',
+
+    // Organization.Roles.<_>
+    OrganizationRoleCreated = '2.1.0',
+    OrganizationRoleEdited = '2.1.1',
+    OrganizationRoleDeleted = '2.1.2'
+
 }
 
 export type PatchEventParams = {
@@ -458,7 +473,25 @@ export type PatchEventParams = {
     [PatchEventType.RequestChatNewMessage]: {
         requestId: string,
         userId: string
-    }, 
+    },
+    [PatchEventType.OrganizationEdited]: {
+        orgId: string
+    },
+    [PatchEventType.OrganizationDeleted]: {
+        orgId: string
+    },
+    [PatchEventType.OrganizationRoleCreated]: {
+        orgId: string,
+        roleId: string
+    },
+    [PatchEventType.OrganizationRoleEdited]: {
+        orgId: string,
+        roleId: string
+    },
+    [PatchEventType.OrganizationRoleDeleted]: {
+        orgId: string,
+        roleId: string
+    }
 }
 
 export type PatchEventPacket<T extends PatchEventType = any> = {
