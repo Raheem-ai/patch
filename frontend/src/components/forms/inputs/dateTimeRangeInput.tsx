@@ -8,7 +8,7 @@ import { SectionViewProps } from "../types";
 import WheelPicker from 'react-native-wheel-picker-expo';
 import moment from 'moment'
 import { DateTimeRange } from "../../../../../common/models";
-import { first } from "lodash";
+import { first, isNumber } from "lodash";
 import { useWhenParamsChange } from "../../../hooks/useWhenParamsChange";
 import CalendarPicker from 'react-native-calendar-picker';
 
@@ -51,68 +51,88 @@ const MINUTES = [
 
 const TIME_OF_DAY = [ 'AM', 'PM' ]
 
-type DateTimeRangeInputState = {
-    [key in TimeRangeSections]: {
-        hours?: number,
-        minutes?: number,
-        timeOfDay?: string
-    }
+
+type DateParts = {
+    date: string, 
+    hours: number, 
+    minutes: number, 
+    timeOfDay: 'pm' | 'am'
 }
 
 const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
+    // initialize interal state
     const [dayPickerOpen, setDayPickerOpen] = useState(false)
     const [timePickerOpen, setTimePickerOpen] = useState(false)
     const [currentSection, setCurrentSection] = useState<TimeRangeSections>(null)
 
-    // const [internalState, setInternalState] = useState<DateTimeRangeInputState>({
-    //     [TimeRangeSections.Start]: {},
-    //     [TimeRangeSections.End]: {}
-    // })
-
-    // get this off the initial DateTimeRange passed
     const startParts = dateToDateTimeParts(config.val().startDate)
-    const [startDay, setStartDay] = useState<string>(startParts[0])
-    const [startHours, setStartHours] = useState<number>(startParts[1])
-    const [startMinutes, setStartMinutes] = useState<number>(startParts[2])
-    const [startTimeOfDay, setStartTimeOfDay] = useState<string>(startParts[3])
+    const [startDay, setStartDay] = useState<string>(startParts.date)
+    const [startHours, setStartHours] = useState<number>(startParts.hours)
+    const [startMinutes, setStartMinutes] = useState<number>(startParts.minutes)
+    const [startTimeOfDay, setStartTimeOfDay] = useState<DateParts['timeOfDay']>(startParts.timeOfDay)
 
     const endParts = dateToDateTimeParts(config.val().endDate)
-    const [endDay, setEndDay] = useState<string>(endParts[0])
-    const [endHours, setEndHours] = useState<number>(endParts[1])
-    const [endMinutes, setEndMinutes] = useState<number>(endParts[2])
-    const [endTimeOfDay, setEndTimeOfDay] = useState<string>(endParts[3])
-
+    const [endDay, setEndDay] = useState<string>(endParts.date)
+    const [endHours, setEndHours] = useState<number>(endParts.hours)
+    const [endMinutes, setEndMinutes] = useState<number>(endParts.minutes)
+    const [endTimeOfDay, setEndTimeOfDay] = useState<DateParts['timeOfDay']>(endParts.timeOfDay)
 
     useEffect(() => {
 
         let diff: Partial<DateTimeRange> = {};
 
-        if (startDay && startHours && startMinutes && startTimeOfDay) {
-            diff.startDate = timePartsToDate([startDay, startHours, startMinutes, startTimeOfDay])
-        }
-
-        if (endDay && endHours && endMinutes && endTimeOfDay) {
-            diff.endDate = timePartsToDate([endDay, endHours, endMinutes, endTimeOfDay])
-        }
+        diff.startDate = datePartsToDate({
+            date: startDay, 
+            hours: startHours, 
+            minutes: startMinutes, 
+            timeOfDay: startTimeOfDay
+        })
 
         const cpy = Object.assign({}, config.val(), diff)
 
-        console.log(cpy)
-
+        // update parent when our internal state changes
         config?.onChange?.(cpy)
 
     }, [
-        startDay, startHours, startMinutes, startTimeOfDay,
-        endDay, endHours, endMinutes, endTimeOfDay
+        startDay,
+        startHours, 
+        startMinutes, 
+        startTimeOfDay
+    ]);
+
+    useEffect(() => {
+
+        let diff: Partial<DateTimeRange> = {};
+
+        diff.endDate = datePartsToDate({
+            date: endDay, 
+            hours: endHours, 
+            minutes: endMinutes, 
+            timeOfDay: endTimeOfDay
+        })
+
+        const cpy = Object.assign({}, config.val(), diff)
+
+        // update parent when our internal state changes
+        config?.onChange?.(cpy)
+
+    }, [
+        endDay,
+        endHours, 
+        endMinutes, 
+        endTimeOfDay
     ]);
     
+    // clicking on the DayPicker for one section should close the pickers on the other section
     const toggleDayPicker = (section: TimeRangeSections) => {
         const switchingSections = section != currentSection;
         
+        // toggle == open when switching sections
         if (switchingSections) {
             setTimePickerOpen(false)
             setDayPickerOpen(true)
         } else {
+        // actually toggle day picker and close the time picker
             if (!dayPickerOpen) {
                 setTimePickerOpen(false)
             }
@@ -123,13 +143,17 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
         setCurrentSection(section)
     }
 
+    // clicking on the TimePicke for one section should close the pickers on the other section
     const toggleTimePicker = (section: TimeRangeSections) => {
         const switchingSections = section != currentSection;
         
+        // toggle == open when switching sections
         if (switchingSections) {
             setTimePickerOpen(true)
             setDayPickerOpen(false)
         } else {
+        // actually toggle time picker and close the day picker
+
             if (!timePickerOpen) {
                 setDayPickerOpen(false)
             }
@@ -141,97 +165,24 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
     }
 
     const onHourChange = (section: TimeRangeSections, val: string) => {
-        console.log('onHourChange', val);
-        // const dateKey: keyof DateTimeRange = section == TimeRangeSections.Start 
-        //     ? 'startDate' 
-        //     : 'endDate';
-        
-        // const state = Object.assign({}, internalState[section]);
-        
-        // const date = moment(config.val()[dateKey]);
-
-        // if (state.timeOfDay && state.timeOfDay.toLowerCase() == 'pm') {
-        //     date.hours(parseInt(val)) // + pm shift ...  + (initialTimeOfDay == 1 ? 12 : 0)) % 24
-        // } else {
-        //     date.hours(parseInt(val))
-        // }
-
-        // const newVal = Object.assign({}, config.val())
-        // newVal[dateKey] = date.toDate()
-
-        // state.hours = date.hours();
-        // state.hours = parseInt(val);
-
-        // console.log(internalState)
-
-        // setInternalState(Object.assign({}, internalState, {
-        //     [section]: state
-        // }))
-
-        // config.onChange?.(newVal)
-
         (section == TimeRangeSections.Start
             ? setStartHours
             : setEndHours)(parseInt(val))
     }
 
     const onMinChange = (section: TimeRangeSections, val: string) => {
-        console.log('onMinChange', val);
-        // const dateKey: keyof DateTimeRange = section == TimeRangeSections.Start 
-        //     ? 'startDate' 
-        //     : 'endDate';
-        
-        // const state = Object.assign({}, internalState[section]);
-        
-        // const date = moment(config.val()[dateKey]);
-        // date.minutes(parseInt(val))
-
-        // const newVal = Object.assign({}, config.val())
-        // newVal[dateKey] = date.toDate()
-
-        // state.minutes = date.minutes();
-        // state.minutes = parseInt(val)
-
-        // setInternalState(Object.assign({}, internalState, {
-        //     [section]: state
-        // }))
-
-        // config.onChange?.(newVal)
-
         (section == TimeRangeSections.Start
             ? setStartMinutes
             : setEndMinutes)(parseInt(val))
     }
 
-    const onTimeOfDayChange = (section: TimeRangeSections, val: string) => {
-        console.log('onTimeOfDayChange', val);
-        // const dateKey: keyof DateTimeRange = section == TimeRangeSections.Start 
-        //     ? 'startDate' 
-        //     : 'endDate';
-
-        // const state = Object.assign({}, internalState[section]);
-
-        // const date = moment(config.val()[dateKey]);
-        // date.hours(date.hours() + val.toLowerCase() == 'pm' ? 12 : -12)
-
-        // const newVal = Object.assign({}, config.val())
-        // newVal[dateKey] = date.toDate()
-
-        // state.timeOfDay = val;
-
-        // setInternalState(Object.assign({}, internalState, {
-        //     [section]: state
-        // }))
-
-        // config.onChange?.(newVal)
-
+    const onTimeOfDayChange = (section: TimeRangeSections, val: DateParts['timeOfDay']) => {
         (section == TimeRangeSections.Start
             ? setStartTimeOfDay
             : setEndTimeOfDay)(val)
     }
 
     const onDayChange = (section: TimeRangeSections, val: string) => {
-        console.log('onDayChange', val, typeof val);
         (section == TimeRangeSections.Start
             ? setStartDay
             : setEndDay)(val)
@@ -248,7 +199,12 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
                         />
             </View>
             <Section 
-                date={config.val()?.startDate}
+                dateParts={{
+                    date: startDay, 
+                    hours: startHours, 
+                    minutes: startMinutes, 
+                    timeOfDay: startTimeOfDay
+                }}
                 section={TimeRangeSections.Start}
                 toggleDayPicker={toggleDayPicker}
                 toggleTimePicker={toggleTimePicker}
@@ -260,7 +216,12 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
                 onMinChange={onMinChange}
                 onTimeOfDayChange={onTimeOfDayChange} />
             <Section 
-                date={config.val()?.endDate}
+                dateParts={{
+                    date: endDay, 
+                    hours: endHours, 
+                    minutes: endMinutes, 
+                    timeOfDay: endTimeOfDay
+                }}
                 section={TimeRangeSections.End}
                 toggleDayPicker={toggleDayPicker}
                 toggleTimePicker={toggleTimePicker}
@@ -278,7 +239,8 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
     
 
 type SectionProps = {
-    date: Date,
+    // date: Date,
+    dateParts: DateParts,
     section: TimeRangeSections,
     dayPickerOpen: boolean,
     timePickerOpen: boolean,
@@ -298,7 +260,7 @@ type PickerOption = {
 }
 
 const Section = ({
-    date,
+    dateParts,
     section,
     dayPickerOpen,
     timePickerOpen,
@@ -310,16 +272,11 @@ const Section = ({
     onMinChange,
     onTimeOfDayChange,
 }: SectionProps) => {
+    const date = datePartsToDate(dateParts)
 
-    // const mDate = moment(date);
-    // const initialHour = HOURS.findIndex(val => parseInt(val) == ((mDate.hours() % 12) || 12))
-    // const initialMin = MINUTES.findIndex(val => parseInt(val) == mDate.minutes() % 60)
-    // const initialTimeOfDay = TIME_OF_DAY.findIndex(val => mDate.format('A') == val.toUpperCase())
-
-    const parts = dateToDateTimeParts(date);
     const initialHour = HOURS.findIndex(val => {
         const hourVal = parseInt(val) 
-        const hourPart = parts[1]
+        const hourPart = dateParts.hours
 
         if (!hourPart && hourVal == 12) {
             return true
@@ -327,12 +284,14 @@ const Section = ({
             return hourVal == hourPart
         }
     })
-    const initialMin = MINUTES.findIndex(val => parseInt(val) == parts[2])
-    const initialTimeOfDay = TIME_OF_DAY.findIndex(val => val.toLowerCase() == parts[3]?.toLocaleLowerCase())
+
+    const initialMin = MINUTES.findIndex(val => parseInt(val) == dateParts.minutes)
+    const initialTimeOfDay = TIME_OF_DAY.findIndex(val => val.toLowerCase() == dateParts.timeOfDay?.toLowerCase())
 
     const onMinuteEvent = scrollPickerCB(({ item }) => onMinChange(section, item.value))
     const onHourEvent = scrollPickerCB(({ item }) => onHourChange(section, item.value))
     const onTimeOfDayEvent = scrollPickerCB(({ item }) => onTimeOfDayChange(section, item.value))
+    const onDayEvent = (newDate) => onDayChange(section, dateToDateYearString(newDate.toDate()))
 
     // setup specific style for today's date
     const customDatesStyles = [];
@@ -358,7 +317,7 @@ const Section = ({
                         <CalendarPicker 
                             weekdays={['S', 'M', 'T', 'W', 'T', 'F',  'S']}
                             // translate from moment to Date
-                            onDateChange={(newDate) => onDayChange(section, dateToDateYearString(newDate.toDate()))} 
+                            onDateChange={onDayEvent} 
                             selectedStartDate={date}
                             initialDate={date}
                             showDayStragglers={true}
@@ -410,33 +369,38 @@ const scrollPickerCB = function (fn: ({ index: number, item: PickerOption}) => v
     })
 }
 
-type DateParts = [string, number, number, string]
-
 const dateToDateTimeParts = (date: Date): DateParts => {
     const mDate = moment(date);
-
-    return [
-        dateToDateYearString(date), 
-        mDate.hours() % 12, 
-        mDate.minutes(), 
-        mDate.hours() >= 12 ? 'pm' : 'am'
-    ]
-}
-
-const timePartsToDate = (params: DateParts): Date => {    
-    const mmnt = moment(params[0]);
     
-    const hoursToSet = params[1] + (params[3].toLowerCase() == 'pm' ? 12 : 0)
+    const parts: DateParts = {
+        date: dateToDateYearString(date), 
+        hours: mDate.hours() % 12, 
+        minutes: mDate.minutes(), 
+        timeOfDay: mDate.hours() >= 12 ? 'pm' : 'am'
+    }
+         
+    return parts;
+}
+const datePartsToDate = (parts: DateParts): Date => {    
+    const mmnt = moment(parts.date);
+    
+    const hoursToSet = parts.hours + 
+        (parts.timeOfDay.toLowerCase() == 'pm' 
+            ? parts.hours == 12 
+                ? 0 // 12pm = 12 hours
+                : 12 // 1-11pm = n + 12 hours ie 2pm = 14 hours
+            : parts.hours == 12
+                ? -12 // 12am = 0 hours
+                : 0) // 1-11am = n hours ie 2am = 2 hours
+
     mmnt.hours(hoursToSet)
 
-    mmnt.minutes(params[2])
+    mmnt.minutes(parts.minutes)
 
     mmnt.seconds(0)
     mmnt.milliseconds(0)
 
     const date = mmnt.toDate()
-
-    console.log('timePartsToDate', date, dateToDateYearString(date), params)
 
     return date
 }

@@ -26,7 +26,6 @@ export function dateToDateString(date: Date) {
 }
 
 export function dateToDateYearString(date: Date) {
-    console.log('dateToDateYearString', date)
     return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: '2-digit', year: 'numeric' })
 }
 

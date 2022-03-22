@@ -108,10 +108,10 @@ class CreateHelpRequest extends React.Component<Props> {
             inputs: [
                 // TEST DATETIMERANGE
                 {
-                    onSave: (data) => console.log('save', data.startDate.toLocaleString(), data.endDate.toLocaleString()),
                     onChange: (data) => {
                         this.testDate.set(data)
-                        console.log('change', data.startDate.toLocaleString(), data.endDate.toLocaleString())
+                        console.log('Start:', data.startDate.toLocaleString())
+                        console.log('End:', data.endDate.toLocaleString())
                     },
                     val: () => {
                         return this.testDate.get()
