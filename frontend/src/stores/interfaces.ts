@@ -163,6 +163,32 @@ export interface IRequestStore extends IBaseStore {
     removeUserFromRequest(userId: string, reqId: string): Promise<void>
 }
 
+// TO DO: Add 'tags' and 'attributes'
+export type EditOrganizationData = Pick<OrganizationMetadata, 'roleDefinitions'>
+
+export interface ITempOrganizationStore extends EditOrganizationData {
+    clear(prop?: keyof EditOrganizationData): void
+}
+
+export namespace IEditOrganizationStore {
+    export const id = Symbol('IEditOrganizationStore');
+}
+
+export interface IEditOrganizationStore extends ITempOrganizationStore {
+    editOrganization(orgId: string): Promise<void>
+}
+
+export namespace IOrganizationStore {
+    export const id = Symbol('IOrganizationStore');
+}
+
+export interface IOrganizationStore extends IBaseStore {
+    metadata: OrganizationMetadata
+
+    getOrgData(): Promise<void>;
+    updateOrgData(updatedOrg: OrganizationMetadata): void
+}
+
 export namespace ITeamStore {
     export const id = Symbol('ITeamStore');
 }
@@ -370,17 +396,6 @@ export interface IUpdateStore extends IBaseStore {
     onUIEvent(packet: PatchUIEventPacket) : Promise<void>
 }
 
-export namespace IOrganizationStore {
-    export const id = Symbol('IOrganizationStore');
-}
-
-export interface IOrganizationStore extends IBaseStore {
-    metadata: OrganizationMetadata
-
-    getOrgData(): Promise<void>;
-}
-
-
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -388,6 +403,8 @@ export const dispatchStore = () => getStore<IDispatchStore>(IDispatchStore);
 export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateRequestStore);
 export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
 export const requestStore = () => getStore<IRequestStore>(IRequestStore);
+export const editOrganizationStore = () => getStore<IEditOrganizationStore>(IEditOrganizationStore);
+export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 export const teamStore = () => getStore<ITeamStore>(ITeamStore);
 export const secretStore = () => getStore<ISecretStore>(ISecretStore);
 export const bottomDrawerStore = () => getStore<IBottomDrawerStore>(IBottomDrawerStore);
@@ -399,7 +416,6 @@ export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
 export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
-export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 
 export const AllStores = [
     IUserStore,

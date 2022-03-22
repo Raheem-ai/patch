@@ -92,11 +92,13 @@ export interface IApiClient {
     reportLocation: Authenticated<(locations: Location[]) => Promise<void>>
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
-    getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     editMe: Authenticated<(me: Partial<Me>) => Promise<Me>>
 
     // must be signed in and have the correct roles within the target org
+    getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
+    editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
+
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
     confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
@@ -191,6 +193,9 @@ type ApiRoutes = {
         },
         getOrgMetadata: () => {
             return '/getOrgMetadata'
+        },
+        editOrgMetadata: () => {
+            return '/editOrgMetadata'
         },
         addUserToOrg: () => {
             return '/addUserToOrg'
@@ -339,6 +344,9 @@ type ApiRoutes = {
         },
         getOrgMetadata: () => {
             return `${this.base}${this.namespaces.organization}${this.server.getOrgMetadata()}`
+        },
+        editOrgMetadata: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editOrgMetadata()}`
         },
         addUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addUserToOrg()}`

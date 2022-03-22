@@ -36,6 +36,14 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
+    updateOrgData(updatedOrg: OrganizationMetadata) {
+        this.metadata = {
+            id: updatedOrg.id,
+            name: updatedOrg.name,
+            roleDefinitions: updatedOrg.roleDefinitions
+        }
+    }
+
     clear() {
         this.metadata = null;
     }

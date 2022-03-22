@@ -291,6 +291,14 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.editOrgMetadata()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
