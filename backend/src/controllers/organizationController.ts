@@ -72,6 +72,7 @@ export class OrganizationController implements APIController<
             user: this.db.protectedUserFromDoc(user)
         }
 
+        // TODO for Org Metadata: send pubsub event on service bus
         await this.pubSub.sys(PatchEventType.UserAddedToOrg, {
             userId,
             orgId
@@ -274,8 +275,9 @@ export class OrganizationController implements APIController<
 
         const org = await this.db.resolveOrganization(orgId);
         return {
+            id: orgId,
             name: org.name,
-            orgId: orgId
+            roleDefinitions: org.roleDefinitions
         }
     }
 
