@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, RequestSkill, User, UserRole } from "common/models";
+import { Organization, PendingUser, RequestSkill, User, UserRole, Role } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
@@ -24,6 +24,9 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
 
     @Property() 
     name: string;
+
+    @Property()
+    roleDefinitions: Role[];
 
     @Property()
     lastRequestId: number;
