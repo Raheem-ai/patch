@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinUser, NotificationType, Organization, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, User, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -323,6 +323,44 @@ export class DBManager {
         org.pendingUsers.push(pendingUser)
 
         await org.save()
+    }
+
+    async editOrgMetadata(orgId: string, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+
+        for (const prop in orgUpdates) {
+            org[prop] = orgUpdates[prop];
+        }
+
+        return await org.save()
+    }
+
+    async editRole(orgId: string, roleUpdates: AtLeast<Role, 'id'>): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const roleIndex = org.roleDefinitions.findIndex(role => role.id == roleUpdates.id)
+
+        for (const prop in roleUpdates) {
+            org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
+        }
+
+        return await org.save()
+    }
+
+    async createRole(minRole: MinRole, orgId: string): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId)
+        const newRole = {
+            id: null,
+            name: '',
+            permissions: []
+        }
+
+        // where does role ID get generated? here? guid value? formatted value w/ org ID data?
+        for (const prop in minRole) {
+            newRole[prop] = minRole[prop]
+        }
+
+        org.roleDefinitions.push(newRole)
+        return await org.save()
     }
 
     // Requests

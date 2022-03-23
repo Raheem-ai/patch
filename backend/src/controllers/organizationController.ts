@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, Organization, PatchEventType, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PendingUser, ProtectedUser, RequestSkill, Role, UserRole } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -16,6 +16,9 @@ import { Twilio } from 'twilio';
 import * as querystring from 'querystring'
 import config from '../config';
 import { PubSubService } from "../services/pubSubService";
+import { OrganizationDoc } from "../models/organization";
+import { AtLeast } from "common";
+import { request } from "express";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -36,6 +39,9 @@ export class OrganizationController implements APIController<
     | 'getRespondersOnDuty'
     | 'inviteUserToOrg'
     | 'getOrgMetadata'
+    | 'editOrgMetadata'
+    | 'editRole'
+    | 'createNewRole'
 > {
     @Inject(DBManager) db: DBManager;
 
@@ -279,6 +285,59 @@ export class OrganizationController implements APIController<
             name: org.name,
             roleDefinitions: org.roleDefinitions
         }
+    }
+
+    @Post(API.server.editOrgMetadata())
+    @Authenticate()
+    async editOrgMetadata(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('orgUpdates') orgUpdates: Partial<OrganizationMetadata>,
+    ) {
+        const org = await this.db.editOrgMetadata(orgId, orgUpdates)
+
+        await this.pubSub.sys(PatchEventType.OrganizationEdited, { orgId: org.id });
+
+        return {
+            id: orgId,
+            name: org.name,
+            roleDefinitions: org.roleDefinitions
+        }
+    }
+
+    @Post(API.server.editRole())
+    @Authenticate()
+    async editRole(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
+    ) {
+        const org = await this.db.editRole(orgId, roleUpdates)
+        const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id)
+
+        await this.pubSub.sys(PatchEventType.OrganizationRoleEdited, { 
+            orgId: orgId, 
+            roleId: updatedRole.id
+        });
+
+        return updatedRole;
+    }
+
+    @Post(API.server.createNewRole())
+    async createNewRole(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('role') newRole: MinRole,
+    ) {
+        const org = await this.db.createRole(newRole, orgId);
+        const createdRole = org.roleDefinitions.find(role => role.id == newRole.id)
+
+        await this.pubSub.sys(PatchEventType.OrganizationRoleCreated, {
+            orgId: orgId,
+            roleId: createdRole.id
+        });
+
+        return createdRole;
     }
 
     getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
