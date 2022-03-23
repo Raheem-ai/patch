@@ -65,6 +65,8 @@ export type Role = {
     name: string,
     permissions: PatchPermissions[]
 }
+
+export type MinRole = AtLeast<Role, 'name' | 'permissions'>
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type PendingUser = {
