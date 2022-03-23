@@ -116,7 +116,17 @@ export class MySocketService {
             case PatchEventType.RequestRespondersAssigned:
                 await this.handleScopedRequestUpdate(event, params as any)
                 break;
-        
+
+            case PatchEventType.OrganizationEdited:
+            case PatchEventType.OrganizationDeleted:
+                await this.handleOrganizationUpdate(event, params as any)
+                break;
+
+            case PatchEventType.OrganizationRoleCreated:
+            case PatchEventType.OrganizationRoleEdited:
+            case PatchEventType.OrganizationRoleDeleted:
+                await this.handleOrganizationRoleUpdate(event, params as any)
+                break;
         }
     }
 
@@ -161,6 +171,66 @@ export class MySocketService {
             await this.notifications.send(notification)
         }
 
+    }
+
+    // Do we want to send a notification?
+    async handleOrganizationUpdate<SysEvent extends 
+        PatchEventType.OrganizationEdited
+        | PatchEventType.OrganizationDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {  
+        const { orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        for (const member of org.members) {
+            try {
+                const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                    event: PatchUIEvent.UpdateResource,
+                    params: { 
+                        orgId,
+                    },
+                    sysEvent,
+                    sysParams
+                };
+
+                await this.send(member.id, msg)
+            } catch (e) {
+                console.error(`Error sending user/org update: ${e}`)
+            }
+        }
+    }
+
+    // Do we want to send a notification?
+    async handleOrganizationRoleUpdate<SysEvent extends 
+        PatchEventType.OrganizationRoleCreated
+        | PatchEventType.OrganizationRoleEdited
+        | PatchEventType.OrganizationRoleDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {  
+        const { roleId, orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        for (const member of org.members) {
+            try {
+                const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                    event: PatchUIEvent.UpdateResource,
+                    params: { 
+                        roleId,
+                        orgId,
+                    },
+                    sysEvent,
+                    sysParams
+                };
+
+                await this.send(member.id, msg)
+            } catch (e) {
+                console.error(`Error sending user/org update: ${e}`)
+            }
+        }
     }
 
     async handleUserOrgUpdate<SysEvent extends 
