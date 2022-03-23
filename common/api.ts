@@ -20,7 +20,9 @@ import {
     AppSecrets,
     PendingUser,
     EditableUser,
-    RequestSkill
+    RequestSkill,
+    Role,
+    MinRole
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -30,7 +32,7 @@ import {
 export type TokenContext = { token: string };
 export type OrgContext = TokenContext & { orgId: string };
 export type RequestContext = OrgContext & { requestId: string }
-
+export type RoleContext = OrgContext & { roleId: string }
 
 type Authenticated<T extends (...args: any) => Promise<any>> = (ctx: TokenContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithOrg<T extends (...args: any) => Promise<any>> = (ctx: OrgContext, ...args: Parameters<T>) => ReturnType<T>
@@ -98,6 +100,8 @@ export interface IApiClient {
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
     editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
+    editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
+    createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
@@ -196,6 +200,12 @@ type ApiRoutes = {
         },
         editOrgMetadata: () => {
             return '/editOrgMetadata'
+        },
+        editRole: () => {
+            return '/editRole'
+        },
+        createNewRole: () => {
+            return '/createNewRole'
         },
         addUserToOrg: () => {
             return '/addUserToOrg'
@@ -347,6 +357,12 @@ type ApiRoutes = {
         },
         editOrgMetadata: () => {
             return `${this.base}${this.namespaces.organization}${this.server.editOrgMetadata()}`
+        },
+        editRole: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editRole()}`
+        },
+        createNewRole: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewRole()}`
         },
         addUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addUserToOrg()}`

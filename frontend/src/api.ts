@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -295,6 +295,24 @@ export class APIClient implements IAPIService {
         const url = `${apiHost}${API.client.editOrgMetadata()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editRole(ctx: OrgContext, roleUpdates: AtLeast<Role, 'id'>): Promise<Role> {
+        const url = `${apiHost}${API.client.editRole()}`;
+
+        return (await this.tryPost<Role>(url, { roleUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewRole(ctx: OrgContext, role: MinRole): Promise<Role> {
+        const url = `${apiHost}${API.client.createNewRole()}`;
+
+        return (await this.tryPost<Role>(url, {
+            role
+        }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
