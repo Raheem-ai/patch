@@ -349,12 +349,11 @@ export class DBManager {
     async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId)
         const newRole = {
-            id: null,
+            id: uuid.v1(),
             name: '',
             permissions: []
         }
 
-        // where does role ID get generated? here? guid value? formatted value w/ org ID data?
         for (const prop in minRole) {
             newRole[prop] = minRole[prop]
         }
