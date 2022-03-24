@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -346,7 +346,7 @@ export class DBManager {
         return await org.save()
     }
 
-    async createRole(minRole: MinRole, orgId: string): Promise<OrganizationDoc> {
+    async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId)
         const newRole = {
             id: null,
@@ -724,6 +724,39 @@ export class DBManager {
             [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ]);
             [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ]);
             [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ]);
+
+            console.log('creating new user...');
+            let user5 = await this.createUser({ 
+                email: 'Tevn2@test.com', 
+                password: 'Test',
+                name: 'Tevy Tev2[',
+                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
+            });
+
+            console.log('creating second org...');
+            let [ org2, admin2 ] = await this.createOrganization({
+                name: 'Test Org 2'
+            }, user5.id);
+
+            let role1: MinRole = {
+                id: 'test-id',
+                name: 'first role',
+                permissions: [
+                    PatchPermissions.EditOrgSettings,
+                    PatchPermissions.RoleAdmin,
+                    PatchPermissions.AttributeAdmin,
+                    PatchPermissions.TagAdmin,
+                    PatchPermissions.AssignRoles,
+                    PatchPermissions.AssignAttributes,
+                    PatchPermissions.ChatAdmin,
+                    PatchPermissions.ShiftAdmin,
+                    PatchPermissions.RequestAdmin
+                ]
+            };
+
+            console.log('adding new role to org2...');
+            org2 = await this.addRoleToOrganization(role1, org2.id);
+            console.log('finished adding role to org2...');
 
             const minRequests: MinHelpRequest[] = [
                 {

@@ -328,7 +328,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('role') newRole: MinRole,
     ) {
-        const org = await this.db.createRole(newRole, orgId);
+        const org = await this.db.addRoleToOrganization(newRole, orgId);
         const createdRole = org.roleDefinitions.find(role => role.id == newRole.id)
 
         await this.pubSub.sys(PatchEventType.OrganizationRoleCreated, {
