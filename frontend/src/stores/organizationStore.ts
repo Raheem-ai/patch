@@ -45,12 +45,10 @@ export default class OrganizationStore implements IOrganizationStore {
     }
 
     updateOrAddRole(updatedRole: Role) {
-        // Is there are reason OrganizationMetadata.roleDefinitions shouldn't be a Map<string, Role>?
-        if (updatedRole.id) {
-            let index = this.metadata.roleDefinitions.findIndex(
-                roleDef => roleDef.id == updatedRole.id
-            );
-            // TODO: Any chance index not found?
+        let index = this.metadata.roleDefinitions.findIndex(
+            roleDef => roleDef.id == updatedRole.id
+        );
+        if (index) {
             this.metadata.roleDefinitions[index] = updatedRole;
         } else {
             this.metadata.roleDefinitions.push(updatedRole);
