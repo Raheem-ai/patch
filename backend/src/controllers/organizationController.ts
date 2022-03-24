@@ -69,9 +69,10 @@ export class OrganizationController implements APIController<
         @OrgId() orgId: string,
         @Req() req,
         @Required() @BodyParams('userId') userId: string,
-        @Required() @BodyParams('roles') roles: UserRole[]
+        @Required() @BodyParams('roles') roles: UserRole[],
+        @Required() @BodyParams('roleIDs') roleIDs: string[]
     ) {
-        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles);
+        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIDs);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -206,6 +207,7 @@ export class OrganizationController implements APIController<
         @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
+        @Required() @BodyParams('roleIDs') roleIDs: string[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
@@ -222,6 +224,7 @@ export class OrganizationController implements APIController<
             email,
             phone,
             roles,
+            roleIDs,
             skills,
             pendingId: uuid.v1()
         };
