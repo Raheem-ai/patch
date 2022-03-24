@@ -15,7 +15,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         makeAutoObservable(this)
     }
 
-    // needed?
     orgContext(): OrgContext {
         return {
             token: userStore().authToken,
@@ -30,8 +29,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         }
     }
 
-    // separate editRole, editTag, editAttribute functions OR
-    // just one editOrganization function?
     async editOrganization(orgId: string) {
         try {
             const orgMetadata = {
@@ -63,7 +60,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         return createdRole;
     }
 
-    // edit role
+    // TODO: delete role
     async editRole(roleId: string) {
         try {
             const role = {
@@ -78,8 +75,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
             console.error(e);
         }
     }
-
-    // delete role
 
     loadOrg(org: EditOrganizationData) {
         this.roleDefinitions = org.roleDefinitions

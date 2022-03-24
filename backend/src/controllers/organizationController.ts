@@ -78,7 +78,6 @@ export class OrganizationController implements APIController<
             user: this.db.protectedUserFromDoc(user)
         }
 
-        // TODO for Org Metadata: send pubsub event on service bus
         await this.pubSub.sys(PatchEventType.UserAddedToOrg, {
             userId,
             orgId

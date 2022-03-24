@@ -408,7 +408,6 @@ export enum PatchEventType {
     OrganizationRoleCreated = '2.1.0',
     OrganizationRoleEdited = '2.1.1',
     OrganizationRoleDeleted = '2.1.2'
-
 }
 
 export type PatchEventParams = {
