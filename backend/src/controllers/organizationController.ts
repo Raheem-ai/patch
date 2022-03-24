@@ -146,7 +146,6 @@ export class OrganizationController implements APIController<
     }
 
     @Post(API.server.addRolesToUser())
-    @RequireRoles([UserRole.Admin])
     async addRolesToUser(
         @OrgId() orgId: string,
         @User() user: UserDoc,
@@ -155,6 +154,7 @@ export class OrganizationController implements APIController<
     ) {
         const res = this.db.protectedUserFromDoc(await this.db.addRolesToUser(orgId, userId, roleIDs));
 
+        // TODO: do we plan to create new events for the new concept or Roles or use the old events?
         await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
             userId,
             orgId
