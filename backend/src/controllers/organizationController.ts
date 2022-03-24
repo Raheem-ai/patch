@@ -145,6 +145,24 @@ export class OrganizationController implements APIController<
         return res;
     }
 
+    @Post(API.server.addRolesToUser())
+    @RequireRoles([UserRole.Admin])
+    async addRolesToUser(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('userId') userId: string,
+        @Required() @BodyParams('roleIDs') roleIDs: string[]
+    ) {
+        const res = this.db.protectedUserFromDoc(await this.db.addRolesToUser(orgId, userId, roleIDs));
+
+        await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
+    }
+
     @Post(API.server.getTeamMembers())
     @RequireRoles([UserRole.Admin, UserRole.Dispatcher, UserRole.Responder])
     async getTeamMembers(
@@ -331,8 +349,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('role') newRole: MinRole,
     ) {
-        const org = await this.db.addRoleToOrganization(newRole, orgId);
-        const createdRole = org.roleDefinitions.find(role => role.id == newRole.id)
+        const [org, createdRole] = await this.db.addRoleToOrganization(newRole, orgId);
 
         await this.pubSub.sys(PatchEventType.OrganizationRoleCreated, {
             orgId: orgId,

@@ -469,6 +469,18 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async addRolesToUser(ctx: OrgContext, userId: string, roles: string[]) {
+        const url = `${apiHost}${API.client.addRolesToUser()}`;
+
+        return (await this.tryPost<User>(url, {
+            userId,
+            roles
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+
     async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getTeamMembers()}`;
 

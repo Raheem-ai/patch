@@ -279,6 +279,7 @@ export class DBManager {
         })
     }
 
+    // TODO: deprecate
     async addUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
         const user = await this.resolveUser(userId);
 
@@ -291,6 +292,23 @@ export class DBManager {
                 roles.forEach(r => rollSet.add(r));
 
                 return Object.assign({}, orgConfig, { roles: Array.from(rollSet.values()) });
+            })
+
+            return await user.save();
+        }
+    }
+
+    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIDs: string[]) {
+        const user = await this.resolveUser(userId);
+
+        if (!user.organizations || !user.organizations[orgId]){
+            throw `User not in organization`
+        } else {
+            await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+                // TODO: probably should validate that the IDs exist in org.roleDefinitions?
+                const roleSet = new Set(orgConfig.roleIDs);
+                roleIDs.forEach(r => roleSet.add(r));
+                return Object.assign({}, orgConfig, { roleIDs: Array.from(roleSet.values()) });
             })
 
             return await user.save();
@@ -347,9 +365,9 @@ export class DBManager {
         return await org.save()
     }
 
-    async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<OrganizationDoc> {
+    async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<[OrganizationDoc, Role]> {
         const org = await this.resolveOrganization(orgId)
-        const newRole = {
+        const newRole: Role = {
             id: uuid.v1(),
             name: '',
             permissions: []
@@ -360,7 +378,10 @@ export class DBManager {
         }
 
         org.roleDefinitions.push(newRole)
-        return await org.save()
+        return [
+            await org.save(),
+            newRole
+        ] as [ OrganizationDoc, Role];
     }
 
     // Requests
@@ -642,7 +663,7 @@ export class DBManager {
 
         return user;
     }
-    
+
     // @Every('5 minutes', { name: `Repopulating` })
     async rePopulateDb() {
         try {
@@ -729,7 +750,7 @@ export class DBManager {
             let user5 = await this.createUser({ 
                 email: 'Tevn2@test.com', 
                 password: 'Test',
-                name: 'Tevy Tev2[',
+                name: 'Tevy Tev2',
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
@@ -739,7 +760,6 @@ export class DBManager {
             }, user5.id);
 
             let role1: MinRole = {
-                id: 'test-id',
                 name: 'first role',
                 permissions: [
                     PatchPermissions.EditOrgSettings,
@@ -755,8 +775,10 @@ export class DBManager {
             };
 
             console.log('adding new role to org2...');
-            org2 = await this.addRoleToOrganization(role1, org2.id);
-            console.log('finished adding role to org2...');
+            [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
+
+            console.log('adding new role to user...');
+            user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
 
             const minRequests: MinHelpRequest[] = [
                 {

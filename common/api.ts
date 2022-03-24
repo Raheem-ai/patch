@@ -102,7 +102,7 @@ export interface IApiClient {
     editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
     editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
-    //addRolesToUser: AuthenticatedWithOrg<(roles: Role[]) => Promise<ProtectedUser>>
+    addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
