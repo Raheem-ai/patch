@@ -362,7 +362,6 @@ export class DBManager {
         for (const prop in roleUpdates) {
             org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
         }
-
         org.markModified('roleDefinitions');
         return await org.save();
     }
