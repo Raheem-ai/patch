@@ -332,8 +332,8 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
     ) {
-        const org = await this.db.editRole(orgId, roleUpdates)
-        const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id)
+        const org = await this.db.editRole(orgId, roleUpdates);
+        const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
 
         await this.pubSub.sys(PatchEventType.OrganizationRoleEdited, { 
             orgId: orgId, 

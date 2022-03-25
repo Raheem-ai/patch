@@ -2,11 +2,16 @@ import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { OrganizationMetadata, Role } from '../../../common/models';
+import { MinRole, OrganizationMetadata, Role } from '../../../common/models';
+import { OrgContext } from '../../../common/api';
 
 @Store(IOrganizationStore)
 export default class OrganizationStore implements IOrganizationStore {
-    metadata: OrganizationMetadata;
+    metadata: OrganizationMetadata = {
+        id: '',
+        name: '',
+        roleDefinitions: []
+    };
 
     constructor() {
         makeAutoObservable(this)
@@ -21,13 +26,16 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
+    orgContext(): OrgContext {
+        return {
+            token: userStore().authToken,
+            orgId: userStore().currentOrgId
+        }
+    }
+
     async getOrgData(): Promise<void> {
         try {
-            const data = await api().getOrgMetadata({
-                token: userStore().authToken,
-                orgId: userStore().currentOrgId
-            })
-
+            const data = await api().getOrgMetadata(this.orgContext());
             runInAction(() => {
                 this.metadata = data;
             })
@@ -36,7 +44,8 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    updateOrgData(updatedOrg: OrganizationMetadata) {
+    async updateOrgData(updatedOrg: OrganizationMetadata) {
+        updatedOrg = await api().editOrgMetadata(this.orgContext(), updatedOrg);
         this.metadata = {
             id: updatedOrg.id,
             name: updatedOrg.name,
@@ -44,14 +53,19 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    updateOrAddRole(updatedRole: Role) {
+    async updateOrAddRole(updatedRole: MinRole | Role) {
+        const role = updatedRole.id ?
+            await api().editRole(this.orgContext(), updatedRole as Role) :
+            await api().createNewRole(this.orgContext(), updatedRole);
+
         let index = this.metadata.roleDefinitions.findIndex(
-            roleDef => roleDef.id == updatedRole.id
+            roleDef => roleDef.id == role.id
         );
-        if (index) {
-            this.metadata.roleDefinitions[index] = updatedRole;
+
+        if (index >= 0) {
+            this.metadata.roleDefinitions[index] = role;
         } else {
-            this.metadata.roleDefinitions.push(updatedRole);
+            this.metadata.roleDefinitions.push(role);
         }
     }
 

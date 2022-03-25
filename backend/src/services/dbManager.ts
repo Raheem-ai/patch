@@ -349,6 +349,7 @@ export class DBManager {
 
         for (const prop in orgUpdates) {
             org[prop] = orgUpdates[prop];
+            org.markModified(prop);
         }
 
         return await org.save()
@@ -356,13 +357,14 @@ export class DBManager {
 
     async editRole(orgId: string, roleUpdates: AtLeast<Role, 'id'>): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
-        const roleIndex = org.roleDefinitions.findIndex(role => role.id == roleUpdates.id)
+        const roleIndex = org.roleDefinitions.findIndex(role => role.id == roleUpdates.id);
 
         for (const prop in roleUpdates) {
             org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
         }
 
-        return await org.save()
+        org.markModified('roleDefinitions');
+        return await org.save();
     }
 
     async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<[OrganizationDoc, Role]> {
