@@ -184,21 +184,38 @@ export class MySocketService {
         const { orgId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
-        for (const member of org.members) {
-            try {
-                const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                    event: PatchUIEvent.UpdateResource,
-                    params: { 
-                        orgId,
-                    },
-                    sysEvent,
-                    sysParams
-                };
+        const notifications: NotificationMetadata<any>[] = [];
 
-                await this.send(member.id, msg)
-            } catch (e) {
-                console.error(`Error sending user/org update: ${e}`)
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
+
+            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                type: NotificationType.UIUpdate,
+                to: (user as UserModel).push_token,
+                body: ``,
+                payload: { uiEvent: msg }
             }
+
+            notifications.push(notification);
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization update over notification: ${e}`)
         }
     }
 
@@ -214,22 +231,41 @@ export class MySocketService {
         const { roleId, orgId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
-        for (const member of org.members) {
-            try {
-                const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                    event: PatchUIEvent.UpdateResource,
-                    params: { 
-                        roleId,
-                        orgId,
-                    },
-                    sysEvent,
-                    sysParams
-                };
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    roleId,
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
 
-                await this.send(member.id, msg)
-            } catch (e) {
-                console.error(`Error sending user/org update: ${e}`)
+            // Only send notifications to users affected by the Role change.
+            // TODO: Maybe also send to other Role Admins?
+            if (user.organizations[orgId].roleIDs.includes(roleId)) {
+                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                    type: NotificationType.UIUpdate,
+                    to: (user as UserModel).push_token,
+                    body: ``,
+                    payload: { uiEvent: msg }
+                }
+                notifications.push(notification);
             }
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Role update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Role update over notification: ${e}`)
         }
     }
 
