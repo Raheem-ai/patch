@@ -440,5 +440,6 @@ export const AllStores = [
     IAlertStore,
     ISocketStore,
     IUpdateStore,
-    IOrganizationStore
+    IOrganizationStore,
+    IEditOrganizationStore
 ]
