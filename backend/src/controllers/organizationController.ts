@@ -314,7 +314,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('orgUpdates') orgUpdates: Partial<OrganizationMetadata>,
     ) {
-        if (this.userHasPermissions(user, orgId, new Set([PatchPermissions.EditOrgSettings]))) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.EditOrgSettings])) {
             const org = await this.db.editOrgMetadata(orgId, orgUpdates)
 
             await this.pubSub.sys(PatchEventType.OrganizationEdited, { orgId: org.id });
@@ -336,7 +336,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
     ) {
-        if (this.userHasPermissions(user, orgId, new Set([PatchPermissions.RoleAdmin]))) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
             const org = await this.db.editRole(orgId, roleUpdates);
             const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
     
@@ -357,7 +357,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('role') newRole: MinRole,
     ) {
-        if (this.userHasPermissions(user, orgId, new Set([PatchPermissions.RoleAdmin])))
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin]))
         {
             const [org, createdRole] = await this.db.addRoleToOrganization(newRole, orgId);
 
@@ -365,7 +365,7 @@ export class OrganizationController implements APIController<
                 orgId: orgId,
                 roleId: createdRole.id
             });
-    
+
             return createdRole;
         }
 
@@ -380,40 +380,32 @@ export class OrganizationController implements APIController<
         return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
     }
 
-    // TODO: why is this not working????
-    // TODO: Likely a more javascript way to write this function (e.g. shorthand syntax)
-    async userHasPermissions(user: UserDoc, orgId: string, requiredPermissions: Set<PatchPermissions>): Promise<boolean> {
+    async userHasPermissions(user: UserDoc, orgId: string, requiredPermissions: PatchPermissions[]): Promise<boolean> {
         const orgConfig = user.organizations && user.organizations[orgId];
         if (!orgConfig) {
             throw new Forbidden(`You do not have access to the requested org.`);
         }
         const org = await this.db.resolveOrganization(orgId);
 
-        // Check each role ID that belongs to this user.
+        // TODO: Is there a central place we can set this once as the single source of truth
+        // and only update it when a user's permissions change?
+
+        // Aggregate the set of all permissions granted to the user.
+        const userPermissions = new Set<string>();
         for (const roleID of orgConfig.roleIDs) {
-            // Find the role in the organization's definitions.
             let assignedRole = org.roleDefinitions.find(
                 roleDef => roleDef.id == roleID
             );
 
             if (assignedRole) {
-                // Check all the permissions a user has for this role
-                // Idenitfy which ones satisfy the pers
                 for (const assignedPermission in assignedRole.permissions) {
-                    // Delete any required permission we find.
-                    // At the end we'll check if any are remaining.
-                    requiredPermissions.delete(assignedPermission as PatchPermissions);
-                }
-
-                // If the requiredPermissions set is empty, we've found all the
-                // permissions needed.
-                if (requiredPermissions.size == 0) {
-                    return true;
+                    userPermissions.add(assignedPermission);
                 }
             }
         }
 
-        // If we make it here, there are still unfound permissions in requiredPermissions
-        return false;
+        // Check for any required permissions not granted to the user. Return true only if the array is empty.
+        const missingPermissions = requiredPermissions.filter(permission => !userPermissions.has(permission));
+        return missingPermissions.length == 0;
     }
 }
