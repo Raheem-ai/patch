@@ -307,6 +307,14 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteRoles()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { roleIds } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async createNewRole(ctx: OrgContext, role: MinRole): Promise<Role> {
         const url = `${apiHost}${API.client.createNewRole()}`;
 

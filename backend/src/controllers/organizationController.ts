@@ -42,6 +42,7 @@ export class OrganizationController implements APIController<
     | 'editOrgMetadata'
     | 'editRole'
     | 'createNewRole'
+    | 'deleteRoles'
 > {
     @Inject(DBManager) db: DBManager;
 
@@ -349,6 +350,29 @@ export class OrganizationController implements APIController<
         }
 
         throw new Unauthorized('You do not have permission to edit Roles for this organization.');
+    }
+
+    @Post(API.server.deleteRoles())
+    @Authenticate()
+    async deleteRoles(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('roleIds') roleIds: string[],
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
+            const org = await this.db.removeRolesFromOrganization(orgId, roleIds);
+
+            for (const roleId in roleIds) {
+                await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
+                    orgId: orgId, 
+                    roleId: roleId
+                });
+            }
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Roles from this organization.');
+        }
     }
 
     @Post(API.server.createNewRole())

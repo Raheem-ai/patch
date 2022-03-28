@@ -188,8 +188,9 @@ export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
 
     getOrgData(): Promise<void>;
-    updateOrgData(updatedOrg: OrganizationMetadata): void
-    updateOrAddRole(updatedRole: MinRole | Role): void
+    updateOrgData(updatedOrg: OrganizationMetadata): Promise<void>
+    updateOrAddRole(updatedRole: MinRole | Role): Promise<void>
+    deleteRoles(roleIds: string[]): Promise<void>
 }
 
 export namespace ITeamStore {

@@ -385,6 +385,34 @@ export class DBManager {
         ] as [ OrganizationDoc, Role];
     }
 
+    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+
+        return this.transaction(async (session) => {
+            for (let i = 0; i < org.members.length; i++) {
+                for (const id in roleIds) {
+                    /*
+                    if (org.members[i].organizations[ordId].roleIDs.includes(id)) {
+
+                    }
+                    */
+                }
+            }
+
+            org.markModified('members');
+            const roleDefinitions: Role[] = [];
+            org.roleDefinitions.forEach(role => {
+                if (!roleIds.includes(role.id)) {
+                    roleDefinitions.push(role);
+                }
+            });
+    
+            org.roleDefinitions = roleDefinitions;
+            org.markModified('roleDefinitions');
+            return await org.save({ session });
+        })
+    }
+
     // Requests
 
     async createRequest(minhHelpRequest: MinHelpRequest, orgId: string, dispatcherId: string): Promise<HelpRequestDoc> {

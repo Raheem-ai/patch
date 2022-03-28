@@ -102,6 +102,7 @@ export interface IApiClient {
     editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
     editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
+    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
@@ -207,6 +208,9 @@ type ApiRoutes = {
         },
         createNewRole: () => {
             return '/createNewRole'
+        },
+        deleteRoles: () => {
+            return '/deleteRoles'
         },
         addRolesToUser: () => {
             return '/addRolesToUser'
@@ -367,6 +371,9 @@ type ApiRoutes = {
         },
         createNewRole: () => {
             return `${this.base}${this.namespaces.organization}${this.server.createNewRole()}`
+        },
+        deleteRoles: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteRoles()}`
         },
         addRolesToUser: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addRolesToUser()}`

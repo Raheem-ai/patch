@@ -69,6 +69,15 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
+    async deleteRoles(roleIds: string[]) {
+        const org = await api().deleteRoles(this.orgContext(), roleIds);
+        this.metadata = {
+            id: this.metadata.id,
+            name: this.metadata.name,
+            roleDefinitions: org.roleDefinitions
+        };
+    }
+
     clear() {
         this.metadata = null;
     }
