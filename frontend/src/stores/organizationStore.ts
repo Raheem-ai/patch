@@ -26,7 +26,7 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    orgContext(): OrgContext {
+    orgContext = (): OrgContext => {
         return {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
