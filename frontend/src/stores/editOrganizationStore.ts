@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { EditOrganizationData, IOrganizationStore, IEditOrganizationStore, userStore, organizationStore, requestStore } from './interfaces';
+import { EditOrganizationData, IEditOrganizationStore, userStore, organizationStore } from './interfaces';
 import { PatchPermissions, Role, MinRole } from '../../../common/models';
 import { OrgContext, RoleContext } from '../../../common/api';
 import { api } from '../services/interfaces';
@@ -16,7 +16,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         makeAutoObservable(this)
     }
 
-    orgContext(): OrgContext {
+    orgContext = (): OrgContext => {
         return {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
