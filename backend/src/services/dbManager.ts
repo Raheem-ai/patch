@@ -399,25 +399,30 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId);
 
         return this.transaction(async (session) => {
-            for (let i = 0; i < org.members.length; i++) {
-                for (const id in roleIds) {
-                    /*
-                    if (org.members[i].organizations[ordId].roleIDs.includes(id)) {
-
+            // Remove the role ID from users currently assigned this role.
+            for (const member of org.members as UserModel[]) {
+                let userModified = false;
+                for (const id of roleIds) {
+                    // Identify any roles for deletion that currently belong to this user.
+                    let roleIndex = member.organizations[orgId].roleIDs.findIndex(roleID => roleID == id);
+                    if (roleIndex >= 0) {
+                        // Remove the role from the user's list of roles, and mark this user as modified.
+                        member.organizations[orgId].roleIDs.splice(roleIndex, 1)
+                        userModified = true;
                     }
-                    */
+                }
+
+                // If the user was modified, we need to get the UserDoc and save the user.
+                if (userModified) {
+                    const user = await this.getUserById(member.id);
+                    user.organizations[orgId].roleIDs = member.organizations[orgId].roleIDs;
+                    user.markModified('organizations');
+                    await user.save();
                 }
             }
 
-            org.markModified('members');
-            const roleDefinitions: Role[] = [];
-            org.roleDefinitions.forEach(role => {
-                if (!roleIds.includes(role.id)) {
-                    roleDefinitions.push(role);
-                }
-            });
-    
-            org.roleDefinitions = roleDefinitions;
+            // Now remove the roles from the org definition.
+            org.roleDefinitions = org.roleDefinitions.filter(role => !roleIds.includes(role.id));
             org.markModified('roleDefinitions');
             return await org.save({ session });
         })
