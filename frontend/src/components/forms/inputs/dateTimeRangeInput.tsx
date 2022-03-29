@@ -4,20 +4,21 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { dateToDateString, dateToDateYearString, dateToTimeString } from "../../../../../common/utils";
-import { SectionViewProps } from "../types";
-import WheelPicker from 'react-native-wheel-picker-expo';
+import { SectionInlineViewProps } from "../types";
 import moment from 'moment'
 import { DateTimeRange } from "../../../../../common/models";
 import { first, isNumber } from "lodash";
 import { useWhenParamsChange } from "../../../hooks/useWhenParamsChange";
-import CalendarPicker from 'react-native-calendar-picker';
+// import CalendarPicker from 'react-native-calendar-picker';
+import WheelPicker from "../../wheelPicker";
+import CalendarPicker from "../../calendarPicker";
 
 enum TimeRangeSections {
     Start,
     End
 }
 
-type DateTimeRangeInput = SectionViewProps<'DateTimeRange'>;
+type DateTimeRangeInputProps = SectionInlineViewProps<'DateTimeRange'>;
 
 const HOURS = [
     '1',
@@ -59,7 +60,7 @@ type DateParts = {
     timeOfDay: 'pm' | 'am'
 }
 
-const DateTimeRangeInput = observer(({ config }: DateTimeRangeInput) => {
+const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
     // initialize interal state
     const [dayPickerOpen, setDayPickerOpen] = useState(false)
     const [timePickerOpen, setTimePickerOpen] = useState(false)
@@ -254,11 +255,6 @@ type SectionProps = {
     onTimeOfDayChange: (section: TimeRangeSections, val: string) => void,
 }
 
-type PickerOption = {
-    label: string,
-    value: string
-}
-
 const Section = ({
     dateParts,
     section,
@@ -288,18 +284,11 @@ const Section = ({
     const initialMin = MINUTES.findIndex(val => parseInt(val) == dateParts.minutes)
     const initialTimeOfDay = TIME_OF_DAY.findIndex(val => val.toLowerCase() == dateParts.timeOfDay?.toLowerCase())
 
-    const onMinuteEvent = scrollPickerCB(({ item }) => onMinChange(section, item.value))
-    const onHourEvent = scrollPickerCB(({ item }) => onHourChange(section, item.value))
-    const onTimeOfDayEvent = scrollPickerCB(({ item }) => onTimeOfDayChange(section, item.value))
-    const onDayEvent = (newDate) => onDayChange(section, dateToDateYearString(newDate.toDate()))
+    const onMinuteEvent = ({ item }) => onMinChange(section, item.value)
+    const onHourEvent = ({ item }) => onHourChange(section, item.value)
+    const onTimeOfDayEvent = ({ item }) => onTimeOfDayChange(section, item.value)
+    const onDayEvent = (newDate) => onDayChange(section, dateToDateYearString(newDate))
 
-    // setup specific style for today's date
-    const customDatesStyles = [];
-    customDatesStyles.push({
-        date: moment(), //today
-        style: styles.todayStyle,
-        allowDisabled: true, // allow custom style to apply to disabled dates
-    })
 
     return (
         <View style={styles.section}>
@@ -314,25 +303,9 @@ const Section = ({
             {
                 dayPickerOpen && section == currentSection    
                     ? <View style={{ backgroundColor: '#fff', marginLeft: -20}}>
-                        <CalendarPicker 
-                            weekdays={['S', 'M', 'T', 'W', 'T', 'F',  'S']}
-                            // translate from moment to Date
+                        <CalendarPicker
                             onDateChange={onDayEvent} 
-                            selectedStartDate={date}
-                            initialDate={date}
-                            showDayStragglers={true}
-
-                            headerWrapperStyle={{ height: 0, margin: 0, padding: 0 }}
-                            dayLabelsWrapper={{ borderBottomWidth: 0, borderTopWidth: 0 }}
-                            customDayHeaderStyles={() => ({ backgroundColor: 'red' })}
-                            
-                            selectedDayColor={styles.selectedStartDate.backgroundColor}
-                            selectedDayTextColor={styles.selectedStartDate.color}
-                            
-                            todayBackgroundColor={styles.selectedStartDate.color}
-                            todayTextStyle={{ color: styles.selectedStartDate.backgroundColor }}
-                            
-                            customDatesStyles={customDatesStyles}/>
+                            intitalDate={date} />
                     </View>
                     : null
             }
@@ -340,17 +313,14 @@ const Section = ({
                 timePickerOpen && section == currentSection 
                     ? <View style={{ marginLeft: -20, flexDirection: 'row', justifyContent: 'center'}}>
                         <WheelPicker
-                            width={40}
                             initialSelectedIndex={initialHour == -1 ? 0 : initialHour}
                             items={HOURS.map(name => ({ label: name, value: name }))}
                             onChange={onHourEvent} />
                         <WheelPicker
-                            width={40}
                             initialSelectedIndex={initialMin == -1 ? 0 : initialMin}
                             items={MINUTES.map(name => ({ label: name, value: name }))}
                             onChange={onMinuteEvent} />
                         <WheelPicker
-                            width={40}
                             initialSelectedIndex={initialTimeOfDay == -1 ? 0 : initialTimeOfDay}
                             items={TIME_OF_DAY.map(name => ({ label: name, value: name }))}
                             onChange={onTimeOfDayEvent} />
@@ -362,12 +332,6 @@ const Section = ({
 }
 
 export default DateTimeRangeInput;
-
-const scrollPickerCB = function (fn: ({ index: number, item: PickerOption}) => void) {
-    return useWhenParamsChange<{ index: number, item: PickerOption}>(fn, (oldParams, newParams) => {
-        return oldParams?.item?.value != newParams.item.value
-    })
-}
 
 const dateToDateTimeParts = (date: Date): DateParts => {
     const mDate = moment(date);

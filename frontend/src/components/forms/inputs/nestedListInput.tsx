@@ -5,10 +5,10 @@ import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
-import { SectionScreenProps } from "../types";
+import { SectionScreenViewProps } from "../types";
 import BackButtonHeader from "./backButtonHeader";
 
-const NestedListInput = observer(({ back, config }: SectionScreenProps<'NestedList' | 'NestedTagList'>) => {
+const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'NestedList' | 'NestedTagList'>) => {
 
     const [vals, setVals] = useState(new Set(config.val()))
 

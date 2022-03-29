@@ -4,11 +4,11 @@ import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextIn
 import { unwrap } from "../../../../../common/utils";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
-import { SectionScreenProps, SectionViewProps } from "../types";
+import { SectionScreenViewProps, SectionInlineViewProps } from "../types";
 import BackButtonHeader from "./backButtonHeader";
 
 
-const TextInput = observer(({ config }: SectionViewProps<'TextInput'>) => {
+const TextInput = observer(({ config }: SectionInlineViewProps<'TextInput'>) => {
     return (
         <RNTextInput 
             style={[
@@ -18,7 +18,7 @@ const TextInput = observer(({ config }: SectionViewProps<'TextInput'>) => {
                 }, 
                 config.disabled ? styles.disabled : null
             ]}
-            placeholder={unwrap(config.headerLabel)}
+            placeholder={unwrap(config.placeholderLabel)}
             editable={!config.disabled}
             selectTextOnFocus={!config.disabled}
             value={config.val()}

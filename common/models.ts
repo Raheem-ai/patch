@@ -491,7 +491,7 @@ export type DateTimeRange = {
     endDate: Date
 }
 
-export enum RecurringTimePeriod {
+export enum RecurringPeriod {
     Day = 'd',
     Week = 'w',
     Month = 'm',
@@ -507,17 +507,26 @@ export enum Days {
     Sunday = 'su'
 }
 
-export type RecurringTimePeriodConfig = ({
-    period: RecurringTimePeriod.Month,
+export type RecurringTimePeriod = ({
+    period: RecurringPeriod.Month,
     dayScope?: boolean,
     weekScope?: boolean
 } | {
-    period: RecurringTimePeriod.Week,
+    period: RecurringPeriod.Week,
     days: Days[]
 } | {
-    period: RecurringTimePeriod.Day
+    period: RecurringPeriod.Day
 }) & { numberOf: number }
 
 export type RecurringTimeConstraints = {
-    every?: RecurringTimePeriodConfig
+    every?: RecurringTimePeriod
+    until?: {
+        date: Date,
+        repititions: null
+    } | {
+        date: null,
+        repititions: number
+    }
 }
+
+export type RecurringDateTimeRange = RecurringTimeConstraints & DateTimeRange;

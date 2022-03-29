@@ -1,12 +1,12 @@
 import React from "react";
 import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
-import { observable, reaction } from 'mobx';
+import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues } from "../../../../../common/utils";
-import { FormInputConfig } from "../../forms/types";
+import { CompoundFormInputConfig, CompoundFormInputFactory, CompoundFormInputFactoryParams, InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
@@ -18,10 +18,15 @@ class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
     headerReactionDisposer = null;
 
-    testDate = observable.box({
+    testRecurringDTR = observable.box<RecurringDateTimeRange>({
+        every: { 
+            period: RecurringPeriod.Week, 
+            numberOf: 1, 
+            days: []
+        },
         startDate: new Date('03/12/2022 22:05'),
         endDate: new Date('03/13/2022 00:05')
-    });
+    })
 
     componentDidMount = () => {
         // checkStateChange gets called any time the form page, header visibility, or the expanded
@@ -107,23 +112,15 @@ class CreateHelpRequest extends React.Component<Props> {
             },
             inputs: [
                 // TEST DATETIMERANGE
-                {
+                RecurringDateTimeRangeInputConfig({
                     onChange: (data) => {
-                        this.testDate.set(data)
-                        console.log('Start:', data.startDate.toLocaleString())
-                        console.log('End:', data.endDate.toLocaleString())
+                        this.testRecurringDTR.set(data)
                     },
                     val: () => {
-                        return this.testDate.get()
+                        return this.testRecurringDTR.get();
                     },
-                    isValid: () => {
-                        return true
-                    },
-                    name: 'time',
-                    previewLabel: () => null,
-                    headerLabel: () => null,
-                    type: 'DateTimeRange',
-                },
+                    name: 'schedule'
+                }),
                 // Notes
                 {
                     onSave: (notes) => createRequestStore().notes = notes,
@@ -174,7 +171,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            createRequestStore().skills.splice(idx, 1)
+                            runInAction(() => createRequestStore().skills.splice(idx, 1))
                         },
                     },
                 },
@@ -215,18 +212,18 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            createRequestStore().type.splice(idx, 1)
+                            runInAction(() => createRequestStore().type.splice(idx, 1))
                         },
                         dark: true
                     }
                 }
             ] as [
-                FormInputConfig<'DateTimeRange'>,
-                FormInputConfig<'TextArea'>,
-                FormInputConfig<'Map'>, 
-                FormInputConfig<'NestedTagList'>,
-                FormInputConfig<'List'>,
-                FormInputConfig<'TagList'>, 
+                CompoundFormInputConfig<'RecurringDateTimeRange'>,
+                ScreenFormInputConfig<'TextArea'>,
+                ScreenFormInputConfig<'Map'>, 
+                ScreenFormInputConfig<'NestedTagList'>,
+                ScreenFormInputConfig<'List'>,
+                ScreenFormInputConfig<'TagList'>, 
             ]
         }
     }
@@ -240,6 +237,72 @@ class CreateHelpRequest extends React.Component<Props> {
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
+    }
+}
+
+const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDateTimeRange'> = (params: CompoundFormInputFactoryParams) => {
+    const dateTimeVal = () => {
+        const value = params.val();
+
+        return {
+            startDate: value.startDate,
+            endDate: value.endDate
+        }
+    }
+
+    const recurringTimeConstraintsVal = () => {
+        const value = params.val();
+
+        return {
+            every: value.every,
+            until: value.until
+        }
+    }
+    
+    return {
+        inputs: () => {
+            return [{
+                onChange: (data) => {
+                    const update = Object.assign({}, params.val(), data);
+                    params.onChange(update)
+                },
+                val: dateTimeVal,
+                isValid: () => {
+                    return params.props?.dateTimeRangeValid
+                        ? params.props.dateTimeRangeValid(dateTimeVal())
+                        : true;
+                },
+                name: `${params.name}-DTR`,
+                type: 'DateTimeRange',
+                disabled: params.disabled,
+                required: params.required
+            },
+            {
+                onSave: (data) => {
+                    const update = Object.assign({}, params.val(), data);
+                    params.onChange(update)
+                },
+                val: recurringTimeConstraintsVal,
+                isValid: () => {
+                    return params.props?.recurringTimeConstraintsValid
+                        ? params.props.recurringTimeConstraintsValid(recurringTimeConstraintsVal())
+                        : true;
+                },
+                props: {
+                    dateTimeRange: dateTimeVal
+                },
+                name: `${params.name}-RTC`,
+                previewLabel: () => null,
+                headerLabel: () => 'Repeat',
+                type: 'RecurringTimePeriod',
+                disabled: params.disabled,
+                required: params.required
+            }] as [ 
+                InlineFormInputConfig<'DateTimeRange'>, 
+                ScreenFormInputConfig<'RecurringTimePeriod'>
+            ]
+        },
+        type: 'RecurringDateTimeRange',
     }
 }
 

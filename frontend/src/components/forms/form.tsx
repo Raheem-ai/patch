@@ -8,7 +8,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewConfig, FormInputViewMap, SectionScreenProps, SectionViewProps } from "./types";
+import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
@@ -22,6 +22,7 @@ import { wrapScrollView } from "react-native-scroll-into-view";
 import Loader from "../loader";
 import MapInput from "./inputs/mapInput";
 import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
+import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -48,20 +49,23 @@ const FormViewMap: FormInputViewMap = {
     },
     'TagList': {
         screenComponent: ListInput,
-        labelComponent: TagListLabel as React.ComponentType<SectionViewProps<"TagList">>
+        labelComponent: TagListLabel as React.ComponentType<SectionLabelViewProps<"TagList">>
     },
     'NestedList': {
         screenComponent: NestedListInput
     },
     'NestedTagList': {
         screenComponent: NestedListInput,
-        labelComponent: TagListLabel as React.ComponentType<SectionViewProps<"NestedTagList">>
+        labelComponent: TagListLabel as React.ComponentType<SectionLabelViewProps<"NestedTagList">>
     },
     'Map': {
         screenComponent: MapInput
     },
     'DateTimeRange': {
         inlineComponent: DateTimeRangeInput
+    },
+    'RecurringTimePeriod': {
+        screenComponent: RecurringTimePeriodInput
     }
 }
 
@@ -72,8 +76,15 @@ export default class Form extends React.Component<FormProps> {
     isHome = computed<boolean>(() => {
         return !this.state.screenId;
     })
-    isValid = computed<boolean>(() => {
-        return this.props.inputs.filter(i => i.required).every(i => i.isValid());
+
+    // used internally to know whether the form is submittable
+    private isValid = computed<boolean>(() => {
+        return this.inputs.get().filter(i => i.required).every(i => i.isValid());
+    })
+
+    // used to unpack nested input configs from compound inputs
+    private inputs = computed<StandAloneFormInputConfig[]>(() => {
+        return this.flattenInputConfigs(this.props.inputs)
     })
 
     submitting = observable.box<boolean>(false)
@@ -81,6 +92,26 @@ export default class Form extends React.Component<FormProps> {
     // screenId == null means we're on home page
     state = {
         screenId: null
+    }
+
+    flattenInputConfigs = (inputConfigs: FormInputConfig[]) => {
+        const flattenedInputs: StandAloneFormInputConfig[] = [];
+        
+        inputConfigs.forEach(config => {
+            const isCompoundInput = (config as any as CompoundFormInputConfig).inputs;
+
+            if (isCompoundInput) {
+                const nestedInputConfigs = (config as any as CompoundFormInputConfig).inputs?.()
+
+                if (nestedInputConfigs && nestedInputConfigs.length) {
+                    flattenedInputs.push(...this.flattenInputConfigs(nestedInputConfigs))
+                }
+            } else {
+                flattenedInputs.push(config as StandAloneFormInputConfig)
+            }
+        })
+
+        return flattenedInputs
     }
 
     openLink = (id: string) => {
@@ -115,6 +146,52 @@ export default class Form extends React.Component<FormProps> {
             }
         }
 
+
+        const renderInputs = () => {
+            return this.inputs.get().map(inputConfig => {
+                const viewConfig = FormViewMap[inputConfig.type];
+
+                // make sure any inline store updates are being run in an action 
+                // (for convenience)
+                const inlineInputConfig = inputConfig as InlineFormInputConfig;
+
+                if (inlineInputConfig.onChange) {
+                    const oldOnChange = inlineInputConfig.onChange;
+                    
+                    inlineInputConfig.onChange = (...args) => {
+                        runInAction(() => {
+                            return oldOnChange(...args)
+                        })
+                    }
+                }
+
+                const screenInputConfig = inputConfig as ScreenFormInputConfig;
+
+                const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
+
+                if (labelComponent) {
+                    return <LabelSection 
+                        inputConfig={screenInputConfig}
+                        labelComponent={labelComponent}
+                        openLink={this.openLink}  
+                        linkTo={inputConfig.name} />
+                }
+
+                const inlineComponent = (viewConfig as InlineFormInputViewConfig).inlineComponent || null;
+
+                if (inlineComponent) {    
+                    return <InlineSection 
+                        inputConfig={inlineInputConfig}
+                        inlineComponent={inlineComponent} />
+                }
+
+                return <DefaultSection 
+                    inputConfig={screenInputConfig}
+                    openLink={this.openLink}  
+                    linkTo={inputConfig.name} />
+            })
+        }
+
         return (
                 <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
                     <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
@@ -132,43 +209,8 @@ export default class Form extends React.Component<FormProps> {
                                 fontWeight: 'bold',
                             }}>{this.props.headerLabel}</Text>
                         </View>
-                        {
-                            this.props.inputs.map((inputConfig) => {
-                                const textLabel = unwrap(inputConfig.previewLabel) || null;
-
-                                const viewConfig = FormViewMap[inputConfig.type];
-
-                                // make sure any inline store updates are being run in an action 
-                                // (for convenience)
-                                if (inputConfig.onChange) {
-                                    const oldOnChange = inputConfig.onChange;
-                                    
-                                    inputConfig.onChange = (...args) => {
-                                        runInAction(() => {
-                                            return oldOnChange(...args)
-                                        })
-                                    }
-                                }
-
-                                if (inputConfig.onSave) {
-                                    const oldOnSave = inputConfig.onSave;
-                                    
-                                    inputConfig.onSave = (...args) => {
-                                        runInAction(() => {
-                                            return oldOnSave(...args)
-                                        })
-                                    }
-                                }
-
-                                return <Section 
-                                            viewConfig={viewConfig}
-                                            inputConfig={inputConfig}
-                                            labelComponent={viewConfig.inlineComponent || viewConfig.labelComponent || null}
-                                            openLink={this.openLink}  
-                                            linkTo={inputConfig.name} 
-                                            label={textLabel}/>
-                            })
-                        }
+                        {/* { renderInputs(this.props.inputs) } */}
+                        { renderInputs() }
                         {
                             this.props.submit
                                 ? <Button 
@@ -192,13 +234,23 @@ export default class Form extends React.Component<FormProps> {
         }
 
         if (this.state.screenId) {
-            const inputConfig = this.props.inputs.find((i) => i.name == this.state.screenId);
+            const inputConfig = this.inputs.get().find((i) => i.name == this.state.screenId) as ScreenFormInputConfig;
             const viewConfig = FormViewMap[inputConfig.type];
 
-            const Component: ComponentType<SectionScreenProps> = viewConfig.screenComponent;
+            const ScreenComponent: ComponentType<SectionScreenViewProps> = (viewConfig as ScreenFormInputViewConfig).screenComponent;
             
-            if (Component) {
-                return <Component back={this.back} config={inputConfig}/>
+            if (ScreenComponent) {
+                if (inputConfig.onSave) {
+                    const oldOnSave = inputConfig.onSave;
+                    
+                    inputConfig.onSave = (...args) => {
+                        runInAction(() => {
+                            return oldOnSave(...args)
+                        })
+                    }
+                }
+
+                return <ScreenComponent back={this.back} config={inputConfig}/>
             }
         }
             
@@ -206,13 +258,10 @@ export default class Form extends React.Component<FormProps> {
     }
 }
 
-function Section(props: { 
-    viewConfig: FormInputViewConfig,
-    inputConfig: FormInputConfig,
+function DefaultSection(props: { 
+    inputConfig: ScreenFormInputConfig,
     linkTo: string,
-    openLink: (screenId: string) => void,
-    labelComponent?: ComponentType<SectionViewProps>,
-    label?: string
+    openLink: (screenId: string) => void
 }) {
 
     const expand = () => {
@@ -223,31 +272,13 @@ function Section(props: {
         props.openLink(props.linkTo);
     }
 
-    const Label: ComponentType<SectionViewProps> = props.labelComponent;
     const preview = unwrap(props.inputConfig.previewLabel)
     const placeHolder = unwrap(props.inputConfig.headerLabel)
 
-    const hasScreenView = !!props.viewConfig.screenComponent
-
-    return Label
-        ? <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
-            <View style={{ flex: 1 }}>
-                <Label config={props.inputConfig} expand={hasScreenView ? expand : null} />
-            </View>
-            { hasScreenView && !props.inputConfig.disabled
-                ? <IconButton
-                    style={{ flex: 0, height: 30, width: 30 }}
-                    icon='chevron-right' 
-                    color='rgba(60,60,67,.3)'
-                    onPress={expand}
-                    size={30} />
-                : null
-            }
-        </View>
-        : preview 
+    return preview 
             ? <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
                 <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
-                { hasScreenView && !props.inputConfig.disabled
+                { !props.inputConfig.disabled
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
                         icon='chevron-right' 
@@ -258,8 +289,8 @@ function Section(props: {
                 }
             </Pressable>
             : <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
-                <Text style={[styles.label, styles.placeholder]}>{placeHolder}</Text>
-                { hasScreenView && !props.inputConfig.disabled
+                <Text style={[styles.label, styles.placeholder]}>{placeHolder || ''}</Text>
+                { !props.inputConfig.disabled
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon='chevron-right' 
@@ -269,6 +300,56 @@ function Section(props: {
                     : null
                 }
             </Pressable>
+}
+
+function InlineSection(props: { 
+    inputConfig: InlineFormInputConfig,
+    inlineComponent: ComponentType<SectionInlineViewProps>,
+}) {
+    const Label: ComponentType<SectionInlineViewProps> = props.inlineComponent;
+
+    return (
+        <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
+            <View style={{ flex: 1 }}>
+                <Label config={props.inputConfig}/>
+            </View>
+        </View>
+    )
+}
+
+function LabelSection(props: { 
+    inputConfig: ScreenFormInputConfig,
+    linkTo: string,
+    openLink: (screenId: string) => void,
+    labelComponent: ComponentType<SectionLabelViewProps>,
+}) {
+
+    const expand = () => {
+        if (nativeEventStore().keyboardOpen) {
+            return Keyboard.dismiss()
+        } 
+
+        props.openLink(props.linkTo);
+    }
+
+    const Label: ComponentType<SectionLabelViewProps> = props.labelComponent;
+
+    return (
+        <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
+            <View style={{ flex: 1 }}>
+                <Label config={props.inputConfig} expand={expand} />
+            </View>
+            { !props.inputConfig.disabled
+                ? <IconButton
+                    style={{ flex: 0, height: 30, width: 30 }}
+                    icon='chevron-right' 
+                    color='rgba(60,60,67,.3)'
+                    onPress={expand}
+                    size={30} />
+                : null
+            }
+        </View>
+    )
 }
 
 

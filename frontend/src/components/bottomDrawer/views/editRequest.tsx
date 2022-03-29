@@ -5,7 +5,7 @@ import { resolveErrorMessage } from "../../../errors";
 import Form, { FormProps } from "../../forms/form";
 import { RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import { FormInputConfig } from "../../forms/types";
+import { ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { ResponderCountRange } from "../../../constants";
 import { KeyboardAvoidingView, Platform } from "react-native";
@@ -149,11 +149,11 @@ class EditHelpRequest extends React.Component<Props> {
                 }
                 
             ] as [
-                FormInputConfig<'Map'>, 
-                FormInputConfig<'TagList'>, 
-                FormInputConfig<'TextArea'>,
-                FormInputConfig<'NestedTagList'>,
-                FormInputConfig<'List'>,
+                ScreenFormInputConfig<'Map'>, 
+                ScreenFormInputConfig<'TagList'>, 
+                ScreenFormInputConfig<'TextArea'>,
+                ScreenFormInputConfig<'NestedTagList'>,
+                ScreenFormInputConfig<'List'>,
             ]
         }
     }
