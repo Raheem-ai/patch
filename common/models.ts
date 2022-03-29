@@ -671,7 +671,7 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
 
 function resolveForcedPermissions(permissions: PatchPermissions[]): Set<PatchPermissions> {
     const userPermissions = new Set<PatchPermissions>();
-    for (const permission in permissions) {
+    for (const permission of permissions) {
         userPermissions.add(permission as PatchPermissions);
         resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
     }
