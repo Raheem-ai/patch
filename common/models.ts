@@ -583,12 +583,12 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
     [PatchPermissions.RoleAdmin]: {
         name: 'Role admin',
         description: 'Create, edit, and delete organization Roles.',
-        forcedPermissions: [],
+        forcedPermissions: [PatchPermissions.AssignRoles],
     },
     [PatchPermissions.AttributeAdmin]: {
         name: 'Attribute admin',
         description: 'Create, edit, and delete organization Attributes.',
-        forcedPermissions: [],
+        forcedPermissions: [PatchPermissions.AssignAttributes],
     },
     [PatchPermissions.TagAdmin]: {
         name: 'Tad admin',
@@ -667,4 +667,24 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
         description: 'Close Requests that a user is on.',
         forcedPermissions: [],
     }
+}
+
+function resolveForcedPermissions(permissions: PatchPermissions[]): Set<PatchPermissions> {
+    const userPermissions = new Set<PatchPermissions>();
+    for (const permission in permissions) {
+        userPermissions.add(permission as PatchPermissions);
+        resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
+    }
+    return userPermissions;
+}
+
+export function resolvePermissions(roles: Role[]): Set<PatchPermissions> {
+    const userPermissions = new Set<PatchPermissions>();
+    for (const role of roles) {
+        for (const permission of role.permissions) {
+            userPermissions.add(permission)
+            resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
+        }
+    }
+    return userPermissions;
 }
