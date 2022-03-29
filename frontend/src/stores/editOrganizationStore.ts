@@ -7,6 +7,7 @@ import { api } from '../services/interfaces';
 
 @Store(IEditOrganizationStore)
 export default class EditOrganizationStore implements IEditOrganizationStore  {
+    name: string = '';
     roleDefinitions: Role[] = []
     currentRoleName: string = ''
     currentRolePermissions: PatchPermissions[] = []
@@ -30,14 +31,15 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     }
 
     async editOrganization(orgId: string) {
-        try {
-            const orgMetadata = {
-                id: orgId,
-                roleDefinitions: this.roleDefinitions
-            }
+        const orgMetadata = {
+            id: orgId,
+            roleDefinitions: this.roleDefinitions
+        }
 
+        try {
             const updatedOrg = await api().editOrgMetadata(this.orgContext(), orgMetadata);
             organizationStore().updateOrgData(updatedOrg);
+            return updatedOrg;
         } catch (e) {
             console.error(e);
         }
@@ -49,41 +51,45 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
             permissions: this.currentRolePermissions
         }
 
-        const createdRole = await api().createNewRole(this.orgContext(), role);
-
         try {
-            await organizationStore().updateOrAddRole(createdRole);
+            const createdRole = await api().createNewRole(this.orgContext(), role);
+            organizationStore().updateOrAddRole(createdRole);
+            return createdRole;
         } catch (e) {
             console.error(e);
         }
-
-        return createdRole;
     }
 
-    // TODO: delete role
     async editRole(roleId: string) {
-        try {
-            const role = {
-                id: roleId,
-                name: this.currentRoleName,
-                permissions: this.currentRolePermissions
-            }
+        const role = {
+            id: roleId,
+            name: this.currentRoleName,
+            permissions: this.currentRolePermissions
+        }
 
+        try {
             const updatedRole = await api().editRole(this.roleContext(roleId), role);
             organizationStore().updateOrAddRole(updatedRole);
+            return updatedRole;
         } catch (e) {
             console.error(e);
         }
+    }
+
+    async deleteRoles(roleIds: string[]) {
+        return await api().deleteRoles(this.orgContext(), roleIds);
     }
 
     loadOrg(org: EditOrganizationData) {
-        this.roleDefinitions = org.roleDefinitions
+        this.name = org.name;
+        this.roleDefinitions = org.roleDefinitions;
     }
 
     clear() {
-        this.roleDefinitions = []
-        this.currentRoleName = ''
-        this.currentRolePermissions = []
+        this.name = '';
+        this.roleDefinitions = [];
+        this.currentRoleName = '';
+        this.currentRolePermissions = [];
      }
    
 }

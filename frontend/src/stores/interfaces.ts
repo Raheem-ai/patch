@@ -164,7 +164,7 @@ export interface IRequestStore extends IBaseStore {
 }
 
 // TO DO: Add 'tags' and 'attributes'
-export type EditOrganizationData = Pick<OrganizationMetadata, 'roleDefinitions'>
+export type EditOrganizationData = Pick<OrganizationMetadata, 'roleDefinitions' | 'name'>
 
 export interface ITempOrganizationStore extends EditOrganizationData {
     clear(prop?: keyof EditOrganizationData): void
@@ -175,9 +175,10 @@ export namespace IEditOrganizationStore {
 }
 
 export interface IEditOrganizationStore extends ITempOrganizationStore {
-    editOrganization(orgId: string): Promise<void>
+    editOrganization(orgId: string): Promise<OrganizationMetadata>
     createNewRole(): Promise<Role>
-    editRole(roleId: string): Promise<void>
+    editRole(roleId: string): Promise<Role>
+    deleteRoles(roleIds: string[]): Promise<OrganizationMetadata>
 }
 
 export namespace IOrganizationStore {
@@ -188,9 +189,8 @@ export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
 
     getOrgData(): Promise<void>;
-    updateOrgData(updatedOrg: OrganizationMetadata): Promise<void>
-    updateOrAddRole(updatedRole: MinRole | Role): Promise<void>
-    deleteRoles(roleIds: string[]): Promise<void>
+    updateOrgData(updatedOrg: OrganizationMetadata): void
+    updateOrAddRole(updatedRole: Role): void
 }
 
 export namespace ITeamStore {

@@ -44,38 +44,28 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    async updateOrgData(updatedOrg: OrganizationMetadata) {
-        updatedOrg = await api().editOrgMetadata(this.orgContext(), updatedOrg);
-        this.metadata = {
-            id: updatedOrg.id,
-            name: updatedOrg.name,
-            roleDefinitions: updatedOrg.roleDefinitions
-        }
+    updateOrgData = (updatedOrg: OrganizationMetadata): void => {
+        runInAction(() => {
+            this.metadata = {
+                id: updatedOrg.id,
+                name: updatedOrg.name,
+                roleDefinitions: updatedOrg.roleDefinitions
+            }
+        });
     }
 
-    async updateOrAddRole(updatedRole: MinRole | Role) {
-        const role = updatedRole.id ?
-            await api().editRole(this.orgContext(), updatedRole as Role) :
-            await api().createNewRole(this.orgContext(), updatedRole);
-
+    updateOrAddRole(updatedRole: Role) {
         let index = this.metadata.roleDefinitions.findIndex(
-            roleDef => roleDef.id == role.id
+            roleDef => roleDef.id == updatedRole.id
         );
 
-        if (index >= 0) {
-            this.metadata.roleDefinitions[index] = role;
-        } else {
-            this.metadata.roleDefinitions.push(role);
-        }
-    }
-
-    async deleteRoles(roleIds: string[]) {
-        const org = await api().deleteRoles(this.orgContext(), roleIds);
-        this.metadata = {
-            id: this.metadata.id,
-            name: this.metadata.name,
-            roleDefinitions: org.roleDefinitions
-        };
+        runInAction(() => {
+            if (index >= 0) {
+                this.metadata.roleDefinitions[index] = updatedRole;
+            } else {
+                this.metadata.roleDefinitions.push(updatedRole);
+            }
+        });
     }
 
     clear() {
