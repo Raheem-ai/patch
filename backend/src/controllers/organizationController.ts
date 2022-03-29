@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -409,27 +409,29 @@ export class OrganizationController implements APIController<
         if (!orgConfig) {
             throw new Forbidden(`You do not have access to the requested org.`);
         }
+
+        // Get all the roles that belong to a user.
         const org = await this.db.resolveOrganization(orgId);
-
-        // TODO: Is there a central place we can set this once as the single source of truth
-        // and only update it when a user's permissions change?
-
-        // Aggregate the set of all permissions granted to the user.
-        const userPermissions = new Set<string>();
-        for (const roleID of orgConfig.roleIDs) {
-            let assignedRole = org.roleDefinitions.find(
-                roleDef => roleDef.id == roleID
-            );
-
+        const userRoles = [];
+        orgConfig.roleIDs.forEach(id => {
+            const assignedRole = org.roleDefinitions.find(
+                roleDef => roleDef.id == id
+            );    
             if (assignedRole) {
-                for (const assignedPermission in assignedRole.permissions) {
-                    userPermissions.add(assignedPermission);
-                }
+                userRoles.push(assignedRole);
+            }
+        });
+
+        // Resolve all the permissions granted to a user based on their role(s).
+        const userPermissions = resolvePermissions(userRoles);
+        for (const permission in requiredPermissions) {
+            // If any required permission is missing, return false.
+            if (!userPermissions.has(permission as PatchPermissions)) {
+                return false;
             }
         }
 
-        // Check for any required permissions not granted to the user. Return true only if the array is empty.
-        const missingPermissions = requiredPermissions.filter(permission => !userPermissions.has(permission));
-        return missingPermissions.length == 0;
+        // If we make it here then all required permissions were found.
+        return true;
     }
 }
