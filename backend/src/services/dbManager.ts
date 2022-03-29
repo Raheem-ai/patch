@@ -303,16 +303,23 @@ export class DBManager {
 
         if (!user.organizations || !user.organizations[orgId]){
             throw `User not in organization`
-        } else {
-            await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-                // TODO: probably should validate that the IDs exist in org.roleDefinitions?
-                const roleSet = new Set(orgConfig.roleIDs);
-                roleIDs.forEach(r => roleSet.add(r));
-                return Object.assign({}, orgConfig, { roleIDs: Array.from(roleSet.values()) });
-            })
-
-            return await user.save();
         }
+
+        const org = await this.resolveOrganization(orgId);
+        for (const roleId of roleIDs) {
+            if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
+                throw `Role  ${roleId} does not exist in organization ${orgId}.`
+            }
+        }
+
+        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+            // TODO: probably should validate that the IDs exist in org.roleDefinitions?
+            const roleSet = new Set(orgConfig.roleIDs);
+            roleIDs.forEach(r => roleSet.add(r));
+            return Object.assign({}, orgConfig, { roleIDs: Array.from(roleSet.values()) });
+        })
+
+        return await user.save();
     }
 
     async removeUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
@@ -358,12 +365,15 @@ export class DBManager {
     async editRole(orgId: string, roleUpdates: AtLeast<Role, 'id'>): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const roleIndex = org.roleDefinitions.findIndex(role => role.id == roleUpdates.id);
-
-        for (const prop in roleUpdates) {
-            org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
+        if (roleIndex >= 0) {
+            for (const prop in roleUpdates) {
+                org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
+            }
+            org.markModified('roleDefinitions');
+            return await org.save();
         }
-        org.markModified('roleDefinitions');
-        return await org.save();
+
+        throw `Unknown role ${roleUpdates.id} in organization ${orgId}`;
     }
 
     async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<[OrganizationDoc, Role]> {
