@@ -376,6 +376,7 @@ export class OrganizationController implements APIController<
     }
 
     @Post(API.server.createNewRole())
+    @Authenticate()
     async createNewRole(
         @OrgId() orgId: string,
         @User() user: UserDoc,
