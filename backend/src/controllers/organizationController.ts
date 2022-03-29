@@ -362,7 +362,7 @@ export class OrganizationController implements APIController<
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
             const org = await this.db.removeRolesFromOrganization(orgId, roleIds);
 
-            for (const roleId in roleIds) {
+            for (const roleId of roleIds) {
                 await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
                     orgId: orgId, 
                     roleId: roleId
@@ -425,7 +425,7 @@ export class OrganizationController implements APIController<
 
         // Resolve all the permissions granted to a user based on their role(s).
         const userPermissions = resolvePermissions(userRoles);
-        for (const permission in requiredPermissions) {
+        for (const permission of requiredPermissions) {
             // If any required permission is missing, return false.
             if (!userPermissions.has(permission as PatchPermissions)) {
                 return false;
