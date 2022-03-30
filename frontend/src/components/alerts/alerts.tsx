@@ -21,6 +21,9 @@ export const Alerts = observer(() => {
 
         return !!alertStore().prompt
             ? <View style={[styles.promptContainer, { width, top, left }]}>
+                <View style={[styles.promptTitleContainer]}>
+                    <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
+                </View>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <Text style={styles.promptMessageLabel}>{alertStore().prompt.message}</Text>
                 </ScrollView>
@@ -76,7 +79,7 @@ export default Alerts;
 const styles = StyleSheet.create({
     promptContainer: {
         position: 'absolute',
-        padding: 10,
+        padding: 16,
         paddingBottom: 0,
         backgroundColor: 'rgba(17, 17, 17, .8)',
         zIndex: 1000 * 10,
@@ -110,6 +113,14 @@ const styles = StyleSheet.create({
         maxHeight: 82,
         flexDirection: 'row',
         // paddingVertical: 8
+    },
+    promptTitleContainer: {
+        marginBottom: 4
+    },
+    promptTitleLabel: {
+        fontSize: 14,
+        color: '#fff',
+        fontWeight: '800'
     },
     promptMessageLabel: {
         fontSize: 14,

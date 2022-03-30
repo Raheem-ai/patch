@@ -497,23 +497,13 @@ export enum RecurringPeriod {
     Month = 'm',
 }
 
-export enum Days {
-    Monday = 'mo',
-    Tuesday = 'tu',
-    Wednesday = 'we',
-    Thursday = 'th',
-    Friday = 'fr',
-    Saturday = 'sa',
-    Sunday = 'su'
-}
-
 export type RecurringTimePeriod = ({
     period: RecurringPeriod.Month,
     dayScope?: boolean,
     weekScope?: boolean
 } | {
     period: RecurringPeriod.Week,
-    days: Days[]
+    days: number[]
 } | {
     period: RecurringPeriod.Day
 }) & { numberOf: number }

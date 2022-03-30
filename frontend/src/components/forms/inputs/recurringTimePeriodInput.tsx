@@ -4,13 +4,14 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../common/models";
+import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../common/models";
 import { dateToDateYearString } from "../../../../../common/utils";
 import CalendarPicker from "../../calendarPicker";
 import WheelPicker, { PickerOption } from "../../wheelPicker";
 import { SectionScreenViewProps } from "../types";
 import BackButtonHeader from "./backButtonHeader";
 import moment from 'moment'
+import { alertStore } from "../../../stores/interfaces";
 
 type RecurringTimePeriodInputProps = SectionScreenViewProps<'RecurringTimePeriod'>;
 
@@ -42,6 +43,38 @@ const numberRange = (start: number, end: number) => {
 const NUMBER_OF_DAYS = numberRange(1, 30) // 30 days
 const NUMBER_OF_WEEKS = numberRange(1, 51) // 51 weeks
 const NUMBER_OF_MONTHS = numberRange(1, 12) // 12 months
+const NUMBER_OF_REPITITIONS = numberRange(1, 999)
+
+const DAY_PICKER_OPTIONS: PickerOption<number>[] = [
+    {
+        label: 'M',
+        value: 1
+    }, 
+    {
+        label: 'T',
+        value: 2
+    }, 
+    {
+        label: 'W',
+        value: 3
+    }, 
+    {
+        label: 'T',
+        value: 4
+    }, 
+    {
+        label: 'F',
+        value: 5
+    }, 
+    {
+        label: 'S',
+        value: 6
+    },
+    {
+        label: 'S',
+        value: 0
+    }
+]
 
 const DEFAULT_STATE: RecurringTimeConstraints = {
     every: {
@@ -53,12 +86,49 @@ const DEFAULT_STATE: RecurringTimeConstraints = {
 
 const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProps) => {
     const [state, setState] = useState<RecurringTimeConstraints>(Object.assign({}, config.val()));
-    const [calendarOpen, setCalendarOpen] = useState(false);
-    const [endRepititionsOpen, setendRepititionsOpen] = useState(false);
+    const [endOnDayOpen, setEndOnDayOpen] = useState(false);
+    const [endOnRepititionOpen, setEndOnRepititionOpen] = useState(false);
 
     const save = () => {
-        config.onSave?.(state);
-        back();
+
+        const _save = () => {
+            config.onSave(state);
+            back();
+        }
+
+        const updateStartDay = (date: Date) => {
+            const diff = Object.assign({}, config.props.dateTimeRange(), { startDate: date })
+            config.props.updateDateTimeRange(diff)
+            _save();
+        }
+        // if repeating weekly with specific days of the week, make sure one of the selected days alings with the
+        // start day of the DateTimeRange...if it doesn't, prompt to see if they want to update the DTR or cancel
+        if (state.every.period == RecurringPeriod.Week) {
+            const startDate = moment(config.props.dateTimeRange().startDate)
+            const startDateDay = startDate.day();
+
+            if (!state.every.days.includes(startDateDay)) {
+                const newStartDate = startDate.clone().day(state.every.days[0])
+                
+                return alertStore().showPrompt({
+                    title: config.props.updateStartDatePromptTitle(startDate.toDate(), newStartDate.toDate()),
+                    message: config.props.updateStartDatePromptMessage(startDate.toDate(), newStartDate.toDate()),
+                    actions: [
+                        {
+                            label: 'Cancel',
+                            onPress: () => {},
+                        },
+                        {
+                            label: 'Move Shift',
+                            onPress: () => updateStartDay(newStartDate.toDate()),
+                            confirming: true
+                        }
+                    ]
+                })
+            }
+        }
+
+        _save()
     }
 
     const clearRecurrance = () => {
@@ -95,7 +165,14 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
     const startRepeating = () => {
         if (!state.every) {
-            setState(DEFAULT_STATE)
+            const defaultState = Object.assign({}, DEFAULT_STATE);
+
+            if (defaultState.every?.period == RecurringPeriod.Week) {
+                const startDay = config.props.dateTimeRange().startDate;
+                defaultState.every.days.push(moment(startDay).day());
+            }
+
+            setState(defaultState)
         }
     }
 
@@ -134,11 +211,13 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
         setState(diff)
     }
 
-    const setEndRepititions = (reps: number) => {
+    const setEndRepititions = ({ item }: { item: PickerOption<number> }) => {
         const diff = Object.assign({}, state);
 
-        diff.until.date = null;
-        diff.until.repititions = reps;
+        diff.until = {
+            date: null,
+            repititions: item.value
+        };
 
         setState(diff)
     }
@@ -171,6 +250,25 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
         return `On the ${nthLabel(dayNum)} day of the week`
     }
 
+    const repeatDaysLabel = () => {
+        const days = state.every.period == RecurringPeriod.Week
+            ? state.every.days
+            : [];
+
+        let selectedDayText;
+
+        if (days.length == 1) {
+            selectedDayText = dayNumToDayNameLabel(days[0])
+        } else {
+            const dayNames = days.map(dayNumToDayNameLabel);
+            const lastDay = dayNames.pop();
+
+            selectedDayText = `${dayNames.join(', ')} and ${lastDay}`
+        }
+
+        return `On ${selectedDayText}`
+    }
+
     const endDateLabel = () => {
         const date = state.until?.date
             ? dateToDateYearString(state.until.date)
@@ -183,6 +281,55 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
         const aNumberOf = reps || 'a number of'
 
         return `Ends after ${aNumberOf} ${reps == 1 ? 'repetition' : 'repetitions'}`
+    }
+
+    const selectEndDateOption = () => {
+        const currDate = state.until?.date;
+
+        // if first time choosing this option set sane default and open
+        if (!currDate) {
+            setEndDate(config.props.dateTimeRange().endDate)
+            setEndOnDayOpen(true)
+        } else {
+            // toggle opening the picker
+            setEndOnDayOpen(!endOnDayOpen)
+        }
+    }
+
+    const selectEndRepititionOption = () => {
+        const currReps = state.until?.repititions;
+
+        // if first time choosing this option set sane default and open
+        if (!currReps) {
+            setEndRepititions({ item: { value: 1, label: '1' }})
+            setEndOnRepititionOpen(true)
+        } else {
+            // toggle opening the picker
+            setEndOnRepititionOpen(!endOnRepititionOpen)
+        }
+    }
+
+    const toggleRepeatedDay = (day: number) => {
+        const diff = Object.assign({}, state);
+
+        if (diff.every.period == RecurringPeriod.Week) {
+            const idx = diff.every.days.indexOf(day);
+
+            if (idx == -1) {
+                diff.every.days.push(day);
+            } else {
+                // have to have at least one day chosen to repeat on
+                if (diff.every.days.length == 1) {
+                    return;
+                }
+
+                diff.every.days.splice(idx, 1)
+            }
+
+            diff.every.days.sort();
+
+            setState(diff)
+        }
     }
 
     const doesNotRepeat = !state.every;
@@ -226,7 +373,8 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
                 </View>
                 {period == RecurringPeriod.Day
                     ? null
-                    :<View style={styles.topDivider}>
+                    :<View>
+                        <View style={[styles.topDivider, styles.subSectionHeader]}></View>
                         { period == RecurringPeriod.Month
                             ? <>
                                 <Row 
@@ -238,9 +386,9 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
                                     onPress={setWeekScope} 
                                     selected={state.every?.weekScope}/>
                             </>
-                            // TODO: day specific week repitition
                             : <>
-                                <Row label={'On Tuesday and Saturday'} onPress={() => console.log('day day')} />
+                                <Row label={repeatDaysLabel()} onPress={() => console.log('day day')} />
+                                <DayPicker days={state.every.days} toggleDay={toggleRepeatedDay}/>
                             </> 
                         }
                     </View>
@@ -292,21 +440,31 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
                         <Row 
                             label={endDateLabel()} 
-                            onPress={() => setEndDate(config.props.dateTimeRange().endDate)} 
+                            onPress={selectEndDateOption} 
                             selected={hasEndDate}/>
                         {
-                            hasEndDate
-                                ? <CalendarPicker
-                                    onDateChange={setEndDate} 
-                                    intitalDate={state.until.date} />
+                            hasEndDate && endOnDayOpen
+                                ? 
+                                    <CalendarPicker
+                                        onDateChange={setEndDate} 
+                                        intitalDate={state.until.date} />
+                                
                                 : null
                         }
-                        {/* TODO: choose from wheelpicker */}
                         <Row 
                             label={endRepititionsLabel()} 
-                            onPress={() => console.log('Ends after a number of repetitions')} 
+                            onPress={selectEndRepititionOption} 
                             selected={hasEndRepititions}/>
-
+                        {
+                            hasEndRepititions && endOnRepititionOpen
+                                ? <View style={{ flexDirection: 'row', justifyContent: 'center'}}>
+                                    <WheelPicker
+                                        initialSelectedIndex={state.until.repititions - 1}
+                                        items={NUMBER_OF_REPITITIONS.map(r => ({ label: r, value: r }))}
+                                        onChange={setEndRepititions} />
+                                </View>
+                                : null
+                        }
                     </View>
                     : null
             }
@@ -334,6 +492,42 @@ const Row = ({  selected, label, onPress }: {
     )
 }
 
+const DayPicker = ({ days, toggleDay }: { days: number[], toggleDay: (number) => void }) => {
+    return <View style={styles.dayPickerContainer}>
+        { 
+            DAY_PICKER_OPTIONS.map(o => {
+                const selected = days.includes(o.value)
+
+                return (
+                    <Pressable onPress={() => toggleDay(o.value)} style={[styles.dayPickerOption, selected ? styles.dayPickerOptionSelected : null]}>
+                        <Text style={styles.dayPickerOptionLabel}>{o.label}</Text>
+                    </Pressable>
+                )
+            })
+        }
+    </View>
+}
+
+const dayNumToDayNameLabel = (num: number) => {
+    switch (num) {
+        case 0:
+            return 'Sunday';
+        case 1:
+            return 'Monday';
+        case 2:
+            return 'Tuesday';
+        case 3:
+            return 'Wednesday';
+        case 4:
+            return 'Thursday';
+        case 5:
+            return 'Friday';
+        case 6:
+            return 'Saturday';    
+    }
+}
+
+// NOTE: this doesn't work well with localization
 const nthLabel = (n: number) => {
     const suffix = n % 10 == 1
             ? n < 10 || n > 20
@@ -348,6 +542,7 @@ const nthLabel = (n: number) => {
                         ? 'rd' // 3rd, 23rd, 33rd...
                         : 'th' // 13th
                     : 'th';
+
     return `${n}${suffix}`
 }
 
@@ -355,7 +550,7 @@ export default RecurringTimePeriodInput
 
 const styles = StyleSheet.create({
     label: { 
-        lineHeight: 60 
+        // lineHeight: 60 
     },
     selectedLabel: {
         fontWeight: 'bold'
@@ -367,8 +562,8 @@ const styles = StyleSheet.create({
     },
     container: {
         position: 'relative',
-        paddingLeft: 60,
-        paddingRight: 20
+        // paddingLeft: 60,
+        // paddingRight: 20
     },
     iconContainer: {
         height: 60,
@@ -385,10 +580,38 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         // alignContent: 'flex-end'
-        alignItems:'center'
+        alignItems:'center',
+        paddingLeft: 60,
+        paddingRight: 20
     },
     topDivider: {
         borderTopColor: '#ccc',
         borderTopWidth: 1
+    }, 
+    subSectionHeader: {
+        marginLeft: 60 
+    },
+    dayPickerContainer: {
+        paddingLeft: 60,
+        paddingRight: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        marginBottom: 20
+    },
+    dayPickerOption: {
+        height: 28,
+        width: 28, 
+        borderRadius: 20,
+        backgroundColor: '#CCCACC',
+        color: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center'
+    }, 
+    dayPickerOptionLabel: {
+        color: '#fff'
+    },
+    dayPickerOptionSelected: {
+        backgroundColor: '#000',
     }
 })

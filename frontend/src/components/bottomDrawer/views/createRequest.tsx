@@ -3,9 +3,9 @@ import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, cr
 import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { DateTimeRange, HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
-import { allEnumValues } from "../../../../../common/utils";
+import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
 import { CompoundFormInputConfig, CompoundFormInputFactory, CompoundFormInputFactoryParams, InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -19,11 +19,6 @@ class CreateHelpRequest extends React.Component<Props> {
     headerReactionDisposer = null;
 
     testRecurringDTR = observable.box<RecurringDateTimeRange>({
-        every: { 
-            period: RecurringPeriod.Week, 
-            numberOf: 1, 
-            days: []
-        },
         startDate: new Date('03/12/2022 22:05'),
         endDate: new Date('03/13/2022 00:05')
     })
@@ -118,6 +113,14 @@ class CreateHelpRequest extends React.Component<Props> {
                     },
                     val: () => {
                         return this.testRecurringDTR.get();
+                    },
+                    props: {
+                        updateStartDatePromptMessage: (from: Date, to: Date) => {
+                            return `Do you want to move the next scheduled shift from ${dateToDateString(from)} to ${dateToDateString(to)}?`
+                        },
+                        updateStartDatePromptTitle: (from: Date, to: Date) => {
+                            return `Move next shift to ${dateToDayOfWeekString(to)}?`
+                        }
                     },
                     name: 'schedule'
                 }),
@@ -250,6 +253,16 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
         }
     }
 
+    const setDateTimeVal = (data: DateTimeRange) => {
+        const update = Object.assign({}, params.val(), data);
+        params.onChange(update)
+    }
+
+    const setRecurringTimeConstraintsVal = (data: RecurringTimeConstraints) => {
+        const update = Object.assign({}, params.val(), data);
+        params.onChange(update)
+    }
+
     const recurringTimeConstraintsVal = () => {
         const value = params.val();
 
@@ -262,10 +275,7 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
     return {
         inputs: () => {
             return [{
-                onChange: (data) => {
-                    const update = Object.assign({}, params.val(), data);
-                    params.onChange(update)
-                },
+                onChange: setDateTimeVal,
                 val: dateTimeVal,
                 isValid: () => {
                     return params.props?.dateTimeRangeValid
@@ -278,10 +288,7 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                 required: params.required
             },
             {
-                onSave: (data) => {
-                    const update = Object.assign({}, params.val(), data);
-                    params.onChange(update)
-                },
+                onSave: setRecurringTimeConstraintsVal,
                 val: recurringTimeConstraintsVal,
                 isValid: () => {
                     return params.props?.recurringTimeConstraintsValid
@@ -289,7 +296,10 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                         : true;
                 },
                 props: {
-                    dateTimeRange: dateTimeVal
+                    dateTimeRange: dateTimeVal,
+                    updateDateTimeRange: setDateTimeVal,
+                    updateStartDatePromptMessage: params.props.updateStartDatePromptMessage,
+                    updateStartDatePromptTitle: params.props.updateStartDatePromptTitle
                 },
                 name: `${params.name}-RTC`,
                 previewLabel: () => null,

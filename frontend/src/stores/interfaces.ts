@@ -333,6 +333,7 @@ type PromptAction = {
 }
 
 export type PromptConfig = {
+    title: string,
     message: string,
     actions: [PromptAction] | [PromptAction, PromptAction]
 }

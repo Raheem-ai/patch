@@ -27,7 +27,10 @@ export type ScreenFormInputOptions = {
     },
     'RecurringTimePeriod': {
         props: {
-            dateTimeRange: () => DateTimeRange
+            dateTimeRange: () => DateTimeRange,
+            updateDateTimeRange: (dtr: DateTimeRange) => void,
+            updateStartDatePromptMessage: (from: Date, to: Date) => string
+            updateStartDatePromptTitle: (from: Date, to: Date) => string
         },
         type: RecurringTimeConstraints
     },
@@ -78,6 +81,8 @@ export type InlineFormInputOptions = {
 export type CompoundFormInputOptions = {
     'RecurringDateTimeRange': {
         props: {
+            updateStartDatePromptMessage: (from: Date, to: Date) => void,
+            updateStartDatePromptTitle: (from: Date, to: Date) => void,
             dateTimeRangeValid?: (dateTimeRange: DateTimeRange) => boolean,
             recurringTimeConstraintsValid?: (constraints: RecurringTimeConstraints) => boolean
         }
