@@ -33,7 +33,7 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    async getOrgData(): Promise<void> {
+    getOrgData = async () => {
         try {
             const data = await api().getOrgMetadata(this.orgContext());
             runInAction(() => {
