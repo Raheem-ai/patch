@@ -10,6 +10,7 @@ import { CompoundFormInputConfig, CompoundFormInputFactory, CompoundFormInputFac
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import RecurringDateTimeRangeInputConfig from "../../forms/inputs/compound/recurringDateTimeRange";
 
 type Props = {}
 
@@ -106,24 +107,6 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
-                // TEST DATETIMERANGE
-                RecurringDateTimeRangeInputConfig({
-                    onChange: (data) => {
-                        this.testRecurringDTR.set(data)
-                    },
-                    val: () => {
-                        return this.testRecurringDTR.get();
-                    },
-                    props: {
-                        updateStartDatePromptMessage: (from: Date, to: Date) => {
-                            return `Do you want to move the next scheduled shift from ${dateToDateString(from)} to ${dateToDateString(to)}?`
-                        },
-                        updateStartDatePromptTitle: (from: Date, to: Date) => {
-                            return `Move next shift to ${dateToDayOfWeekString(to)}?`
-                        }
-                    },
-                    name: 'schedule'
-                }),
                 // Notes
                 {
                     onSave: (notes) => createRequestStore().notes = notes,
@@ -221,7 +204,6 @@ class CreateHelpRequest extends React.Component<Props> {
                     }
                 }
             ] as [
-                CompoundFormInputConfig<'RecurringDateTimeRange'>,
                 ScreenFormInputConfig<'TextArea'>,
                 ScreenFormInputConfig<'Map'>, 
                 ScreenFormInputConfig<'NestedTagList'>,
@@ -240,79 +222,6 @@ class CreateHelpRequest extends React.Component<Props> {
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
-    }
-}
-
-const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDateTimeRange'> = (params: CompoundFormInputFactoryParams) => {
-    const dateTimeVal = () => {
-        const value = params.val();
-
-        return {
-            startDate: value.startDate,
-            endDate: value.endDate
-        }
-    }
-
-    const setDateTimeVal = (data: DateTimeRange) => {
-        const update = Object.assign({}, params.val(), data);
-        params.onChange(update)
-    }
-
-    const setRecurringTimeConstraintsVal = (data: RecurringTimeConstraints) => {
-        const update = Object.assign({}, params.val(), data);
-        params.onChange(update)
-    }
-
-    const recurringTimeConstraintsVal = () => {
-        const value = params.val();
-
-        return {
-            every: value.every,
-            until: value.until
-        }
-    }
-    
-    return {
-        inputs: () => {
-            return [{
-                onChange: setDateTimeVal,
-                val: dateTimeVal,
-                isValid: () => {
-                    return params.props?.dateTimeRangeValid
-                        ? params.props.dateTimeRangeValid(dateTimeVal())
-                        : true;
-                },
-                name: `${params.name}-DTR`,
-                type: 'DateTimeRange',
-                disabled: params.disabled,
-                required: params.required
-            },
-            {
-                onSave: setRecurringTimeConstraintsVal,
-                val: recurringTimeConstraintsVal,
-                isValid: () => {
-                    return params.props?.recurringTimeConstraintsValid
-                        ? params.props.recurringTimeConstraintsValid(recurringTimeConstraintsVal())
-                        : true;
-                },
-                props: {
-                    dateTimeRange: dateTimeVal,
-                    updateDateTimeRange: setDateTimeVal,
-                    updateStartDatePromptMessage: params.props.updateStartDatePromptMessage,
-                    updateStartDatePromptTitle: params.props.updateStartDatePromptTitle
-                },
-                name: `${params.name}-RTC`,
-                previewLabel: () => null,
-                headerLabel: () => 'Repeat',
-                type: 'RecurringTimePeriod',
-                disabled: params.disabled,
-                required: params.required
-            }] as [ 
-                InlineFormInputConfig<'DateTimeRange'>, 
-                ScreenFormInputConfig<'RecurringTimePeriod'>
-            ]
-        },
-        type: 'RecurringDateTimeRange',
     }
 }
 

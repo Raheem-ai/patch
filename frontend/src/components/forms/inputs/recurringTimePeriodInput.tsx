@@ -447,7 +447,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
                                 ? 
                                     <CalendarPicker
                                         onDateChange={setEndDate} 
-                                        intitalDate={state.until.date} />
+                                        initialDate={state.until.date} />
                                 
                                 : null
                         }

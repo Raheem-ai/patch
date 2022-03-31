@@ -305,7 +305,7 @@ const Section = ({
                     ? <View style={{ backgroundColor: '#fff', marginLeft: -20}}>
                         <CalendarPicker
                             onDateChange={onDayEvent} 
-                            intitalDate={date} />
+                            initialDate={date} />
                     </View>
                     : null
             }
