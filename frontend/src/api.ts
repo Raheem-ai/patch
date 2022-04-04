@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -291,6 +291,40 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.editOrgMetadata()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editRole(ctx: OrgContext, roleUpdates: AtLeast<Role, 'id'>): Promise<Role> {
+        const url = `${apiHost}${API.client.editRole()}`;
+
+        return (await this.tryPost<Role>(url, { roleUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteRoles()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { roleIds } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewRole(ctx: OrgContext, role: MinRole): Promise<Role> {
+        const url = `${apiHost}${API.client.createNewRole()}`;
+
+        return (await this.tryPost<Role>(url, {
+            role
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
@@ -374,13 +408,14 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], skills: RequestSkill[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
             email,
             phone,
             roles,
+            roleIds,
             baseUrl,
             skills
         }, {
@@ -441,6 +476,18 @@ export class APIClient implements IAPIService {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
+
+    async addRolesToUser(ctx: OrgContext, userId: string, roles: string[]) {
+        const url = `${apiHost}${API.client.addRolesToUser()}`;
+
+        return (await this.tryPost<User>(url, {
+            userId,
+            roles
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
 
     async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getTeamMembers()}`;

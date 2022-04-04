@@ -116,7 +116,17 @@ export class MySocketService {
             case PatchEventType.RequestRespondersAssigned:
                 await this.handleScopedRequestUpdate(event, params as any)
                 break;
-        
+
+            case PatchEventType.OrganizationEdited:
+            case PatchEventType.OrganizationDeleted:
+                await this.handleOrganizationUpdate(event, params as any)
+                break;
+
+            case PatchEventType.OrganizationRoleCreated:
+            case PatchEventType.OrganizationRoleEdited:
+            case PatchEventType.OrganizationRoleDeleted:
+                await this.handleOrganizationRoleUpdate(event, params as any)
+                break;
         }
     }
 
@@ -161,6 +171,102 @@ export class MySocketService {
             await this.notifications.send(notification)
         }
 
+    }
+
+    // Do we want to send a notification?
+    async handleOrganizationUpdate<SysEvent extends 
+        PatchEventType.OrganizationEdited
+        | PatchEventType.OrganizationDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {  
+        const { orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
+
+            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                type: NotificationType.UIUpdate,
+                to: (user as UserModel).push_token,
+                body: ``,
+                payload: { uiEvent: msg }
+            }
+
+            notifications.push(notification);
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization update over notification: ${e}`)
+        }
+    }
+
+    // Do we want to send a notification?
+    async handleOrganizationRoleUpdate<SysEvent extends 
+        PatchEventType.OrganizationRoleCreated
+        | PatchEventType.OrganizationRoleEdited
+        | PatchEventType.OrganizationRoleDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {  
+        const { roleId, orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    roleId,
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
+
+            // Only send notifications to users affected by the Role change.
+            // TODO: Maybe also send to other Role Admins?
+            if (user.organizations[orgId].roleIds.includes(roleId)) {
+                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                    type: NotificationType.UIUpdate,
+                    to: (user as UserModel).push_token,
+                    body: ``,
+                    payload: { uiEvent: msg }
+                }
+                notifications.push(notification);
+            }
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Role update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Role update over notification: ${e}`)
+        }
     }
 
     async handleUserOrgUpdate<SysEvent extends 

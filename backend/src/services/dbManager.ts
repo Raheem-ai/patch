@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinUser, NotificationType, Organization, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, User, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -119,7 +119,7 @@ export class DBManager {
             org.pendingUsers.splice(idx, 1);
 
             // TODO: if skills are vetted by org this is where they should be set
-            return await this.addUserToOrganization(org, newUser, pendingUser.roles);
+            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIds);
         } else {
             throw `Invite for user with email ${user.email} to join '${org.name}' not found`
         }
@@ -134,7 +134,7 @@ export class DBManager {
 
             const org = await (new this.orgs(newOrg)).save({ session })
 
-            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], session)
+            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [], session)
         })
     }
     
@@ -219,7 +219,7 @@ export class DBManager {
         return await user.save()
     }
 
-    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], session?: ClientSession) {
+    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], session?: ClientSession) {
         const user = await this.resolveUser(userId);
         const org = await this.resolveOrganization(orgId);
 
@@ -230,6 +230,7 @@ export class DBManager {
         } else {
             await this.updateUsersOrgConfig(user, org.id, (_) => ({
                 roles: roles,
+                roleIds: roleIds,
                 onDuty: false
             }))
         }
@@ -278,6 +279,7 @@ export class DBManager {
         })
     }
 
+    // TODO: deprecate
     async addUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
         const user = await this.resolveUser(userId);
 
@@ -294,6 +296,30 @@ export class DBManager {
 
             return await user.save();
         }
+    }
+
+    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
+        const user = await this.resolveUser(userId);
+
+        if (!user.organizations || !user.organizations[orgId]){
+            throw `User not in organization`
+        }
+
+        const org = await this.resolveOrganization(orgId);
+        for (const roleId of roleIds) {
+            if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
+                throw `Role  ${roleId} does not exist in organization ${orgId}.`
+            }
+        }
+
+        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+            // TODO: probably should validate that the IDs exist in org.roleDefinitions?
+            const roleSet = new Set(orgConfig.roleIds);
+            roleIds.forEach(r => roleSet.add(r));
+            return Object.assign({}, orgConfig, { roleIds: Array.from(roleSet.values()) });
+        })
+
+        return await user.save();
     }
 
     async removeUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
@@ -323,6 +349,83 @@ export class DBManager {
         org.pendingUsers.push(pendingUser)
 
         await org.save()
+    }
+
+    async editOrgMetadata(orgId: string, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+
+        for (const prop in orgUpdates) {
+            org[prop] = orgUpdates[prop];
+            org.markModified(prop);
+        }
+
+        return await org.save()
+    }
+
+    async editRole(orgId: string, roleUpdates: AtLeast<Role, 'id'>): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const roleIndex = org.roleDefinitions.findIndex(role => role.id == roleUpdates.id);
+        if (roleIndex >= 0) {
+            for (const prop in roleUpdates) {
+                org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
+            }
+            org.markModified('roleDefinitions');
+            return await org.save();
+        }
+
+        throw `Unknown role ${roleUpdates.id} in organization ${orgId}`;
+    }
+
+    async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<[OrganizationDoc, Role]> {
+        const org = await this.resolveOrganization(orgId)
+        const newRole: Role = {
+            id: uuid.v1(),
+            name: '',
+            permissions: []
+        }
+
+        for (const prop in minRole) {
+            newRole[prop] = minRole[prop]
+        }
+
+        org.roleDefinitions.push(newRole)
+        return [
+            await org.save(),
+            newRole
+        ] as [ OrganizationDoc, Role];
+    }
+
+    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+
+        return this.transaction(async (session) => {
+            // Remove the role ID from users currently assigned this role.
+            for (const member of org.members as UserModel[]) {
+                let userModified = false;
+                for (const id of roleIds) {
+                    // Identify any roles for deletion that currently belong to this user.
+                    let roleIndex = member.organizations[orgId].roleIds.findIndex(roleID => roleID == id);
+                    if (roleIndex >= 0) {
+                        // Remove the role from the user's list of roles, and mark this user as modified.
+                        member.organizations[orgId].roleIds.splice(roleIndex, 1)
+                        userModified = true;
+                    }
+                }
+
+                // If the user was modified, we need to get the UserDoc and save the user.
+                if (userModified) {
+                    const user = await this.getUserById(member.id);
+                    user.organizations[orgId].roleIds = member.organizations[orgId].roleIds;
+                    user.markModified('organizations');
+                    await user.save({ session });
+                }
+            }
+
+            // Now remove the roles from the org definition.
+            org.roleDefinitions = org.roleDefinitions.filter(role => !roleIds.includes(role.id));
+            org.markModified('roleDefinitions');
+            return await org.save({ session });
+        })
     }
 
     // Requests
@@ -604,7 +707,7 @@ export class DBManager {
 
         return user;
     }
-    
+
     // @Every('5 minutes', { name: `Repopulating` })
     async rePopulateDb() {
         try {
@@ -680,12 +783,46 @@ export class DBManager {
                 skills: []
             });
 
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ]);
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ]);
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ]);
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ]);
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], []);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], []);
+            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], []);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], []);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], []);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], []);
+
+            console.log('creating new user...');
+            let user5 = await this.createUser({ 
+                email: 'Tevn2@test.com', 
+                password: 'Test',
+                name: 'Tevy Tev2',
+                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
+            });
+
+            console.log('creating second org...');
+            let [ org2, admin2 ] = await this.createOrganization({
+                name: 'Test Org 2'
+            }, user5.id);
+
+            let role1: MinRole = {
+                name: 'first role',
+                permissions: [
+                    PatchPermissions.EditOrgSettings,
+                    PatchPermissions.RoleAdmin,
+                    PatchPermissions.AttributeAdmin,
+                    PatchPermissions.TagAdmin,
+                    PatchPermissions.AssignRoles,
+                    PatchPermissions.AssignAttributes,
+                    PatchPermissions.ChatAdmin,
+                    PatchPermissions.ShiftAdmin,
+                    PatchPermissions.RequestAdmin
+                ]
+            };
+
+            console.log('adding new role to org2...');
+            [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
+
+            console.log('adding new role to user...');
+            user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
 
             const minRequests: MinHelpRequest[] = [
                 {

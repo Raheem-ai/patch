@@ -26,6 +26,7 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
+    roleIds: string[],
     onDuty: boolean
 }
 
@@ -48,24 +49,32 @@ export type BasicCredentials = {
 // Organizations
 export interface Organization {
     name: string;
+    id: string;
     members: ProtectedUser[];
     lastRequestId: number;
     lastDayTimestamp: string;
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
+    roleDefinitions: Role[]
 }
 
-export interface OrganizationMetadata {
-    name: string;
-    orgId: string;
+// TODO: Introduce 'tags', 'attributes'
+export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions'>;
+
+export type Role = {
+    id: string,
+    name: string,
+    permissions: PatchPermissions[]
 }
 
+export type MinRole = AtLeast<Role, 'name' | 'permissions'>
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type PendingUser = {
-    email: string 
-    phone: string 
+    email: string
+    phone: string
     roles: UserRole[]
+    roleIds: string[]
     skills: RequestSkill[]
     pendingId: string
 }
@@ -392,6 +401,15 @@ export enum PatchEventType {
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
+
+    // Organization.System.<_>
+    OrganizationEdited = '2.0.0',
+    OrganizationDeleted = '2.0.1',
+
+    // Organization.Roles.<_>
+    OrganizationRoleCreated = '2.1.0',
+    OrganizationRoleEdited = '2.1.1',
+    OrganizationRoleDeleted = '2.1.2'
 }
 
 export type PatchEventParams = {
@@ -458,7 +476,25 @@ export type PatchEventParams = {
     [PatchEventType.RequestChatNewMessage]: {
         requestId: string,
         userId: string
-    }, 
+    },
+    [PatchEventType.OrganizationEdited]: {
+        orgId: string
+    },
+    [PatchEventType.OrganizationDeleted]: {
+        orgId: string
+    },
+    [PatchEventType.OrganizationRoleCreated]: {
+        orgId: string,
+        roleId: string
+    },
+    [PatchEventType.OrganizationRoleEdited]: {
+        orgId: string,
+        roleId: string
+    },
+    [PatchEventType.OrganizationRoleDeleted]: {
+        orgId: string,
+        roleId: string
+    }
 }
 
 export type PatchEventPacket<T extends PatchEventType = any> = {
@@ -479,7 +515,8 @@ export type PatchUIEventParams = {
         orgId?: string
         requestId?: string
         userId?: string
-        userList?: boolean,
+        roleId?: string
+        userList?: boolean
         requestList?: boolean
     },
 }
@@ -546,12 +583,12 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
     [PatchPermissions.RoleAdmin]: {
         name: 'Role admin',
         description: 'Create, edit, and delete organization Roles.',
-        forcedPermissions: [],
+        forcedPermissions: [PatchPermissions.AssignRoles],
     },
     [PatchPermissions.AttributeAdmin]: {
         name: 'Attribute admin',
         description: 'Create, edit, and delete organization Attributes.',
-        forcedPermissions: [],
+        forcedPermissions: [PatchPermissions.AssignAttributes],
     },
     [PatchPermissions.TagAdmin]: {
         name: 'Tad admin',
@@ -630,4 +667,24 @@ export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPer
         description: 'Close Requests that a user is on.',
         forcedPermissions: [],
     }
+}
+
+function resolveForcedPermissions(permissions: PatchPermissions[]): Set<PatchPermissions> {
+    const userPermissions = new Set<PatchPermissions>();
+    for (const permission of permissions) {
+        userPermissions.add(permission as PatchPermissions);
+        resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
+    }
+    return userPermissions;
+}
+
+export function resolvePermissions(roles: Role[]): Set<PatchPermissions> {
+    const userPermissions = new Set<PatchPermissions>();
+    for (const role of roles) {
+        for (const permission of role.permissions) {
+            userPermissions.add(permission)
+            resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
+        }
+    }
+    return userPermissions;
 }

@@ -20,7 +20,9 @@ import {
     AppSecrets,
     PendingUser,
     EditableUser,
-    RequestSkill
+    RequestSkill,
+    Role,
+    MinRole
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -30,7 +32,7 @@ import {
 export type TokenContext = { token: string };
 export type OrgContext = TokenContext & { orgId: string };
 export type RequestContext = OrgContext & { requestId: string }
-
+export type RoleContext = OrgContext & { roleId: string }
 
 type Authenticated<T extends (...args: any) => Promise<any>> = (ctx: TokenContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithOrg<T extends (...args: any) => Promise<any>> = (ctx: OrgContext, ...args: Parameters<T>) => ReturnType<T>
@@ -92,21 +94,27 @@ export interface IApiClient {
     reportLocation: Authenticated<(locations: Location[]) => Promise<void>>
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
-    getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     editMe: Authenticated<(me: Partial<Me>) => Promise<Me>>
 
     // must be signed in and have the correct roles within the target org
+    getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
+    editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
+    editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
+    createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
+    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
+    addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
+
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
     confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     declineRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<{ user: ProtectedUser, org: Organization }>>
+    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[]) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
 
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
@@ -191,6 +199,21 @@ type ApiRoutes = {
         },
         getOrgMetadata: () => {
             return '/getOrgMetadata'
+        },
+        editOrgMetadata: () => {
+            return '/editOrgMetadata'
+        },
+        editRole: () => {
+            return '/editRole'
+        },
+        createNewRole: () => {
+            return '/createNewRole'
+        },
+        deleteRoles: () => {
+            return '/deleteRoles'
+        },
+        addRolesToUser: () => {
+            return '/addRolesToUser'
         },
         addUserToOrg: () => {
             return '/addUserToOrg'
@@ -339,6 +362,21 @@ type ApiRoutes = {
         },
         getOrgMetadata: () => {
             return `${this.base}${this.namespaces.organization}${this.server.getOrgMetadata()}`
+        },
+        editOrgMetadata: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editOrgMetadata()}`
+        },
+        editRole: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editRole()}`
+        },
+        createNewRole: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewRole()}`
+        },
+        deleteRoles: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteRoles()}`
+        },
+        addRolesToUser: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.addRolesToUser()}`
         },
         addUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addUserToOrg()}`

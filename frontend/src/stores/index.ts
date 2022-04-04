@@ -40,8 +40,10 @@ import {
     IAlertStore,
     ISocketStore,
     IUpdateStore,
-    IOrganizationStore
+    IOrganizationStore,
+    IEditOrganizationStore
 } from './interfaces';
+import EditOrganizationStore from './editOrganizationStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -62,7 +64,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IAlertStore, AlertStore ],
     [ ISocketStore, SocketStore ],
     [ IUpdateStore, UpdateStore ],
-    [ IOrganizationStore, OrganizationStore ]
+    [ IOrganizationStore, OrganizationStore ],
+    [ IEditOrganizationStore, EditOrganizationStore]
 ];
 
 function validateStores() {
