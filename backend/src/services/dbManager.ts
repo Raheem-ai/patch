@@ -417,7 +417,7 @@ export class DBManager {
                     const user = await this.getUserById(member.id);
                     user.organizations[orgId].roleIds = member.organizations[orgId].roleIds;
                     user.markModified('organizations');
-                    await user.save();
+                    await user.save({ session });
                 }
             }
 
