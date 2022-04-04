@@ -10,7 +10,7 @@ class PendingUserSchema  implements PendingUser {
     @Required() email: string
     @Required() phone: string
     @Required() roles: UserRole[]
-    @Required() roleIDs: string[]
+    @Required() roleIds: string[]
     @Required() skills: RequestSkill[]
     @Required() pendingId: string
 }

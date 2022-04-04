@@ -26,7 +26,7 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
-    roleIDs: string[],
+    roleIds: string[],
     onDuty: boolean
 }
 
@@ -74,7 +74,7 @@ export type PendingUser = {
     email: string
     phone: string
     roles: UserRole[]
-    roleIDs: string[]
+    roleIds: string[]
     skills: RequestSkill[]
     pendingId: string
 }

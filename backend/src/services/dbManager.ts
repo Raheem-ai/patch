@@ -119,7 +119,7 @@ export class DBManager {
             org.pendingUsers.splice(idx, 1);
 
             // TODO: if skills are vetted by org this is where they should be set
-            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIDs);
+            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIds);
         } else {
             throw `Invite for user with email ${user.email} to join '${org.name}' not found`
         }
@@ -219,7 +219,7 @@ export class DBManager {
         return await user.save()
     }
 
-    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIDs: string[], session?: ClientSession) {
+    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], session?: ClientSession) {
         const user = await this.resolveUser(userId);
         const org = await this.resolveOrganization(orgId);
 
@@ -230,7 +230,7 @@ export class DBManager {
         } else {
             await this.updateUsersOrgConfig(user, org.id, (_) => ({
                 roles: roles,
-                roleIDs: roleIDs,
+                roleIds: roleIds,
                 onDuty: false
             }))
         }
@@ -298,7 +298,7 @@ export class DBManager {
         }
     }
 
-    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIDs: string[]) {
+    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
         const user = await this.resolveUser(userId);
 
         if (!user.organizations || !user.organizations[orgId]){
@@ -306,7 +306,7 @@ export class DBManager {
         }
 
         const org = await this.resolveOrganization(orgId);
-        for (const roleId of roleIDs) {
+        for (const roleId of roleIds) {
             if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
                 throw `Role  ${roleId} does not exist in organization ${orgId}.`
             }
@@ -314,9 +314,9 @@ export class DBManager {
 
         await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
             // TODO: probably should validate that the IDs exist in org.roleDefinitions?
-            const roleSet = new Set(orgConfig.roleIDs);
-            roleIDs.forEach(r => roleSet.add(r));
-            return Object.assign({}, orgConfig, { roleIDs: Array.from(roleSet.values()) });
+            const roleSet = new Set(orgConfig.roleIds);
+            roleIds.forEach(r => roleSet.add(r));
+            return Object.assign({}, orgConfig, { roleIds: Array.from(roleSet.values()) });
         })
 
         return await user.save();
@@ -404,10 +404,10 @@ export class DBManager {
                 let userModified = false;
                 for (const id of roleIds) {
                     // Identify any roles for deletion that currently belong to this user.
-                    let roleIndex = member.organizations[orgId].roleIDs.findIndex(roleID => roleID == id);
+                    let roleIndex = member.organizations[orgId].roleIds.findIndex(roleID => roleID == id);
                     if (roleIndex >= 0) {
                         // Remove the role from the user's list of roles, and mark this user as modified.
-                        member.organizations[orgId].roleIDs.splice(roleIndex, 1)
+                        member.organizations[orgId].roleIds.splice(roleIndex, 1)
                         userModified = true;
                     }
                 }
@@ -415,7 +415,7 @@ export class DBManager {
                 // If the user was modified, we need to get the UserDoc and save the user.
                 if (userModified) {
                     const user = await this.getUserById(member.id);
-                    user.organizations[orgId].roleIDs = member.organizations[orgId].roleIDs;
+                    user.organizations[orgId].roleIds = member.organizations[orgId].roleIds;
                     user.markModified('organizations');
                     await user.save();
                 }

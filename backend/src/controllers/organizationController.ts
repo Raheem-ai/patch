@@ -71,9 +71,9 @@ export class OrganizationController implements APIController<
         @Req() req,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[],
-        @Required() @BodyParams('roleIDs') roleIDs: string[]
+        @Required() @BodyParams('roleIds') roleIds: string[]
     ) {
-        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIDs);
+        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -151,9 +151,9 @@ export class OrganizationController implements APIController<
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string,
-        @Required() @BodyParams('roleIDs') roleIDs: string[]
+        @Required() @BodyParams('roleIds') roleIds: string[]
     ) {
-        const res = this.db.protectedUserFromDoc(await this.db.addRolesToUser(orgId, userId, roleIDs));
+        const res = this.db.protectedUserFromDoc(await this.db.addRolesToUser(orgId, userId, roleIds));
 
         // TODO: do we plan to create new events for the new concept or Roles or use the old events?
         await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
@@ -226,7 +226,7 @@ export class OrganizationController implements APIController<
         @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
-        @Required() @BodyParams('roleIDs') roleIDs: string[], 
+        @Required() @BodyParams('roleIds') roleIds: string[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
@@ -243,7 +243,7 @@ export class OrganizationController implements APIController<
             email,
             phone,
             roles,
-            roleIDs,
+            roleIds,
             skills,
             pendingId: uuid.v1()
         };
@@ -414,7 +414,7 @@ export class OrganizationController implements APIController<
         // Get all the roles that belong to a user.
         const org = await this.db.resolveOrganization(orgId);
         const userRoles = [];
-        orgConfig.roleIDs.forEach(id => {
+        orgConfig.roleIds.forEach(id => {
             const assignedRole = org.roleDefinitions.find(
                 roleDef => roleDef.id == id
             );    
