@@ -245,7 +245,7 @@ export class MySocketService {
 
             // Only send notifications to users affected by the Role change.
             // TODO: Maybe also send to other Role Admins?
-            if (user.organizations[orgId].roleIDs.includes(roleId)) {
+            if (user.organizations[orgId].roleIds.includes(roleId)) {
                 const notification: NotificationMetadata<NotificationType.UIUpdate> = {
                     type: NotificationType.UIUpdate,
                     to: (user as UserModel).push_token,
