@@ -6,11 +6,10 @@ import { resolveErrorMessage } from "../../../errors";
 import { DateTimeRange, HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
-import { CompoundFormInputConfig, CompoundFormInputFactory, CompoundFormInputFactoryParams, InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
+import { ScreenFormInputConfig } from "../../forms/types";
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import RecurringDateTimeRangeInputConfig from "../../forms/inputs/compound/recurringDateTimeRange";
 
 type Props = {}
 
@@ -18,11 +17,6 @@ type Props = {}
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
     headerReactionDisposer = null;
-
-    testRecurringDTR = observable.box<RecurringDateTimeRange>({
-        startDate: new Date('03/12/2022 22:05'),
-        endDate: new Date('03/13/2022 00:05')
-    })
 
     componentDidMount = () => {
         // checkStateChange gets called any time the form page, header visibility, or the expanded

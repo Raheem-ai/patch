@@ -60,7 +60,6 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                     updateStartDatePromptTitle: params.props.updateStartDatePromptTitle
                 },
                 name: `${params.name}-RTC`,
-                previewLabel: () => null,
                 headerLabel: () => 'Repeat',
                 type: 'RecurringTimePeriod',
                 disabled: params.disabled,

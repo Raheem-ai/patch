@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../common/models";
-import { dateToDateYearString } from "../../../../../common/utils";
+import { dateToDateYearString, dateToEndDateLabel, dateToEndRepititionsLabel, dayNumToDayNameLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../common/utils";
 import CalendarPicker from "../../calendarPicker";
 import WheelPicker, { PickerOption } from "../../wheelPicker";
 import { SectionScreenViewProps } from "../types";
@@ -242,45 +242,23 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
     const nthDayOfMonthLabel = () => {
         const dayNum = moment(config.props.dateTimeRange().startDate).date();
-        return `On the ${nthLabel(dayNum)} day of the month`
+        return dayToNthDayOfMonthLabel(dayNum)
     }
 
     const nthDayOfWeekLabel = () => {
         const dayNum = moment(config.props.dateTimeRange().startDate).day();
-        return `On the ${nthLabel(dayNum)} day of the week`
+        return dayToNthDayOfWeekLabel(dayNum)
     }
 
-    const repeatDaysLabel = () => {
-        const days = state.every.period == RecurringPeriod.Week
-            ? state.every.days
-            : [];
-
-        let selectedDayText;
-
-        if (days.length == 1) {
-            selectedDayText = dayNumToDayNameLabel(days[0])
-        } else {
-            const dayNames = days.map(dayNumToDayNameLabel);
-            const lastDay = dayNames.pop();
-
-            selectedDayText = `${dayNames.join(', ')} and ${lastDay}`
-        }
-
-        return `On ${selectedDayText}`
+    const repeatDaysLabel = (days: number[]) => {
+        return daysToRecurringDaysLabel(days)
     }
 
     const endDateLabel = () => {
-        const date = state.until?.date
-            ? dateToDateYearString(state.until.date)
-            : 'a date';
-
-        return `Ends on ${date}`;
+        return dateToEndDateLabel(state.until?.date);
     }
     const endRepititionsLabel = () => {
-        const reps = state.until?.repititions;
-        const aNumberOf = reps || 'a number of'
-
-        return `Ends after ${aNumberOf} ${reps == 1 ? 'repetition' : 'repetitions'}`
+        return dateToEndRepititionsLabel(state.until?.repititions)
     }
 
     const selectEndDateOption = () => {
@@ -387,7 +365,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
                                     selected={state.every?.weekScope}/>
                             </>
                             : <>
-                                <Row label={repeatDaysLabel()} onPress={() => console.log('day day')} />
+                                <Row label={repeatDaysLabel(state.every.days)} onPress={() => console.log('day day')} />
                                 <DayPicker days={state.every.days} toggleDay={toggleRepeatedDay}/>
                             </> 
                         }
@@ -506,44 +484,6 @@ const DayPicker = ({ days, toggleDay }: { days: number[], toggleDay: (number) =>
             })
         }
     </View>
-}
-
-const dayNumToDayNameLabel = (num: number) => {
-    switch (num) {
-        case 0:
-            return 'Sunday';
-        case 1:
-            return 'Monday';
-        case 2:
-            return 'Tuesday';
-        case 3:
-            return 'Wednesday';
-        case 4:
-            return 'Thursday';
-        case 5:
-            return 'Friday';
-        case 6:
-            return 'Saturday';    
-    }
-}
-
-// NOTE: this doesn't work well with localization
-const nthLabel = (n: number) => {
-    const suffix = n % 10 == 1
-            ? n < 10 || n > 20
-                ? 'st' // 1st, 21st, 31st...
-                : 'th' // 11th
-            : n % 10 == 2
-                ? n < 10 || n > 20
-                    ? 'nd' // 2nd, 22nd, 32nd...
-                    : 'th' // 12th
-                : n % 10 == 3
-                    ? n < 10 || n > 20
-                        ? 'rd' // 3rd, 23rd, 33rd...
-                        : 'th' // 13th
-                    : 'th';
-
-    return `${n}${suffix}`
 }
 
 export default RecurringTimePeriodInput

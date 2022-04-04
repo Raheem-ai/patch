@@ -23,6 +23,7 @@ import Loader from "../loader";
 import MapInput from "./inputs/mapInput";
 import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
 import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
+import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
 
 // const windowDimensions = Dimensions.get("screen");
 
@@ -49,14 +50,14 @@ const FormViewMap: FormInputViewMap = {
     },
     'TagList': {
         screenComponent: ListInput,
-        labelComponent: TagListLabel as React.ComponentType<SectionLabelViewProps<"TagList">>
+        labelComponent: TagListLabel
     },
     'NestedList': {
         screenComponent: NestedListInput
     },
     'NestedTagList': {
         screenComponent: NestedListInput,
-        labelComponent: TagListLabel as React.ComponentType<SectionLabelViewProps<"NestedTagList">>
+        labelComponent: TagListLabel
     },
     'Map': {
         screenComponent: MapInput
@@ -65,7 +66,8 @@ const FormViewMap: FormInputViewMap = {
         inlineComponent: DateTimeRangeInput
     },
     'RecurringTimePeriod': {
-        screenComponent: RecurringTimePeriodInput
+        screenComponent: RecurringTimePeriodInput,
+        labelComponent: RecurringTimePeriodLabel
     }
 }
 
@@ -95,7 +97,7 @@ export default class Form extends React.Component<FormProps> {
     }
 
     flattenInputConfigs = (inputConfigs: FormInputConfig[]) => {
-        const flattenedInputs: StandAloneFormInputConfig[] = [];
+        const flattenedInputConfigs: StandAloneFormInputConfig[] = [];
         
         inputConfigs.forEach(config => {
             const isCompoundInput = (config as any as CompoundFormInputConfig).inputs;
@@ -104,14 +106,14 @@ export default class Form extends React.Component<FormProps> {
                 const nestedInputConfigs = (config as any as CompoundFormInputConfig).inputs?.()
 
                 if (nestedInputConfigs && nestedInputConfigs.length) {
-                    flattenedInputs.push(...this.flattenInputConfigs(nestedInputConfigs))
+                    flattenedInputConfigs.push(...this.flattenInputConfigs(nestedInputConfigs))
                 }
             } else {
-                flattenedInputs.push(config as StandAloneFormInputConfig)
+                flattenedInputConfigs.push(config as StandAloneFormInputConfig)
             }
         })
 
-        return flattenedInputs
+        return flattenedInputConfigs
     }
 
     openLink = (id: string) => {
