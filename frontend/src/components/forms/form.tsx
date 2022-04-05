@@ -29,6 +29,8 @@ import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
 
 export type FormProps = {
     headerLabel: string,
+
+    // TODO: change this to() FormInputConfig | FormInputConfig[])[] to allow for visually grouped components
     inputs: FormInputConfig[],
     onExpand?(): void,
     onBack?(): void,
@@ -150,6 +152,9 @@ export default class Form extends React.Component<FormProps> {
 
 
         const renderInputs = () => {
+
+            // TODO: for component groups, render each individual component section with a groupStart/groupMiddle/groupEnd flag to allow for visually grouped components
+            // ie LabelSection, InlineSection, DefaultSection need a new prop like groupPosition?: 'start' | 'middle' | 'end'
             return this.inputs.get().map(inputConfig => {
                 const viewConfig = FormViewMap[inputConfig.type];
 
@@ -211,7 +216,6 @@ export default class Form extends React.Component<FormProps> {
                                 fontWeight: 'bold',
                             }}>{this.props.headerLabel}</Text>
                         </View>
-                        {/* { renderInputs(this.props.inputs) } */}
                         { renderInputs() }
                         {
                             this.props.submit

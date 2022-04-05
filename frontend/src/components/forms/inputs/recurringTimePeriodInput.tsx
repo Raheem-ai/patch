@@ -103,7 +103,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
         }
         // if repeating weekly with specific days of the week, make sure one of the selected days alings with the
         // start day of the DateTimeRange...if it doesn't, prompt to see if they want to update the DTR or cancel
-        if (state.every.period == RecurringPeriod.Week) {
+        if (state.every?.period == RecurringPeriod.Week) {
             const startDate = moment(config.props.dateTimeRange().startDate)
             const startDateDay = startDate.day();
 

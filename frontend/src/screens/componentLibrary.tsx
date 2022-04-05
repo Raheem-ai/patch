@@ -1,4 +1,3 @@
-import { observer } from "mobx-react";
 import React from "react";
 import { FormInputConfig } from "../components/forms/types";
 import Form from '../components/forms/form';
@@ -8,8 +7,7 @@ import { observable } from "mobx";
 import { RecurringDateTimeRange } from "../../../common/models";
 import { dateToDateString, dateToDayOfWeekString } from "../../../common/utils";
 import RecurringDateTimeRangeInputConfig from "../components/forms/inputs/compound/recurringDateTimeRange";
-import { Text } from "react-native-paper";
-
+import moment from 'moment'
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -27,8 +25,8 @@ const lib: Library = [
         name: 'Recurring DateTime Range',
         description: '',
         state: observable.box<RecurringDateTimeRange>({
-            startDate: new Date('03/12/2022 22:05'),
-            endDate: new Date('03/13/2022 00:05')
+            startDate: moment().hour(22).minutes(5).toDate(), // Today @ 10:05pm 
+            endDate: moment().hour(22).minutes(5).add(2, 'hours').toDate(), // Tomorrow @ 12:05am 
         }),
         inputConfig: (state) => RecurringDateTimeRangeInputConfig({
             onChange: (data) => {
