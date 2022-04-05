@@ -24,8 +24,12 @@ import MapInput from "./inputs/mapInput";
 import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
 import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
 import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
+import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
+import { NavigationContainer, NavigationState } from "@react-navigation/native";
 
 // const windowDimensions = Dimensions.get("screen");
+
+const Stack = createStackNavigator();
 
 export type FormProps = {
     headerLabel: string,
@@ -77,9 +81,7 @@ const WrappedScrollView = wrapScrollView(ScrollView)
 
 @observer
 export default class Form extends React.Component<FormProps> {
-    isHome = computed<boolean>(() => {
-        return !this.state.screenId;
-    })
+    private homeScreenId = '__formHome';
 
     // used internally to know whether the form is submittable
     private isValid = computed<boolean>(() => {
@@ -91,11 +93,23 @@ export default class Form extends React.Component<FormProps> {
         return this.flattenInputConfigs(this.props.inputs)
     })
 
+    private screenInputs = computed<ScreenFormInputConfig[]>(() => {
+        return this.inputs.get().filter((config: ScreenFormInputConfig) => {
+            // TODO: probably should actually have this be cheking the type against the known types 
+            // but then we need those values somewhere...this works for now 
+            return !!config.onSave
+        }) as ScreenFormInputConfig[]
+    })
+
+    // use to externally signal that we are on the home screen of the form
+    isHome = computed<boolean>(() => {
+        return this.state.screenId == this.homeScreenId;
+    })
+
     submitting = observable.box<boolean>(false)
 
-    // screenId == null means we're on home page
     state = {
-        screenId: null
+        screenId: this.homeScreenId
     }
 
     flattenInputConfigs = (inputConfigs: FormInputConfig[]) => {
@@ -117,18 +131,8 @@ export default class Form extends React.Component<FormProps> {
 
         return flattenedInputConfigs
     }
-
-    openLink = (id: string) => {
-        this.setState({ screenId: id });
-        this.props.onExpand?.()
-    }
-
-    back = () => {
-        this.setState({ screenId: null });
-        this.props.onBack?.()
-    }
     
-    listView = () => {
+    listView = ({ navigation }: StackScreenProps<any>) => {
 
         const onPress = () => {
             if (nativeEventStore().keyboardOpen) {
@@ -148,6 +152,11 @@ export default class Form extends React.Component<FormProps> {
             } finally {
                 this.submitting.set(false)
             }
+        }
+
+        const navigateToScreen = (id: string) => {
+            navigation.navigate(id);
+            this.props.onExpand?.()
         }
 
 
@@ -180,7 +189,7 @@ export default class Form extends React.Component<FormProps> {
                     return <LabelSection 
                         inputConfig={screenInputConfig}
                         labelComponent={labelComponent}
-                        openLink={this.openLink}  
+                        openLink={navigateToScreen}  
                         linkTo={inputConfig.name} />
                 }
 
@@ -194,7 +203,7 @@ export default class Form extends React.Component<FormProps> {
 
                 return <DefaultSection 
                     inputConfig={screenInputConfig}
-                    openLink={this.openLink}  
+                    openLink={navigateToScreen}  
                     linkTo={inputConfig.name} />
             })
         }
@@ -233,42 +242,74 @@ export default class Form extends React.Component<FormProps> {
         )
     }
 
-    render() {
+    inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation }: StackScreenProps<any>) => {
+        const viewConfig = FormViewMap[inputConfig.type];
 
-        if (this.submitting.get()) {
-            return <Loader/>
+        const ScreenComponent: ComponentType<SectionScreenViewProps> = (viewConfig as ScreenFormInputViewConfig).screenComponent;
+        
+        if (ScreenComponent) {
+            if (inputConfig.onSave) {
+                const oldOnSave = inputConfig.onSave;
+                
+                inputConfig.onSave = (...args) => {
+                    runInAction(() => {
+                        return oldOnSave(...args)
+                    })
+                }
+            }
+
+            const back = () => {
+                navigation.goBack()
+                this.props.onBack?.()
+            }
+
+            return <ScreenComponent back={back} config={inputConfig}/>
         }
+    }
 
-        if (this.state.screenId) {
-            const inputConfig = this.inputs.get().find((i) => i.name == this.state.screenId) as ScreenFormInputConfig;
-            const viewConfig = FormViewMap[inputConfig.type];
+    saveRoute = (state: NavigationState) => {
+        const routeName = state?.routes[state?.index]?.name;
 
-            const ScreenComponent: ComponentType<SectionScreenViewProps> = (viewConfig as ScreenFormInputViewConfig).screenComponent;
-            
-            if (ScreenComponent) {
-                if (inputConfig.onSave) {
-                    const oldOnSave = inputConfig.onSave;
-                    
-                    inputConfig.onSave = (...args) => {
-                        runInAction(() => {
-                            return oldOnSave(...args)
+        this.setState({
+            screenId: routeName
+        })
+    }
+
+    render() {
+        return (
+            <NavigationContainer independent onStateChange={this.saveRoute}>
+                <Stack.Navigator screenOptions={{headerShown: false}}  initialRouteName={this.homeScreenId}>
+                    <Stack.Screen name={this.homeScreenId} component={this.listView} />
+                    {
+                        this.screenInputs.get().map(screenInputConfig => {
+
+                            return (
+                                <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
+                            )
                         })
                     }
-                }
-
-                return <ScreenComponent back={this.back} config={inputConfig}/>
-            }
-        }
-            
-        return this.listView();
+                </Stack.Navigator>
+            </NavigationContainer>
+        )
     }
 }
 
-function DefaultSection(props: { 
+/**
+ * Needs:
+ * - to be able to visually group sets of inputs
+ * - to be able to specify the icon for a group of inputs/any of the inline/label components 
+ *   from the config
+ * - allow an input type that has a label component and navigates to a component that is provided
+ *   by config and replaces the contents of the form
+ *     - allow this to be infinately deep
+ * 
+ */
+
+const DefaultSection = observer((props: { 
     inputConfig: ScreenFormInputConfig,
     linkTo: string,
     openLink: (screenId: string) => void
-}) {
+}) => {
 
     const expand = () => {
         if (nativeEventStore().keyboardOpen) {
@@ -306,8 +347,9 @@ function DefaultSection(props: {
                     : null
                 }
             </Pressable>
-}
+})
 
+// doesn't need to be observer because inline components must be observers themselves 
 function InlineSection(props: { 
     inputConfig: InlineFormInputConfig,
     inlineComponent: ComponentType<SectionInlineViewProps>,
@@ -323,12 +365,12 @@ function InlineSection(props: {
     )
 }
 
-function LabelSection(props: { 
+const LabelSection = observer((props: { 
     inputConfig: ScreenFormInputConfig,
     linkTo: string,
     openLink: (screenId: string) => void,
     labelComponent: ComponentType<SectionLabelViewProps>,
-}) {
+}) => {
 
     const expand = () => {
         if (nativeEventStore().keyboardOpen) {
@@ -356,7 +398,7 @@ function LabelSection(props: {
             }
         </View>
     )
-}
+})
 
 
 const styles = StyleSheet.create({

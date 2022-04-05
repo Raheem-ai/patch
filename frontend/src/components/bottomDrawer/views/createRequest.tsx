@@ -24,7 +24,8 @@ class CreateHelpRequest extends React.Component<Props> {
         // last check, checkHeaderShowing is called to make sure the header is being properly
         // displayed or hidden based on the form page and expanded state.
         this.headerReactionDisposer = reaction(this.checkStateChange, this.checkHeaderShowing, {
-            equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2]
+            equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2],
+            fireImmediately: true
         });
     }
 
