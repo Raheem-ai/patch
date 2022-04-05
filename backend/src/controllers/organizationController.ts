@@ -1,10 +1,10 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Unauthorized } from "@tsed/exceptions";
+import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, Organization, PatchEventType, PendingUser, ProtectedUser, RequestSkill, UserRole } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -16,6 +16,9 @@ import { Twilio } from 'twilio';
 import * as querystring from 'querystring'
 import config from '../config';
 import { PubSubService } from "../services/pubSubService";
+import { OrganizationDoc } from "../models/organization";
+import { AtLeast } from "common";
+import { request } from "express";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -35,6 +38,11 @@ export class OrganizationController implements APIController<
     | 'getTeamMembers' 
     | 'getRespondersOnDuty'
     | 'inviteUserToOrg'
+    | 'getOrgMetadata'
+    | 'editOrgMetadata'
+    | 'editRole'
+    | 'createNewRole'
+    | 'deleteRoles'
 > {
     @Inject(DBManager) db: DBManager;
 
@@ -62,9 +70,10 @@ export class OrganizationController implements APIController<
         @OrgId() orgId: string,
         @Req() req,
         @Required() @BodyParams('userId') userId: string,
-        @Required() @BodyParams('roles') roles: UserRole[]
+        @Required() @BodyParams('roles') roles: UserRole[],
+        @Required() @BodyParams('roleIds') roleIds: string[]
     ) {
-        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles);
+        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -137,6 +146,24 @@ export class OrganizationController implements APIController<
         return res;
     }
 
+    @Post(API.server.addRolesToUser())
+    async addRolesToUser(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('userId') userId: string,
+        @Required() @BodyParams('roleIds') roleIds: string[]
+    ) {
+        const res = this.db.protectedUserFromDoc(await this.db.addRolesToUser(orgId, userId, roleIds));
+
+        // TODO: do we plan to create new events for the new concept or Roles or use the old events?
+        await this.pubSub.sys(PatchEventType.UserChangedRolesInOrg, {
+            userId,
+            orgId
+        })
+
+        return res;
+    }
+
     @Post(API.server.getTeamMembers())
     @RequireRoles([UserRole.Admin, UserRole.Dispatcher, UserRole.Responder])
     async getTeamMembers(
@@ -199,6 +226,7 @@ export class OrganizationController implements APIController<
         @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
+        @Required() @BodyParams('roleIds') roleIds: string[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
@@ -215,6 +243,7 @@ export class OrganizationController implements APIController<
             email,
             phone,
             roles,
+            roleIds,
             skills,
             pendingId: uuid.v1()
         };
@@ -260,11 +289,150 @@ export class OrganizationController implements APIController<
         return pendingUser;
     }
 
+    @Get(API.server.getOrgMetadata())
+    @Authenticate()
+    async getOrgMetadata(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+    ) {
+        const orgConfig = user.organizations && user.organizations[orgId];
+        if (!orgConfig) {
+            throw new Forbidden(`You do not have access to the requested org.`);
+        }
+
+        const org = await this.db.resolveOrganization(orgId);
+        return {
+            id: orgId,
+            name: org.name,
+            roleDefinitions: org.roleDefinitions
+        }
+    }
+
+    @Post(API.server.editOrgMetadata())
+    @Authenticate()
+    async editOrgMetadata(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('orgUpdates') orgUpdates: Partial<OrganizationMetadata>,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.EditOrgSettings])) {
+            const org = await this.db.editOrgMetadata(orgId, orgUpdates)
+
+            await this.pubSub.sys(PatchEventType.OrganizationEdited, { orgId: org.id });
+
+            return {
+                id: orgId,
+                name: org.name,
+                roleDefinitions: org.roleDefinitions
+            }
+        }
+
+        throw new Unauthorized('You do not have permission to edit information about this organization.');
+    }
+
+    @Post(API.server.editRole())
+    @Authenticate()
+    async editRole(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
+            const org = await this.db.editRole(orgId, roleUpdates);
+            const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
+    
+            await this.pubSub.sys(PatchEventType.OrganizationRoleEdited, { 
+                orgId: orgId, 
+                roleId: updatedRole.id
+            });
+
+            return updatedRole;
+        }
+
+        throw new Unauthorized('You do not have permission to edit Roles for this organization.');
+    }
+
+    @Post(API.server.deleteRoles())
+    @Authenticate()
+    async deleteRoles(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('roleIds') roleIds: string[],
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
+            const org = await this.db.removeRolesFromOrganization(orgId, roleIds);
+
+            for (const roleId of roleIds) {
+                await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
+                    orgId: orgId, 
+                    roleId: roleId
+                });
+            }
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Roles from this organization.');
+        }
+    }
+
+    @Post(API.server.createNewRole())
+    @Authenticate()
+    async createNewRole(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('role') newRole: MinRole,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin]))
+        {
+            const [org, createdRole] = await this.db.addRoleToOrganization(newRole, orgId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationRoleCreated, {
+                orgId: orgId,
+                roleId: createdRole.id
+            });
+
+            return createdRole;
+        }
+
+        throw new Unauthorized('You do not have permission to create a new Role for this organization.');
+    }
+
     getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
         const expoSection = baseUrl.startsWith('exp')
             ? '--/'
             :'';
 
         return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
+    }
+
+    async userHasPermissions(user: UserDoc, orgId: string, requiredPermissions: PatchPermissions[]): Promise<boolean> {
+        const orgConfig = user.organizations && user.organizations[orgId];
+        if (!orgConfig) {
+            throw new Forbidden(`You do not have access to the requested org.`);
+        }
+
+        // Get all the roles that belong to a user.
+        const org = await this.db.resolveOrganization(orgId);
+        const userRoles = [];
+        orgConfig.roleIds.forEach(id => {
+            const assignedRole = org.roleDefinitions.find(
+                roleDef => roleDef.id == id
+            );    
+            if (assignedRole) {
+                userRoles.push(assignedRole);
+            }
+        });
+
+        // Resolve all the permissions granted to a user based on their role(s).
+        const userPermissions = resolvePermissions(userRoles);
+        for (const permission of requiredPermissions) {
+            // If any required permission is missing, return false.
+            if (!userPermissions.has(permission as PatchPermissions)) {
+                return false;
+            }
+        }
+
+        // If we make it here then all required permissions were found.
+        return true;
     }
 }
