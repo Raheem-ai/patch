@@ -147,6 +147,9 @@ const HeaderConfig: {
             }],
             rightActions 
         }
+    },
+    [routerNames.componentLib]: {
+        title: 'Component Library'
     }
 }
 

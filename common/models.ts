@@ -528,6 +528,40 @@ export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent exte
     sysParams: PatchEventParams[SysEvent]
 }
 
+export type DateTimeRange = {
+    startDate: Date
+    endDate: Date
+}
+
+export enum RecurringPeriod {
+    Day = 'd',
+    Week = 'w',
+    Month = 'm',
+}
+
+export type RecurringTimePeriod = ({
+    period: RecurringPeriod.Month,
+    dayScope?: boolean,
+    weekScope?: boolean
+} | {
+    period: RecurringPeriod.Week,
+    days: number[]
+} | {
+    period: RecurringPeriod.Day
+}) & { numberOf: number }
+
+export type RecurringTimeConstraints = {
+    every?: RecurringTimePeriod
+    until?: {
+        date: Date,
+        repititions: null
+    } | {
+        date: null,
+        repititions: number
+    }
+}
+
+export type RecurringDateTimeRange = RecurringTimeConstraints & DateTimeRange;
 export enum PatchPermissions {
     // Edit organization settings
     EditOrgSettings = 'eos',

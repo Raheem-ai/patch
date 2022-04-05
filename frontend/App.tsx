@@ -42,6 +42,7 @@ import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';
 import Alerts from './src/components/alerts/alerts';
+import ComponentLibrary from './src/screens/componentLibrary';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -126,6 +127,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
                         <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
                         <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
+                        <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
                     </Stack.Navigator>
                     <Alerts/>

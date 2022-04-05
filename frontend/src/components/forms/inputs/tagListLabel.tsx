@@ -5,9 +5,9 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
 import { unwrap } from "../../../../../common/utils"
 import Tags from "../../tags"
-import { SectionScreenProps, SectionViewProps } from "../types"
+import { SectionScreenViewProps, SectionInlineViewProps, SectionLabelViewProps } from "../types"
 
-const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 'NestedTagList'>) => {
+const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagList' | 'NestedTagList'>) => {
 
     const onPress = () => {
         if (config.disabled) {

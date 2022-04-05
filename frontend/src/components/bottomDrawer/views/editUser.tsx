@@ -9,7 +9,7 @@ import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
 import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
-import { FormInputConfig } from "../../forms/types";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
 
@@ -72,11 +72,11 @@ export default class EditUser extends React.Component {
     }
 
     editUserInputs(): [
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TagList'>,
+        InlineFormInputConfig<'TextInput'>, 
+        InlineFormInputConfig<'TextInput'>, 
+        InlineFormInputConfig<'TextInput'>, 
+        ScreenFormInputConfig<'TagList'>,
+        ScreenFormInputConfig<'TagList'>,
     ] {
         return [
             {
@@ -88,8 +88,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().nameValid
                 },
                 name: 'name',
-                previewLabel: () => editUserStore().name,
-                headerLabel: () => 'Name',
+                placeholderLabel: () => 'Name',
                 type: 'TextInput',
                 disabled: true
             },
@@ -102,8 +101,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().emailValid
                 },
                 name: 'email',
-                previewLabel: () => editUserStore().email,
-                headerLabel: () => 'Email',
+                placeholderLabel: () => 'Email',
                 type: 'TextInput',
                 disabled: true
             },
@@ -116,8 +114,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().phoneValid
                 },
                 name: 'phone',
-                previewLabel: () => editUserStore().phone,
-                headerLabel: () => 'Phone',
+                placeholderLabel: () => 'Phone',
                 type: 'TextInput',
                 disabled: true
             },
@@ -171,13 +168,13 @@ export default class EditUser extends React.Component {
     }
 
     editMeInputs(): [
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextArea'>
+        InlineFormInputConfig<'TextInput'>, 
+        InlineFormInputConfig<'TextInput'>, 
+        InlineFormInputConfig<'TextInput'>, 
+        ScreenFormInputConfig<'TagList'>,
+        ScreenFormInputConfig<'TagList'>,
+        InlineFormInputConfig<'TextInput'>, 
+        ScreenFormInputConfig<'TextArea'>
     ] {
         return [
             {
@@ -189,8 +186,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().nameValid
                 },
                 name: 'name',
-                previewLabel: () => editUserStore().name,
-                headerLabel: () => 'Name',
+                placeholderLabel: () => 'Name',
                 type: 'TextInput',
             },
             {
@@ -202,8 +198,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().emailValid
                 },
                 name: 'email',
-                previewLabel: () => editUserStore().email,
-                headerLabel: () => 'Email',
+                placeholderLabel: () => 'Email',
                 type: 'TextInput',
                 // TODO: remove when we have logic for changing email
                 disabled: true
@@ -217,8 +212,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().phoneValid
                 },
                 name: 'phone',
-                previewLabel: () => editUserStore().phone,
-                headerLabel: () => 'Phone',
+                placeholderLabel: () => 'Phone',
                 type: 'TextInput',
                 required: true
             },
@@ -278,8 +272,7 @@ export default class EditUser extends React.Component {
                     return editUserStore().pronounsValid
                 },
                 name: 'pronouns',
-                previewLabel: () => editUserStore().pronouns,
-                headerLabel: () => 'Pronouns',
+                placeholderLabel: () => 'Pronouns',
                 type: 'TextInput',
             },
             {

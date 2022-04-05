@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
-import { SectionScreenProps } from "../types";
+import { SectionScreenViewProps } from "../types";
 import BackButtonHeader from "./backButtonHeader";
 
 
-const TextAreaInput = observer(({ back, config }: SectionScreenProps<'TextArea'>) => {
+const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextArea'>) => {
 
     const [val, setVal] = useState(config.val())
 

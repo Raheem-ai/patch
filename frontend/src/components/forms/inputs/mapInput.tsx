@@ -5,13 +5,13 @@ import { IconButton, List, Text } from "react-native-paper";
 import { IMapsService } from "../../../services/interfaces";
 import { getService } from "../../../services/meta";
 import { locationStore } from "../../../stores/interfaces";
-import { SectionScreenProps } from "../types";
+import { SectionScreenViewProps } from "../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../common/models";
 
-const MapInput = observer(({ back, config }: SectionScreenProps<'Map'>) => {
+const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const mapsService = getService<IMapsService>(IMapsService);
 
     const [suggestions, setSuggestions] = useState<PlaceAutocompleteResult[]>([]);

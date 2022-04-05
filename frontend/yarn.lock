@@ -6881,6 +6881,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-linear-gradient@npm:~10.0.3":
+  version: 10.0.3
+  resolution: "expo-linear-gradient@npm:10.0.3"
+  dependencies:
+    expo-modules-core: ~0.4.4
+  checksum: f8b18e3da6aa4f190bfa3c9cc00051481340008717e729cb0bc6ff7ac25fd5b9540d572f707f565d89db845355f62fff45d9639912ca097c90716c60cbd46fc6
+  languageName: node
+  linkType: hard
+
 "expo-linking@npm:~2.4.2":
   version: 2.4.2
   resolution: "expo-linking@npm:2.4.2"
@@ -7331,7 +7340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fbjs@npm:^0.8.4":
+"fbjs@npm:^0.8.4, fbjs@npm:^0.8.9":
   version: 0.8.18
   resolution: "fbjs@npm:0.8.18"
   dependencies:
@@ -7694,6 +7703,7 @@ __metadata:
     expo-cli: ^5.0.3
     expo-constants: ~12.1.3
     expo-device: ~4.0.3
+    expo-linear-gradient: ~10.0.3
     expo-linking: ~2.4.2
     expo-location: ~13.0.4
     expo-notifications: ~0.13.3
@@ -7709,10 +7719,12 @@ __metadata:
     mobx-persist-store: ^1.0.3
     mobx-react: ^7.2.0
     module-alias: ^2.2.2
+    moment: ^2.29.1
     parse-full-name: ^1.2.6
     react: 17.0.1
     react-dom: 17.0.1
     react-native: 0.64.2
+    react-native-calendar-picker: ^7.1.2
     react-native-gesture-handler: ~1.10.2
     react-native-get-random-values: ~1.7.0
     react-native-maps: 0.28.1
@@ -7724,6 +7736,7 @@ __metadata:
     react-native-svg: 12.1.1
     react-native-vector-icons: ^8.1.0
     react-native-web: 0.17.1
+    react-native-wheel-picker-expo: ^0.4.2
     react-router-dom: ^5.2.0
     reflect-metadata: ^0.1.13
     socket.io-client: ^4.4.0
@@ -10189,7 +10202,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.debounce@npm:^4.0.8":
+"lodash.debounce@npm:4.0.8, lodash.debounce@npm:^4.0.8":
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
   checksum: a3f527d22c548f43ae31c861ada88b2637eb48ac6aa3eb56e82d44917971b8aa96fbb37aa60efea674dc4ee8c42074f90f7b1f772e9db375435f6c83a19b3bc6
@@ -11393,6 +11406,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment@npm:^2.29.1":
+  version: 2.29.1
+  resolution: "moment@npm:2.29.1"
+  checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
+  languageName: node
+  linkType: hard
+
 "move-concurrently@npm:^1.0.1":
   version: 1.0.1
   resolution: "move-concurrently@npm:1.0.1"
@@ -11610,6 +11630,15 @@ __metadata:
   version: 0.10.0
   resolution: "node-forge@npm:0.10.0"
   checksum: 5aa6dc9922e424a20ef101d2f517418e2bc9cfc0255dd22e0701c0fad1568445f510ee67f6f3fcdf085812c4ca1b847b8ba45683b34776828e41f5c1794e42e1
+  languageName: node
+  linkType: hard
+
+"node-git-hooks@npm:^1.0.1":
+  version: 1.0.6
+  resolution: "node-git-hooks@npm:1.0.6"
+  bin:
+    node-git-hooks: bin/install.js
+  checksum: 9c4149b79441e204a65c956ab2b9670bcfa6e93adb1b1d35eb6b40ff57f19a1a9c80bc931e5c63a62e4e958d19ebc41d09627d2aac705a6aa934ee8d224e1eb0
   languageName: node
   linkType: hard
 
@@ -13325,6 +13354,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prop-types@npm:15.5.8":
+  version: 15.5.8
+  resolution: "prop-types@npm:15.5.8"
+  dependencies:
+    fbjs: ^0.8.9
+  checksum: b64fcb5770c665e66e57663940864425529ea2b8c7821fb86068d1879d7b2c85778948b9a1294912e0d58f55075d1f3e19f44ae4fd5f5cd988c3bf833fa3e1f6
+  languageName: node
+  linkType: hard
+
 "prop-types@npm:>=15.6.1, prop-types@npm:^15.6.0, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
@@ -13714,6 +13752,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-calendar-picker@npm:^7.1.2":
+  version: 7.1.2
+  resolution: "react-native-calendar-picker@npm:7.1.2"
+  dependencies:
+    node-git-hooks: ^1.0.1
+    prop-types: ^15.6.0
+    recyclerlistview: ^3.0.0
+  peerDependencies:
+    moment: ">=2.0.0"
+    react: "*"
+    react-native: "*"
+  checksum: ae161e595bba4d5e26197ff16b1466979e86d4fcb1b8f5e98fc8f32a3f1abeea07c70e1ebffab928381b600b81b592d00d682f8cd53e817d2044a8679a2a1c8c
+  languageName: node
+  linkType: hard
+
 "react-native-codegen@npm:^0.0.6":
   version: 0.0.6
   resolution: "react-native-codegen@npm:0.0.6"
@@ -13883,6 +13936,17 @@ __metadata:
     react: ">=17.0.1"
     react-dom: ">=17.0.1"
   checksum: a06ec047082bb4edf49323a5a88b576ba93ddc965e4dd00c4c0b1f423a4175a430d9c2619f32d184f719181c4d3f08ffa8fa4f3b8c951f6a95176d3735e4bf7d
+  languageName: node
+  linkType: hard
+
+"react-native-wheel-picker-expo@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "react-native-wheel-picker-expo@npm:0.4.2"
+  peerDependencies:
+    expo-linear-gradient: ^5.2.0
+    react: "*"
+    react-native: "*"
+  checksum: e206db8f81a9f1905a1ef915559d11f12ee01d4422f124d14695eca9100db3f48f8cdad886b0c109d155d2de5270d96ac99c72a764a4ea24cc43ebabb04ceb97
   languageName: node
   linkType: hard
 
@@ -14086,6 +14150,20 @@ __metadata:
   dependencies:
     minimatch: 3.0.4
   checksum: a6b22994d76458443d4a27f5fd7147ac63ad31bba972666a291d511d4d819ee40ff71ba7524c14f6a565b8cfaf7f48b318f971804b913cf538d58f04e25d1fee
+  languageName: node
+  linkType: hard
+
+"recyclerlistview@npm:^3.0.0":
+  version: 3.0.5
+  resolution: "recyclerlistview@npm:3.0.5"
+  dependencies:
+    lodash.debounce: 4.0.8
+    prop-types: 15.5.8
+    ts-object-utils: 0.0.5
+  peerDependencies:
+    react: ">= 15.2.1"
+    react-native: ">= 0.30.0"
+  checksum: 68fe28f044a42d30ea92f2a2a37d3d96bfb5f57cb2aea763edd37c52f1c735a7e4c559b6ab88339b4ce04cd043490fdaf210a43e0e3eb0eb00fcc25fd0f9ccfe
   languageName: node
   linkType: hard
 
@@ -16167,6 +16245,13 @@ __metadata:
   dependencies:
     tslib: ^1.9.3
   checksum: 58b32fb6b7c479e602e55b9eb63bb99a203c5db09367d3aa7c3cbe000ba62f919eea7f031f55172df9b6d362a6f1a87e906df84b04b8c74c88e507ac58f7a554
+  languageName: node
+  linkType: hard
+
+"ts-object-utils@npm:0.0.5":
+  version: 0.0.5
+  resolution: "ts-object-utils@npm:0.0.5"
+  checksum: 83c48fbdaba392fb2c01cea53b267ed5538d2bb44fc6c3eecc10bcfabc1780bfa6ec8569b52bbf0140d9b521d9049d5f15884e12286918244d463d854dbc73cb
   languageName: node
   linkType: hard
 

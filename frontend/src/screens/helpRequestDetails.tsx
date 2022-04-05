@@ -7,7 +7,7 @@ import { useState } from "react";
 import { bottomDrawerStore, BottomDrawerView, dispatchStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import ResponderRow from "../components/responderRow";
-import { timestampToTime } from "../../../common/utils";
+import { timestampToTimeString } from "../../../common/utils";
 
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
@@ -126,7 +126,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             : ''
 
         const lastMessageTime = !!lastChatMessage
-            ? timestampToTime(lastChatMessage.timestamp)
+            ? timestampToTimeString(lastChatMessage.timestamp)
             : ''
 
         const hasUnreadMessages = (requestStore().currentRequest.chat && requestStore().currentRequest.chat.messages.length) 
@@ -334,7 +334,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
                             <Text>
                                 <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
-                                <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTime(assignment.timestamp)}`}</Text>
+                                <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTimeString(assignment.timestamp)}`}</Text>
                             </Text>
                             <IconButton
                                 style={styles.assignmentSelectIcon}

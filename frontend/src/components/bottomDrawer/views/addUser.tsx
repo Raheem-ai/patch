@@ -9,7 +9,7 @@ import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
 import { alertStore, bottomDrawerStore, IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore, newUserStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
-import { FormInputConfig } from "../../forms/types";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
 
@@ -61,8 +61,7 @@ export default class AddUser extends React.Component {
                         return newUserStore().emailValid
                     },
                     name: 'email',
-                    previewLabel: () => newUserStore().email,
-                    headerLabel: () => 'Email',
+                    placeholderLabel: () => 'Email',
                     type: 'TextInput',
                     required: true
                 },
@@ -75,8 +74,7 @@ export default class AddUser extends React.Component {
                         return newUserStore().phoneValid
                     },
                     name: 'phone',
-                    previewLabel: () => newUserStore().phone,
-                    headerLabel: () => 'Phone',
+                    placeholderLabel: () => 'Phone',
                     type: 'TextInput',
                     required: true
                 },
@@ -127,10 +125,10 @@ export default class AddUser extends React.Component {
                 }
                 
             ] as [
-                FormInputConfig<'TextInput'>, 
-                FormInputConfig<'TextInput'>, 
-                FormInputConfig<'TagList'>,
-                FormInputConfig<'TagList'>,
+                InlineFormInputConfig<'TextInput'>, 
+                InlineFormInputConfig<'TextInput'>, 
+                ScreenFormInputConfig<'TagList'>,
+                ScreenFormInputConfig<'TagList'>,
             ]
         }
     }

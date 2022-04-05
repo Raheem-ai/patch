@@ -1,12 +1,12 @@
 import React from "react";
 import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
-import { reaction } from 'mobx';
+import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { DateTimeRange, HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
-import { allEnumValues } from "../../../../../common/utils";
-import { FormInputConfig } from "../../forms/types";
+import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
+import { ScreenFormInputConfig } from "../../forms/types";
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
@@ -17,6 +17,7 @@ type Props = {}
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = React.createRef<Form>();
     headerReactionDisposer = null;
+
     componentDidMount = () => {
         // checkStateChange gets called any time the form page, header visibility, or the expanded
         // state of the bottom drawer is updated. If any of these values have changed since the
@@ -150,7 +151,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            createRequestStore().skills.splice(idx, 1)
+                            runInAction(() => createRequestStore().skills.splice(idx, 1))
                         },
                     },
                 },
@@ -191,17 +192,17 @@ class CreateHelpRequest extends React.Component<Props> {
                         optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
                         multiSelect: true,
                         onTagDeleted: (idx: number, val: any) => {
-                            createRequestStore().type.splice(idx, 1)
+                            runInAction(() => createRequestStore().type.splice(idx, 1))
                         },
                         dark: true
                     }
                 }
             ] as [
-                FormInputConfig<'TextArea'>,
-                FormInputConfig<'Map'>, 
-                FormInputConfig<'NestedTagList'>,
-                FormInputConfig<'List'>,
-                FormInputConfig<'TagList'>, 
+                ScreenFormInputConfig<'TextArea'>,
+                ScreenFormInputConfig<'Map'>, 
+                ScreenFormInputConfig<'NestedTagList'>,
+                ScreenFormInputConfig<'List'>,
+                ScreenFormInputConfig<'TagList'>, 
             ]
         }
     }
