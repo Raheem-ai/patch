@@ -294,10 +294,10 @@ const Section = ({
         <View style={styles.section}>
             <View style={styles.sectionHeader}>
                 <Pressable onPress={() => toggleDayPicker(section)}>
-                    <Text style={{ lineHeight: 60 }}>{dateToDateString(date)}</Text>
+                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToDateString(date)}</Text>
                 </Pressable>
                 <Pressable onPress={() => toggleTimePicker(section)}>
-                    <Text style={{ lineHeight: 60 }}>{dateToTimeString(date)}</Text>
+                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(date)}</Text>
                 </Pressable>
             </View>
             {

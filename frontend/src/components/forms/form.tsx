@@ -8,7 +8,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig } from "./types";
+import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
@@ -27,16 +27,12 @@ import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
 
-// const windowDimensions = Dimensions.get("screen");
-
 const Stack = createStackNavigator();
 
 type Grouped<T> = T | T[];
 
 export type FormProps = {
     headerLabel: string,
-
-    // TODO: change this to() FormInputConfig | FormInputConfig[])[] to allow for visually grouped components
     inputs: Grouped<FormInputConfig>[],
     onExpand?(): void,
     onBack?(): void,
@@ -89,13 +85,25 @@ export default class Form extends React.Component<FormProps> {
 
     // used internally to know whether the form is submittable
     private isValid = computed<boolean>(() => {
-        return this.inputs.get().filter(i => i.required).every(i => i.isValid());
+        return this.validatableInputs.get().filter(i => i.required).every(i => i.isValid());
     })
 
     // used to flatten the (visually grouped) inputs into an interable list of all
     // standalone inputs so they can be processed easily
     private inputs = computed<StandAloneFormInputConfig[]>(() => {
         return this.flattenGroupedInputConfigs(this.groupedInputs.get())
+    })
+
+    private validatableInputs = computed<ValidatableFormInputConfig[]>(() => {
+        return this.inputs.get().filter(i => {
+            return !this.isNavigationInput(i)
+        }) as ValidatableFormInputConfig[]
+    })
+
+    private navigationInputs = computed<NavigationFormInputConfig[]>(() => {
+        return this.inputs.get().filter(i => {
+            return this.isNavigationInput(i)
+        }) as NavigationFormInputConfig[]
     })
 
     // used to unpack nested input configs from compound inputs (data based grouping) but keep them grouped
@@ -121,6 +129,12 @@ export default class Form extends React.Component<FormProps> {
 
     state = {
         screenId: this.homeScreenId
+    }
+
+    // type gaurd so compiler can use the result of this for type checking
+    isNavigationInput = (config: StandAloneFormInputConfig): config is NavigationFormInputConfig =>  {
+        // casting to one of the other input types to check if "type" property exists
+        return !(config as InlineFormInputConfig).type
     }
 
     expandConfig = (config: FormInputConfig): StandAloneFormInputConfig[] => {
@@ -211,49 +225,58 @@ export default class Form extends React.Component<FormProps> {
         }
 
         const renderInput = (inputConfig: StandAloneFormInputConfig, position?: GroupPosition) => {
-            const viewConfig = FormViewMap[inputConfig.type];
+            if (this.isNavigationInput(inputConfig)) {
+                return <NavigationSection
+                            inputConfig={inputConfig}
+                            openLink={navigateToScreen}  
+                            linkTo={inputConfig.name} 
+                            groupPosition={position}/>
+            } else {
+            
+                const viewConfig = FormViewMap[inputConfig.type];
 
-            // make sure any inline store updates are being run in an action 
-            // (for convenience)
-            const inlineInputConfig = inputConfig as InlineFormInputConfig;
+                // make sure any inline store updates are being run in an action 
+                // (for convenience)
+                const inlineInputConfig = inputConfig as InlineFormInputConfig;
 
-            if (inlineInputConfig.onChange) {
-                const oldOnChange = inlineInputConfig.onChange;
-                
-                inlineInputConfig.onChange = (...args) => {
-                    runInAction(() => {
-                        return oldOnChange(...args)
-                    })
+                if (inlineInputConfig.onChange) {
+                    const oldOnChange = inlineInputConfig.onChange;
+                    
+                    inlineInputConfig.onChange = (...args) => {
+                        runInAction(() => {
+                            return oldOnChange(...args)
+                        })
+                    }
                 }
-            }
 
-            const screenInputConfig = inputConfig as ScreenFormInputConfig;
+                const screenInputConfig = inputConfig as ScreenFormInputConfig;
 
-            const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
+                const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
 
-            if (labelComponent) {
-                return <LabelSection 
+                if (labelComponent) {
+                    return <LabelSection 
+                        inputConfig={screenInputConfig}
+                        labelComponent={labelComponent}
+                        openLink={navigateToScreen}  
+                        linkTo={inputConfig.name} 
+                        groupPosition={position}/>
+                }
+
+                const inlineComponent = (viewConfig as InlineFormInputViewConfig).inlineComponent || null;
+
+                if (inlineComponent) {    
+                    return <InlineSection 
+                        inputConfig={inlineInputConfig}
+                        inlineComponent={inlineComponent} 
+                        groupPosition={position}/>
+                }
+
+                return <DefaultSection 
                     inputConfig={screenInputConfig}
-                    labelComponent={labelComponent}
                     openLink={navigateToScreen}  
                     linkTo={inputConfig.name} 
                     groupPosition={position}/>
             }
-
-            const inlineComponent = (viewConfig as InlineFormInputViewConfig).inlineComponent || null;
-
-            if (inlineComponent) {    
-                return <InlineSection 
-                    inputConfig={inlineInputConfig}
-                    inlineComponent={inlineComponent} 
-                    groupPosition={position}/>
-            }
-
-            return <DefaultSection 
-                inputConfig={screenInputConfig}
-                openLink={navigateToScreen}  
-                linkTo={inputConfig.name} 
-                groupPosition={position}/>
         }
 
         const renderInputs = () => {
@@ -345,6 +368,15 @@ export default class Form extends React.Component<FormProps> {
         }
     }
 
+    navigationScreen = (inputConfig: NavigationFormInputConfig) => ({ navigation }: StackScreenProps<any>) => { 
+        const back = () => {
+            navigation.goBack()
+            this.props.onBack?.()
+        }
+
+        return inputConfig.screen({ back });
+    }
+
     saveRoute = (state: NavigationState) => {
         const routeName = state?.routes[state?.index]?.name;
 
@@ -357,8 +389,16 @@ export default class Form extends React.Component<FormProps> {
         return (
             <NavigationContainer independent onStateChange={this.saveRoute}>
                 <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#fff' }}}  initialRouteName={this.homeScreenId}>
+                    {/* setup form home screen */}
                     <Stack.Screen name={this.homeScreenId} component={this.listView} />
-                    {
+                    {   // setup navigation input screen components
+                        this.navigationInputs.get().map(navigationInputConfig => {
+                            return (
+                                <Stack.Screen name={navigationInputConfig.name} component={this.navigationScreen(navigationInputConfig)} />
+                            )
+                        })
+                    }
+                    {   // setup screen input screen components
                         this.screenInputs.get().map(screenInputConfig => {
                             return (
                                 <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
@@ -373,12 +413,8 @@ export default class Form extends React.Component<FormProps> {
 
 /**
  * Needs:
- * - to be able to visually group sets of inputs
  * - to be able to specify the icon for a group of inputs/any of the inline/label components 
  *   from the config
- * - allow an input type that has a label component and navigates to a component that is provided
- *   by config and replaces the contents of the form
- *     - allow this to be infinately deep
  * 
  */
 
@@ -470,7 +506,7 @@ function InlineSection(props: {
     inlineComponent: ComponentType<SectionInlineViewProps>,
     groupPosition?: GroupPosition
 }) {
-    const Label: ComponentType<SectionInlineViewProps> = props.inlineComponent;
+    const InlineComponent: ComponentType<SectionInlineViewProps> = props.inlineComponent;
 
     const resolvedStyles = [
         styles.section, 
@@ -486,7 +522,7 @@ function InlineSection(props: {
         <>
             <View style={resolvedStyles}>
                 <View style={{ flex: 1 }}>
-                    <Label config={props.inputConfig}/>
+                    <InlineComponent config={props.inputConfig}/>
                 </View>
             </View>
             {
@@ -551,6 +587,67 @@ const LabelSection = observer((props: {
     )
 })
 
+const NavigationSection = observer((props: { 
+    inputConfig: NavigationFormInputConfig,
+    linkTo: string,
+    openLink: (screenId: string) => void,
+    groupPosition?: GroupPosition
+}) => {
+
+    const expand = () => {
+        if (nativeEventStore().keyboardOpen) {
+            return Keyboard.dismiss()
+        } 
+
+        props.openLink(props.linkTo);
+    }
+
+    // only handle expand logic when the input is using a text label 
+    // vs a component that is handling it itself
+    const defaultExpand = () => {
+        if (typeof props.inputConfig.label == 'string') {
+            expand();
+        }
+    }
+
+    const resolvedStyles = [
+        styles.section, 
+        props.inputConfig.disabled 
+            ? styles.disabledSection 
+            : null,
+        positionStyles(props.groupPosition)
+    ]
+
+    const partialBottomBorder = props.groupPosition == 'start' || props.groupPosition == 'middle';
+
+    return (
+        <>
+            <Pressable style={resolvedStyles} onPress={defaultExpand}>
+                {
+                    typeof props.inputConfig.label == 'function'
+                        ? <View style={{ flex: 1 }}>
+                            { props.inputConfig.label({ expand }) }
+                        </View>
+                        : <Text style={[styles.label, { flex: 1 }]}>{props.inputConfig.label}</Text>
+                }
+                { !props.inputConfig.disabled
+                    ? <IconButton
+                        style={{ flex: 0, height: 30, width: 30 }}
+                        icon='chevron-right' 
+                        color='rgba(60,60,67,.3)'
+                        onPress={expand}
+                        size={30} />
+                    : null
+                }
+            </Pressable>
+            {
+                partialBottomBorder
+                    ? <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                    : null
+            }
+        </>
+    )
+})
 
 const styles = StyleSheet.create({
     section: {

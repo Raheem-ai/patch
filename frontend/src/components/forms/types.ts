@@ -2,18 +2,29 @@ import { ComponentType } from "react"
 import { AddressableLocation, DateTimeRange, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 
 export type SectionInlineViewProps<Type extends InlineFormInputType = InlineFormInputType> = {
-    config: InlineFormInputConfig<Type>,
-    expand?: () => void
+    config: InlineFormInputConfig<Type>
 }
 
 export type SectionLabelViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
     config: ScreenFormInputConfig<Type>,
-    expand?: () => void
+    expand: () => void
 }
 
 export type SectionScreenViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
     back: () => void,
     config: ScreenFormInputConfig<Type>
+}
+
+// navigation input config decides completely how to render the label
+// all it needs from form implementation is a way to switch screens
+export type SectionNavigationLabelViewProps = {
+    expand: () => void
+}
+
+// navigation input config decides completely how to render the screen component
+// all it needs from form implementation is a way to go back to the form's home screen
+export type SectionNavigationScreenViewProps = {
+    back: () => void
 }
 
 export type ScreenFormInputOptions = { 
@@ -90,9 +101,24 @@ export type CompoundFormInputOptions = {
     }
 }
 
-export type FormInputConfig = InlineFormInputConfig | ScreenFormInputConfig | CompoundFormInputConfig;
+// catch all type that gets passed to form for input configuration
+export type FormInputConfig = CompoundFormInputConfig | StandAloneFormInputConfig;
 
-export type StandAloneFormInputConfig = InlineFormInputConfig | ScreenFormInputConfig;
+// form input configuration types that correspond to at least 1 visual component on the form homepage
+export type StandAloneFormInputConfig = ValidatableFormInputConfig | NavigationFormInputConfig;
+
+// form input configuration that both has a visual component on the home page and manages data
+// that might need to be validated
+export type ValidatableFormInputConfig = InlineFormInputConfig | ScreenFormInputConfig
+
+// much simpler because it doesn't deal with data at all...it only ties into
+// the navigation in forms
+export type NavigationFormInputConfig = {
+    label: ((props: SectionNavigationLabelViewProps) => JSX.Element) | string,
+    screen: (props: SectionNavigationScreenViewProps) => JSX.Element
+    // need 'name' for a screenId and 'disabled' in case the label is a string
+    // so the consumer doesn't have control over the disabled lable visual component
+} & Pick<BaseFormInputConfig, 'name' | 'disabled'>; 
 
 export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormInputType, Val extends InlineFormInputOptions[Type]['type'] = InlineFormInputOptions[Type]['type']> = {
     onChange(val: Val): void

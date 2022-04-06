@@ -114,11 +114,15 @@ export default RecurringTimePeriodLabel;
 
 const Row = ({ text }: { text: string }) => {
     return <View style={styles.row}>
-        <Text>{text}</Text>
+        <Text style={styles.label}>{text}</Text>
     </View>
 }
 
 const styles = StyleSheet.create({
+    label: {
+        color: '#000',
+        fontSize: 18
+    },
     row: {
         marginBottom: 20
     },
