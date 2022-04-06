@@ -103,7 +103,7 @@ const RecurringTimePeriodLabel = observer(({ config, expand }: SectionLabelViewP
                     style={{ margin: 0, padding: 0, width: 20 }}
                     />
             </View>
-            <View style={{ paddingLeft: 40, padding: 20, paddingBottom: 0 }}>
+            <View style={{ paddingLeft: 0, padding: 20, paddingBottom: 0 }}>
                 {rows}
             </View>
         </Pressable>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
         height: 60,
         width: 60,
         position: 'absolute', 
-        left: -20,
+        left: -60,
         justifyContent: 'center',
         alignContent: 'center',
         padding: 20, 

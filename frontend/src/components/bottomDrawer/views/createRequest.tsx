@@ -3,7 +3,7 @@ import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, cr
 import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { DateTimeRange, HelpRequest, RecurringDateTimeRange, RecurringPeriod, RecurringTimeConstraints, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
 import { ScreenFormInputConfig } from "../../forms/types";
@@ -102,20 +102,6 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
-                // Notes
-                {
-                    onSave: (notes) => createRequestStore().notes = notes,
-                    val: () => {
-                        return createRequestStore().notes
-                    },
-                    isValid: () => {
-                        return !!createRequestStore().notes
-                    },
-                    name: 'notes',
-                    previewLabel: () => createRequestStore().notes,
-                    headerLabel: () => 'Notes',
-                    type: 'TextArea',
-                },
                 // Location
                 {
                     onSave: (location) => createRequestStore().location = location,
@@ -131,7 +117,66 @@ class CreateHelpRequest extends React.Component<Props> {
                     type: 'Map',
                     required: true
                 },
+                // Notes
+                [
+                    {
+                        onSave: (notes) => createRequestStore().notes = notes,
+                        val: () => {
+                            return createRequestStore().notes
+                        },
+                        isValid: () => {
+                            return !!createRequestStore().notes
+                        },
+                        name: 'notes',
+                        previewLabel: () => createRequestStore().notes,
+                        headerLabel: () => 'Notes',
+                        type: 'TextArea',
+                    },
+                    // Type of request
+                    {
+                        onSave: (type) => createRequestStore().type = type,
+                        val: () => {
+                            return createRequestStore().type
+                        },
+                        isValid: () => {
+                            return createRequestStore().typeValid
+                        },
+                        name: 'type',
+                        previewLabel: () => null,
+                        headerLabel: () => 'Type of request',
+                        type: 'TagList',
+                        required: true,
+                        props: {
+                            options: allEnumValues(RequestType),
+                            optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
+                            multiSelect: true,
+                            onTagDeleted: (idx: number, val: any) => {
+                                runInAction(() => createRequestStore().type.splice(idx, 1))
+                            },
+                            dark: true
+                        }
+                    }
+                ],
+                // Number of Responders
+                {
+                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
+                    val: () => {
+                        return [createRequestStore().respondersNeeded]
+                    },
+                    isValid: () => {
+                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
+                    },
+                    name: 'responders',
+                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
+                    headerLabel: () => 'Number of responders',
+                    type: 'List',
+                    props: {
+                        options: ResponderCountRange,
+                        optionToPreviewLabel: (opt) => opt
+                    },
+                },
                 // Skills required
+            
                 {
                     onSave: (skills) => createRequestStore().skills = skills,
                     val: () => {
@@ -155,55 +200,16 @@ class CreateHelpRequest extends React.Component<Props> {
                             runInAction(() => createRequestStore().skills.splice(idx, 1))
                         },
                     },
-                },
-                // Number of Responders
-                {
-                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
-                    val: () => {
-                        return [createRequestStore().respondersNeeded]
-                    },
-                    isValid: () => {
-                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
-                    },
-                    name: 'responders',
-                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
-                    headerLabel: () => 'Number of responders',
-                    type: 'List',
-                    props: {
-                        options: ResponderCountRange,
-                        optionToPreviewLabel: (opt) => opt
-                    },
-                },
-                // Type of request
-                {
-                    onSave: (type) => createRequestStore().type = type,
-                    val: () => {
-                        return createRequestStore().type
-                    },
-                    isValid: () => {
-                        return createRequestStore().typeValid
-                    },
-                    name: 'type',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Type of request',
-                    type: 'TagList',
-                    required: true,
-                    props: {
-                        options: allEnumValues(RequestType),
-                        optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            runInAction(() => createRequestStore().type.splice(idx, 1))
-                        },
-                        dark: true
-                    }
                 }
+                
             ] as [
-                ScreenFormInputConfig<'TextArea'>,
                 ScreenFormInputConfig<'Map'>, 
-                ScreenFormInputConfig<'NestedTagList'>,
+                [
+                    ScreenFormInputConfig<'TextArea'>,
+                    ScreenFormInputConfig<'TagList'>
+                ],
                 ScreenFormInputConfig<'List'>,
-                ScreenFormInputConfig<'TagList'>, 
+                ScreenFormInputConfig<'NestedTagList'>
             ]
         }
     }

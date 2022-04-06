@@ -302,7 +302,7 @@ const Section = ({
             </View>
             {
                 dayPickerOpen && section == currentSection    
-                    ? <View style={{ backgroundColor: '#fff', marginLeft: -20}}>
+                    ? <View style={{ backgroundColor: '#fff', marginLeft: -60}}>
                         <CalendarPicker
                             onDateChange={onDayEvent} 
                             initialDate={date} />
@@ -311,7 +311,7 @@ const Section = ({
             }
             {
                 timePickerOpen && section == currentSection 
-                    ? <View style={{ marginLeft: -20, flexDirection: 'row', justifyContent: 'center'}}>
+                    ? <View style={{ marginLeft: -60, flexDirection: 'row', justifyContent: 'center'}}>
                         <WheelPicker
                             initialSelectedIndex={initialHour == -1 ? 0 : initialHour}
                             items={HOURS.map(name => ({ label: name, value: name }))}
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
         height: 60,
         width: 60,
         position: 'absolute', 
-        left: -20,
+        left: -60,
         justifyContent: 'center',
         alignContent: 'center',
         padding: 20
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     },
     sectionHeader: {
         flexDirection: 'row',
-        paddingLeft: 40,
+        paddingLeft: 0,
         paddingRight: 20,
         justifyContent: 'space-between'
     },

@@ -31,11 +31,13 @@ import { NavigationContainer, NavigationState } from "@react-navigation/native";
 
 const Stack = createStackNavigator();
 
+type Grouped<T> = T | T[];
+
 export type FormProps = {
     headerLabel: string,
 
     // TODO: change this to() FormInputConfig | FormInputConfig[])[] to allow for visually grouped components
-    inputs: FormInputConfig[],
+    inputs: Grouped<FormInputConfig>[],
     onExpand?(): void,
     onBack?(): void,
     submit?: {
@@ -79,6 +81,8 @@ const FormViewMap: FormInputViewMap = {
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
+type GroupPosition = 'start' | 'middle' | 'end';
+
 @observer
 export default class Form extends React.Component<FormProps> {
     private homeScreenId = '__formHome';
@@ -88,9 +92,16 @@ export default class Form extends React.Component<FormProps> {
         return this.inputs.get().filter(i => i.required).every(i => i.isValid());
     })
 
-    // used to unpack nested input configs from compound inputs
+    // used to flatten the (visually grouped) inputs into an interable list of all
+    // standalone inputs so they can be processed easily
     private inputs = computed<StandAloneFormInputConfig[]>(() => {
-        return this.flattenInputConfigs(this.props.inputs)
+        return this.flattenGroupedInputConfigs(this.groupedInputs.get())
+    })
+
+    // used to unpack nested input configs from compound inputs (data based grouping) but keep them grouped
+    // so they can be rendered correctly
+    private groupedInputs = computed<Grouped<StandAloneFormInputConfig>[]>(() => {
+        return this.expandCompoundInputConfigs(this.props.inputs)
     })
 
     private screenInputs = computed<ScreenFormInputConfig[]>(() => {
@@ -112,20 +123,60 @@ export default class Form extends React.Component<FormProps> {
         screenId: this.homeScreenId
     }
 
-    flattenInputConfigs = (inputConfigs: FormInputConfig[]) => {
+    expandConfig = (config: FormInputConfig): StandAloneFormInputConfig[] => {
+
+        const isCompoundInput = (config as any as CompoundFormInputConfig).inputs;
+
+        if (isCompoundInput) {
+            const nestedInputConfigs = (config as any as CompoundFormInputConfig).inputs?.()
+
+            if (nestedInputConfigs && nestedInputConfigs.length) {
+                const flattenedConfigs: StandAloneFormInputConfig[] = [];
+
+                nestedInputConfigs.forEach(nestedConfig => {
+                    flattenedConfigs.push(...this.expandConfig(nestedConfig))
+                })
+
+                return flattenedConfigs
+            } else {
+                return []
+            }
+        } else {
+            return [
+                config as StandAloneFormInputConfig
+            ]
+        }
+    }
+
+    expandCompoundInputConfigs = (inputConfigs: Grouped<FormInputConfig>[]): Grouped<StandAloneFormInputConfig>[] => {
+        const expandedInputConfigs: Grouped<StandAloneFormInputConfig>[] = [];
+        
+        inputConfigs.forEach(config => {
+            if (Array.isArray(config)) {
+                const group: StandAloneFormInputConfig[] = []
+
+                config.forEach(groupedConfig => {
+                    group.push(...this.expandConfig(groupedConfig))
+                });
+
+                expandedInputConfigs.push(group);
+            } else {
+                const expandedConfig = this.expandConfig(config);
+                expandedInputConfigs.push(...expandedConfig)
+            }
+        })
+
+        return expandedInputConfigs
+    }
+
+    flattenGroupedInputConfigs = (inputConfigs: Grouped<StandAloneFormInputConfig>[]): StandAloneFormInputConfig[] => {
         const flattenedInputConfigs: StandAloneFormInputConfig[] = [];
         
         inputConfigs.forEach(config => {
-            const isCompoundInput = (config as any as CompoundFormInputConfig).inputs;
-
-            if (isCompoundInput) {
-                const nestedInputConfigs = (config as any as CompoundFormInputConfig).inputs?.()
-
-                if (nestedInputConfigs && nestedInputConfigs.length) {
-                    flattenedInputConfigs.push(...this.flattenInputConfigs(nestedInputConfigs))
-                }
+            if (Array.isArray(config)) {
+                flattenedInputConfigs.push(...config)
             } else {
-                flattenedInputConfigs.push(config as StandAloneFormInputConfig)
+                flattenedInputConfigs.push(config)
             }
         })
 
@@ -159,53 +210,80 @@ export default class Form extends React.Component<FormProps> {
             this.props.onExpand?.()
         }
 
+        const renderInput = (inputConfig: StandAloneFormInputConfig, position?: GroupPosition) => {
+            const viewConfig = FormViewMap[inputConfig.type];
+
+            // make sure any inline store updates are being run in an action 
+            // (for convenience)
+            const inlineInputConfig = inputConfig as InlineFormInputConfig;
+
+            if (inlineInputConfig.onChange) {
+                const oldOnChange = inlineInputConfig.onChange;
+                
+                inlineInputConfig.onChange = (...args) => {
+                    runInAction(() => {
+                        return oldOnChange(...args)
+                    })
+                }
+            }
+
+            const screenInputConfig = inputConfig as ScreenFormInputConfig;
+
+            const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
+
+            if (labelComponent) {
+                return <LabelSection 
+                    inputConfig={screenInputConfig}
+                    labelComponent={labelComponent}
+                    openLink={navigateToScreen}  
+                    linkTo={inputConfig.name} 
+                    groupPosition={position}/>
+            }
+
+            const inlineComponent = (viewConfig as InlineFormInputViewConfig).inlineComponent || null;
+
+            if (inlineComponent) {    
+                return <InlineSection 
+                    inputConfig={inlineInputConfig}
+                    inlineComponent={inlineComponent} 
+                    groupPosition={position}/>
+            }
+
+            return <DefaultSection 
+                inputConfig={screenInputConfig}
+                openLink={navigateToScreen}  
+                linkTo={inputConfig.name} 
+                groupPosition={position}/>
+        }
 
         const renderInputs = () => {
+            const inputElements: JSX.Element[] = [];
 
-            // TODO: for component groups, render each individual component section with a groupStart/groupMiddle/groupEnd flag to allow for visually grouped components
+            // for component groups, render each individual component section with a groupPosition prop to allow for visually grouped components
             // ie LabelSection, InlineSection, DefaultSection need a new prop like groupPosition?: 'start' | 'middle' | 'end'
-            return this.inputs.get().map(inputConfig => {
-                const viewConfig = FormViewMap[inputConfig.type];
+            this.groupedInputs.get().forEach(inputConfig => {
+                if (Array.isArray(inputConfig)) {
 
-                // make sure any inline store updates are being run in an action 
-                // (for convenience)
-                const inlineInputConfig = inputConfig as InlineFormInputConfig;
-
-                if (inlineInputConfig.onChange) {
-                    const oldOnChange = inlineInputConfig.onChange;
-                    
-                    inlineInputConfig.onChange = (...args) => {
-                        runInAction(() => {
-                            return oldOnChange(...args)
-                        })
+                    if (inputConfig.length == 1) {
+                        inputElements.push(renderInput(inputConfig[0]));
+                        return;
                     }
+
+                    inputConfig.forEach((config, i) => {
+                        const position: GroupPosition = i == 0
+                            ? 'start'
+                            : i == inputConfig.length - 1
+                                ? 'end'
+                                : 'middle'
+
+                        inputElements.push(renderInput(config, position))
+                    })
+                } else {
+                    inputElements.push(renderInput(inputConfig))
                 }
-
-                const screenInputConfig = inputConfig as ScreenFormInputConfig;
-
-                const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
-
-                if (labelComponent) {
-                    return <LabelSection 
-                        inputConfig={screenInputConfig}
-                        labelComponent={labelComponent}
-                        openLink={navigateToScreen}  
-                        linkTo={inputConfig.name} />
-                }
-
-                const inlineComponent = (viewConfig as InlineFormInputViewConfig).inlineComponent || null;
-
-                if (inlineComponent) {    
-                    return <InlineSection 
-                        inputConfig={inlineInputConfig}
-                        inlineComponent={inlineComponent} />
-                }
-
-                return <DefaultSection 
-                    inputConfig={screenInputConfig}
-                    openLink={navigateToScreen}  
-                    linkTo={inputConfig.name} />
             })
+
+            return inputElements;
         }
 
         return (
@@ -278,11 +356,10 @@ export default class Form extends React.Component<FormProps> {
     render() {
         return (
             <NavigationContainer independent onStateChange={this.saveRoute}>
-                <Stack.Navigator screenOptions={{headerShown: false}}  initialRouteName={this.homeScreenId}>
+                <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#fff' }}}  initialRouteName={this.homeScreenId}>
                     <Stack.Screen name={this.homeScreenId} component={this.listView} />
                     {
                         this.screenInputs.get().map(screenInputConfig => {
-
                             return (
                                 <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
                             )
@@ -305,10 +382,24 @@ export default class Form extends React.Component<FormProps> {
  * 
  */
 
+ const positionStyles = (pos: GroupPosition) => {
+    switch (pos) {
+        case 'start':
+            return styles.startOfGroupSection
+        case 'middle':
+            return styles.middleOfGroupSection
+        case 'end':
+            return styles.endOfGroupSection
+        default:
+            return null;
+    }
+}
+
 const DefaultSection = observer((props: { 
     inputConfig: ScreenFormInputConfig,
     linkTo: string,
-    openLink: (screenId: string) => void
+    openLink: (screenId: string) => void,
+    groupPosition?: GroupPosition
 }) => {
 
     const expand = () => {
@@ -322,46 +413,88 @@ const DefaultSection = observer((props: {
     const preview = unwrap(props.inputConfig.previewLabel)
     const placeHolder = unwrap(props.inputConfig.headerLabel)
 
+    const resolvedStyles = [
+        styles.section, 
+        props.inputConfig.disabled 
+            ? styles.disabledSection 
+            : null,
+        positionStyles(props.groupPosition)
+    ]
+
+    const partialBottomBorder = props.groupPosition == 'start' || props.groupPosition == 'middle';
+
     return preview 
-            ? <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
-                <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
-                { !props.inputConfig.disabled
-                    ? <IconButton
-                        style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
-                        icon='chevron-right' 
-                        color='rgba(60,60,67,.3)'
-                        onPress={expand}
-                        size={30} />
-                    : null
+            ? <>
+                <Pressable style={resolvedStyles} onPress={expand}>
+                    <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
+                    { !props.inputConfig.disabled
+                        ? <IconButton
+                            style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
+                            icon='chevron-right' 
+                            color='rgba(60,60,67,.3)'
+                            onPress={expand}
+                            size={30} />
+                        : null
+                    }
+                </Pressable>
+                {
+                    partialBottomBorder
+                        ? <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                        : null
                 }
-            </Pressable>
-            : <Pressable style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]} onPress={expand}>
-                <Text style={[styles.label, styles.placeholder]}>{placeHolder || ''}</Text>
-                { !props.inputConfig.disabled
-                    ? <IconButton
-                        style={{ flex: 0, height: 30, width: 30 }}
-                        icon='chevron-right' 
-                        color='rgba(60,60,67,.3)'
-                        onPress={expand}
-                        size={30} />
-                    : null
+            </>
+            : <>
+                <Pressable style={resolvedStyles} onPress={expand}>
+                    <Text style={[styles.label, styles.placeholder]}>{placeHolder || ''}</Text>
+                    { !props.inputConfig.disabled
+                        ? <IconButton
+                            style={{ flex: 0, height: 30, width: 30 }}
+                            icon='chevron-right' 
+                            color='rgba(60,60,67,.3)'
+                            onPress={expand}
+                            size={30} />
+                        : null
+                    }
+                </Pressable>
+                {
+                    partialBottomBorder
+                        ? <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                        : null
                 }
-            </Pressable>
+            </>
 })
 
 // doesn't need to be observer because inline components must be observers themselves 
 function InlineSection(props: { 
     inputConfig: InlineFormInputConfig,
     inlineComponent: ComponentType<SectionInlineViewProps>,
+    groupPosition?: GroupPosition
 }) {
     const Label: ComponentType<SectionInlineViewProps> = props.inlineComponent;
 
+    const resolvedStyles = [
+        styles.section, 
+        props.inputConfig.disabled 
+            ? styles.disabledSection 
+            : null,
+        positionStyles(props.groupPosition)
+    ]
+
+    const partialBottomBorder = props.groupPosition == 'start' || props.groupPosition == 'middle';
+
     return (
-        <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
-            <View style={{ flex: 1 }}>
-                <Label config={props.inputConfig}/>
+        <>
+            <View style={resolvedStyles}>
+                <View style={{ flex: 1 }}>
+                    <Label config={props.inputConfig}/>
+                </View>
             </View>
-        </View>
+            {
+                partialBottomBorder
+                    ? <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                    : null
+            }
+        </>
     )
 }
 
@@ -369,6 +502,7 @@ const LabelSection = observer((props: {
     inputConfig: ScreenFormInputConfig,
     linkTo: string,
     openLink: (screenId: string) => void,
+    groupPosition?: GroupPosition,
     labelComponent: ComponentType<SectionLabelViewProps>,
 }) => {
 
@@ -382,21 +516,38 @@ const LabelSection = observer((props: {
 
     const Label: ComponentType<SectionLabelViewProps> = props.labelComponent;
 
+    const resolvedStyles = [
+        styles.section, 
+        props.inputConfig.disabled 
+            ? styles.disabledSection 
+            : null,
+        positionStyles(props.groupPosition)
+    ]
+
+    const partialBottomBorder = props.groupPosition == 'start' || props.groupPosition == 'middle';
+
     return (
-        <View style={[styles.section, props.inputConfig.disabled ? styles.disabledSection : null]}>
-            <View style={{ flex: 1 }}>
-                <Label config={props.inputConfig} expand={expand} />
+        <>
+            <View style={resolvedStyles}>
+                <View style={{ flex: 1 }}>
+                    <Label config={props.inputConfig} expand={expand} />
+                </View>
+                { !props.inputConfig.disabled
+                    ? <IconButton
+                        style={{ flex: 0, height: 30, width: 30 }}
+                        icon='chevron-right' 
+                        color='rgba(60,60,67,.3)'
+                        onPress={expand}
+                        size={30} />
+                    : null
+                }
             </View>
-            { !props.inputConfig.disabled
-                ? <IconButton
-                    style={{ flex: 0, height: 30, width: 30 }}
-                    icon='chevron-right' 
-                    color='rgba(60,60,67,.3)'
-                    onPress={expand}
-                    size={30} />
-                : null
+            {
+                partialBottomBorder
+                    ? <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                    : null
             }
-        </View>
+        </>
     )
 })
 
@@ -410,10 +561,20 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       flexDirection: 'row',
       width: '100%',
-      paddingLeft: 20,
+      paddingLeft: 60,
     //   paddingRight: 20,
       justifyContent: 'space-between'
     }, 
+    startOfGroupSection: {
+        borderBottomWidth: 0
+    },
+    middleOfGroupSection: {
+        borderBottomWidth: 0,
+        borderTopWidth: 0
+    },
+    endOfGroupSection: {
+        borderTopWidth: 0
+    },
     disabledSection: {
         backgroundColor: '#E0DEE0'
     },
