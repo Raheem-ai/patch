@@ -408,7 +408,7 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributeIds: string[], skills: RequestSkill[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
@@ -416,6 +416,7 @@ export class APIClient implements IAPIService {
             phone,
             roles,
             roleIds,
+            attributeIds,
             baseUrl,
             skills
         }, {

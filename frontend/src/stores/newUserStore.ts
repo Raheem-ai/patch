@@ -19,7 +19,8 @@ export default class NewUserStore implements INewUserStore {
     @persistent() bio? = ''
     @persistent() skills = []
     @persistent() roles = []
-    @persistent() roleIDs = []
+    @persistent() roleIds = []
+    @persistent() attributeIds = []
     @persistent() pronouns? = ''
 
 
@@ -37,7 +38,8 @@ export default class NewUserStore implements INewUserStore {
         this.bio = ''
         this.skills = []
         this.roles = []
-        this.roleIDs = []
+        this.roleIds = []
+        this.attributeIds = []
         this.pronouns = ''
     }
 
@@ -67,7 +69,7 @@ export default class NewUserStore implements INewUserStore {
     }
 
     get roleIDsValid() {
-        return !!this.roleIDs.length
+        return !!this.roleIds.length
     }
 
     inviteNewUser = async () => {
@@ -75,7 +77,8 @@ export default class NewUserStore implements INewUserStore {
             this.email,
             this.phone,
             this.roles,
-            this.roleIDs,
+            this.roleIds,
+            this.attributeIds,
             this.skills,
             linkingStore().baseUrl
         );

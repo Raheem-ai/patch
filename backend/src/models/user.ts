@@ -29,6 +29,7 @@ export class UserModel implements User {
     organizations: { [key: string]:  {
             roles: UserRole[],
             roleIds: string[],
+            attributeIds: string[],
             onDuty: boolean
         }
     }

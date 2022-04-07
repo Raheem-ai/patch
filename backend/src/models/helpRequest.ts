@@ -56,6 +56,9 @@ export class HelpRequestModel implements HelpRequest {
     skills: RequestSkill[]
 
     @Property()
+    tagIds: string[]
+
+    @Property()
     // otherRequirements?: any 
 
     @Property()

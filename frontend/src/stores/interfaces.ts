@@ -31,7 +31,7 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIDs: string[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributeIds: string[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
@@ -317,6 +317,8 @@ export namespace INewUserStore {
 
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
+    roleIds: string[]
+    attributeIds: string[]
 
     isValid: boolean
     phoneValid: boolean

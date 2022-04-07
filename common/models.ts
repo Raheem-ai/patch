@@ -21,12 +21,13 @@ export interface User {
     // location?
 }
 
-export type EditableUser = Pick<ProtectedUser, 'skills'>
+export type EditableUser = Pick<ProtectedUser, 'organizations' | 'skills' >
 export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
+    attributeIds: string[],
     onDuty: boolean
 }
 
@@ -56,10 +57,12 @@ export interface Organization {
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
     roleDefinitions: Role[]
+    attributeCategories: AttributeCategory[]
+    tagCategories: TagCategory[]
 }
 
-// TODO: Introduce 'tags', 'attributes'
-export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions'>;
+export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>;
+export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type Role = {
     id: string,
@@ -68,13 +71,35 @@ export type Role = {
 }
 
 export type MinRole = AtLeast<Role, 'name' | 'permissions'>
-export type MinOrg = AtLeast<Organization, 'name'>;
+
+export type AttributeCategory = {
+    id: string,
+    name: string,
+    attributes: Attribute[]
+}
+
+export type Attribute = {
+    id: string,
+    name: string
+}
+
+export type TagCategory = {
+    id: string,
+    name: string,
+    tags: Tag[]
+}
+
+export type Tag = {
+    id: string,
+    name: string
+}
 
 export type PendingUser = {
     email: string
     phone: string
     roles: UserRole[]
     roleIds: string[]
+    attributeIds: string[]
     skills: RequestSkill[]
     pendingId: string
 }
@@ -116,6 +141,7 @@ export type HelpRequest = {
     type: RequestType[]
     notes: string
     skills: RequestSkill[]
+    tagIds: string[]
     // otherRequirements?: any //TODO: nix these until later on
     respondersNeeded: number
     chat: Chat
@@ -409,7 +435,17 @@ export enum PatchEventType {
     // Organization.Roles.<_>
     OrganizationRoleCreated = '2.1.0',
     OrganizationRoleEdited = '2.1.1',
-    OrganizationRoleDeleted = '2.1.2'
+    OrganizationRoleDeleted = '2.1.2',
+
+    // Organization.Attributes.<_>
+    OrganizationAttributeCreated = '2.2.0',
+    OrganizationAttributeEdited = '2.2.1',
+    OrganizationAttributeDeleted = '2.2.2',
+
+    // Organization.Tags.<_>
+    OrganizationTagCreated = '2.3.0',
+    OrganizationTagEdited = '2.3.1',
+    OrganizationTagDeleted = '2.3.2',
 }
 
 export type PatchEventParams = {
@@ -494,6 +530,30 @@ export type PatchEventParams = {
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
         roleId: string
+    },
+    [PatchEventType.OrganizationAttributeCreated]: {
+        orgId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationAttributeEdited]: {
+        orgId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationAttributeDeleted]: {
+        orgId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationTagCreated]: {
+        orgId: string,
+        tagId: string
+    },
+    [PatchEventType.OrganizationTagEdited]: {
+        orgId: string,
+        tagId: string
+    },
+    [PatchEventType.OrganizationTagDeleted]: {
+        orgId: string,
+        tagId: string
     }
 }
 
@@ -516,6 +576,8 @@ export type PatchUIEventParams = {
         requestId?: string
         userId?: string
         roleId?: string
+        attributeId?: string
+        tagId?: string
         userList?: boolean
         requestList?: boolean
     },

@@ -71,9 +71,10 @@ export class OrganizationController implements APIController<
         @Req() req,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[],
-        @Required() @BodyParams('roleIds') roleIds: string[]
+        @Required() @BodyParams('roleIds') roleIds: string[],
+        @Required() @BodyParams('attributeIds') attributeIds: string[]
     ) {
-        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds);
+        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds, attributeIds);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -227,6 +228,7 @@ export class OrganizationController implements APIController<
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('roleIds') roleIds: string[], 
+        @Required() @BodyParams('attributeIds') attributeIds: string[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
@@ -244,6 +246,7 @@ export class OrganizationController implements APIController<
             phone,
             roles,
             roleIds,
+            attributeIds,
             skills,
             pendingId: uuid.v1()
         };
@@ -304,7 +307,9 @@ export class OrganizationController implements APIController<
         return {
             id: orgId,
             name: org.name,
-            roleDefinitions: org.roleDefinitions
+            roleDefinitions: org.roleDefinitions,
+            attributeCategories: org.attributeCategories,
+            tagCategories: org.tagCategories
         }
     }
 
@@ -323,7 +328,9 @@ export class OrganizationController implements APIController<
             return {
                 id: orgId,
                 name: org.name,
-                roleDefinitions: org.roleDefinitions
+                roleDefinitions: org.roleDefinitions,
+                attributeCategories: org.attributeCategories,
+                tagCategories: org.tagCategories
             }
         }
 

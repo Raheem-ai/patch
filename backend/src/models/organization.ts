@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, RequestSkill, User, UserRole, Role } from "common/models";
+import { Organization, PendingUser, RequestSkill, User, UserRole, Role, AttributeCategory, TagCategory } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
@@ -11,6 +11,7 @@ class PendingUserSchema  implements PendingUser {
     @Required() phone: string
     @Required() roles: UserRole[]
     @Required() roleIds: string[]
+    @Required() attributeIds: string[]
     @Required() skills: RequestSkill[]
     @Required() pendingId: string
 }
@@ -28,6 +29,12 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
 
     @Property()
     roleDefinitions: Role[];
+
+    @Property()
+    attributeCategories: AttributeCategory[];
+
+    @Property()
+    tagCategories: TagCategory[];
 
     @Property()
     lastRequestId: number;
