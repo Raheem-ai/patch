@@ -462,6 +462,17 @@ const DefaultSection = observer((props: {
     return preview 
             ? <>
                 <Pressable style={resolvedStyles} onPress={expand}>
+                    { props.inputConfig.icon
+                        ? <View style={styles.iconContainer}>
+                            <IconButton
+                                icon={props.inputConfig.icon} 
+                                color='#000'
+                                size={20} 
+                                style={{ margin: 0, padding: 0, width: 20 }}
+                                />
+                        </View>
+                        : null
+                    }
                     <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
                     { !props.inputConfig.disabled
                         ? <IconButton
@@ -481,6 +492,17 @@ const DefaultSection = observer((props: {
             </>
             : <>
                 <Pressable style={resolvedStyles} onPress={expand}>
+                    { props.inputConfig.icon
+                        ? <View style={styles.iconContainer}>
+                            <IconButton
+                                icon={props.inputConfig.icon} 
+                                color='#000'
+                                size={20} 
+                                style={{ margin: 0, padding: 0, width: 20 }}
+                                />
+                        </View>
+                        : null
+                    }
                     <Text style={[styles.label, styles.placeholder]}>{placeHolder || ''}</Text>
                     { !props.inputConfig.disabled
                         ? <IconButton
@@ -521,6 +543,17 @@ function InlineSection(props: {
     return (
         <>
             <View style={resolvedStyles}>
+                { props.inputConfig.icon
+                    ? <View style={styles.iconContainer}>
+                        <IconButton
+                            icon={props.inputConfig.icon} 
+                            color='#000'
+                            size={20} 
+                            style={{ margin: 0, padding: 0, width: 20 }}
+                            />
+                    </View>
+                    : null
+                }
                 <View style={{ flex: 1 }}>
                     <InlineComponent config={props.inputConfig}/>
                 </View>
@@ -565,6 +598,17 @@ const LabelSection = observer((props: {
     return (
         <>
             <View style={resolvedStyles}>
+                { props.inputConfig.icon
+                    ? <View style={styles.iconContainer}>
+                        <IconButton
+                            icon={props.inputConfig.icon} 
+                            color='#000'
+                            size={20} 
+                            style={{ margin: 0, padding: 0, width: 20 }}
+                            />
+                    </View>
+                    : null
+                }
                 <View style={{ flex: 1 }}>
                     <Label config={props.inputConfig} expand={expand} />
                 </View>
@@ -623,6 +667,17 @@ const NavigationSection = observer((props: {
     return (
         <>
             <Pressable style={resolvedStyles} onPress={defaultExpand}>
+                { props.inputConfig.icon
+                    ? <View style={styles.iconContainer}>
+                        <IconButton
+                            icon={props.inputConfig.icon} 
+                            color='#000'
+                            size={20} 
+                            style={{ margin: 0, padding: 0, width: 20 }}
+                            />
+                    </View>
+                    : null
+                }
                 {
                     typeof props.inputConfig.label == 'function'
                         ? <View style={{ flex: 1 }}>
@@ -650,6 +705,15 @@ const NavigationSection = observer((props: {
 })
 
 const styles = StyleSheet.create({
+    iconContainer: {
+        height: 60,
+        width: 60,
+        position: 'absolute', 
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignSelf: 'flex-start',
+        padding: 20
+    },
     section: {
       minHeight: 60,
       borderStyle: 'solid',
@@ -660,7 +724,8 @@ const styles = StyleSheet.create({
       width: '100%',
       paddingLeft: 60,
     //   paddingRight: 20,
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
+      position: 'relative'
     }, 
     startOfGroupSection: {
         borderBottomWidth: 0

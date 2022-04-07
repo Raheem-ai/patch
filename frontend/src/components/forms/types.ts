@@ -118,7 +118,7 @@ export type NavigationFormInputConfig = {
     screen: (props: SectionNavigationScreenViewProps) => JSX.Element
     // need 'name' for a screenId and 'disabled' in case the label is a string
     // so the consumer doesn't have control over the disabled lable visual component
-} & Pick<BaseFormInputConfig, 'name' | 'disabled'>; 
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'icon'>; 
 
 export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormInputType, Val extends InlineFormInputOptions[Type]['type'] = InlineFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
@@ -163,7 +163,7 @@ export type CompoundFormInputConfig<Type extends CompoundFormInputType = Compoun
 export type CompoundFormInputFactoryParams<Type extends CompoundFormInputType = CompoundFormInputType, Val extends CompoundFormInputOptions[Type]['type'] = CompoundFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
     val(): Val
-} & BaseFormInputConfig & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'required'> & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
 
 // instead of exporting an input component we export a factory with a similar config interface
 export type CompoundFormInputFactory<Type extends CompoundFormInputType> = (params: CompoundFormInputFactoryParams<Type>) => CompoundFormInputConfig<Type>;
@@ -172,6 +172,7 @@ type BaseFormInputConfig = {
     name: string
     disabled?: boolean
     required?: boolean
+    icon?: string
 }
 
 export type ScreenFormInputType = keyof ScreenFormInputOptions

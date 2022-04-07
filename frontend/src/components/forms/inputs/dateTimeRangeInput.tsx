@@ -191,14 +191,14 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
     
     return (
         <View style={styles.container}>
-            <View style={styles.iconContainer}>
+            {/* <View style={styles.iconContainer}>
                     <IconButton
                         icon='clock-outline' 
                         color='#000'
                         size={20} 
                         style={{ margin: 0, padding: 0, width: 20 }}
                         />
-            </View>
+            </View> */}
             <Section 
                 dateParts={{
                     date: startDay, 

@@ -19,7 +19,8 @@ type Demo<State = any> = {
     name: string,
     description: string,
     state: State,
-    inputs: (state: State) => FormProps['inputs']
+    inputs: (state: State) => FormProps['inputs'],
+    icon?: string
 }
 
 const lib: Library = [
@@ -30,6 +31,7 @@ const lib: Library = [
             startDate: moment().hour(22).minutes(5).toDate(), // Today @ 10:05pm 
             endDate: moment().hour(22).minutes(5).add(2, 'hours').toDate(), // Tomorrow @ 12:05am 
         }),
+        icon: 'clock-outline',
         inputs: (state) => [RecurringDateTimeRangeInputConfig({
             onChange: (data) => {
                 state.set(data)
@@ -51,6 +53,7 @@ const lib: Library = [
     {
         name: 'Grouped Components',
         description: '',
+        icon: 'group',
         state: observable.box<{
             recurringDateTimeRange: RecurringDateTimeRange,
             name: string,
@@ -138,6 +141,7 @@ const ComponentLibrary = (props: Props) => {
         const navigationInputConfig: NavigationFormInputConfig = {
             name: item.name,
             label: label,
+            icon: item.icon,
             screen: ({ back }) => {
                 return <Form headerLabel={item.name} inputs={inputs} submit={{ label: 'Done', handler: async () => back() }}/>
             }
