@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -43,7 +43,19 @@ export class OrganizationController implements APIController<
     | 'editRole'
     | 'createNewRole'
     | 'deleteRoles'
-> {
+    | "createNewAttributeCategory"
+    | "editAttributeCategory"
+    | "deleteAttributeCategory"
+    | "createNewAttribute"
+    | "editAttribute"
+    | "deleteAttribute"
+    | "createNewTagCategory"
+    | "editTagCategory"
+    | "deleteTagCategory"
+    | "createNewTag"
+    | "editTag"
+    | "deleteTag"
+    > {
     @Inject(DBManager) db: DBManager;
 
     // eventually these will probably also trigger notifications
@@ -402,6 +414,268 @@ export class OrganizationController implements APIController<
         }
 
         throw new Unauthorized('You do not have permission to create a new Role for this organization.');
+    }
+
+    @Post(API.server.createNewAttributeCategory())
+    @Authenticate()
+    async createNewAttributeCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('category') newCategory: MinAttributeCategory,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
+        {
+            const [org, createdCategory] = await this.db.addAttributeCategoryToOrganization(newCategory, orgId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryCreated, {
+                orgId: orgId,
+                categoryId: createdCategory.id
+            });
+
+            return createdCategory;
+        }
+
+        throw new Unauthorized('You do not have permission to create a new Attribute Category for this organization.');
+    }
+
+    @Post(API.server.editAttributeCategory())
+    @Authenticate()
+    async editAttributeCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryUpdates') categoryUpdates: AtLeast<AttributeCategory, "id">,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+            const [org, updatedCategory] = await this.db.editAttributeCategory(orgId, categoryUpdates);
+    
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryEdited, { 
+                orgId: orgId, 
+                categoryId: updatedCategory.id
+            });
+
+            return updatedCategory;
+        }
+
+        throw new Unauthorized('You do not have permission to edit Attribute Categories for this organization.');
+    }
+
+    @Post(API.server.deleteAttributeCategory())
+    @Authenticate()
+    async deleteAttributeCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('categoryId') categoryId: string,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+            const org = await this.db.removeAttributeCategory(orgId, categoryId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryDeleted, { 
+                orgId: orgId, 
+                categoryId: categoryId
+            });
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Attribute Categories from this organization.');
+        }
+    }
+
+    @Post(API.server.createNewAttribute())
+    @Authenticate()
+    async createNewAttribute(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryId') categoryId: string,
+        @Required() @BodyParams('attribute') attribute: MinAttribute,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
+        {
+            const [org, createdAttribute] = await this.db.addAttributeToOrganization(attribute, categoryId, orgId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeCreated, {
+                orgId: orgId,
+                attributeId: createdAttribute.id
+            });
+
+            return createdAttribute;
+        }
+
+        throw new Unauthorized('You do not have permission to create a new Attribute for this organization.');
+    }
+
+    @Post(API.server.editAttribute())
+    @Authenticate()
+    async editAttribute(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryId') categoryId: string,
+        @Required() @BodyParams('attributeUpdates') attributeUpdates: AtLeast<Attribute, "id">,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+            const [org, updatedAttribute] = await this.db.editAttribute(orgId, categoryId, attributeUpdates);
+    
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeEdited, { 
+                orgId: orgId, 
+                attributeId: updatedAttribute.id
+            });
+
+            return updatedAttribute;
+        }
+
+        throw new Unauthorized('You do not have permission to edit Attributes for this organization.');
+    }
+
+    @Post(API.server.deleteAttribute())
+    @Authenticate()
+    async deleteAttribute(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('categoryId') categoryId: string,
+        @BodyParams('attributeId') attributeId: string,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+            const org = await this.db.removeAttribute(orgId, categoryId, attributeId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationAttributeDeleted, { 
+                orgId: orgId, 
+                attributeId: attributeId
+            });
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Attributes from this organization.');
+        }
+    }
+
+    @Post(API.server.createNewTagCategory())
+    @Authenticate()
+    async createNewTagCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('category') newCategory: MinTagCategory,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
+        {
+            const [org, createdCategory] = await this.db.addTagCategoryToOrganization(newCategory, orgId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationTagCategoryCreated, {
+                orgId: orgId,
+                categoryId: createdCategory.id
+            });
+
+            return createdCategory;
+        }
+
+        throw new Unauthorized('You do not have permission to create a new Tag Category for this organization.');
+    }
+
+    @Post(API.server.editTagCategory())
+    @Authenticate()
+    async editTagCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryUpdates') categoryUpdates: AtLeast<TagCategory, "id">,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+            const [org, updatedCategory] = await this.db.editTagCategory(orgId, categoryUpdates);
+    
+            await this.pubSub.sys(PatchEventType.OrganizationTagCategoryEdited, { 
+                orgId: orgId, 
+                categoryId: updatedCategory.id
+            });
+
+            return updatedCategory;
+        }
+
+        throw new Unauthorized('You do not have permission to edit Tag Categories for this organization.');
+    }
+
+    @Post(API.server.deleteTagCategory())
+    @Authenticate()
+    async deleteTagCategory(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('categoryId') categoryId: string,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+            const org = await this.db.removeTagCategory(orgId, categoryId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationTagCategoryDeleted, { 
+                orgId: orgId, 
+                categoryId: categoryId
+            });
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Tag Categories from this organization.');
+        }
+    }
+
+    @Post(API.server.createNewAttribute())
+    @Authenticate()
+    async createNewTag(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryId') categoryId: string,
+        @Required() @BodyParams('tag') tag: MinTag,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
+        {
+            const [org, createdTag] = await this.db.addTagToOrganization(tag, categoryId, orgId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationTagCreated, {
+                orgId: orgId,
+                tagId: createdTag.id
+            });
+
+            return createdTag;
+        }
+
+        throw new Unauthorized('You do not have permission to create a new Tag for this organization.');
+    }
+
+    @Post(API.server.editTag())
+    @Authenticate()
+    async editTag(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('categoryId') categoryId: string,
+        @Required() @BodyParams('tagUpdates') tagUpdates: AtLeast<Tag, "id">,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+            const [org, updatedTag] = await this.db.editTag(orgId, categoryId, tagUpdates);
+    
+            await this.pubSub.sys(PatchEventType.OrganizationTagEdited, { 
+                orgId: orgId, 
+                tagId: updatedTag.id
+            });
+
+            return updatedTag;
+        }
+
+        throw new Unauthorized('You do not have permission to edit Tags for this organization.');
+    }
+
+    @Post(API.server.deleteTag())
+    @Authenticate()
+    async deleteTag(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('categoryId') categoryId: string,
+        @BodyParams('tagId') tagId: string,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+            const org = await this.db.removeTag(orgId, categoryId, tagId);
+
+            await this.pubSub.sys(PatchEventType.OrganizationTagDeleted, { 
+                orgId: orgId, 
+                tagId: tagId
+            });
+
+            return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Tags from this organization.');
+        }
     }
 
     getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {

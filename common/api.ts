@@ -115,15 +115,15 @@ export interface IApiClient {
     createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
     editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<AttributeCategory, 'id'>) => Promise<AttributeCategory>>
     deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    createNewAttribute: AuthenticatedWithOrg<(attribute: MinAttribute) => Promise<Attribute>>
-    editAttribute: AuthenticatedWithOrg<(attriuteUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
-    deleteAttribute: AuthenticatedWithOrg<(attributeId: string) => Promise<OrganizationMetadata>>
+    createNewAttribute: AuthenticatedWithOrg<(categoryId: string, attribute: MinAttribute) => Promise<Attribute>>
+    editAttribute: AuthenticatedWithOrg<(categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
+    deleteAttribute: AuthenticatedWithOrg<(categoryId: string, attributeId: string) => Promise<OrganizationMetadata>>
     createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
     editTagCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<TagCategory, 'id'>) => Promise<TagCategory>>
     deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    createNewTag: AuthenticatedWithOrg<(Tag: MinTag) => Promise<Tag>>
-    editTag: AuthenticatedWithOrg<(attriuteUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
-    deleteTag: AuthenticatedWithOrg<(TagId: string) => Promise<OrganizationMetadata>>
+    createNewTag: AuthenticatedWithOrg<(categoryId: string, tag: MinTag) => Promise<Tag>>
+    editTag: AuthenticatedWithOrg<(categoryId: string, tagUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
+    deleteTag: AuthenticatedWithOrg<(categoryId: string, tagId: string) => Promise<OrganizationMetadata>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>

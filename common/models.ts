@@ -449,11 +449,17 @@ export enum PatchEventType {
     OrganizationAttributeCreated = '2.2.0',
     OrganizationAttributeEdited = '2.2.1',
     OrganizationAttributeDeleted = '2.2.2',
+    OrganizationAttributeCategoryCreated = '2.2.3',
+    OrganizationAttributeCategoryEdited = '2.2.4',
+    OrganizationAttributeCategoryDeleted = '2.2.5',
 
     // Organization.Tags.<_>
     OrganizationTagCreated = '2.3.0',
     OrganizationTagEdited = '2.3.1',
     OrganizationTagDeleted = '2.3.2',
+    OrganizationTagCategoryCreated = '2.3.3',
+    OrganizationTagCategoryEdited = '2.3.4',
+    OrganizationTagCategoryDeleted = '2.3.5',
 }
 
 export type PatchEventParams = {
@@ -551,6 +557,18 @@ export type PatchEventParams = {
         orgId: string,
         attributeId: string
     },
+    [PatchEventType.OrganizationAttributeCategoryCreated]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationAttributeCategoryEdited]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationAttributeCategoryDeleted]: {
+        orgId: string,
+        categoryId: string
+    },
     [PatchEventType.OrganizationTagCreated]: {
         orgId: string,
         tagId: string
@@ -562,7 +580,19 @@ export type PatchEventParams = {
     [PatchEventType.OrganizationTagDeleted]: {
         orgId: string,
         tagId: string
-    }
+    },
+    [PatchEventType.OrganizationTagCategoryCreated]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationTagCategoryEdited]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationTagCategoryDeleted]: {
+        orgId: string,
+        categoryId: string
+    },
 }
 
 export type PatchEventPacket<T extends PatchEventType = any> = {
