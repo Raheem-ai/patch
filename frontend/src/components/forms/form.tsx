@@ -8,7 +8,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig } from "./types";
+import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
@@ -26,20 +26,31 @@ import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
 import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
+import SwitchInput from "./inputs/switchInput";
 
 const Stack = createStackNavigator();
 
-type Grouped<T> = T | T[];
-
 export type FormProps = {
-    headerLabel: string,
     inputs: Grouped<FormInputConfig>[],
+    headerLabel?: string,
     onExpand?(): void,
     onBack?(): void,
     submit?: {
         label: string,
         handler: () => Promise<void>
-    }
+    },
+
+    // meant to be used together but maybe there is a case where they wouldn't be???
+    // navigateToScreen?: (id: string) => void
+    homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
+}
+
+export type CustomFormHomeScreenProps = {
+    onSubmit: () => Promise<void>,
+    onContainerPress: () => void,
+    renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
+    inputs: Grouped<StandAloneFormInputConfig>[],
+    isValid: () => boolean
 }
 
 const FormViewMap: FormInputViewMap = {
@@ -72,6 +83,9 @@ const FormViewMap: FormInputViewMap = {
     'RecurringTimePeriod': {
         screenComponent: RecurringTimePeriodInput,
         labelComponent: RecurringTimePeriodLabel
+    },
+    'Switch': {
+        inlineComponent: SwitchInput
     }
 }
 
@@ -82,11 +96,6 @@ type GroupPosition = 'start' | 'middle' | 'end';
 @observer
 export default class Form extends React.Component<FormProps> {
     private homeScreenId = '__formHome';
-
-    // used internally to know whether the form is submittable
-    private isValid = computed<boolean>(() => {
-        return this.validatableInputs.get().filter(i => i.required).every(i => i.isValid());
-    })
 
     // used to flatten the (visually grouped) inputs into an interable list of all
     // standalone inputs so they can be processed easily
@@ -118,6 +127,16 @@ export default class Form extends React.Component<FormProps> {
             // but then we need those values somewhere...this works for now 
             return !!config.onSave
         }) as ScreenFormInputConfig[]
+    })
+
+    // used to signal whether the form is submittable
+    isValid = computed<boolean>(() => {
+        return this.validatableInputs.get().filter(i => i.required).every(i => {
+            const a = i.isValid()
+
+            console.log(i.name, a)
+            return a
+        });
     })
 
     // use to externally signal that we are on the home screen of the form
@@ -279,12 +298,12 @@ export default class Form extends React.Component<FormProps> {
             }
         }
 
-        const renderInputs = () => {
+        const renderInputs = (configsToRender: Grouped<StandAloneFormInputConfig>[]) => {
             const inputElements: JSX.Element[] = [];
 
             // for component groups, render each individual component section with a groupPosition prop to allow for visually grouped components
             // ie LabelSection, InlineSection, DefaultSection need a new prop like groupPosition?: 'start' | 'middle' | 'end'
-            this.groupedInputs.get().forEach(inputConfig => {
+            configsToRender.forEach(inputConfig => {
                 if (Array.isArray(inputConfig)) {
 
                     if (inputConfig.length == 1) {
@@ -309,24 +328,45 @@ export default class Form extends React.Component<FormProps> {
             return inputElements;
         }
 
+        // lets us customize how the home screen will look by passing the basic internal functions we use to 
+        // render inputs on the home screen to a callback ie. if we want to have multiple form sections
+        // spaced out with other ui around them but also have the whole page navigate back and forth between
+        // the home screen and input screens 
+        if (this.props.homeScreen) {
+            const CustomHomeScreen = this.props.homeScreen;
+
+            const customProps: CustomFormHomeScreenProps = {
+                onSubmit,
+                onContainerPress: onPress,
+                renderInputs,
+                inputs: this.groupedInputs.get(),
+                isValid: () => this.isValid.get()
+            };
+
+            return <CustomHomeScreen {...customProps} />
+        }
+
         return (
                 <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
                     <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
-                        <View style={{
-                            paddingLeft: 20,
-                            borderStyle: 'solid',
-                            borderBottomColor: '#ccc',
-                            borderBottomWidth: 1,
-                            minHeight: 60,
-                            justifyContent: 'center',
-                            padding: 20
-                        }}>
-                            <Text style={{
-                                fontSize: 24,
-                                fontWeight: 'bold',
-                            }}>{this.props.headerLabel}</Text>
-                        </View>
-                        { renderInputs() }
+                        { this.props.headerLabel
+                            ? <View style={{
+                                paddingLeft: 20,
+                                borderStyle: 'solid',
+                                borderBottomColor: '#ccc',
+                                borderBottomWidth: 1,
+                                minHeight: 60,
+                                justifyContent: 'center',
+                                padding: 20
+                            }}>
+                                <Text style={{
+                                    fontSize: 24,
+                                    fontWeight: 'bold',
+                                }}>{this.props.headerLabel}</Text>
+                            </View>
+                            : null
+                        }
+                        { renderInputs(this.groupedInputs.get()) }
                         {
                             this.props.submit
                                 ? <Button 
@@ -447,7 +487,7 @@ const DefaultSection = observer((props: {
     }
 
     const preview = unwrap(props.inputConfig.previewLabel)
-    const placeHolder = unwrap(props.inputConfig.headerLabel)
+    const placeHolder = unwrap(props.inputConfig.placeholderLabel)
 
     const resolvedStyles = [
         styles.section, 
@@ -466,7 +506,7 @@ const DefaultSection = observer((props: {
                         ? <View style={styles.iconContainer}>
                             <IconButton
                                 icon={props.inputConfig.icon} 
-                                color='#000'
+                                color='#666'
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }}
                                 />
@@ -496,7 +536,7 @@ const DefaultSection = observer((props: {
                         ? <View style={styles.iconContainer}>
                             <IconButton
                                 icon={props.inputConfig.icon} 
-                                color='#000'
+                                color='#666'
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }}
                                 />
@@ -547,7 +587,7 @@ function InlineSection(props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#000'
+                            color='#666'
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -602,7 +642,7 @@ const LabelSection = observer((props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#000'
+                            color='#666'
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -659,10 +699,15 @@ const NavigationSection = observer((props: {
         props.inputConfig.disabled 
             ? styles.disabledSection 
             : null,
-        positionStyles(props.groupPosition)
+        positionStyles(props.groupPosition),
+        props.inputConfig.labelContainerStyle || null
     ]
 
     const partialBottomBorder = props.groupPosition == 'start' || props.groupPosition == 'middle';
+
+    const rightIcon = props.inputConfig.expandIcon
+        ? unwrap(props.inputConfig.expandIcon)
+        : 'chevron-right'
 
     return (
         <>
@@ -671,7 +716,7 @@ const NavigationSection = observer((props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#000'
+                            color='#666'
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -688,7 +733,7 @@ const NavigationSection = observer((props: {
                 { !props.inputConfig.disabled
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
-                        icon='chevron-right' 
+                        icon={rightIcon} 
                         color='rgba(60,60,67,.3)'
                         onPress={expand}
                         size={30} />
@@ -738,7 +783,9 @@ const styles = StyleSheet.create({
         borderTopWidth: 0
     },
     disabledSection: {
-        backgroundColor: '#E0DEE0'
+        // opacity: .5
+        // backgroundColor: '#eee'
+        // backgroundColor: '#E0DEE0'
     },
     placeholder: {
         color: '#aaa'
@@ -748,7 +795,7 @@ const styles = StyleSheet.create({
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,
-        fontSize: 18
+        fontSize: 16
     },
     submitButton: {
         height: 44,

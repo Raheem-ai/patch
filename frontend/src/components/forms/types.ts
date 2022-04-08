@@ -1,5 +1,8 @@
 import { ComponentType } from "react"
+import { StyleProp, ViewStyle } from "react-native";
 import { AddressableLocation, DateTimeRange, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+
+export type Grouped<T> = T | T[];
 
 export type SectionInlineViewProps<Type extends InlineFormInputType = InlineFormInputType> = {
     config: InlineFormInputConfig<Type>
@@ -87,6 +90,12 @@ export type InlineFormInputOptions = {
         props: {},
         type: string
     }
+    'Switch': {
+        props: {
+            label: string | (() => string)
+        },
+        type: boolean
+    }
 }
 
 export type CompoundFormInputOptions = {
@@ -116,6 +125,9 @@ export type ValidatableFormInputConfig = InlineFormInputConfig | ScreenFormInput
 export type NavigationFormInputConfig = {
     label: ((props: SectionNavigationLabelViewProps) => JSX.Element) | string,
     screen: (props: SectionNavigationScreenViewProps) => JSX.Element
+
+    labelContainerStyle?: StyleProp<ViewStyle>
+    expandIcon?: string | (() => string)
     // need 'name' for a screenId and 'disabled' in case the label is a string
     // so the consumer doesn't have control over the disabled lable visual component
 } & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'icon'>; 

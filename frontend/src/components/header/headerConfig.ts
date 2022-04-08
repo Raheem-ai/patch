@@ -150,6 +150,9 @@ const HeaderConfig: {
     },
     [routerNames.componentLib]: {
         title: 'Component Library'
+    }, 
+    [routerNames.settings]: {
+        title: 'Settings'
     }
 }
 

@@ -114,6 +114,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     name: 'location',
                     previewLabel: () => createRequestStore().location?.address,
                     headerLabel: () => 'Location',
+                    placeholderLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
@@ -130,6 +131,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'notes',
                         previewLabel: () => createRequestStore().notes,
                         headerLabel: () => 'Notes',
+                        placeholderLabel: () => 'Notes',
                         type: 'TextArea',
                     },
                     // Type of request
@@ -144,6 +146,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'type',
                         previewLabel: () => null,
                         headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
                         type: 'TagList',
                         required: true,
                         props: {
@@ -169,6 +172,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     name: 'responders',
                     previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
                     headerLabel: () => 'Number of responders',
+                    placeholderLabel: () => 'Number of responders',
                     type: 'List',
                     props: {
                         options: ResponderCountRange,
@@ -188,6 +192,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     name: 'skills',
                     previewLabel: () => null,
                     headerLabel: () => 'Skills required',
+                    placeholderLabel: () => 'Skills required',
                     type: 'NestedTagList',
                     props: {
                         options: allEnumValues(RequestSkill),

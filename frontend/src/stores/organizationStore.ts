@@ -13,16 +13,21 @@ export default class OrganizationStore implements IOrganizationStore {
         roleDefinitions: []
     };
 
+    get requestPrefix() {
+        return this.metadata.name.slice(0, 3).toUpperCase()
+    }
+
     constructor() {
         makeAutoObservable(this)
     }
 
     async init() {
         await userStore().init();
+
         if (userStore().signedIn) {
-            await this.getOrgData();
+            await this.getOrgDataAfterSignin();
         } else {
-            when(() => userStore().signedIn, this.getOrgData)
+            when(() => userStore().signedIn, this.getOrgDataAfterSignin)
         }
     }
 
@@ -31,6 +36,14 @@ export default class OrganizationStore implements IOrganizationStore {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
         }
+    }
+
+    getOrgDataAfterSignin = async () => {
+        await this.getOrgData()
+
+        when(() => !userStore().signedIn, () => {
+            when(() => userStore().signedIn, this.getOrgDataAfterSignin)
+        })
     }
 
     getOrgData = async () => {
@@ -65,6 +78,9 @@ export default class OrganizationStore implements IOrganizationStore {
             } else {
                 this.metadata.roleDefinitions.push(updatedRole);
             }
+
+            // TODO: prolly should remove metadata object and put props on store for consistency
+            this.metadata = Object.assign({}, this.metadata)
         });
     }
 

@@ -4,7 +4,7 @@ import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextIn
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
 import { SectionScreenViewProps } from "../types";
-import BackButtonHeader from "./backButtonHeader";
+import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
 
 
 const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextArea'>) => {
@@ -21,12 +21,22 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
 
     const targetHeight = dimensions.height - HeaderHeight - keyboardHeight;
 
+    const headerProps: BackButtonHeaderProps = {
+        cancel: {
+            handler: back
+        },
+        save: {
+            handler: save,
+        },
+        label: config.headerLabel
+    }
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
             style={styles.notesContainer}>
             <View style={{ height: targetHeight }}>
-                <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
+                <BackButtonHeader  {...headerProps} />
                 <View style={styles.notes}>
                     <RNTextInput 
                         style={{ lineHeight: styles.label.lineHeight, fontSize: styles.label.fontSize }}

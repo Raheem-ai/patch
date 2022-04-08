@@ -10,6 +10,7 @@ import RecurringDateTimeRangeInputConfig from "../components/forms/inputs/compou
 import moment from 'moment'
 import { exp } from "react-native-reanimated";
 import { Text } from "react-native-paper";
+import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -131,12 +132,14 @@ const ComponentLibrary = (props: Props) => {
             ? item.name
             : ({ expand }) => {
                 return (
-                    <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{ fontSize: 18, marginBottom: 6 }}>{item.name}</Text>
-                        <Text style={{ color: '#666' }}>{item.description}</Text>
-                    </Pressable>
+                    <DescriptiveNavigationLabel 
+                        expand={expand} 
+                        name={item.name} 
+                        description={item.description} />
                 )
             }
+
+            
 
         const navigationInputConfig: NavigationFormInputConfig = {
             name: item.name,

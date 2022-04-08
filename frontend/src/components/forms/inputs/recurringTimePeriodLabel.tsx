@@ -113,7 +113,7 @@ const Row = ({ text }: { text: string }) => {
 const styles = StyleSheet.create({
     label: {
         color: '#000',
-        fontSize: 18
+        fontSize: 16
     },
     row: {
         marginBottom: 20

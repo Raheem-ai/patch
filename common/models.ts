@@ -722,3 +722,77 @@ export function resolvePermissions(roles: Role[]): Set<PatchPermissions> {
     }
     return userPermissions;
 }
+
+export enum DefaultRoleIds {
+    Anyone = '__anyone',
+    Admin = '__admin',
+    Dispatcher = '__dispatcher',
+    Responder = '__responder',
+}
+
+export const DefaultRoles: Role[] = [
+    {
+        id: DefaultRoleIds.Anyone,
+        name: 'Anyone',
+        permissions: [
+            PatchPermissions.InviteToChat
+        ]
+    },
+    {
+        id: DefaultRoleIds.Admin,
+        name: 'Admin',
+        permissions: [
+            PatchPermissions.EditOrgSettings,
+            PatchPermissions.RoleAdmin,
+            PatchPermissions.AttributeAdmin,
+            PatchPermissions.TagAdmin,
+            PatchPermissions.ExportData,
+            PatchPermissions.InviteToOrg,
+            PatchPermissions.RemoveFromOrg,
+            PatchPermissions.AssignRoles,
+            PatchPermissions.AssignAttributes,
+            PatchPermissions.ChatAdmin,
+            PatchPermissions.InviteToChat,
+            PatchPermissions.SeeAllChats,
+            PatchPermissions.SeeShiftChats,
+            PatchPermissions.SeeRequestChats,
+            PatchPermissions.ShiftAdmin,
+            PatchPermissions.RequestAdmin,
+            PatchPermissions.EditRequestData,
+            PatchPermissions.CloseRequests
+        ]
+    },
+    {
+        id: DefaultRoleIds.Dispatcher,
+        name: 'Dispatcher',
+        permissions: [
+            PatchPermissions.RequestAdmin
+        ]
+    },
+    {
+        id: DefaultRoleIds.Responder,
+        name: 'Responder',
+        permissions: [
+            PatchPermissions.SeeRequestChats,
+            PatchPermissions.EditRequestData
+        ]
+    },
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

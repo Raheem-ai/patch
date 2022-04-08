@@ -175,12 +175,7 @@ export namespace IEditOrganizationStore {
 }
 
 export interface IEditOrganizationStore extends ITempOrganizationStore {
-    currentRoleName: string
-    currentRolePermissions: PatchPermissions[]
-
     editOrganization(orgId: string): Promise<OrganizationMetadata>
-    createNewRole(): Promise<Role>
-    editRole(roleId: string): Promise<Role>
     deleteRoles(roleIds: string[]): Promise<OrganizationMetadata>
 }
 
@@ -190,6 +185,7 @@ export namespace IOrganizationStore {
 
 export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
+    requestPrefix: string
 
     getOrgData(): Promise<void>;
     updateOrgData(updatedOrg: OrganizationMetadata): void
@@ -404,6 +400,16 @@ export interface IUpdateStore extends IBaseStore {
     onUIEvent(packet: PatchUIEventPacket) : Promise<void>
 }
 
+export namespace IUpsertRoleStore {
+    export const id = Symbol('IUpsertRoleStore');
+}
+
+export interface IUpsertRoleStore extends Role, IBaseStore { 
+    loadRole: (role: Role) => void
+    save: () => Promise<void>
+    nameIsValid: () => boolean
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -424,6 +430,7 @@ export const editUserStore = () => getStore<IEditUserStore>(IEditUserStore);
 export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
+export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore);
 
 export const AllStores = [
     IUserStore,
@@ -445,5 +452,6 @@ export const AllStores = [
     ISocketStore,
     IUpdateStore,
     IOrganizationStore,
-    IEditOrganizationStore
+    IEditOrganizationStore,
+    IUpsertRoleStore
 ]
