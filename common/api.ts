@@ -22,7 +22,15 @@ import {
     EditableUser,
     RequestSkill,
     Role,
-    MinRole
+    MinRole,
+    MinAttributeCategory,
+    AttributeCategory,
+    MinAttribute,
+    Attribute,
+    MinTagCategory,
+    TagCategory,
+    MinTag,
+    Tag
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -104,6 +112,18 @@ export interface IApiClient {
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
     deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
+    createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
+    editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<AttributeCategory, 'id'>) => Promise<AttributeCategory>>
+    deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
+    createNewAttribute: AuthenticatedWithOrg<(attribute: MinAttribute) => Promise<Attribute>>
+    editAttribute: AuthenticatedWithOrg<(attriuteUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
+    deleteAttribute: AuthenticatedWithOrg<(attributeId: string) => Promise<OrganizationMetadata>>
+    createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
+    editTagCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<TagCategory, 'id'>) => Promise<TagCategory>>
+    deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
+    createNewTag: AuthenticatedWithOrg<(Tag: MinTag) => Promise<Tag>>
+    editTag: AuthenticatedWithOrg<(attriuteUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
+    deleteTag: AuthenticatedWithOrg<(TagId: string) => Promise<OrganizationMetadata>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
@@ -287,6 +307,42 @@ type ApiRoutes = {
         editUser: () => {
             return '/editUser'
         },
+        createNewAttributeCategory: () => {
+            return '/createNewAttributeCategory'
+        },
+        editAttributeCategory: () => {
+            return '/editAttributeCategory'
+        },
+        deleteAttributeCategory: () => {
+            return '/deleteAttributeCategory'
+        },
+        createNewAttribute: () => {
+            return '/createNewAttribute'
+        },
+        editAttribute: () => {
+            return '/editAttribute'
+        },
+        deleteAttribute: () => {
+            return '/deleteAttribute'
+        },
+        createNewTagCategory: () => {
+            return '/createNewTagCategory'
+        },
+        editTagCategory: () => {
+            return '/editTagCategory'
+        },
+        deleteTagCategory: () => {
+            return '/deleteTagCategory'
+        },
+        createNewTag: () => {
+            return '/createNewTag'
+        },
+        editTag: () => {
+            return '/editTag'
+        },
+        deleteTag: () => {
+            return '/deleteTag'
+        },
     }
 
     client: ApiRoutes = {
@@ -398,6 +454,42 @@ type ApiRoutes = {
         },
         inviteUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.inviteUserToOrg()}`
+        },
+        createNewAttributeCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewAttributeCategory()}`
+        },
+        editAttributeCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editAttributeCategory()}`
+        },
+        deleteAttributeCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteAttributeCategory()}`
+        },
+        createNewAttribute: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewAttribute()}`
+        },
+        editAttribute: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editAttribute()}`
+        },
+        deleteAttribute: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteAttribute()}`
+        },
+        createNewTagCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewTagCategory()}`
+        },
+        editTagCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editTagCategory()}`
+        },
+        deleteTagCategory: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteTagCategory()}`
+        },
+        createNewTag: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.createNewTag()}`
+        },
+        editTag: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.editTag()}`
+        },
+        deleteTag: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.deleteTag()}`
         },
 
         // request
