@@ -614,7 +614,9 @@ export type PatchUIEventParams = {
         requestId?: string
         userId?: string
         roleId?: string
+        attributeCategoryId?: string
         attributeId?: string
+        tagCategoryId?: string
         tagId?: string
         userList?: boolean
         requestList?: boolean
