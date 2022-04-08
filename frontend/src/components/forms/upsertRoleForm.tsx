@@ -1,7 +1,7 @@
 import { PatchPermissions, PatchPermissionToMetadataMap } from "../../../../common/models"
 import { allEnumValues } from "../../../../common/utils"
 import { upsertRoleStore } from "../../stores/interfaces"
-import Form, { CustomFormHomeScreenParams } from "./form"
+import Form, { CustomFormHomeScreenProps } from "./form"
 import { InlineFormInputConfig, ScreenFormInputConfig } from "./types"
 
 import React, { useRef } from "react";
@@ -69,7 +69,7 @@ const UpsertRoleForm = ({
         renderInputs,
         inputs,
         isValid
-    }: CustomFormHomeScreenParams) => {
+    }: CustomFormHomeScreenProps) => {
         
         const headerProps: BackButtonHeaderProps = {
             cancel: {
