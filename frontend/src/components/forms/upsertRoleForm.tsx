@@ -1,3 +1,5 @@
+
+// TODO: update to use permission groups
 import { DefaultRoleIds, PatchPermissions, PatchPermissionToMetadataMap } from "../../../../common/models"
 import { allEnumValues } from "../../../../common/utils"
 import { alertStore, upsertRoleStore } from "../../stores/interfaces"
@@ -10,7 +12,6 @@ import { Pressable, View } from "react-native"
 import { Button } from "react-native-paper"
 import { Colors } from "../../types"
 import { resolveErrorMessage } from "../../errors"
-import { VisualArea } from "../helpers/visualArea"
 
 type UpsertRoleFormProps = {
     cancel: () => void,

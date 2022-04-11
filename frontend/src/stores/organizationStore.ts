@@ -79,7 +79,8 @@ export default class OrganizationStore implements IOrganizationStore {
                 this.metadata.roleDefinitions.push(updatedRole);
             }
 
-            // TODO: prolly should remove metadata object and put props on store for consistency
+            // TODO: prolly should remove metadata object and put props on store for 
+            // consistency + when we have multiple orgs to keep track of
             this.metadata = Object.assign({}, this.metadata)
         });
     }
