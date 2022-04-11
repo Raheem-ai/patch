@@ -19,12 +19,14 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
     // Edit Attribute Category
     currentAttributeCategoryName: string = ''
+    currentAttributeCategoryAttributes: Attribute[]
 
     // Edit Attribute
     currentAttributeName: string = ''
 
     // Edit Tag Category
     currentTagCategoryName: string = ''
+    currentTagCategoryTags: Tag[]
 
     // Edit Tag
     currentTagName: string = ''
@@ -112,9 +114,10 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     }
 
     async editAttributeCategory(categoryId: string): Promise<AttributeCategory> {
-        const category = {
+        const category: AttributeCategory = {
             id: categoryId,
-            name: this.currentAttributeCategoryName
+            name: this.currentAttributeCategoryName,
+            attributes: this.currentAttributeCategoryAttributes
         }
 
         try {
@@ -145,7 +148,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     }
 
     async editAttribute(categoryId: string, attributeId: string): Promise<Attribute> {
-        const attribute = {
+        const attribute: Attribute = {
             id: attributeId,
             name: this.currentAttributeName
         }
@@ -178,9 +181,10 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     }
 
     async editTagCategory(categoryId: string): Promise<TagCategory> {
-        const category = {
+        const category: TagCategory = {
             id: categoryId,
-            name: this.currentTagCategoryName
+            name: this.currentTagCategoryName,
+            tags: this.currentTagCategoryTags
         }
 
         try {
@@ -211,9 +215,9 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     }
 
     async editTag(categoryId: string, tagId: string): Promise<Tag> {
-        const tag = {
+        const tag: Tag = {
             id: tagId,
-            name: this.currentTagName
+            name: this.currentTagName,
         }
 
         try {
