@@ -251,7 +251,9 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
         this.currentAttributeCategoryName = '';
         this.currentAttributeName = '';
+        this.currentAttributeCategoryAttributes = [];
         this.currentTagCategoryName = '';
         this.currentTagName = '';
+        this.currentTagCategoryTags = [];
      }
 }
