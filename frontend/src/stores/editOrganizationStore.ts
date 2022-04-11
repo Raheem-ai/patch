@@ -19,14 +19,14 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
     // Edit Attribute Category
     currentAttributeCategoryName: string = ''
-    currentAttributeCategoryAttributes: Attribute[]
+    currentAttributeCategoryAttributes: Attribute[] = []
 
     // Edit Attribute
     currentAttributeName: string = ''
 
     // Edit Tag Category
     currentTagCategoryName: string = ''
-    currentTagCategoryTags: Tag[]
+    currentTagCategoryTags: Tag[] = []
 
     // Edit Tag
     currentTagName: string = ''

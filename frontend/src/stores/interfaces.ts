@@ -175,18 +175,26 @@ export namespace IEditOrganizationStore {
 }
 
 export interface IEditOrganizationStore extends ITempOrganizationStore {
+    // Organization Metadata
+    name: string
+    roleDefinitions: Role[]
+    attributeCategories: AttributeCategory[]
+    tagCategories: TagCategory[]
+
     // Edit Role
     currentRoleName: string
     currentRolePermissions: PatchPermissions[]
 
     // Edit Attribute Category
     currentAttributeCategoryName: string
+    currentAttributeCategoryAttributes: Attribute[]
 
     // Edit Attribute
     currentAttributeName: string
 
     // Edit Tag Category
     currentTagCategoryName: string
+    currentTagCategoryTags: Tag[]
 
     // Edit Tag
     currentTagName: string
