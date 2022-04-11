@@ -42,6 +42,13 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
         organizationStore().updateOrAddRole(updatedRole);
     }
 
+    delete = async () => {
+        if (this.id) {
+            await api().deleteRoles(this.orgContext(), [this.id])
+            await organizationStore().getOrgData();
+        }
+    }
+
     save = async () => {
         if (this.id) {
             await this.update()
@@ -49,6 +56,7 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
             await this.create()
         }
         
+        await organizationStore().getOrgData();
         this.clear()
     }
 

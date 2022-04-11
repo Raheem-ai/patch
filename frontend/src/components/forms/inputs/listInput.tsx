@@ -42,7 +42,8 @@ const ListInput = observer(({ back, config }: SectionScreenViewProps<'List' | 'T
         save: {
             handler: save,
         },
-        label: config.headerLabel
+        label: config.headerLabel,
+        bottomBorder: true
     }
 
     return (

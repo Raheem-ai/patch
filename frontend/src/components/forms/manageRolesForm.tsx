@@ -1,6 +1,7 @@
 import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, View } from "react-native"
+import { ScrollView } from "react-native-gesture-handler"
 import { Text } from "react-native-paper"
 import { DefaultRoleIds } from "../../../../common/models"
 import { resolveErrorMessage } from "../../errors"
@@ -10,7 +11,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHead
 import DescriptiveNavigationLabel from "./inputs/descriptiveNavigationLabel"
 import { NavigationFormInputConfig, SectionNavigationScreenViewProps } from "./types"
 import UpsertRoleForm from "./upsertRoleForm"
-
+import { VisualArea } from '../helpers/visualArea';
 
 // TODO: this is somehow caching data so that when you add/edit a role none of the views at or below
 // this will update theemselves even if they're observable
@@ -89,7 +90,7 @@ const MangeRolesForm = observer(({ back }: SectionNavigationScreenViewProps) => 
         return [...editRoleInputs, addRoleInput]
     }
 
-    const homeScreen = ({
+    const homeScreen = observer(({
         renderInputs,
         inputs
     }: CustomFormHomeScreenProps) => {
@@ -104,18 +105,22 @@ const MangeRolesForm = observer(({ back }: SectionNavigationScreenViewProps) => 
         }
 
         return (
-            <View>
+            <ScrollView style={{ flex: 1 }}>
                 <BackButtonHeader {...headerProps}/>
                 <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
                     <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{'Use Roles to specify who does what for a Shift or Request.'}</Text>
                     <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{'Each role grants the permissions needed for that role. A person can be eligible for more than one role.'}</Text>
                 </View>
-                { renderInputs(inputs) }
-            </View>
+                { renderInputs(inputs()) }
+            </ScrollView>
         )
-    }
+    })
 
-    return <Form inputs={roleInputs()} homeScreen={homeScreen}/>
+    return (
+        <VisualArea>
+            <Form inputs={roleInputs} homeScreen={homeScreen}/>
+        </VisualArea>
+    )
 })
 
 export default MangeRolesForm;

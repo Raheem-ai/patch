@@ -1,12 +1,16 @@
-import { PatchPermissions, PatchPermissionToMetadataMap } from "../../../../common/models"
+import { DefaultRoleIds, PatchPermissions, PatchPermissionToMetadataMap } from "../../../../common/models"
 import { allEnumValues } from "../../../../common/utils"
-import { upsertRoleStore } from "../../stores/interfaces"
+import { alertStore, upsertRoleStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
 import { InlineFormInputConfig, ScreenFormInputConfig } from "./types"
 
 import React, { useRef } from "react";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
-import { Pressable } from "react-native"
+import { Pressable, View } from "react-native"
+import { Button } from "react-native-paper"
+import { Colors } from "../../types"
+import { resolveErrorMessage } from "../../errors"
+import { VisualArea } from "../helpers/visualArea"
 
 type UpsertRoleFormProps = {
     cancel: () => void,
@@ -84,10 +88,31 @@ const UpsertRoleForm = ({
             bottomBorder: true
         }
 
+        const deleteRole = async () => {
+            try {
+                await upsertRoleStore().delete();
+                cancel()
+            } catch (e) {
+                const errMessage = resolveErrorMessage(e)
+                alertStore().toastError(errMessage, true)
+            }
+        }
+
         return (
-            <Pressable onPress={onContainerPress}>
+            <Pressable style={{ position: 'relative', flex: 1 }} onPress={onContainerPress}>
                 <BackButtonHeader {...headerProps} />
-                {renderInputs(inputs)}
+                {renderInputs(inputs())}
+                {   upsertRoleStore().id != DefaultRoleIds.Anyone
+                    ? <View style={{ position: 'absolute', bottom: 0, padding: 20, width: '100%' }}>
+                        <Button
+                            uppercase={false} 
+                            color={Colors.primary.alpha}
+                            mode={'outlined'}
+                            onPress={deleteRole}    
+                            style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{'Delete this role'}</Button>
+                    </View>
+                    : null
+                }
             </Pressable>
         )
     }

@@ -168,6 +168,8 @@ const Settings = observer(({ navigation, route }: Props) => {
     }
 
     const homeScreen = (params: CustomFormHomeScreenProps) => {
+        const inputs = params.inputs();
+
         return (
             <VisualArea>
                 <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
@@ -181,7 +183,7 @@ const Settings = observer(({ navigation, route }: Props) => {
                             <Text style={styles.headerText}>{'PERSONAL'}</Text>
                         </View>
                         <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
-                            { params.renderInputs([params.inputs[0]])}
+                            { params.renderInputs([inputs[0]])}
                         </View>
                         <View style={styles.headerContainer}>
                             <IconButton
@@ -192,7 +194,7 @@ const Settings = observer(({ navigation, route }: Props) => {
                             <Text style={styles.headerText}>{'ORGANIZATION'}</Text>
                         </View>
                         <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
-                            { params.renderInputs([params.inputs[1]])}
+                            { params.renderInputs([inputs[1]])}
                         </View>
                     </Pressable>
                 </ScrollView>

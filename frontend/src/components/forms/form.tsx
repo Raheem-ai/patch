@@ -31,7 +31,7 @@ import SwitchInput from "./inputs/switchInput";
 const Stack = createStackNavigator();
 
 export type FormProps = {
-    inputs: Grouped<FormInputConfig>[],
+    inputs: Grouped<FormInputConfig>[] | (() => Grouped<FormInputConfig>[]),
     headerLabel?: string,
     onExpand?(): void,
     onBack?(): void,
@@ -49,7 +49,7 @@ export type CustomFormHomeScreenProps = {
     onSubmit: () => Promise<void>,
     onContainerPress: () => void,
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
-    inputs: Grouped<StandAloneFormInputConfig>[],
+    inputs: () => Grouped<StandAloneFormInputConfig>[],
     isValid: () => boolean
 }
 
@@ -118,7 +118,7 @@ export default class Form extends React.Component<FormProps> {
     // used to unpack nested input configs from compound inputs (data based grouping) but keep them grouped
     // so they can be rendered correctly
     private groupedInputs = computed<Grouped<StandAloneFormInputConfig>[]>(() => {
-        return this.expandCompoundInputConfigs(this.props.inputs)
+        return this.expandCompoundInputConfigs(unwrap(this.props.inputs))
     })
 
     private screenInputs = computed<ScreenFormInputConfig[]>(() => {
@@ -246,6 +246,7 @@ export default class Form extends React.Component<FormProps> {
         const renderInput = (inputConfig: StandAloneFormInputConfig, position?: GroupPosition) => {
             if (this.isNavigationInput(inputConfig)) {
                 return <NavigationSection
+                            key={inputConfig.name}
                             inputConfig={inputConfig}
                             openLink={navigateToScreen}  
                             linkTo={inputConfig.name} 
@@ -274,6 +275,7 @@ export default class Form extends React.Component<FormProps> {
 
                 if (labelComponent) {
                     return <LabelSection 
+                        key={inputConfig.name}
                         inputConfig={screenInputConfig}
                         labelComponent={labelComponent}
                         openLink={navigateToScreen}  
@@ -285,12 +287,14 @@ export default class Form extends React.Component<FormProps> {
 
                 if (inlineComponent) {    
                     return <InlineSection 
+                        key={inputConfig.name}
                         inputConfig={inlineInputConfig}
                         inlineComponent={inlineComponent} 
                         groupPosition={position}/>
                 }
 
                 return <DefaultSection 
+                    key={inputConfig.name}
                     inputConfig={screenInputConfig}
                     openLink={navigateToScreen}  
                     linkTo={inputConfig.name} 
@@ -339,7 +343,7 @@ export default class Form extends React.Component<FormProps> {
                 onSubmit,
                 onContainerPress: onPress,
                 renderInputs,
-                inputs: this.groupedInputs.get(),
+                inputs: () => this.groupedInputs.get(),
                 isValid: () => this.isValid.get()
             };
 

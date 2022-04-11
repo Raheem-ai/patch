@@ -404,9 +404,11 @@ export namespace IUpsertRoleStore {
     export const id = Symbol('IUpsertRoleStore');
 }
 
+// TODO: rename this to IManageRoleStore
 export interface IUpsertRoleStore extends Role, IBaseStore { 
     loadRole: (role: Role) => void
     save: () => Promise<void>
+    delete: () => Promise<void>
     nameIsValid: () => boolean
 }
 
