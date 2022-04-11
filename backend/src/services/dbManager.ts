@@ -16,7 +16,6 @@ import { AtLeast } from "common";
 import moment from 'moment';
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
-import { or } from "ajv/dist/compile/codegen";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
