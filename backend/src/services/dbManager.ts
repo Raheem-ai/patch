@@ -300,30 +300,6 @@ export class DBManager {
         }
     }
 
-    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
-        const user = await this.resolveUser(userId);
-
-        if (!user.organizations || !user.organizations[orgId]){
-            throw `User not in organization`
-        }
-
-        const org = await this.resolveOrganization(orgId);
-        for (const roleId of roleIds) {
-            if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
-                throw `Role  ${roleId} does not exist in organization ${orgId}.`
-            }
-        }
-
-        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-            // TODO: probably should validate that the IDs exist in org.roleDefinitions?
-            const roleSet = new Set(orgConfig.roleIds);
-            roleIds.forEach(r => roleSet.add(r));
-            return Object.assign({}, orgConfig, { roleIds: Array.from(roleSet.values()) });
-        })
-
-        return await user.save();
-    }
-
     async removeUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
         const user = await this.resolveUser(userId);
 
@@ -429,6 +405,29 @@ export class DBManager {
             org.markModified('roleDefinitions');
             return await org.save({ session });
         })
+    }
+
+    async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
+        const user = await this.resolveUser(userId);
+
+        if (!user.organizations || !user.organizations[orgId]){
+            throw `User not in organization`
+        }
+
+        const org = await this.resolveOrganization(orgId);
+        for (const roleId of roleIds) {
+            if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
+                throw `Role  ${roleId} does not exist in organization ${orgId}.`
+            }
+        }
+
+        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+            const roleSet = new Set(orgConfig.roleIds);
+            roleIds.forEach(r => roleSet.add(r));
+            return Object.assign({}, orgConfig, { roleIds: Array.from(roleSet.values()) });
+        })
+
+        return await user.save();
     }
 
     // Attributes
@@ -537,6 +536,8 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
+    // TODO: Should we just take a list of attributeIds and not worry about categoryId since we have to look through
+    // all the categories anyway to find the index (given ID)?
     async removeAttribute(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session?: ClientSession): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -583,6 +584,53 @@ export class DBManager {
         }
 
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
+    }
+
+    async addAttributesToUser(orgId: string, userId: string | UserDoc, attributeIds: string[]) {
+        const user = await this.resolveUser(userId);
+
+        if (!user.organizations || !user.organizations[orgId]){
+            throw `User not in organization`
+        }
+
+        // Validate attributes exist
+        const org = await this.resolveOrganization(orgId);
+        for (const attributeId of attributeIds) {
+            let foundAttribute = false;
+            for (const category of org.attributeCategories) {
+                foundAttribute = category.attributes.some(attr => attr.id == attributeId);
+                if (foundAttribute) {
+                    break;
+                }
+            }
+            if (!foundAttribute) {
+                throw `Attribute ${attributeId} does not exist in organization ${orgId}.`
+            }
+        }
+
+        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+            const attributeSet = new Set(orgConfig.attributeIds);
+            attributeIds.forEach(attr => attributeSet.add(attr));
+            return Object.assign({}, orgConfig, { attributeIds: Array.from(attributeSet.values()) });
+        })
+
+        return await user.save();
+    }
+
+    async removeAttributesFromUser(orgId: string, userId: string | UserDoc, attributeIds: string[]) {
+        const user = await this.resolveUser(userId);
+
+        if (!user.organizations || !user.organizations[orgId]){
+            throw `User not in organization`
+        }
+
+        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+            const attributeSet = new Set(orgConfig.attributeIds);
+            attributeIds.forEach(attr => attributeSet.delete(attr));
+            return Object.assign({}, orgConfig, { attributeIds: Array.from(attributeSet.values()) });
+        })
+
+        return await user.save();
     }
 
     // Tags
@@ -1019,7 +1067,7 @@ export class DBManager {
         return user;
     }
 
-    // @Every('5 minutes', { name: `Repopulating` })
+    @Every('5 minutes', { name: `Repopulating` })
     async rePopulateDb() {
         try {
             const oldUsers = await this.getUsers({});
@@ -1134,6 +1182,42 @@ export class DBManager {
 
             console.log('adding new role to user...');
             user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
+
+            console.log('adding new Attribute category...');
+            const testAttrCat1: MinAttributeCategory = {
+                name: 'Attribute Category 1 - repopulateDB'
+            }
+
+            const testAttrCat2: MinAttributeCategory = {
+                name: 'Attribute Category 2 - repopulateDB'
+            }
+
+            let attrCat1 = null;
+            let attrCat2 = null;
+            [org2, attrCat1] = await this.addAttributeCategoryToOrganization(testAttrCat1, org2.id);
+            [org2, attrCat2] = await this.addAttributeCategoryToOrganization(testAttrCat2, org2.id);
+
+            console.log('adding new Attribute...');
+            const testAttr1: Attribute = {
+                id: uuid.v1(),
+                name: 'Attribute 1 - repopulateDb'
+            }
+
+            const testAttr2: Attribute = {
+                id: uuid.v1(),
+                name: 'Attribute 2 - repopulateDb'
+            }
+
+            let attr1 = null;
+            let attr2 = null;
+            [org2, attr1] = await this.addAttributeToOrganization(testAttr1, attrCat1.id, org2.id);
+            [org2, attr2] = await this.addAttributeToOrganization(testAttr2, attrCat2.id, org2.id);
+
+            console.log('Assigning attributes to user...');
+            user5 = await this.addAttributesToUser(org2.id, user5.id, [attr1.id, attr2.id]);
+
+            console.log('Removing attribute from user...');
+            user5 = await this.removeAttributesFromUser(org2.id, user5.id, [attr2.id]);
 
             const minRequests: MinHelpRequest[] = [
                 {
