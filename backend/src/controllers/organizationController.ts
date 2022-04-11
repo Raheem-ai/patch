@@ -611,7 +611,7 @@ export class OrganizationController implements APIController<
         }
     }
 
-    @Post(API.server.createNewAttribute())
+    @Post(API.server.createNewTag())
     @Authenticate()
     async createNewTag(
         @OrgId() orgId: string,
