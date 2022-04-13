@@ -186,6 +186,9 @@ export namespace IOrganizationStore {
 export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
     requestPrefix: string
+    roles: Map<string, Role> 
+    userRoles: Map<string, Role[]>
+    userPermissions: Map<string, Set<PatchPermissions>>
 
     getOrgData(): Promise<void>;
     updateOrgData(updatedOrg: OrganizationMetadata): void

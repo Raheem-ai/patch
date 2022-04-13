@@ -1,17 +1,16 @@
-
-// TODO: update to use permission groups
-import { DefaultRoleIds, PatchPermissions, PatchPermissionToMetadataMap } from "../../../../common/models"
+import { DefaultRoleIds, PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata } from "../../../../common/models"
 import { allEnumValues } from "../../../../common/utils"
-import { alertStore, upsertRoleStore } from "../../stores/interfaces"
+import { alertStore, upsertRoleStore, userStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
 import { InlineFormInputConfig, ScreenFormInputConfig } from "./types"
 
 import React, { useRef } from "react";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
 import { Pressable, View } from "react-native"
-import { Button } from "react-native-paper"
+import { Button, Text } from "react-native-paper"
 import { Colors } from "../../types"
 import { resolveErrorMessage } from "../../errors"
+import { userHasPermissions } from "../../utils"
 
 type UpsertRoleFormProps = {
     cancel: () => void,
@@ -26,48 +25,56 @@ const UpsertRoleForm = ({
 }: UpsertRoleFormProps) => {
     const formRef = useRef<Form>();
 
-    const inputs = [
-        {
-            name: 'name',
-            required: true,
-            type: 'TextInput',
-            icon: 'clipboard-account',
-            val: () => upsertRoleStore().name,
-            isValid: upsertRoleStore().nameIsValid,
-            onChange: (val) => {
-                upsertRoleStore().name = val
-            },
-            placeholderLabel: () => 'Name this role'
+    const isAnyoneRole = upsertRoleStore().id == DefaultRoleIds.Anyone
+    const isAdminRole = upsertRoleStore().id == DefaultRoleIds.Admin
+
+    const nameInput = {
+        name: 'name',
+        required: true,
+        type: 'TextInput',
+        icon: 'clipboard-account',
+        val: () => upsertRoleStore().name,
+        isValid: upsertRoleStore().nameIsValid,
+        onChange: (val) => {
+            upsertRoleStore().name = val
         },
-        {
-            onSave: (permissions) => upsertRoleStore().permissions = permissions,
-            val: () => {
-                return upsertRoleStore().permissions
-            },
-            isValid: () => {
-                return !!upsertRoleStore().permissions.length
-            },
-            name: 'permissions',
-            headerLabel: () => 'Permissions',
-            placeholderLabel: () => 'Set permissions',
-            previewLabel: () => {
-                return upsertRoleStore().permissions.map(p => {
-                    return PatchPermissionToMetadataMap[p].name
-                }).join(', ')
-            },
-            type: 'List',
-            icon: 'key',
-            required: true,
-            props: {
-                options: allEnumValues(PatchPermissions),
-                optionToPreviewLabel: (opt: PatchPermissions) => PatchPermissionToMetadataMap[opt].name,
-                multiSelect: true,
-            }
+        placeholderLabel: () => 'Name this role'
+    } as InlineFormInputConfig<'TextInput'>;
+
+    const permissionsInput = {
+        onSave: (groups) => upsertRoleStore().permissionGroups = groups,
+        val: () => {
+            return upsertRoleStore().permissionGroups
+        },
+        isValid: () => {
+            return !!upsertRoleStore().permissionGroups.length
+        },
+        name: 'permissionGroups',
+        headerLabel: () => 'Permissions',
+        placeholderLabel: () => 'Set permissions',
+        previewLabel: () => {
+            return upsertRoleStore().permissionGroups.map(p => {
+                return PermissionGroupMetadata[p].name
+            }).join(', ')
+        },
+        type: 'PermissionGroupList',
+        icon: 'key',
+        required: true,
+        disabled: isAdminRole,
+        props: {
+            options: allEnumValues(PatchPermissionGroups),
+            optionToPreviewLabel: (opt: PatchPermissionGroups) => PermissionGroupMetadata[opt].name,
+            multiSelect: true,
         }
-    ] as [
-        InlineFormInputConfig<'TextInput'>,
-        ScreenFormInputConfig<'List'>
-    ]
+    } as ScreenFormInputConfig<'PermissionGroupList'>;
+
+    const inputs = []
+
+    if (!isAnyoneRole && !isAdminRole) {
+        inputs.push(nameInput)
+    }
+
+    inputs.push(permissionsInput);
 
     const homeScreen = ({
         onContainerPress,
@@ -83,7 +90,7 @@ const UpsertRoleForm = ({
             save: {
                 handler: save,
                 label: 'Save',
-                validator: isValid
+                validator: isAdminRole ? () => false : isValid
             },
             label: headerLabel,
             bottomBorder: true
@@ -99,11 +106,19 @@ const UpsertRoleForm = ({
             }
         }
 
+        const iHavePermissionToDelete = userHasPermissions(userStore().user.id, [PatchPermissions.RoleAdmin])
+
         return (
             <Pressable style={{ position: 'relative', flex: 1 }} onPress={onContainerPress}>
                 <BackButtonHeader {...headerProps} />
+                { isAdminRole 
+                    ? <View style={{ paddingLeft: 60, padding: 20, borderStyle: 'solid', borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
+                        <Text style={{ fontSize: 16 }}>{`Note: there must always be at least one Admin in your organization.`}</Text>
+                    </View>
+                    : null
+                }
                 {renderInputs(inputs())}
-                {   upsertRoleStore().id != DefaultRoleIds.Anyone
+                {   !isAnyoneRole && !isAdminRole && iHavePermissionToDelete
                     ? <View style={{ position: 'absolute', bottom: 0, padding: 20, width: '100%' }}>
                         <Button
                             uppercase={false} 

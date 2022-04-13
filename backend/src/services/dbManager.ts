@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
+import { Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinHelpRequest, MinOrg, MinRole, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -382,7 +382,7 @@ export class DBManager {
         const newRole: Role = {
             id: uuid.v1(),
             name: '',
-            permissions: []
+            permissionGroups: []
         }
 
         for (const prop in minRole) {
@@ -806,16 +806,13 @@ export class DBManager {
 
             let role1: MinRole = {
                 name: 'first role',
-                permissions: [
-                    PatchPermissions.EditOrgSettings,
-                    PatchPermissions.RoleAdmin,
-                    PatchPermissions.AttributeAdmin,
-                    PatchPermissions.TagAdmin,
-                    PatchPermissions.AssignRoles,
-                    PatchPermissions.AssignAttributes,
-                    PatchPermissions.ChatAdmin,
-                    PatchPermissions.ShiftAdmin,
-                    PatchPermissions.RequestAdmin
+                permissionGroups: [
+                    PatchPermissionGroups.ManageOrg,
+                    PatchPermissionGroups.ManageChats,
+                    PatchPermissionGroups.ManageMetadata,
+                    PatchPermissionGroups.ManageRequests,
+                    PatchPermissionGroups.ManageSchedule,
+                    PatchPermissionGroups.ManageTeam
                 ]
             };
 

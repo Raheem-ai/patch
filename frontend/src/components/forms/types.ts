@@ -1,6 +1,6 @@
 import { ComponentType } from "react"
 import { StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, DateTimeRange, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, DateTimeRange, PatchPermissionGroups, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 
 export type Grouped<T> = T | T[];
 
@@ -78,7 +78,13 @@ export type ScreenFormInputOptions = {
             dark?: boolean
         },
         type: any[]
-    }
+    },
+    'PermissionGroupList': {
+        props: {
+            
+        },
+        type: PatchPermissionGroups[]
+    },
 }
 
 export type InlineFormInputOptions = { 

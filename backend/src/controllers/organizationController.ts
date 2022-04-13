@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, DefaultRoleIds, DefaultRoles } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissionsFromRoles, DefaultRoleIds, DefaultRoles } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -338,6 +338,13 @@ export class OrganizationController implements APIController<
         @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
+
+            // dissallowed in front end so should never happen but just in case
+            if (roleIds.includes(DefaultRoleIds.Admin)) {
+                const adminRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Admin)?.name || 'Admin';
+                throw new BadRequest(`The '${adminRoleName}' role cannot be edited`);
+            }
+
             const org = await this.db.editRole(orgId, roleUpdates);
             const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
     
@@ -368,8 +375,12 @@ export class OrganizationController implements APIController<
                 throw new BadRequest(`The '${anyoneRoleName}' role cannot be deleted`);
             }
 
-            // TODO: need to check to make sure we're not removing roles such that no users in the org 
-            // can edit/assign roles (orphaning everyone in the org so no new changes could be made)
+            // dissallowed in front end so should never happen but just in case
+            if (roleIds.includes(DefaultRoleIds.Admin)) {
+                const adminRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Admin)?.name || 'Admin';
+                throw new BadRequest(`The '${adminRoleName}' role cannot be deleted`);
+            }
+
             const updatedOrg = await this.db.removeRolesFromOrganization(org.id, roleIds);
 
             for (const roleId of roleIds) {
@@ -435,7 +446,7 @@ export class OrganizationController implements APIController<
         });
 
         // Resolve all the permissions granted to a user based on their role(s).
-        const userPermissions = resolvePermissions(userRoles);
+        const userPermissions = resolvePermissionsFromRoles(userRoles);
         for (const permission of requiredPermissions) {
             // If any required permission is missing, return false.
             if (!userPermissions.has(permission as PatchPermissions)) {

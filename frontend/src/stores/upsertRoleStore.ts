@@ -10,7 +10,7 @@ import { Store } from "./meta"
 export default class UpsertRoleStore implements IUpsertRoleStore  {
     id = ''
     name = ''
-    permissions = []
+    permissionGroups = []
 
     constructor () {
         makeAutoObservable(this)
@@ -26,7 +26,7 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
     create = async () => {
         const newRole = await api().createNewRole(this.orgContext(), {
             name: this.name,
-            permissions: this.permissions
+            permissionGroups: this.permissionGroups
         })
 
         organizationStore().updateOrAddRole(newRole);
@@ -36,7 +36,7 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
         const updatedRole = await api().editRole(this.orgContext(), {
             id: this.id,
             name: this.name,
-            permissions: this.permissions
+            permissionGroups: this.permissionGroups
         })
 
         organizationStore().updateOrAddRole(updatedRole);
@@ -67,12 +67,12 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
     loadRole = (role: Role) => {
         this.id = role.id
         this.name = role.name
-        this.permissions = role.permissions
+        this.permissionGroups = role.permissionGroups
     }
 
     clear = () => {
         this.id = ''
         this.name = ''
-        this.permissions = []
+        this.permissionGroups = []
     }
 }

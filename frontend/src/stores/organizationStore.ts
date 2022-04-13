@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { MinRole, OrganizationMetadata, Role } from '../../../common/models';
+import { MinRole, OrganizationMetadata, PatchPermissions, resolvePermissionsFromRoles, Role } from '../../../common/models';
 import { OrgContext } from '../../../common/api';
 
 @Store(IOrganizationStore)
@@ -12,6 +12,45 @@ export default class OrganizationStore implements IOrganizationStore {
         name: '',
         roleDefinitions: []
     };
+
+    get roles()  {
+        const roleMapping = new Map<string, Role>()
+
+        this.metadata.roleDefinitions.forEach(def => {
+            roleMapping.set(def.id, def);
+        })
+
+        return roleMapping
+    }
+
+    get userRoles() {
+        const map = new Map<string, Role[]>();
+
+        userStore().usersInOrg.forEach(u => {
+            const roleIds = u.organizations[userStore().currentOrgId].roleIds;
+            const userRoles: Role[] = [];
+
+            roleIds.forEach(id => {
+                if (this.roles.has(id)) {
+                    userRoles.push(this.roles.get(id))
+                }
+            })
+
+            map.set(u.id, userRoles)
+        })
+
+        return map;
+    }
+
+    get userPermissions () {
+        const mapping = new Map<string, Set<PatchPermissions>>();
+
+        this.userRoles.forEach((roles, userId) => {
+            mapping.set(userId, resolvePermissionsFromRoles(roles))
+        })
+
+        return mapping
+    }
 
     get requestPrefix() {
         return this.metadata.name.slice(0, 3).toUpperCase()

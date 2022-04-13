@@ -27,6 +27,8 @@ import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import SwitchInput from "./inputs/switchInput";
+import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
+import PermissionGroupListInput from "./inputs/permissionGroupList";
 
 const Stack = createStackNavigator();
 
@@ -86,6 +88,10 @@ const FormViewMap: FormInputViewMap = {
     },
     'Switch': {
         inlineComponent: SwitchInput
+    },
+    'PermissionGroupList': {
+        labelComponent: PermissionGroupListLabel,
+        screenComponent: PermissionGroupListInput
     }
 }
 
@@ -487,6 +493,10 @@ const DefaultSection = observer((props: {
             return Keyboard.dismiss()
         } 
 
+        if (props.inputConfig.disabled) {
+            return;
+        }
+
         props.openLink(props.linkTo);
     }
 
@@ -624,6 +634,10 @@ const LabelSection = observer((props: {
             return Keyboard.dismiss()
         } 
 
+        if (props.inputConfig.disabled) {
+            return;
+        }
+
         props.openLink(props.linkTo);
     }
 
@@ -686,6 +700,10 @@ const NavigationSection = observer((props: {
         if (nativeEventStore().keyboardOpen) {
             return Keyboard.dismiss()
         } 
+
+        if (props.inputConfig.disabled) {
+            return;
+        }
 
         props.openLink(props.linkTo);
     }

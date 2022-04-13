@@ -64,10 +64,10 @@ export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefin
 export type Role = {
     id: string,
     name: string,
-    permissions: PatchPermissions[]
+    permissionGroups: PatchPermissionGroups[]
 }
 
-export type MinRole = AtLeast<Role, 'name' | 'permissions'>
+export type MinRole = AtLeast<Role, 'name' | 'permissionGroups'>
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type PendingUser = {
@@ -630,7 +630,7 @@ export type PatchPermissionGroupMetadata = {
     forces?: PatchPermissionGroups[]
 }
 
-const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPermissionGroupMetadata } = {
+export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPermissionGroupMetadata } = {
     [PatchPermissionGroups.ManageOrg]: {
         name: 'Manage organization',
         description: 'Change name and other org-wide settings',
@@ -707,10 +707,7 @@ const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPermission
         description: `Create requests and notify team`,
         permissions: [
             PatchPermissions.RequestAdmin,
-
-            PatchPermissions.SeeRequestChats, 
-            PatchPermissions.EditRequestData, 
-            PatchPermissions.CloseRequests
+            PatchPermissions.SeeRequestChats
         ],
         forces: [PatchPermissionGroups.ContributeToRequests, PatchPermissionGroups.CloseRequests]
     },
@@ -730,121 +727,37 @@ const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPermission
     }
 }
 
-// export const PatchPermissionToMetadataMap: { [key in PatchPermissions]: PatchPermissionMetadata } = {
-//     [PatchPermissions.EditOrgSettings]: {
-//         name: 'Edit organization settings',
-//         description: 'Edit organization name, data, and privacy settings.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.RoleAdmin]: {
-//         name: 'Role admin',
-//         description: 'Create, edit, and delete organization Roles.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.AttributeAdmin]: {
-//         name: 'Attribute admin',
-//         description: 'Create, edit, and delete organization Attributes.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.TagAdmin]: {
-//         name: 'Tag admin',
-//         description: 'Create, edit, and delete organization Tags.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.ExportData]: {
-//         name: 'Export data',
-//         description: 'Export organization data.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.InviteToOrg]: {
-//         name: 'Invite people to organization',
-//         description: 'Invite people to join organization.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.RemoveFromOrg]: {
-//         name: 'Remove users from organization',
-//         description: 'Remove users from organization.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.AssignRoles]: {
-//         name: 'Assign Roles',
-//         description: 'Assign Roles to people in organization.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.AssignAttributes]: {
-//         name: 'Assign Attributes',
-//         description: 'Assign Attributes to people in organization.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.ChatAdmin]: {
-//         name: 'Chat admin',
-//         description: 'Create and manage organization chats.',
-//         forcedPermissions: [PatchPermissions.InviteToChat],
-//     },
-//     [PatchPermissions.InviteToChat]: {
-//         name: 'Invite to chat',
-//         description: 'Invite people to chats a user has access to.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.SeeAllChats]: {
-//         name: 'See chats',
-//         description: 'See all chats in organization, include Request and Shift chats.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.SeeRequestChats]: {
-//         name: 'See Request chats',
-//         description: 'See all Request chats in organization.',
-//         forcedPermissions: [],
-//         internal: true
-//     },
-//     [PatchPermissions.SeeShiftChats]: {
-//         name: 'See Shift chats',
-//         description: 'See all Shift chats in organization.',
-//         forcedPermissions: [],
-//         internal: true
-//     },
-//     [PatchPermissions.ShiftAdmin]: {
-//         name: 'Shift admin',
-//         description: 'Create, edit, and delete Shifts. Approve requests to join Shifts, notify users on Shifts, and see all Shift chats.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.RequestAdmin]: {
-//         name: 'Request admin',
-//         description: 'Create, edit, close, and delete Requests. Notify users on requests, approve requests to join Requests, and see all Request chats.',
-//         forcedPermissions: [PatchPermissions.SeeRequestChats, PatchPermissions.EditRequestData, PatchPermissions.CloseRequests],
-//     },
-//     [PatchPermissions.EditRequestData]: {
-//         name: 'Edit Request data',
-//         description: 'Edit data associated with a Request.',
-//         forcedPermissions: [],
-//     },
-//     [PatchPermissions.CloseRequests]: {
-//         name: 'Close Request',
-//         description: 'Close Requests that a user is on.',
-//         forcedPermissions: [],
-//     }
-// }
+export function resolvePermissionsFromPermissionGroups(groups: PatchPermissionGroups[], userPermissions?: Set<PatchPermissions>) {
+    const setOfPermissions = userPermissions || new Set();
+    
+    for (const group of groups) {
+        (PermissionGroupMetadata[group]?.permissions || []).forEach(permission => {
+            setOfPermissions.add(permission);
+        });
 
-// TODO: update user to hold permission groups vs permissions and update
-// this to take permission groups and return a set of permissions
-function resolveForcedPermissions(permissions: PatchPermissions[]): Set<PatchPermissions> {
-    const userPermissions = new Set<PatchPermissions>();
-    for (const permission of permissions) {
-        userPermissions.add(permission as PatchPermissions);
-        resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
+        resolvePermissionsFromPermissionGroups(PermissionGroupMetadata[group]?.forces || [], setOfPermissions)
     }
+}
+
+export function resolvePermissionsFromRoles(roles: Role[]): Set<PatchPermissions> {
+    const userPermissions = new Set<PatchPermissions>();
+
+    for (const role of roles) {
+        resolvePermissionsFromPermissionGroups(role.permissionGroups, userPermissions)
+    }
+
     return userPermissions;
 }
 
-export function resolvePermissions(roles: Role[]): Set<PatchPermissions> {
-    const userPermissions = new Set<PatchPermissions>();
-    for (const role of roles) {
-        for (const permission of role.permissions) {
-            userPermissions.add(permission)
-            resolveForcedPermissions(PatchPermissionToMetadataMap[permission].forcedPermissions).forEach(p => userPermissions.add(p));
-        }
+export function resolvePermissionGroups(selectedGroups: PatchPermissionGroups[], visuallySelectedGroups?: Set<PatchPermissionGroups>) {
+    const setOfGroups = visuallySelectedGroups || new Set();
+    
+    for (const group of selectedGroups) {
+        setOfGroups.add(group);
+        resolvePermissionGroups(PermissionGroupMetadata[group]?.forces || [], setOfGroups)
     }
-    return userPermissions;
+
+    return setOfGroups
 }
 
 export enum DefaultRoleIds {
@@ -858,54 +771,40 @@ export const DefaultRoles: Role[] = [
     {
         id: DefaultRoleIds.Anyone,
         name: 'Anyone',
-        permissions: [
-            PatchPermissions.InviteToChat
+        permissionGroups: [
+            PatchPermissionGroups.InviteToChats
         ]
     },
     {
         id: DefaultRoleIds.Admin,
         name: 'Admin',
-        permissions: [
-            PatchPermissions.EditOrgSettings,
-            PatchPermissions.RoleAdmin,
-            PatchPermissions.AttributeAdmin,
-            PatchPermissions.TagAdmin,
-            PatchPermissions.ExportData,
-            PatchPermissions.InviteToOrg,
-            PatchPermissions.RemoveFromOrg,
-            PatchPermissions.AssignRoles,
-            PatchPermissions.AssignAttributes,
-            PatchPermissions.ChatAdmin,
-            PatchPermissions.InviteToChat,
-            PatchPermissions.SeeAllChats,
-            PatchPermissions.SeeShiftChats,
-            PatchPermissions.SeeRequestChats,
-            PatchPermissions.ShiftAdmin,
-            PatchPermissions.RequestAdmin,
-            PatchPermissions.EditRequestData,
-            PatchPermissions.CloseRequests
+        permissionGroups: [
+            PatchPermissionGroups.ManageOrg,
+            PatchPermissionGroups.ManageChats,
+            PatchPermissionGroups.ManageMetadata,
+            PatchPermissionGroups.ManageRequests,
+            PatchPermissionGroups.ManageSchedule,
+            PatchPermissionGroups.ManageTeam,
+            PatchPermissionGroups.SeeAllChats,
+            PatchPermissionGroups.ExportData,
+            PatchPermissionGroups.EditRoles
         ]
     },
     {
         id: DefaultRoleIds.Dispatcher,
         name: 'Dispatcher',
-        permissions: [
-            PatchPermissions.RequestAdmin
+        permissionGroups: [
+            PatchPermissionGroups.ManageRequests
         ]
     },
     {
         id: DefaultRoleIds.Responder,
         name: 'Responder',
-        permissions: [
-            PatchPermissions.SeeRequestChats,
-            PatchPermissions.EditRequestData
+        permissionGroups: [
+            PatchPermissionGroups.ContributeToRequests
         ]
-    },
+    }
 ]
-
-
-
-
 
 
 
