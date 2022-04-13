@@ -207,7 +207,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
         try {
             const createdTag = await api().createNewTag(this.orgContext(), categoryId, tag);
-            organizationStore().updateOrAddAttribute(categoryId, createdTag);
+            organizationStore().updateOrAddTag(categoryId, createdTag);
             return createdTag;
         } catch (e) {
             console.error(e);
