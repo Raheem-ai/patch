@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
+import { PatchPermissions } from "../../../common/models";
 import Form, { CustomFormHomeScreenProps } from "../components/forms/form";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import MangeRolesForm from "../components/forms/manageRolesForm";
@@ -10,26 +11,16 @@ import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig
 import { VisualArea } from "../components/helpers/visualArea";
 import { organizationStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
+import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
 
 type Props = ScreenProps<'Settings'>;
-
-type OrganizationSettingsInputs = [
-    InlineFormInputConfig<'TextInput'>,
-    InlineFormInputConfig<'TextInput'>,
-    NavigationFormInputConfig,
-    NavigationFormInputConfig,
-    NavigationFormInputConfig,
-    ScreenFormInputConfig<'TextArea'>,
-    InlineFormInputConfig<'Switch'>,
-    InlineFormInputConfig<'Switch'>
-]
 
 type PersonalSettingsInputs = [
     InlineFormInputConfig<'Switch'>,
     InlineFormInputConfig<'Switch'>
 ]
 
-const Settings = observer(({ navigation, route }: Props) => {
+const Settings = ({ navigation, route }: Props) => {
 
     const personalSettings = () => {
         // TODO: plumb these through to the user model 
@@ -62,11 +53,20 @@ const Settings = observer(({ navigation, route }: Props) => {
     }
 
     const organizationSettings = () => {
-        // TODO: make this switch what you see based on permissions
+
+        if (!iHaveAnyPermissions([
+            PatchPermissions.EditOrgSettings, 
+            PatchPermissions.RoleAdmin,
+            PatchPermissions.TagAdmin,
+            PatchPermissions.AttributeAdmin
+        ])) {
+            return []
+        }
+
         const inputs = [
-            
-                // TODO: plumb down to organization
-                {
+            // TODO: plumb down to organization
+            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+                ? {
                     name: 'orgName',
                     type: 'TextInput',
                     val: () => organizationStore().metadata.name,
@@ -74,9 +74,11 @@ const Settings = observer(({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: true,
                     placeholderLabel: () => 'Organization name'
-                },
-                // TODO: plumb down to organization
-                {
+                } as InlineFormInputConfig<'TextInput'>
+                : null,
+            // TODO: plumb down to organization
+            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+                ? {
                     name: 'requestPrefix',
                     type: 'TextInput',
                     val: () => organizationStore().requestPrefix,
@@ -84,8 +86,10 @@ const Settings = observer(({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: true,
                     placeholderLabel: () => 'Request prefix'
-                },
-                {
+                } as InlineFormInputConfig<'TextInput'>
+                : null,
+            iHaveAllPermissions([PatchPermissions.RoleAdmin]) 
+                ? {
                     name: 'manageRoles',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
@@ -96,8 +100,10 @@ const Settings = observer(({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return <MangeRolesForm back={back} />
                     }
-                },
-                {
+                } as NavigationFormInputConfig
+                : null,
+            iHaveAllPermissions([PatchPermissions.AttributeAdmin]) 
+                ? {
                     name: 'manageAttributes',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
@@ -108,8 +114,10 @@ const Settings = observer(({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return null
                     }
-                },
-                {
+                } as NavigationFormInputConfig
+                : null,
+            iHaveAllPermissions([PatchPermissions.TagAdmin]) 
+                ? {
                     name: 'manageTags',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
@@ -120,8 +128,11 @@ const Settings = observer(({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return null
                     }
-                },
-                {
+                } as NavigationFormInputConfig
+                : null,
+            // TODO: plumb down to organization
+            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+                ? {
                     onSave: (text) => {
                         
                     },
@@ -136,8 +147,11 @@ const Settings = observer(({ navigation, route }: Props) => {
                     headerLabel: () => 'Welcome message',
                     placeholderLabel: () => 'Welcome message for new users',
                     type: 'TextArea'
-                },
-                {
+                } as ScreenFormInputConfig<'TextArea'>
+                : null,
+            
+            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+                ? {
                     name: 'createRequestChats',
                     type: 'Switch',
                     val: () => true,
@@ -147,8 +161,10 @@ const Settings = observer(({ navigation, route }: Props) => {
                     props: {
                         label: 'Create chats for Requests'
                     }
-                },
-                {
+                } as InlineFormInputConfig<'Switch'>
+                :  null,
+            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+                ? {
                     name: 'createShiftChats',
                     type: 'Switch',
                     val: () => false,
@@ -158,15 +174,20 @@ const Settings = observer(({ navigation, route }: Props) => {
                     props: {
                         label: 'Create chats for Shifts'
                     }
-                }
-            
-        ] as OrganizationSettingsInputs
+                } as InlineFormInputConfig<'Switch'>
+                : null
+        ].filter(v => !!v)
 
         return inputs;
     }
 
     const homeScreen = (params: CustomFormHomeScreenProps) => {
         const inputs = params.inputs();
+
+        const personalSettings = inputs[0];
+        const orgSettings = inputs[1];
+
+        const shouldShowOrgSettings = orgSettings && !!(orgSettings as StandAloneFormInputConfig[]).length
 
         return (
             <VisualArea>
@@ -181,19 +202,24 @@ const Settings = observer(({ navigation, route }: Props) => {
                             <Text style={styles.headerText}>{'PERSONAL'}</Text>
                         </View>
                         <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
-                            { params.renderInputs([inputs[0]])}
+                            { params.renderInputs([personalSettings])}
                         </View>
-                        <View style={styles.headerContainer}>
-                            <IconButton
-                                icon={'domain'} 
-                                color='#666'
-                                size={20} 
-                                style={styles.headerIcon} />
-                            <Text style={styles.headerText}>{'ORGANIZATION'}</Text>
-                        </View>
-                        <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
-                            { params.renderInputs([inputs[1]])}
-                        </View>
+                        { shouldShowOrgSettings
+                            ? <>
+                                <View style={styles.headerContainer}>
+                                    <IconButton
+                                        icon={'domain'} 
+                                        color='#666'
+                                        size={20} 
+                                        style={styles.headerIcon} />
+                                    <Text style={styles.headerText}>{'ORGANIZATION'}</Text>
+                                </View>
+                                <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
+                                    { params.renderInputs([orgSettings])}
+                                </View>
+                            </>
+                            : null
+                        }
                     </Pressable>
                 </ScrollView>
             </VisualArea>
@@ -205,7 +231,7 @@ const Settings = observer(({ navigation, route }: Props) => {
             inputs={[ personalSettings(), organizationSettings() ]} 
             homeScreen={homeScreen}/>
     )
-})
+}
 
 export default Settings;
 

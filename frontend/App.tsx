@@ -143,7 +143,7 @@ export default function App() {
 
 const userScreen = function(Component: (props) => JSX.Element) {
   return observer(function(props) {    
-    return userStore().signedIn && !!organizationStore().metadata
+    return userStore().signedIn && organizationStore().isReady
       ? <Component {...props} />
       : null
   })

@@ -189,6 +189,7 @@ export interface IOrganizationStore extends IBaseStore {
     roles: Map<string, Role> 
     userRoles: Map<string, Role[]>
     userPermissions: Map<string, Set<PatchPermissions>>
+    isReady: boolean
 
     getOrgData(): Promise<void>;
     updateOrgData(updatedOrg: OrganizationMetadata): void

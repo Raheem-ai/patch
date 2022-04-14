@@ -601,13 +601,6 @@ export enum PatchPermissions {
     CloseRequests = 'cr'
 }
 
-// export type PatchPermissionMetadata = {
-//     name: string
-//     description: string
-//     forcedPermissions: PatchPermissions[],
-//     internal?: boolean
-// }
-
 export enum PatchPermissionGroups {
     ManageOrg = 'mo',
     EditRoles = 'er',

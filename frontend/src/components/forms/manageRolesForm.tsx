@@ -5,7 +5,7 @@ import { ScrollView } from "react-native-gesture-handler"
 import { Text } from "react-native-paper"
 import { DefaultRoleIds } from "../../../../common/models"
 import { resolveErrorMessage } from "../../errors"
-import { alertStore, organizationStore, upsertRoleStore } from "../../stores/interfaces"
+import { alertStore, organizationStore, upsertRoleStore, userStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
 import DescriptiveNavigationLabel from "./inputs/descriptiveNavigationLabel"
@@ -13,9 +13,7 @@ import { NavigationFormInputConfig, SectionNavigationScreenViewProps } from "./t
 import UpsertRoleForm from "./upsertRoleForm"
 import { VisualArea } from '../helpers/visualArea';
 
-// TODO: this is somehow caching data so that when you add/edit a role none of the views at or below
-// this will update theemselves even if they're observable
-const MangeRolesForm = observer(({ back }: SectionNavigationScreenViewProps) => {
+const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
     const roleInputs = () => {
         const editRoleInputs = organizationStore().metadata.roleDefinitions.map(def => {
@@ -105,14 +103,16 @@ const MangeRolesForm = observer(({ back }: SectionNavigationScreenViewProps) => 
         }
 
         return (
-            <ScrollView style={{ flex: 1 }}>
+            <>
                 <BackButtonHeader {...headerProps}/>
-                <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
-                    <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{'Use Roles to specify who does what for a Shift or Request.'}</Text>
-                    <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{'Each role grants the permissions needed for that role. A person can be eligible for more than one role.'}</Text>
-                </View>
-                { renderInputs(inputs()) }
-            </ScrollView>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{'Use Roles to specify who does what for a Shift or Request.'}</Text>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{'Each role grants the permissions needed for that role. A person can be eligible for more than one role.'}</Text>
+                    </View>
+                    { renderInputs(inputs()) }
+                </ScrollView>
+                </>
         )
     })
 
@@ -121,6 +121,6 @@ const MangeRolesForm = observer(({ back }: SectionNavigationScreenViewProps) => 
             <Form inputs={roleInputs} homeScreen={homeScreen}/>
         </VisualArea>
     )
-})
+}
 
 export default MangeRolesForm;

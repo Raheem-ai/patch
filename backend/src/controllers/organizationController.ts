@@ -337,16 +337,18 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
+        const org = await this.db.resolveOrganization(orgId);
+
+        if (await this.userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
 
             // dissallowed in front end so should never happen but just in case
-            if (roleIds.includes(DefaultRoleIds.Admin)) {
+            if (roleUpdates.id == DefaultRoleIds.Admin) {
                 const adminRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Admin)?.name || 'Admin';
                 throw new BadRequest(`The '${adminRoleName}' role cannot be edited`);
             }
 
-            const org = await this.db.editRole(orgId, roleUpdates);
-            const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
+            const updatedOrg = await this.db.editRole(orgId, roleUpdates);
+            const updatedRole = updatedOrg.roleDefinitions.find(role => role.id == roleUpdates.id);
     
             await this.pubSub.sys(PatchEventType.OrganizationRoleEdited, { 
                 orgId: orgId, 

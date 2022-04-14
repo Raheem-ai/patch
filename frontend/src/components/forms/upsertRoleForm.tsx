@@ -10,7 +10,7 @@ import { Pressable, View } from "react-native"
 import { Button, Text } from "react-native-paper"
 import { Colors } from "../../types"
 import { resolveErrorMessage } from "../../errors"
-import { userHasPermissions } from "../../utils"
+import { iHaveAllPermissions } from "../../utils"
 
 type UpsertRoleFormProps = {
     cancel: () => void,
@@ -27,6 +27,7 @@ const UpsertRoleForm = ({
 
     const isAnyoneRole = upsertRoleStore().id == DefaultRoleIds.Anyone
     const isAdminRole = upsertRoleStore().id == DefaultRoleIds.Admin
+    const isCreating = !upsertRoleStore().id;
 
     const nameInput = {
         name: 'name',
@@ -106,7 +107,7 @@ const UpsertRoleForm = ({
             }
         }
 
-        const iHavePermissionToDelete = userHasPermissions(userStore().user.id, [PatchPermissions.RoleAdmin])
+        const iHavePermissionToDelete = iHaveAllPermissions([PatchPermissions.RoleAdmin])
 
         return (
             <Pressable style={{ position: 'relative', flex: 1 }} onPress={onContainerPress}>
@@ -118,7 +119,7 @@ const UpsertRoleForm = ({
                     : null
                 }
                 {renderInputs(inputs())}
-                {   !isAnyoneRole && !isAdminRole && iHavePermissionToDelete
+                {   !isCreating && !isAnyoneRole && !isAdminRole && iHavePermissionToDelete
                     ? <View style={{ position: 'absolute', bottom: 0, padding: 20, width: '100%' }}>
                         <Button
                             uppercase={false} 

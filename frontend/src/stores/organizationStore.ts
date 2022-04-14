@@ -13,6 +13,10 @@ export default class OrganizationStore implements IOrganizationStore {
         roleDefinitions: []
     };
 
+    get isReady() {
+        return userStore().signedIn && (userStore().currentOrgId == this.metadata.id)
+    }
+
     get roles()  {
         const roleMapping = new Map<string, Role>()
 
