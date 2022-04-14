@@ -89,6 +89,7 @@ export default class AddUser extends React.Component {
                     name: 'roles',
                     previewLabel: () => null,
                     headerLabel: () => 'Roles',
+                    placeholderLabel: () => 'Roles',
                     type: 'TagList',
                     props: {
                         options: allEnumValues(UserRole),
@@ -112,6 +113,7 @@ export default class AddUser extends React.Component {
                     name: 'skills',
                     previewLabel: () => null,
                     headerLabel: () => 'Skills',
+                    placeholderLabel: () => 'Skills',
                     type: 'TagList',
                     props: {
                         options: allEnumValues(RequestSkill),

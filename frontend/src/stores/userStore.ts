@@ -134,12 +134,8 @@ export default class UserStore implements IUserStore {
     }
     
     async signIn(email: string, password: string) {
-        try {
-            const authTokens = await this.api.signIn({ email, password })
-            await this.afterSignIn(authTokens);
-        } catch (e) {
-            console.error(e);
-        }
+        const authTokens = await this.api.signIn({ email, password })
+        await this.afterSignIn(authTokens);
     }
 
     async signUp(minUser: MinUser) {

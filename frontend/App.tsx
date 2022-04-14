@@ -25,7 +25,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, notificationStore, userStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -43,6 +43,7 @@ import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';
 import Alerts from './src/components/alerts/alerts';
 import ComponentLibrary from './src/screens/componentLibrary';
+import Settings from './src/screens/settings';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -129,6 +130,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
                         <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
+                        <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
                     </Stack.Navigator>
                     <Alerts/>
                     <GlobalBottomDrawer/>
@@ -141,7 +143,7 @@ export default function App() {
 
 const userScreen = function(Component: (props) => JSX.Element) {
   return observer(function(props) {    
-    return userStore().signedIn
+    return userStore().signedIn && organizationStore().isReady
       ? <Component {...props} />
       : null
   })

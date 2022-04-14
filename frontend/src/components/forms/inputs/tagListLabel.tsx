@@ -20,7 +20,7 @@ const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagLis
     if (!config.val() || !config.val().length) {
         return (
             <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.headerLabel)}</Text>
+                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
             </Pressable>
         )
     }
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,
-        fontSize: 18
+        fontSize: 16
     }
 })

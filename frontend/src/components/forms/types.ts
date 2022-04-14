@@ -1,19 +1,33 @@
 import { ComponentType } from "react"
-import { AddressableLocation, DateTimeRange, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { StyleProp, ViewStyle } from "react-native";
+import { AddressableLocation, DateTimeRange, PatchPermissionGroups, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+
+export type Grouped<T> = T | T[];
 
 export type SectionInlineViewProps<Type extends InlineFormInputType = InlineFormInputType> = {
-    config: InlineFormInputConfig<Type>,
-    expand?: () => void
+    config: InlineFormInputConfig<Type>
 }
 
 export type SectionLabelViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
     config: ScreenFormInputConfig<Type>,
-    expand?: () => void
+    expand: () => void
 }
 
 export type SectionScreenViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
     back: () => void,
     config: ScreenFormInputConfig<Type>
+}
+
+// navigation input config decides completely how to render the label
+// all it needs from form implementation is a way to switch screens
+export type SectionNavigationLabelViewProps = {
+    expand: () => void
+}
+
+// navigation input config decides completely how to render the screen component
+// all it needs from form implementation is a way to go back to the form's home screen
+export type SectionNavigationScreenViewProps = {
+    back: () => void
 }
 
 export type ScreenFormInputOptions = { 
@@ -64,7 +78,13 @@ export type ScreenFormInputOptions = {
             dark?: boolean
         },
         type: any[]
-    }
+    },
+    'PermissionGroupList': {
+        props: {
+            
+        },
+        type: PatchPermissionGroups[]
+    },
 }
 
 export type InlineFormInputOptions = { 
@@ -75,6 +95,12 @@ export type InlineFormInputOptions = {
     'TextInput': {
         props: {},
         type: string
+    }
+    'Switch': {
+        props: {
+            label: string | (() => string)
+        },
+        type: boolean
     }
 }
 
@@ -90,9 +116,27 @@ export type CompoundFormInputOptions = {
     }
 }
 
-export type FormInputConfig = InlineFormInputConfig | ScreenFormInputConfig | CompoundFormInputConfig;
+// catch all type that gets passed to form for input configuration
+export type FormInputConfig = CompoundFormInputConfig | StandAloneFormInputConfig;
 
-export type StandAloneFormInputConfig = InlineFormInputConfig | ScreenFormInputConfig;
+// form input configuration types that correspond to at least 1 visual component on the form homepage
+export type StandAloneFormInputConfig = ValidatableFormInputConfig | NavigationFormInputConfig;
+
+// form input configuration that both has a visual component on the home page and manages data
+// that might need to be validated
+export type ValidatableFormInputConfig = InlineFormInputConfig | ScreenFormInputConfig
+
+// much simpler because it doesn't deal with data at all...it only ties into
+// the navigation in forms
+export type NavigationFormInputConfig = {
+    label: ((props: SectionNavigationLabelViewProps) => JSX.Element) | string,
+    screen: (props: SectionNavigationScreenViewProps) => JSX.Element
+
+    labelContainerStyle?: StyleProp<ViewStyle>
+    expandIcon?: string | (() => string)
+    // need 'name' for a screenId and 'disabled' in case the label is a string
+    // so the consumer doesn't have control over the disabled lable visual component
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'icon'>; 
 
 export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormInputType, Val extends InlineFormInputOptions[Type]['type'] = InlineFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
@@ -137,7 +181,7 @@ export type CompoundFormInputConfig<Type extends CompoundFormInputType = Compoun
 export type CompoundFormInputFactoryParams<Type extends CompoundFormInputType = CompoundFormInputType, Val extends CompoundFormInputOptions[Type]['type'] = CompoundFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
     val(): Val
-} & BaseFormInputConfig & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'required'> & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
 
 // instead of exporting an input component we export a factory with a similar config interface
 export type CompoundFormInputFactory<Type extends CompoundFormInputType> = (params: CompoundFormInputFactoryParams<Type>) => CompoundFormInputConfig<Type>;
@@ -146,6 +190,7 @@ type BaseFormInputConfig = {
     name: string
     disabled?: boolean
     required?: boolean
+    icon?: string
 }
 
 export type ScreenFormInputType = keyof ScreenFormInputOptions

@@ -67,6 +67,7 @@ class EditHelpRequest extends React.Component<Props> {
                     name: 'location',
                     previewLabel: () => editRequestStore().location?.address,
                     headerLabel: () => 'Location',
+                    placeholderLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
@@ -81,6 +82,7 @@ class EditHelpRequest extends React.Component<Props> {
                     name: 'type',
                     previewLabel: () => null,
                     headerLabel: () => 'Type of request',
+                    placeholderLabel: () => 'Type of request',
                     type: 'TagList',
                     required: true,
                     props: {
@@ -104,6 +106,7 @@ class EditHelpRequest extends React.Component<Props> {
                     name: 'notes',
                     previewLabel: () => editRequestStore().notes,
                     headerLabel: () => 'Notes',
+                    placeholderLabel: () => 'Notes',
                     type: 'TextArea',
                 },
                 {
@@ -117,6 +120,7 @@ class EditHelpRequest extends React.Component<Props> {
                     name: 'skills',
                     previewLabel: () => null,
                     headerLabel: () => 'Skills',
+                    placeholderLabel: () => 'Skills',
                     type: 'NestedTagList',
                     props: {
                         options: allEnumValues(RequestSkill),
@@ -141,6 +145,7 @@ class EditHelpRequest extends React.Component<Props> {
                     name: 'responders',
                     previewLabel: () => `${editRequestStore().respondersNeeded}`,
                     headerLabel: () => 'Responders needed',
+                    placeholderLabel: () => 'Responders needed',
                     type: 'List',
                     props: {
                         options: ResponderCountRange,

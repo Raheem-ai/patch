@@ -6,7 +6,7 @@ import { List } from "react-native-paper";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
 import { SectionScreenViewProps } from "../types";
-import BackButtonHeader from "./backButtonHeader";
+import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
 
 const ListInput = observer(({ back, config }: SectionScreenViewProps<'List' | 'TagList'>) => {
 
@@ -35,10 +35,21 @@ const ListInput = observer(({ back, config }: SectionScreenViewProps<'List' | 'T
         setVals(cpy);
     }
 
+    const headerProps: BackButtonHeaderProps = {
+        cancel: {
+            handler: back
+        },
+        save: {
+            handler: save,
+        },
+        label: config.headerLabel,
+        bottomBorder: true
+    }
+
     return (
         <>
-            <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
-            <ScrollView style={{ flex: 1}}> 
+            <BackButtonHeader  {...headerProps} />
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1}}> 
                 <List.Section style={{margin: 0}}>
                     {config.props.options.map(opt => {
                         const chosen = vals.has(opt);

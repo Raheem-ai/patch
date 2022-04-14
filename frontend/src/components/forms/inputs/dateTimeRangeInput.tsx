@@ -191,14 +191,14 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
     
     return (
         <View style={styles.container}>
-            <View style={styles.iconContainer}>
+            {/* <View style={styles.iconContainer}>
                     <IconButton
                         icon='clock-outline' 
                         color='#000'
                         size={20} 
                         style={{ margin: 0, padding: 0, width: 20 }}
                         />
-            </View>
+            </View> */}
             <Section 
                 dateParts={{
                     date: startDay, 
@@ -294,15 +294,15 @@ const Section = ({
         <View style={styles.section}>
             <View style={styles.sectionHeader}>
                 <Pressable onPress={() => toggleDayPicker(section)}>
-                    <Text style={{ lineHeight: 60 }}>{dateToDateString(date)}</Text>
+                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToDateString(date)}</Text>
                 </Pressable>
                 <Pressable onPress={() => toggleTimePicker(section)}>
-                    <Text style={{ lineHeight: 60 }}>{dateToTimeString(date)}</Text>
+                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(date)}</Text>
                 </Pressable>
             </View>
             {
                 dayPickerOpen && section == currentSection    
-                    ? <View style={{ backgroundColor: '#fff', marginLeft: -20}}>
+                    ? <View style={{ backgroundColor: '#fff', marginLeft: -60}}>
                         <CalendarPicker
                             onDateChange={onDayEvent} 
                             initialDate={date} />
@@ -311,7 +311,7 @@ const Section = ({
             }
             {
                 timePickerOpen && section == currentSection 
-                    ? <View style={{ marginLeft: -20, flexDirection: 'row', justifyContent: 'center'}}>
+                    ? <View style={{ marginLeft: -60, flexDirection: 'row', justifyContent: 'center'}}>
                         <WheelPicker
                             initialSelectedIndex={initialHour == -1 ? 0 : initialHour}
                             items={HOURS.map(name => ({ label: name, value: name }))}
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
         height: 60,
         width: 60,
         position: 'absolute', 
-        left: -20,
+        left: -60,
         justifyContent: 'center',
         alignContent: 'center',
         padding: 20
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     },
     sectionHeader: {
         flexDirection: 'row',
-        paddingLeft: 40,
+        paddingLeft: 0,
         paddingRight: 20,
         justifyContent: 'space-between'
     },

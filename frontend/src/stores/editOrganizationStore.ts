@@ -9,8 +9,6 @@ import { api } from '../services/interfaces';
 export default class EditOrganizationStore implements IEditOrganizationStore  {
     name: string = '';
     roleDefinitions: Role[] = []
-    currentRoleName: string = ''
-    currentRolePermissions: PatchPermissions[] = []
 
     constructor() {
         makeAutoObservable(this)
@@ -45,37 +43,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         }
     }
 
-    async createNewRole() {
-        const role: MinRole = {
-            name: this.currentRoleName,
-            permissions: this.currentRolePermissions
-        }
-
-        try {
-            const createdRole = await api().createNewRole(this.orgContext(), role);
-            organizationStore().updateOrAddRole(createdRole);
-            return createdRole;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async editRole(roleId: string) {
-        const role = {
-            id: roleId,
-            name: this.currentRoleName,
-            permissions: this.currentRolePermissions
-        }
-
-        try {
-            const updatedRole = await api().editRole(this.roleContext(roleId), role);
-            organizationStore().updateOrAddRole(updatedRole);
-            return updatedRole;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
     async deleteRoles(roleIds: string[]) {
         return await api().deleteRoles(this.orgContext(), roleIds);
     }
@@ -88,8 +55,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     clear() {
         this.name = '';
         this.roleDefinitions = [];
-        this.currentRoleName = '';
-        this.currentRolePermissions = [];
      }
    
 }

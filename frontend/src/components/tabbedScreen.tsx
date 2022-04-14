@@ -6,12 +6,13 @@ import { VisualArea } from "./helpers/visualArea";
 
 type TabConfig = {
     label : string,
-    view: React.ReactNode
+    view: () => JSX.Element
 }
 
 type Props = {
     tabs: TabConfig[]
     defaultTab?: string,
+    scrollableHeader?: boolean // default to evenly spaced headers but alow for scrolling when necessary
 };
 
 /**
@@ -25,10 +26,14 @@ type Props = {
  * will cause errors.
  * 
  *  @example 
+ * const fooContent = () => {...}
+ * const barContent = () => {...}
+ * const bazContent = () => {...}
+ * 
  * <TabbedScreen defaultTab='BAR' tabs={[ 
-        { label: 'FOO', view: fooContent() },  
-        { label: 'BAR', view: barContent() }, 
-        { label: 'BAZ', view: bazContent() }
+        { label: 'FOO', view: fooContent },  
+        { label: 'BAR', view: barContent }, 
+        { label: 'BAZ', view: bazContent }
     ]}/>    
  * 
  */
@@ -36,41 +41,60 @@ type Props = {
 const TabbedScreen: React.FC<Props> = ({
     tabs,
     defaultTab,
+    scrollableHeader
 }: Props) => {
-    const [ selectedTab, setSelectedTab ] = useState<TabConfig>(null);
-    
+    const initialTab = defaultTab
+        ? tabs.find((t) => t.label == defaultTab) || null
+        : tabs[0] || null;
+
+    const [ selectedTab, setSelectedTab ] = useState<TabConfig>(initialTab);
+
+    const renderTabs = () => {
+        return tabs.map((t, i) => {
+            const selected = !!selectedTab
+                ? t.label == selectedTab.label
+                : !!defaultTab
+                    ? t.label == defaultTab
+                    : i == 0;
+
+            return (
+                <Pressable onPress={() => setSelectedTab(t)} style={[
+                    styles.headerSection,
+                    i == 0 ? styles.firstSection : null,
+                    i == tabs.length - 1 ? styles.lastSection : null,
+                    selected ? styles.selectedSection : null
+                ]}>
+                    <Text style={[
+                        styles.headerLabel,
+                        selected ? styles.selectedHeaderLabel : null
+                    ]}>{t.label}</Text>
+                </Pressable>
+            )
+        })
+    }
+
     return (
         <VisualArea>
             <View style={styles.header}>
-                <ScrollView horizontal >
-                    {
-                        tabs.map((t, i) => {
-                            const selected = !!selectedTab
-                                ? t.label == selectedTab.label
-                                : !!defaultTab
-                                    ? t.label == defaultTab
-                                    : i == 0;
-
-                            return (
-                                <Pressable onPress={() => setSelectedTab(t)} style={[
-                                    styles.headerSection,
-                                    i == 0 ? styles.firstSection : null,
-                                    i == tabs.length - 1 ? styles.lastSection : null,
-                                    selected ? styles.selectedSection : null
-                                ]}>
-                                    <Text style={[
-                                        styles.headerLabel,
-                                        selected ? styles.selectedHeaderLabel : null
-                                    ]}>{t.label}</Text>
-                                </Pressable>
-                            )
-                        })
-                    }
-                </ScrollView>
+                { !!scrollableHeader
+                    ? <ScrollView horizontal>
+                        {
+                            renderTabs()
+                        }
+                    </ScrollView>
+                    : <View style={{ flexGrow: 1, flexShrink: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                        {
+                            renderTabs()
+                        }
+                    </View>
+                }
             </View>
-            <View style={styles.body}>
+            {/* without this key, it won't rerender if the tab content has the same shape 
+                ie. two <Form /> components even if they have different internals
+            */}
+            <View key={selectedTab.label} style={styles.body}>
                 {
-                    selectedTab?.view || tabs?.[0]?.view
+                    selectedTab?.view()
                 }
             </View>
         </VisualArea>
@@ -91,7 +115,7 @@ const styles = StyleSheet.create({
     }, 
     headerLabel: {
         fontSize: 16,
-        color: '#666'
+        color: '#999'
     },
     selectedHeaderLabel: {
         color: '#fff'
