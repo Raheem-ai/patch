@@ -494,6 +494,7 @@ export class OrganizationController implements APIController<
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeCreated, {
                 orgId: orgId,
+                categoryId: categoryId,
                 attributeId: createdAttribute.id
             });
 
@@ -515,7 +516,8 @@ export class OrganizationController implements APIController<
             const [org, updatedAttribute] = await this.db.editAttribute(orgId, categoryId, attributeUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationAttributeEdited, { 
-                orgId: orgId, 
+                orgId: orgId,
+                categoryId: categoryId,
                 attributeId: updatedAttribute.id
             });
 
@@ -537,7 +539,8 @@ export class OrganizationController implements APIController<
             const org = await this.db.removeAttribute(orgId, categoryId, attributeId);
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeDeleted, { 
-                orgId: orgId, 
+                orgId: orgId,
+                categoryId: categoryId,
                 attributeId: attributeId
             });
 
@@ -625,6 +628,7 @@ export class OrganizationController implements APIController<
 
             await this.pubSub.sys(PatchEventType.OrganizationTagCreated, {
                 orgId: orgId,
+                categoryId: categoryId,
                 tagId: createdTag.id
             });
 
@@ -646,7 +650,8 @@ export class OrganizationController implements APIController<
             const [org, updatedTag] = await this.db.editTag(orgId, categoryId, tagUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationTagEdited, { 
-                orgId: orgId, 
+                orgId: orgId,
+                categoryId: categoryId,
                 tagId: updatedTag.id
             });
 
@@ -668,7 +673,8 @@ export class OrganizationController implements APIController<
             const org = await this.db.removeTag(orgId, categoryId, tagId);
 
             await this.pubSub.sys(PatchEventType.OrganizationTagDeleted, { 
-                orgId: orgId, 
+                orgId: orgId,
+                categoryId: categoryId,
                 tagId: tagId
             });
 

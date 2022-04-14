@@ -128,25 +128,21 @@ export class MySocketService {
                 await this.handleOrganizationRoleUpdate(event, params as any)
                 break;
 
-            case PatchEventType.OrganizationAttributeCategoryCreated:
             case PatchEventType.OrganizationAttributeCategoryEdited:
             case PatchEventType.OrganizationAttributeCategoryDeleted:
                 await this.handleOrganizationAttributeCateogryUpdate(event, params as any);
                 break;
 
-            case PatchEventType.OrganizationAttributeCreated:
             case PatchEventType.OrganizationAttributeEdited:
             case PatchEventType.OrganizationAttributeDeleted:
                 await this.handleOrganizationAttributeUpdate(event, params as any);
                 break;
 
-            case PatchEventType.OrganizationTagCategoryCreated:
             case PatchEventType.OrganizationTagCategoryEdited:
             case PatchEventType.OrganizationTagCategoryDeleted:
                 await this.handleOrganizationTagCategoryUpdate(event, params as any);
                 break;
 
-            case PatchEventType.OrganizationTagCreated:
             case PatchEventType.OrganizationTagEdited:
             case PatchEventType.OrganizationTagDeleted:
                 await this.handleOrganizationTagUpdate(event, params as any);
@@ -293,15 +289,13 @@ export class MySocketService {
         }
     }
 
-    // TODO: Can/Should these be consolidated?
     async handleOrganizationAttributeCateogryUpdate<SysEvent extends 
-        PatchEventType.OrganizationAttributeCategoryCreated
-        | PatchEventType.OrganizationAttributeCategoryEdited
+        PatchEventType.OrganizationAttributeCategoryEdited
         | PatchEventType.OrganizationAttributeCategoryDeleted
     >(
         sysEvent: SysEvent, 
         sysParams: PatchEventParams[SysEvent]
-    ) {  
+    ) {
         const { categoryId, orgId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
@@ -317,13 +311,16 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
-                to: (user as UserModel).push_token,
-                body: ``,
-                payload: { uiEvent: msg }
+            // Only send notifications to users affected by the Attribute Category update.
+            if (categoryId in user.organizations[orgId].attributes) {
+                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                    type: NotificationType.UIUpdate,
+                    to: (user as UserModel).push_token,
+                    body: ``,
+                    payload: { uiEvent: msg }
+                }
+                notifications.push(notification);
             }
-            notifications.push(notification);
 
             try {
                 await this.send(user.id, msg)
@@ -340,14 +337,13 @@ export class MySocketService {
     }
 
     async handleOrganizationAttributeUpdate<SysEvent extends 
-        PatchEventType.OrganizationAttributeCreated
-        | PatchEventType.OrganizationAttributeEdited
+        PatchEventType.OrganizationAttributeEdited
         | PatchEventType.OrganizationAttributeDeleted
     >(
         sysEvent: SysEvent, 
         sysParams: PatchEventParams[SysEvent]
-    ) {  
-        const { attributeId, orgId } = sysParams;
+    ) {
+        const { orgId, categoryId, attributeId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
         const notifications: NotificationMetadata<any>[] = [];
@@ -357,18 +353,24 @@ export class MySocketService {
                 params: { 
                     attributeId,
                     orgId,
+                    attributeCategoryId: categoryId
                 },
                 sysEvent,
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
-                to: (user as UserModel).push_token,
-                body: ``,
-                payload: { uiEvent: msg }
+            // Only send notifications to users affected by the Attribute update.
+            if (categoryId in user.organizations[orgId].attributes) {
+                if (attributeId in user.organizations[orgId].attributes[categoryId]) {
+                    const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                        type: NotificationType.UIUpdate,
+                        to: (user as UserModel).push_token,
+                        body: ``,
+                        payload: { uiEvent: msg }
+                    }
+                    notifications.push(notification);
+                }
             }
-            notifications.push(notification);
 
             try {
                 await this.send(user.id, msg)
@@ -385,13 +387,12 @@ export class MySocketService {
     }
 
     async handleOrganizationTagCategoryUpdate<SysEvent extends 
-        PatchEventType.OrganizationTagCategoryCreated
-        | PatchEventType.OrganizationTagCategoryDeleted
+        PatchEventType.OrganizationTagCategoryDeleted
         | PatchEventType.OrganizationTagCategoryEdited
     >(
         sysEvent: SysEvent, 
         sysParams: PatchEventParams[SysEvent]
-    ) {  
+    ) {
         const { categoryId, orgId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
@@ -430,14 +431,13 @@ export class MySocketService {
     }
 
     async handleOrganizationTagUpdate<SysEvent extends 
-        PatchEventType.OrganizationTagCreated
-        | PatchEventType.OrganizationTagEdited
+        PatchEventType.OrganizationTagEdited
         | PatchEventType.OrganizationTagDeleted
     >(
         sysEvent: SysEvent, 
         sysParams: PatchEventParams[SysEvent]
-    ) {  
-        const { tagId, orgId } = sysParams;
+    ) {
+        const { orgId, tagId, categoryId } = sysParams;
         const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
 
         const notifications: NotificationMetadata<any>[] = [];
@@ -447,6 +447,7 @@ export class MySocketService {
                 params: { 
                     tagId,
                     orgId,
+                    tagCategoryId: categoryId
                 },
                 sysEvent,
                 sysParams

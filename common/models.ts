@@ -551,14 +551,17 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationAttributeCreated]: {
         orgId: string,
+        categoryId: string,
         attributeId: string
     },
     [PatchEventType.OrganizationAttributeEdited]: {
         orgId: string,
+        categoryId: string,
         attributeId: string
     },
     [PatchEventType.OrganizationAttributeDeleted]: {
         orgId: string,
+        categoryId: string,
         attributeId: string
     },
     [PatchEventType.OrganizationAttributeCategoryCreated]: {
@@ -575,14 +578,17 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationTagCreated]: {
         orgId: string,
+        categoryId: string,
         tagId: string
     },
     [PatchEventType.OrganizationTagEdited]: {
         orgId: string,
+        categoryId: string,
         tagId: string
     },
     [PatchEventType.OrganizationTagDeleted]: {
         orgId: string,
+        categoryId: string,
         tagId: string
     },
     [PatchEventType.OrganizationTagCategoryCreated]: {
