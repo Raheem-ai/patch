@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributeHandle } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -31,7 +31,7 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap, skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
@@ -163,7 +163,6 @@ export interface IRequestStore extends IBaseStore {
     removeUserFromRequest(userId: string, reqId: string): Promise<void>
 }
 
-// TO DO: Add 'tags' and 'attributes'
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
 
 export interface ITempOrganizationStore extends EditOrganizationData {
@@ -362,7 +361,7 @@ export namespace INewUserStore {
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
     roleIds: string[]
-    attributes: string[]
+    attributes: AttributesMap
 
     isValid: boolean
     phoneValid: boolean

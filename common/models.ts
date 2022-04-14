@@ -27,7 +27,7 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
-    attributes: AttributeHandle[],
+    attributes: AttributesMap,
     onDuty: boolean
 }
 
@@ -57,7 +57,7 @@ export interface Organization {
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
     roleDefinitions: Role[]
-    attributeCategories: AttributeCategory[]
+    attributeCategories: AttributeCategory[] // TODO: Change to AttributesMap
     tagCategories: TagCategory[]
 }
 
@@ -86,10 +86,7 @@ export type Attribute = {
     name: string
 }
 
-export type AttributeHandle = {
-    categoryId: string,
-    id: string
-}
+export type AttributesMap = { [key: string]: string[] }
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -114,7 +111,7 @@ export type PendingUser = {
     phone: string
     roles: UserRole[]
     roleIds: string[]
-    attributes: AttributeHandle[]
+    attributes: AttributesMap
     skills: RequestSkill[]
     pendingId: string
 }

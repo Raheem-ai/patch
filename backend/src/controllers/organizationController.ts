@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributeHandle, AttributeCategoryUpdates, TagCategoryUpdates } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -84,7 +84,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[],
         @Required() @BodyParams('roleIds') roleIds: string[],
-        @Required() @BodyParams('attributes') attributes: AttributeHandle[]
+        @Required() @BodyParams('attributes') attributes: AttributesMap
     ) {
         const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds, attributes);
 
@@ -240,7 +240,7 @@ export class OrganizationController implements APIController<
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('roleIds') roleIds: string[], 
-        @Required() @BodyParams('attributes') attributes: AttributeHandle[], 
+        @Required() @BodyParams('attributes') attributes: AttributesMap, 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
