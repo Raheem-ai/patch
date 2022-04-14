@@ -192,7 +192,7 @@ const Settings = ({ navigation, route }: Props) => {
         return (
             <VisualArea>
                 <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-                    <Pressable onPress={params.onContainerPress} style={{ flex: 1, paddingBottom: 20 }}>
+                    <Pressable onPress={params.onContainerPress} style={{ flex: 1 }}>
                         <View style={styles.headerContainer}>
                             <IconButton
                                 icon={'account'} 
