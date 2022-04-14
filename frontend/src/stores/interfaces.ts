@@ -190,7 +190,6 @@ export interface IEditOrganizationStore extends ITempOrganizationStore {
 
     // Edit Attribute
     currentAttributeName: string
-    currentAttributeCategory: string
 
     // Edit Tag Category
     currentTagCategoryName: string
@@ -198,7 +197,6 @@ export interface IEditOrganizationStore extends ITempOrganizationStore {
 
     // Edit Tag
     currentTagName: string
-    currentTagCategory: string
 
     editOrganization(orgId: string): Promise<OrganizationMetadata>
 
