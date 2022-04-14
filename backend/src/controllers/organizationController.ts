@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributeHandle, AttributeCategoryUpdates, TagCategoryUpdates } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -84,9 +84,9 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[],
         @Required() @BodyParams('roleIds') roleIds: string[],
-        @Required() @BodyParams('attributeIds') attributeIds: string[]
+        @Required() @BodyParams('attributes') attributes: AttributeHandle[]
     ) {
-        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds, attributeIds);
+        const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds, attributes);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -240,7 +240,7 @@ export class OrganizationController implements APIController<
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('roleIds') roleIds: string[], 
-        @Required() @BodyParams('attributeIds') attributeIds: string[], 
+        @Required() @BodyParams('attributes') attributes: AttributeHandle[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
@@ -258,7 +258,7 @@ export class OrganizationController implements APIController<
             phone,
             roles,
             roleIds,
-            attributeIds,
+            attributes,
             skills,
             pendingId: uuid.v1()
         };
@@ -425,7 +425,7 @@ export class OrganizationController implements APIController<
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
         {
-            const [org, createdCategory] = await this.db.addAttributeCategoryToOrganization(newCategory, orgId);
+            const [org, createdCategory] = await this.db.addAttributeCategoryToOrganization(orgId, newCategory);
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryCreated, {
                 orgId: orgId,
@@ -443,7 +443,7 @@ export class OrganizationController implements APIController<
     async editAttributeCategory(
         @OrgId() orgId: string,
         @User() user: UserDoc,
-        @Required() @BodyParams('categoryUpdates') categoryUpdates: AtLeast<AttributeCategory, "id">,
+        @Required() @BodyParams('categoryUpdates') categoryUpdates: AttributeCategoryUpdates,
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
             const [org, updatedCategory] = await this.db.editAttributeCategory(orgId, categoryUpdates);
@@ -490,7 +490,7 @@ export class OrganizationController implements APIController<
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
         {
-            const [org, createdAttribute] = await this.db.addAttributeToOrganization(attribute, categoryId, orgId);
+            const [org, createdAttribute] = await this.db.addAttributeToOrganization(orgId, categoryId, attribute);
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeCreated, {
                 orgId: orgId,
@@ -556,7 +556,7 @@ export class OrganizationController implements APIController<
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
         {
-            const [org, createdCategory] = await this.db.addTagCategoryToOrganization(newCategory, orgId);
+            const [org, createdCategory] = await this.db.addTagCategoryToOrganization(orgId, newCategory);
 
             await this.pubSub.sys(PatchEventType.OrganizationTagCategoryCreated, {
                 orgId: orgId,
@@ -574,7 +574,7 @@ export class OrganizationController implements APIController<
     async editTagCategory(
         @OrgId() orgId: string,
         @User() user: UserDoc,
-        @Required() @BodyParams('categoryUpdates') categoryUpdates: AtLeast<TagCategory, "id">,
+        @Required() @BodyParams('categoryUpdates') categoryUpdates: TagCategoryUpdates,
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
             const [org, updatedCategory] = await this.db.editTagCategory(orgId, categoryUpdates);
@@ -621,7 +621,7 @@ export class OrganizationController implements APIController<
     ) {
         if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
         {
-            const [org, createdTag] = await this.db.addTagToOrganization(tag, categoryId, orgId);
+            const [org, createdTag] = await this.db.addTagToOrganization(orgId, categoryId, tag);
 
             await this.pubSub.sys(PatchEventType.OrganizationTagCreated, {
                 orgId: orgId,

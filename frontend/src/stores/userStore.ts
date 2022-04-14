@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, EditableUser, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from '../../../common/models';
+import { AttributeHandle, AuthTokens, EditableMe, EditableUser, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -167,8 +167,8 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributeIds: string[], skills: RequestSkill[], baseUrl: string) {
-        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributeIds, skills, baseUrl);
+    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], skills: RequestSkill[], baseUrl: string) {
+        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributes, skills, baseUrl);
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {

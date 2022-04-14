@@ -23,6 +23,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
     // Edit Attribute
     currentAttributeName: string = ''
+    currentAttributeCategory: string = ''
 
     // Edit Tag Category
     currentTagCategoryName: string = ''
@@ -30,6 +31,7 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
 
     // Edit Tag
     currentTagName: string = ''
+    currentTagCategory: string = ''
 
     constructor() {
         makeAutoObservable(this)
@@ -250,10 +252,15 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         this.currentRolePermissions = [];
 
         this.currentAttributeCategoryName = '';
-        this.currentAttributeName = '';
         this.currentAttributeCategoryAttributes = [];
+
+        this.currentAttributeName = '';
+        this.currentAttributeCategory = '';
+
         this.currentTagCategoryName = '';
-        this.currentTagName = '';
         this.currentTagCategoryTags = [];
+
+        this.currentTagName = '';
+        this.currentTagCategory = '';
      }
 }

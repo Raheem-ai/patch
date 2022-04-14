@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Attribute, AttributeCategory, Chat, ChatMessage, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, User, UserOrgConfig, UserRole } from "common/models";
+import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributeHandle, Chat, ChatMessage, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -119,7 +119,7 @@ export class DBManager {
             org.pendingUsers.splice(idx, 1);
 
             // TODO: if skills are vetted by org this is where they should be set
-            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIds, pendingUser.attributeIds);
+            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIds, pendingUser.attributes);
         } else {
             throw `Invite for user with email ${user.email} to join '${org.name}' not found`
         }
@@ -219,7 +219,7 @@ export class DBManager {
         return await user.save()
     }
 
-    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], attributeIds: string[], session?: ClientSession) {
+    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], session?: ClientSession) {
         const user = await this.resolveUser(userId);
         const org = await this.resolveOrganization(orgId);
 
@@ -231,7 +231,7 @@ export class DBManager {
             await this.updateUsersOrgConfig(user, org.id, (_) => ({
                 roles: roles,
                 roleIds: roleIds,
-                attributeIds: attributeIds,
+                attributes: attributes,
                 onDuty: false
             }))
         }
@@ -430,16 +430,17 @@ export class DBManager {
     }
 
     // Attributes
-    async addAttributeCategoryToOrganization(minCategory: MinAttributeCategory, orgId: string): Promise<[OrganizationDoc, AttributeCategory]> {
+    async addAttributeCategoryToOrganization(orgId: string, minCategory: MinAttributeCategory): Promise<[OrganizationDoc, AttributeCategory]> {
         const org = await this.resolveOrganization(orgId)
-        const newAttributeCategory: AttributeCategory = {
-            id: uuid.v1(),
-            name: '',
-            attributes: []
+
+        if (this.checkForDupes(minCategory.name, org.attributeCategories)) {
+            throw `Already an Attribute Category with the name "${minCategory.name}" in organization ${orgId}`;
         }
 
-        for (const prop in minCategory) {
-            newAttributeCategory[prop] = minCategory[prop]
+        const newAttributeCategory: AttributeCategory = {
+            id: uuid.v1(),
+            name: minCategory.name,
+            attributes: minCategory.attributes ? minCategory.attributes : []
         }
 
         org.attributeCategories.push(newAttributeCategory);
@@ -449,8 +450,13 @@ export class DBManager {
         ];
     }
 
-    async editAttributeCategory(orgId: string, categoryUpdates: AtLeast<AttributeCategory, 'id'>): Promise<[OrganizationDoc, AttributeCategory]> {
+    async editAttributeCategory(orgId: string, categoryUpdates: AttributeCategoryUpdates): Promise<[OrganizationDoc, AttributeCategory]> {
         const org = await this.resolveOrganization(orgId);
+
+        if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.attributeCategories.filter(cat => cat.id != categoryUpdates.id))) {
+            throw `Already an Attribute Category with the name "${categoryUpdates.name}" in organization ${orgId}`;
+        }
+
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryUpdates.id);
         if (categoryIndex >= 0) {
             for (const prop in categoryUpdates) {
@@ -488,20 +494,20 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
-    async addAttributeToOrganization(minAttribute: MinAttribute, categoryId: string, orgId: string): Promise<[OrganizationDoc, Attribute]> {
-        const org = await this.resolveOrganization(orgId)
+    async addAttributeToOrganization(orgId: string, categoryId: string, minAttribute: MinAttribute): Promise<[OrganizationDoc, Attribute]> {
+        const org = await this.resolveOrganization(orgId);
         const newAttribute: Attribute = {
             id: uuid.v1(),
             name: minAttribute.name
         }
 
-        for (const prop in minAttribute) {
-            newAttribute[prop] = minAttribute[prop]
-        }
-
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
+            if (this.checkForDupes(newAttribute.name, org.attributeCategories[categoryIndex].attributes)) {
+                throw `Already an Attribute with the name "${newAttribute.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${orgId}`;
+            }
+
             org.attributeCategories[categoryIndex].attributes.push(newAttribute);
             org.markModified('attributeCategories');
             return [
@@ -517,6 +523,10 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
+            if (attributeUpdates.name && this.checkForDupes(attributeUpdates.name, org.attributeCategories[categoryIndex].attributes.filter(attr => attr.id != attributeUpdates.id))) {
+                throw `Already an Attribute with the name "${attributeUpdates.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${orgId}`;
+            }
+
             const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeUpdates.id);
             if (attributeIndex >= 0) {
                 for (const prop in attributeUpdates) {
@@ -548,30 +558,30 @@ export class DBManager {
                 org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
                 org.markModified('attributeCategories');
 
-                // Remove the attribute id from users currently assigned this attribute.
-                const usersToSave: UserDoc[] = []
-                for (const member of org.members as UserModel[]) {
-                    let attrIndex = member.organizations[org.id].attributeIds.findIndex(id => id == attributeId);
+                // Create a map from user ID => attribute index (in the list of a user's attributes)
+                // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
+                const usersToSave: Map<string, number> = new Map<string, number>();
+                (org.members as UserModel[]).forEach(member => {
+                    let attrIndex = member.organizations[org.id].attributes.findIndex(attr => attr.id == attributeId);
                     if (attrIndex >= 0) {
-                        // Remove the attribute from the user's list of attributes, and add to the list of users to save.
-                        member.organizations[org.id].attributeIds.splice(attrIndex, 1);
-                        // TODO: cheaper to just call this.getUsers for one DB query
-                        // instead of iterating through org.members and querying 1x1?
-                        const user = await this.getUserById(member.id);
-                        user.organizations[org.id].attributeIds = member.organizations[org.id].attributeIds;
-                        user.markModified('organizations');
-                        usersToSave.push(user);
+                        usersToSave.set(member.id, attrIndex);
                     }
-                }
+                });
 
+                // Retrieve the users from the DB by ID, and update their attributeIds list.
+                const userIds = Array.from(usersToSave.keys());
                 if (session) {
-                    for (const user of usersToSave) {
+                    for (const user of await this.getUsersByIds(userIds)) {
+                        user.organizations[org.id].attributes.splice(usersToSave[user.id], 1);
+                        user.markModified('organizations');
                         await user.save({ session });
                     }
                     return await org.save({ session });
                 } else {
                     return this.transaction(async (newSession) => {
-                        for (const user of usersToSave) {
+                        for (const user of await this.getUsersByIds(userIds)) {
+                            user.organizations[org.id].attributes.splice(usersToSave[user.id], 1);
+                            user.markModified('organizations');
                             await user.save({ session: newSession });
                         }
                         return await org.save({ session: newSession });
@@ -585,7 +595,7 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
-    async addAttributesToUser(orgId: string, userId: string | UserDoc, attributeIds: string[]) {
+    async addAttributesToUser(orgId: string, userId: string | UserDoc, attributes: AttributeHandle[]) {
         const user = await this.resolveUser(userId);
 
         if (!user.organizations || !user.organizations[orgId]){
@@ -594,29 +604,28 @@ export class DBManager {
 
         // Validate attributes exist
         const org = await this.resolveOrganization(orgId);
-        for (const attributeId of attributeIds) {
+        for (const attribute of attributes) {
             let foundAttribute = false;
-            for (const category of org.attributeCategories) {
-                foundAttribute = category.attributes.some(attr => attr.id == attributeId);
-                if (foundAttribute) {
-                    break;
-                }
+            const category = org.attributeCategories.find(category => category.id == attribute.categoryId);
+            if (category) {
+                foundAttribute = category.attributes.some(attr => attr.id == attribute.id);
             }
+
             if (!foundAttribute) {
-                throw `Attribute ${attributeId} does not exist in organization ${orgId}.`
+                throw `Attribute ${attribute.id} does not exist in organization ${orgId}.`
             }
         }
 
         await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-            const attributeSet = new Set(orgConfig.attributeIds);
-            attributeIds.forEach(attr => attributeSet.add(attr));
+            const attributeSet = new Set(orgConfig.attributes);
+            attributes.forEach(attr => attributeSet.add(attr));
             return Object.assign({}, orgConfig, { attributeIds: Array.from(attributeSet.values()) });
         })
 
         return await user.save();
     }
 
-    async removeAttributesFromUser(orgId: string, userId: string | UserDoc, attributeIds: string[]) {
+    async removeAttributesFromUser(orgId: string, userId: string | UserDoc, attributes: AttributeHandle[]) {
         const user = await this.resolveUser(userId);
 
         if (!user.organizations || !user.organizations[orgId]){
@@ -624,8 +633,8 @@ export class DBManager {
         }
 
         await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-            const attributeSet = new Set(orgConfig.attributeIds);
-            attributeIds.forEach(attr => attributeSet.delete(attr));
+            const attributeSet = new Set(orgConfig.attributes);
+            attributes.forEach(attr => attributeSet.delete(attr));
             return Object.assign({}, orgConfig, { attributeIds: Array.from(attributeSet.values()) });
         })
 
@@ -633,16 +642,17 @@ export class DBManager {
     }
 
     // Tags
-    async addTagCategoryToOrganization(minCategory: MinTagCategory, orgId: string): Promise<[OrganizationDoc, TagCategory]> {
-        const org = await this.resolveOrganization(orgId)
-        const newTagCategory: TagCategory = {
-            id: uuid.v1(),
-            name: '',
-            tags: []
+    async addTagCategoryToOrganization(orgId: string, minCategory: MinTagCategory): Promise<[OrganizationDoc, TagCategory]> {
+        const org = await this.resolveOrganization(orgId);
+
+        if (this.checkForDupes(minCategory.name, org.tagCategories)) {
+            throw `Already an Tag Category with the name "${minCategory.name}" in organization ${orgId}`;
         }
 
-        for (const prop in minCategory) {
-            newTagCategory[prop] = minCategory[prop]
+        const newTagCategory: TagCategory = {
+            id: uuid.v1(),
+            name: minCategory.name,
+            tags: minCategory.tags ? minCategory.tags : []
         }
 
         org.tagCategories.push(newTagCategory);
@@ -652,8 +662,13 @@ export class DBManager {
         ];
     }
 
-    async editTagCategory(orgId: string, categoryUpdates: AtLeast<TagCategory, 'id'>): Promise<[OrganizationDoc, TagCategory]> {
+    async editTagCategory(orgId: string, categoryUpdates: TagCategoryUpdates): Promise<[OrganizationDoc, TagCategory]> {
         const org = await this.resolveOrganization(orgId);
+
+        if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.tagCategories.filter(cat => cat.id != categoryUpdates.id))) {
+            throw `Already a Tag Category with the name "${categoryUpdates.name}" in organization ${orgId}`;
+        }
+
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryUpdates.id);
         if (categoryIndex >= 0) {
             for (const prop in categoryUpdates) {
@@ -692,20 +707,20 @@ export class DBManager {
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
     }
 
-    async addTagToOrganization(minTag: MinTag, categoryId: string, orgId: string): Promise<[OrganizationDoc, Tag]> {
+    async addTagToOrganization(orgId: string, categoryId: string, minTag: MinTag): Promise<[OrganizationDoc, Tag]> {
         const org = await this.resolveOrganization(orgId)
         const newTag: Tag = {
             id: uuid.v1(),
             name: minTag.name
         }
 
-        for (const prop in minTag) {
-            newTag[prop] = minTag[prop]
-        }
-
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
+            if (this.checkForDupes(newTag.name, org.tagCategories[categoryIndex].tags)) {
+                throw `Already a Tag with the name "${newTag.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${orgId}`;
+            }
+
             org.tagCategories[categoryIndex].tags.push(newTag);
             org.markModified('tagCategories');
             return [
@@ -720,7 +735,12 @@ export class DBManager {
     async editTag(orgId: string, categoryId: string, tagUpdates: AtLeast<Tag, 'id'>): Promise<[OrganizationDoc, Tag]> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+
         if (categoryIndex >= 0) {
+            if (this.checkForDupes(tagUpdates.name, org.tagCategories[categoryIndex].tags.filter(tag => tag.id != tagUpdates.id))) {
+                throw `Already a Tag with the name "${tagUpdates.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${orgId}`;
+            }
+
             const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagUpdates.id);
             if (tagIndex >= 0) {
                 for (const prop in tagUpdates) {
@@ -751,7 +771,7 @@ export class DBManager {
                 org.markModified('tagCategories');
 
                 // Remove the tag id from Help Requests that currently have this tag.
-                const requestsToSave: HelpRequestDoc[] = []
+                // TODO: check working as expected.
                 const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagIds: tagId });
                 for (let i = 0; i < requests.length; i++) {
                     let tagIndex = requests[i].tagIds.findIndex(id => id == tagId);
@@ -764,11 +784,13 @@ export class DBManager {
                 }
 
                 if (session) {
+                    // TODO: return all objects to be saved (requests and org).
+                    // This would introduce different return types based on the path...
+                    // return [org, requests]
                     for (const request of requests) {
                         await request.save({ session });
                     }
 
-                    // TODO: just return org?
                     return await org.save({ session });
                 } else {
                     return this.transaction(async (newSession) => {
@@ -784,6 +806,15 @@ export class DBManager {
         }
 
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+    }
+
+    checkForDupes(name: string, collection: AtLeast<any, 'name'>[]) {
+        return collection.some(item => this.namesAreEqual(name, item.name));
+    }
+
+    namesAreEqual(first: string, second: string): boolean {
+        // Case insensitive matching for now.
+        return first.toLowerCase() == second.toLowerCase();
     }
 
     // Requests
@@ -1193,8 +1224,8 @@ export class DBManager {
 
             let attrCat1 = null;
             let attrCat2 = null;
-            [org2, attrCat1] = await this.addAttributeCategoryToOrganization(testAttrCat1, org2.id);
-            [org2, attrCat2] = await this.addAttributeCategoryToOrganization(testAttrCat2, org2.id);
+            [org2, attrCat1] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat1);
+            [org2, attrCat2] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat2);
 
             console.log('adding new Attribute...');
             const testAttr1: Attribute = {
@@ -1209,8 +1240,8 @@ export class DBManager {
 
             let attr1 = null;
             let attr2 = null;
-            [org2, attr1] = await this.addAttributeToOrganization(testAttr1, attrCat1.id, org2.id);
-            [org2, attr2] = await this.addAttributeToOrganization(testAttr2, attrCat2.id, org2.id);
+            [org2, attr1] = await this.addAttributeToOrganization(org2.id, attrCat1.id, testAttr1);
+            [org2, attr2] = await this.addAttributeToOrganization(org2.id, attrCat2.id, testAttr2);
 
             console.log('Assigning attributes to user...');
             user5 = await this.addAttributesToUser(org2.id, user5.id, [attr1.id, attr2.id]);

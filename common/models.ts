@@ -27,7 +27,7 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
-    attributeIds: string[], // <CategoryId, AttributeId>[]
+    attributes: AttributeHandle[],
     onDuty: boolean
 }
 
@@ -79,10 +79,16 @@ export type AttributeCategory = {
 }
 
 export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
+export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
 
 export type Attribute = {
     id: string,
     name: string
+}
+
+export type AttributeHandle = {
+    categoryId: string,
+    id: string
 }
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
@@ -94,6 +100,7 @@ export type TagCategory = {
 }
 
 export type MinTagCategory = AtLeast<TagCategory, 'name'>
+export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
 
 export type Tag = {
     id: string,
@@ -107,7 +114,7 @@ export type PendingUser = {
     phone: string
     roles: UserRole[]
     roleIds: string[]
-    attributeIds: string[]
+    attributes: AttributeHandle[]
     skills: RequestSkill[]
     pendingId: string
 }

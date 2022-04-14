@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { Button } from "react-native-paper";
-import { userStore } from "../stores/interfaces";
+import { userStore, editOrganizationStore } from "../stores/interfaces";
 import { Colors, routerNames, ScreenProps } from "../types";
 import { navigateTo } from "../navigation";
 import {parseFullName} from 'parse-full-name';
@@ -96,6 +96,8 @@ export default function UserHomePage({ navigation, route }: Props) {
 
     const comingSoon = 'coming soon'
 
+    editOrganizationStore().currentAttributeName = 'Second Attribute!';
+
     return (
         // <Provider>
         //     <View>
@@ -177,6 +179,19 @@ export default function UserHomePage({ navigation, route }: Props) {
                         justifyContent: 'center',
                         marginTop: 20
                     }}>{'Profile'}</Button>
+                <Button 
+                    uppercase={false}
+                    onPress={() => {
+                        editOrganizationStore().createNewAttribute('683aa4f0-b9ac-11ec-84bd-6901d709a9fa');
+                    }}
+                    color={'#fff'}
+                    style={{
+                        height: 44,
+                        borderRadius: 24,
+                        backgroundColor: Colors.primary.alpha,
+                        justifyContent: 'center',
+                        marginTop: 20
+                    }}>{'Test API'}</Button>
                 </View>
         </View>
     );

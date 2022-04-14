@@ -30,7 +30,10 @@ import {
     MinTagCategory,
     TagCategory,
     MinTag,
-    Tag
+    Tag,
+    AttributeHandle,
+    TagCategoryUpdates,
+    AttributeCategoryUpdates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -113,13 +116,13 @@ export interface IApiClient {
     deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
     createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
-    editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<AttributeCategory, 'id'>) => Promise<AttributeCategory>>
+    editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AttributeCategoryUpdates) => Promise<AttributeCategory>>
     deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
     createNewAttribute: AuthenticatedWithOrg<(categoryId: string, attribute: MinAttribute) => Promise<Attribute>>
     editAttribute: AuthenticatedWithOrg<(categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
     deleteAttribute: AuthenticatedWithOrg<(categoryId: string, attributeId: string) => Promise<OrganizationMetadata>>
     createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
-    editTagCategory: AuthenticatedWithOrg<(categoryUpdates: AtLeast<TagCategory, 'id'>) => Promise<TagCategory>>
+    editTagCategory: AuthenticatedWithOrg<(categoryUpdates: TagCategoryUpdates) => Promise<TagCategory>>
     deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
     createNewTag: AuthenticatedWithOrg<(categoryId: string, tag: MinTag) => Promise<Tag>>
     editTag: AuthenticatedWithOrg<(categoryId: string, tagUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
@@ -129,12 +132,12 @@ export interface IApiClient {
     assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
     confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     declineRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributeIds: string[]) => Promise<{ user: ProtectedUser, org: Organization }>>
+    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[]) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributeIds: string[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
 
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;

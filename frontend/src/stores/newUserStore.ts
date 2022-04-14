@@ -20,7 +20,7 @@ export default class NewUserStore implements INewUserStore {
     @persistent() skills = []
     @persistent() roles = []
     @persistent() roleIds = []
-    @persistent() attributeIds = []
+    @persistent() attributes = []
     @persistent() pronouns? = ''
 
 
@@ -39,7 +39,7 @@ export default class NewUserStore implements INewUserStore {
         this.skills = []
         this.roles = []
         this.roleIds = []
-        this.attributeIds = []
+        this.attributes = []
         this.pronouns = ''
     }
 
@@ -78,7 +78,7 @@ export default class NewUserStore implements INewUserStore {
             this.phone,
             this.roles,
             this.roleIds,
-            this.attributeIds,
+            this.attributes,
             this.skills,
             linkingStore().baseUrl
         );
