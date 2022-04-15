@@ -559,12 +559,12 @@ export class DBManager {
 
                 // Create a map from user ID => attribute index (in the list of a user's attributes)
                 // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
-                const usersToSave: Map<string, number> = new Map<string, number>();
+                const usersToSave: Map<UserDoc, number> = new Map();
                 (org.members as UserModel[]).forEach(member => {
                     if (categoryId in member.organizations[org.id].attributes) {
                         let attrIndex = member.organizations[org.id].attributes[categoryId].findIndex(attrId => attrId == attributeId);
                         if (attrIndex >= 0) {
-                            usersToSave.set(member.id, attrIndex);
+                            usersToSave.set(member as UserDoc, attrIndex);
                         }
                     } else {
                         throw `User has no attributes in Attribute Category ${categoryId} in organization ${orgId}`;
@@ -574,7 +574,7 @@ export class DBManager {
                 // Retrieve the users from the DB by ID, and update their attributeIds list.
                 const userIds = Array.from(usersToSave.keys());
                 if (session) {
-                    for (const user of await this.getUsersByIds(userIds)) {
+                    for (const [user, attrIndex] of usersToSave) {
                         user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                         user.markModified('organizations');
                         await user.save({ session });
@@ -582,7 +582,7 @@ export class DBManager {
                     return await org.save({ session });
                 } else {
                     return this.transaction(async (newSession) => {
-                        for (const user of await this.getUsersByIds(userIds)) {
+                        for (const [user, attrIndex] of usersToSave) {
                             user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                             user.markModified('organizations');
                             await user.save({ session: newSession });
@@ -796,6 +796,7 @@ export class DBManager {
                 org.markModified('tagCategories');
 
                 // Remove the tag id from Help Requests that currently have this tag.
+                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
                 const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
                 for (let i = 0; i < requests.length; i++) {
                     let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
@@ -1278,7 +1279,8 @@ export class DBManager {
             }
 
             console.log('Removing attribute from user...');
-            user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
+            org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
+            // user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
 
             const minRequests: MinHelpRequest[] = [
                 {
