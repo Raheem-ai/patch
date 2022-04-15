@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, Chat, ChatMessage, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -129,12 +129,13 @@ export class DBManager {
         return this.transaction(async (session) => {
             const newOrg: Partial<OrganizationModel> = { ...minOrg, 
                 lastRequestId: 0, 
-                lastDayTimestamp: new Date().toISOString()
+                lastDayTimestamp: new Date().toISOString(),
+                roleDefinitions: DefaultRoles
             }
 
             const org = await (new this.orgs(newOrg)).save({ session })
 
-            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [], {}, session)
+            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [DefaultRoleIds.Admin], {}, session)
         })
     }
     
@@ -358,7 +359,7 @@ export class DBManager {
         const newRole: Role = {
             id: uuid.v1(),
             name: '',
-            permissions: []
+            permissionGroups: []
         }
 
         for (const prop in minRole) {
@@ -1218,16 +1219,13 @@ export class DBManager {
 
             let role1: MinRole = {
                 name: 'first role',
-                permissions: [
-                    PatchPermissions.EditOrgSettings,
-                    PatchPermissions.RoleAdmin,
-                    PatchPermissions.AttributeAdmin,
-                    PatchPermissions.TagAdmin,
-                    PatchPermissions.AssignRoles,
-                    PatchPermissions.AssignAttributes,
-                    PatchPermissions.ChatAdmin,
-                    PatchPermissions.ShiftAdmin,
-                    PatchPermissions.RequestAdmin
+                permissionGroups: [
+                    PatchPermissionGroups.ManageOrg,
+                    PatchPermissionGroups.ManageChats,
+                    PatchPermissionGroups.ManageMetadata,
+                    PatchPermissionGroups.ManageRequests,
+                    PatchPermissionGroups.ManageSchedule,
+                    PatchPermissionGroups.ManageTeam
                 ]
             };
 
@@ -1281,6 +1279,10 @@ export class DBManager {
             console.log('Removing attribute from user...');
             org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
             // user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
+            user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+            user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+            user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+            user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
 
             const minRequests: MinHelpRequest[] = [
                 {

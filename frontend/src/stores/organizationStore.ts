@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { Attribute, AttributeCategory, MinRole, OrganizationMetadata, Role, Tag, TagCategory } from '../../../common/models';
+import { Attribute, AttributeCategory, MinRole, OrganizationMetadata, PatchPermissions, resolvePermissionsFromRoles, Role, Tag, TagCategory } from '../../../common/models';
 import { OrgContext } from '../../../common/api';
 
 @Store(IOrganizationStore)
@@ -15,16 +15,64 @@ export default class OrganizationStore implements IOrganizationStore {
         tagCategories: []
     };
 
+    get isReady() {
+        return userStore().signedIn && (userStore().currentOrgId == this.metadata.id)
+    }
+
+    get roles()  {
+        const roleMapping = new Map<string, Role>()
+
+        this.metadata.roleDefinitions.forEach(def => {
+            roleMapping.set(def.id, def);
+        })
+
+        return roleMapping
+    }
+
+    get userRoles() {
+        const map = new Map<string, Role[]>();
+
+        userStore().usersInOrg.forEach(u => {
+            const roleIds = u.organizations[userStore().currentOrgId].roleIds;
+            const userRoles: Role[] = [];
+
+            roleIds.forEach(id => {
+                if (this.roles.has(id)) {
+                    userRoles.push(this.roles.get(id))
+                }
+            })
+
+            map.set(u.id, userRoles)
+        })
+
+        return map;
+    }
+
+    get userPermissions () {
+        const mapping = new Map<string, Set<PatchPermissions>>();
+
+        this.userRoles.forEach((roles, userId) => {
+            mapping.set(userId, resolvePermissionsFromRoles(roles))
+        })
+
+        return mapping
+    }
+
+    get requestPrefix() {
+        return this.metadata.name.slice(0, 3).toUpperCase()
+    }
+
     constructor() {
         makeAutoObservable(this)
     }
 
     async init() {
         await userStore().init();
+
         if (userStore().signedIn) {
-            await this.getOrgData();
+            await this.getOrgDataAfterSignin();
         } else {
-            when(() => userStore().signedIn, this.getOrgData)
+            when(() => userStore().signedIn, this.getOrgDataAfterSignin)
         }
     }
 
@@ -33,6 +81,14 @@ export default class OrganizationStore implements IOrganizationStore {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
         }
+    }
+
+    getOrgDataAfterSignin = async () => {
+        await this.getOrgData()
+
+        when(() => !userStore().signedIn, () => {
+            when(() => userStore().signedIn, this.getOrgDataAfterSignin)
+        })
     }
 
     getOrgData = async () => {
@@ -69,6 +125,10 @@ export default class OrganizationStore implements IOrganizationStore {
             } else {
                 this.metadata.roleDefinitions.push(updatedRole);
             }
+
+            // TODO: prolly should remove metadata object and put props on store for 
+            // consistency + when we have multiple orgs to keep track of
+            this.metadata = Object.assign({}, this.metadata)
         });
     }
 

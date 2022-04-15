@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissions, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissionsFromRoles, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates, DefaultRoleIds } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -356,9 +356,18 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('roleUpdates') roleUpdates: AtLeast<Role, 'id'>,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
-            const org = await this.db.editRole(orgId, roleUpdates);
-            const updatedRole = org.roleDefinitions.find(role => role.id == roleUpdates.id);
+        const org = await this.db.resolveOrganization(orgId);
+
+        if (await this.userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
+
+            // dissallowed in front end so should never happen but just in case
+            if (roleUpdates.id == DefaultRoleIds.Admin) {
+                const adminRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Admin)?.name || 'Admin';
+                throw new BadRequest(`The '${adminRoleName}' role cannot be edited`);
+            }
+
+            const updatedOrg = await this.db.editRole(orgId, roleUpdates);
+            const updatedRole = updatedOrg.roleDefinitions.find(role => role.id == roleUpdates.id);
     
             await this.pubSub.sys(PatchEventType.OrganizationRoleEdited, { 
                 orgId: orgId, 
@@ -378,17 +387,31 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('roleIds') roleIds: string[],
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin])) {
-            const org = await this.db.removeRolesFromOrganization(orgId, roleIds);
+        const org = await this.db.resolveOrganization(orgId);
+
+        if (await this.userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
+            // dissallowed in front end so should never happen but just in case
+            if (roleIds.includes(DefaultRoleIds.Anyone)) {
+                const anyoneRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Anyone)?.name || 'Anyone';
+                throw new BadRequest(`The '${anyoneRoleName}' role cannot be deleted`);
+            }
+
+            // dissallowed in front end so should never happen but just in case
+            if (roleIds.includes(DefaultRoleIds.Admin)) {
+                const adminRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Admin)?.name || 'Admin';
+                throw new BadRequest(`The '${adminRoleName}' role cannot be deleted`);
+            }
+
+            const updatedOrg = await this.db.removeRolesFromOrganization(org.id, roleIds);
 
             for (const roleId of roleIds) {
                 await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
-                    orgId: orgId, 
+                    orgId: updatedOrg.id, 
                     roleId: roleId
                 });
             }
 
-            return org;
+            return updatedOrg;
         } else {
             throw new Unauthorized('You do not have permission to remove Roles from this organization.');
         }
@@ -692,14 +715,15 @@ export class OrganizationController implements APIController<
         return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
     }
 
-    async userHasPermissions(user: UserDoc, orgId: string, requiredPermissions: PatchPermissions[]): Promise<boolean> {
-        const orgConfig = user.organizations && user.organizations[orgId];
+    async userHasPermissions(user: UserDoc, orgId: string | OrganizationDoc, requiredPermissions: PatchPermissions[]): Promise<boolean> {
+        const org = await this.db.resolveOrganization(orgId);
+
+        const orgConfig = user.organizations && user.organizations[org.id];
         if (!orgConfig) {
             throw new Forbidden(`You do not have access to the requested org.`);
         }
 
         // Get all the roles that belong to a user.
-        const org = await this.db.resolveOrganization(orgId);
         const userRoles = [];
         orgConfig.roleIds.forEach(id => {
             const assignedRole = org.roleDefinitions.find(
@@ -711,7 +735,7 @@ export class OrganizationController implements APIController<
         });
 
         // Resolve all the permissions granted to a user based on their role(s).
-        const userPermissions = resolvePermissions(userRoles);
+        const userPermissions = resolvePermissionsFromRoles(userRoles);
         for (const permission of requiredPermissions) {
             // If any required permission is missing, return false.
             if (!userPermissions.has(permission as PatchPermissions)) {

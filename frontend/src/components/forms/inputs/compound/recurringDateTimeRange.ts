@@ -43,7 +43,8 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                 name: `${params.name}-DTR`,
                 type: 'DateTimeRange',
                 disabled: params.disabled,
-                required: params.required
+                required: params.required,
+                icon: 'clock-outline'
             },
             {
                 onSave: setRecurringTimeConstraintsVal,
@@ -63,7 +64,8 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                 headerLabel: () => 'Repeat',
                 type: 'RecurringTimePeriod',
                 disabled: params.disabled,
-                required: params.required
+                required: params.required,
+                icon: 'refresh'
             }] as [ 
                 InlineFormInputConfig<'DateTimeRange'>, 
                 ScreenFormInputConfig<'RecurringTimePeriod'>

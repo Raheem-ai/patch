@@ -9,7 +9,7 @@ import { dateToDateYearString, dateToEndDateLabel, dateToEndRepititionsLabel, da
 import CalendarPicker from "../../calendarPicker";
 import WheelPicker, { PickerOption } from "../../wheelPicker";
 import { SectionScreenViewProps } from "../types";
-import BackButtonHeader from "./backButtonHeader";
+import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
 import moment from 'moment'
 import { alertStore } from "../../../stores/interfaces";
 
@@ -374,9 +374,19 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
             </>
         )
     }
+
+    const headerProps: BackButtonHeaderProps = {
+        cancel: {
+            handler: back
+        },
+        save: {
+            handler: save,
+        },
+        label: config.headerLabel
+    }
     
     return <>
-        <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
+        <BackButtonHeader  {...headerProps} />
         <ScrollView>    
             <View style={styles.container}>
                 <View style={styles.iconContainer}>

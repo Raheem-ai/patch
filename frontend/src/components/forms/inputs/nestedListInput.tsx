@@ -6,7 +6,7 @@ import { List } from "react-native-paper";
 import { useKeyboard } from "../../../hooks/useKeyboard";
 import { HeaderHeight } from "../../header/header";
 import { SectionScreenViewProps } from "../types";
-import BackButtonHeader from "./backButtonHeader";
+import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
 
 const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'NestedList' | 'NestedTagList'>) => {
 
@@ -35,9 +35,19 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
         setVals(cpy);
     }
 
+    const headerProps: BackButtonHeaderProps = {
+        cancel: {
+            handler: back
+        },
+        save: {
+            handler: save,
+        },
+        label: config.headerLabel
+    }
+
     return (
         <>
-            <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
+            <BackButtonHeader  {...headerProps} />
             <ScrollView style={{ flex: 1}}>
                 <List.Section style={{margin: 0}}>
                     {config.props.categories.map((cat) => {

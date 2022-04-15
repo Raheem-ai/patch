@@ -129,6 +129,7 @@ export default class EditUser extends React.Component {
                 name: 'roles',
                 previewLabel: () => null,
                 headerLabel: () => 'Roles',
+                placeholderLabel: () => 'Roles',
                 type: 'TagList',
                 // tTODO: remove when we update roles here too
                 disabled: true,
@@ -153,6 +154,7 @@ export default class EditUser extends React.Component {
                 name: 'skills',
                 previewLabel: () => null,
                 headerLabel: () => 'Skills',
+                placeholderLabel: () => 'Skills',
                 type: 'TagList',
                 props: {
                     options: allEnumValues(RequestSkill),
@@ -227,6 +229,7 @@ export default class EditUser extends React.Component {
                 name: 'roles',
                 previewLabel: () => null,
                 headerLabel: () => 'Roles',
+                placeholderLabel: () => 'Roles',
                 type: 'TagList',
                 // TODO: remove when we update roles here too
                 disabled: true,
@@ -251,6 +254,7 @@ export default class EditUser extends React.Component {
                 name: 'skills',
                 previewLabel: () => null,
                 headerLabel: () => 'Skills',
+                placeholderLabel: () => 'Skills',
                 type: 'TagList',
                 disabled: true,
                 props: {
@@ -286,6 +290,7 @@ export default class EditUser extends React.Component {
                 name: 'bio',
                 previewLabel: () => editUserStore().bio,
                 headerLabel: () => 'Bio',
+                placeholderLabel: () => 'Bio',
                 type: 'TextArea',
             },
         ]

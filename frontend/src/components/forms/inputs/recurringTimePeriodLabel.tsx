@@ -95,15 +95,7 @@ const RecurringTimePeriodLabel = observer(({ config, expand }: SectionLabelViewP
 
     return (
         <Pressable onPress={onPress} style={[{ minHeight: 60, position: 'relative', justifyContent: 'center' }]}>
-            <View style={styles.iconContainer}>
-                <IconButton
-                    icon='refresh' 
-                    color='#000'
-                    size={20} 
-                    style={{ margin: 0, padding: 0, width: 20 }}
-                    />
-            </View>
-            <View style={{ paddingLeft: 40, padding: 20, paddingBottom: 0 }}>
+            <View style={{ paddingLeft: 0, padding: 20, paddingBottom: 0 }}>
                 {rows}
             </View>
         </Pressable>
@@ -114,22 +106,16 @@ export default RecurringTimePeriodLabel;
 
 const Row = ({ text }: { text: string }) => {
     return <View style={styles.row}>
-        <Text>{text}</Text>
+        <Text style={styles.label}>{text}</Text>
     </View>
 }
 
 const styles = StyleSheet.create({
+    label: {
+        color: '#000',
+        fontSize: 16
+    },
     row: {
         marginBottom: 20
-    },
-    iconContainer: {
-        height: 60,
-        width: 60,
-        position: 'absolute', 
-        left: -20,
-        justifyContent: 'center',
-        alignContent: 'center',
-        padding: 20, 
-        top: 0
     }
 })

@@ -45,6 +45,10 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
     {
       name: 'Team',
       routeTo: 'teamList'
+    },
+    {
+      name: 'Settings',
+      routeTo: 'settings'
     }
   ]
 

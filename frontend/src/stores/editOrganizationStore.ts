@@ -13,10 +13,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
     attributeCategories: AttributeCategory[] = []
     tagCategories: TagCategory[] = []
 
-    // Edit Role
-    currentRoleName: string = ''
-    currentRolePermissions: PatchPermissions[] = []
-
     // Edit Attribute Category
     currentAttributeCategoryName: string = ''
     currentAttributeCategoryAttributes: Attribute[] = []
@@ -59,37 +55,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
             const updatedOrg = await api().editOrgMetadata(this.orgContext(), orgMetadata);
             organizationStore().updateOrgData(updatedOrg);
             return updatedOrg;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async createNewRole() {
-        const role: MinRole = {
-            name: this.currentRoleName,
-            permissions: this.currentRolePermissions
-        }
-
-        try {
-            const createdRole = await api().createNewRole(this.orgContext(), role);
-            organizationStore().updateOrAddRole(createdRole);
-            return createdRole;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async editRole(roleId: string) {
-        const role = {
-            id: roleId,
-            name: this.currentRoleName,
-            permissions: this.currentRolePermissions
-        }
-
-        try {
-            const updatedRole = await api().editRole(this.roleContext(roleId), role);
-            organizationStore().updateOrAddRole(updatedRole);
-            return updatedRole;
         } catch (e) {
             console.error(e);
         }
@@ -245,9 +210,6 @@ export default class EditOrganizationStore implements IEditOrganizationStore  {
         this.roleDefinitions = [];
         this.attributeCategories = [];
         this.tagCategories = [];
-
-        this.currentRoleName = '';
-        this.currentRolePermissions = [];
 
         this.currentAttributeCategoryName = '';
         this.currentAttributeCategoryAttributes = [];
