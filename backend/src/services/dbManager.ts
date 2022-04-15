@@ -547,6 +547,7 @@ export class DBManager {
 
     // TODO: Should we just take a list of attributeIds and not worry about categoryId since we have to look through
     // all the categories anyway to find the index (given ID)?
+    // TODO: Use API for removing attribute from user.
     async removeAttribute(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session?: ClientSession): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
