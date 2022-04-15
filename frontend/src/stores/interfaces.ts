@@ -100,7 +100,7 @@ export interface IDispatchStore extends IBaseStore {
     selectedResponders: ClientSideFormat<ProtectedUser>[]
 }
 
-export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded'>
+export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded' | 'tags'>
 
 export interface ITempRequestStore extends CreateReqData {
     clear(prop?: keyof CreateReqData): void
