@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, AttributeHandle } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -325,6 +325,132 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async createNewAttributeCategory(ctx: OrgContext, category: MinAttributeCategory): Promise<AttributeCategory> {
+        const url = `${apiHost}${API.client.createNewAttributeCategory()}`;
+
+        return (await this.tryPost<AttributeCategory>(url, {
+            category
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editAttributeCategory(ctx: OrgContext, categoryUpdates: AttributeCategoryUpdates): Promise<AttributeCategory> {
+        const url = `${apiHost}${API.client.editAttributeCategory()}`;
+
+        return (await this.tryPost<AttributeCategory>(url, {
+            categoryUpdates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteAttributeCategory(ctx: OrgContext, categoryId: string): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteAttributeCategory()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { 
+            categoryId
+        } , {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewAttribute(ctx: OrgContext, categoryId: string, attribute: MinAttribute): Promise<Attribute> {
+        const url = `${apiHost}${API.client.createNewAttribute()}`;
+
+        return (await this.tryPost<Attribute>(url, {
+            categoryId,
+            attribute
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+    
+    async editAttribute(ctx: OrgContext, categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>): Promise<Attribute> {
+        const url = `${apiHost}${API.client.editAttribute()}`;
+
+        return (await this.tryPost<Attribute>(url, {
+            categoryId,
+            attributeUpdates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteAttribute(ctx: OrgContext, categoryId: string, attributeId: string): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteAttribute()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            categoryId,
+            attributeId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewTagCategory(ctx: OrgContext, category: MinTagCategory): Promise<TagCategory> {
+        const url = `${apiHost}${API.client.createNewTagCategory()}`;
+
+        return (await this.tryPost<TagCategory>(url, {
+            category
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editTagCategory(ctx: OrgContext, categoryUpdates: TagCategoryUpdates): Promise<TagCategory> {
+        const url = `${apiHost}${API.client.editTagCategory()}`;
+
+        return (await this.tryPost<TagCategory>(url, {
+            categoryUpdates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteTagCategory(ctx: OrgContext, categoryId: string): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteTagCategory()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { 
+            categoryId
+        } , {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewTag(ctx: OrgContext, categoryId: string, tag: MinTag): Promise<Tag> {
+        const url = `${apiHost}${API.client.createNewTag()}`;
+
+        return (await this.tryPost<Tag>(url, {
+            categoryId,
+            tag
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editTag(ctx: OrgContext, categoryId: string, tagUpdates: AtLeast<Tag, 'id'>): Promise<Tag> {
+        const url = `${apiHost}${API.client.editTag()}`;
+
+        return (await this.tryPost<Tag>(url, {
+            categoryId,
+            tagUpdates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteTag(ctx: OrgContext, categoryId: string, tagId: string): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteTag()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            categoryId,
+            tagId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
@@ -408,7 +534,7 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], skills: RequestSkill[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
@@ -416,6 +542,7 @@ export class APIClient implements IAPIService {
             phone,
             roles,
             roleIds,
+            attributes,
             baseUrl,
             skills
         }, {

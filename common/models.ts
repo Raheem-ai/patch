@@ -21,12 +21,13 @@ export interface User {
     // location?
 }
 
-export type EditableUser = Pick<ProtectedUser, 'skills'>
+export type EditableUser = Pick<ProtectedUser, 'organizations' | 'skills' >
 export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
+    attributes: AttributesMap,
     onDuty: boolean
 }
 
@@ -56,10 +57,12 @@ export interface Organization {
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
     roleDefinitions: Role[]
+    attributeCategories: AttributeCategory[] // TODO: Change to AttributesMap
+    tagCategories: TagCategory[]
 }
 
-// TODO: Introduce 'tags', 'attributes'
-export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions'>;
+export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>;
+export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type Role = {
     id: string,
@@ -68,13 +71,49 @@ export type Role = {
 }
 
 export type MinRole = AtLeast<Role, 'name' | 'permissionGroups'>
-export type MinOrg = AtLeast<Organization, 'name'>;
+
+export type AttributeCategory = {
+    id: string,
+    name: string,
+    attributes: Attribute[]
+}
+
+export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
+export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
+
+export type Attribute = {
+    id: string,
+    name: string
+}
+
+export type AttributesMap = { [key: string]: string[] }
+
+export type MinAttribute = AtLeast<Attribute, 'name'>
+
+export type TagCategory = {
+    id: string,
+    name: string,
+    tags: Tag[]
+}
+
+export type MinTagCategory = AtLeast<TagCategory, 'name'>
+export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
+
+export type Tag = {
+    id: string,
+    name: string
+}
+
+export type TagsMap = { [key: string]: string[] }
+
+export type MinTag = AtLeast<Tag, 'name'>
 
 export type PendingUser = {
     email: string
     phone: string
     roles: UserRole[]
     roleIds: string[]
+    attributes: AttributesMap
     skills: RequestSkill[]
     pendingId: string
 }
@@ -116,6 +155,7 @@ export type HelpRequest = {
     type: RequestType[]
     notes: string
     skills: RequestSkill[]
+    tags: TagsMap
     // otherRequirements?: any //TODO: nix these until later on
     respondersNeeded: number
     chat: Chat
@@ -409,7 +449,23 @@ export enum PatchEventType {
     // Organization.Roles.<_>
     OrganizationRoleCreated = '2.1.0',
     OrganizationRoleEdited = '2.1.1',
-    OrganizationRoleDeleted = '2.1.2'
+    OrganizationRoleDeleted = '2.1.2',
+
+    // Organization.Attributes.<_>
+    OrganizationAttributeCreated = '2.2.0',
+    OrganizationAttributeEdited = '2.2.1',
+    OrganizationAttributeDeleted = '2.2.2',
+    OrganizationAttributeCategoryCreated = '2.2.3',
+    OrganizationAttributeCategoryEdited = '2.2.4',
+    OrganizationAttributeCategoryDeleted = '2.2.5',
+
+    // Organization.Tags.<_>
+    OrganizationTagCreated = '2.3.0',
+    OrganizationTagEdited = '2.3.1',
+    OrganizationTagDeleted = '2.3.2',
+    OrganizationTagCategoryCreated = '2.3.3',
+    OrganizationTagCategoryEdited = '2.3.4',
+    OrganizationTagCategoryDeleted = '2.3.5',
 }
 
 export type PatchEventParams = {
@@ -494,7 +550,61 @@ export type PatchEventParams = {
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
         roleId: string
-    }
+    },
+    [PatchEventType.OrganizationAttributeCreated]: {
+        orgId: string,
+        categoryId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationAttributeEdited]: {
+        orgId: string,
+        categoryId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationAttributeDeleted]: {
+        orgId: string,
+        categoryId: string,
+        attributeId: string
+    },
+    [PatchEventType.OrganizationAttributeCategoryCreated]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationAttributeCategoryEdited]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationAttributeCategoryDeleted]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationTagCreated]: {
+        orgId: string,
+        categoryId: string,
+        tagId: string
+    },
+    [PatchEventType.OrganizationTagEdited]: {
+        orgId: string,
+        categoryId: string,
+        tagId: string
+    },
+    [PatchEventType.OrganizationTagDeleted]: {
+        orgId: string,
+        categoryId: string,
+        tagId: string
+    },
+    [PatchEventType.OrganizationTagCategoryCreated]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationTagCategoryEdited]: {
+        orgId: string,
+        categoryId: string
+    },
+    [PatchEventType.OrganizationTagCategoryDeleted]: {
+        orgId: string,
+        categoryId: string
+    },
 }
 
 export type PatchEventPacket<T extends PatchEventType = any> = {
@@ -516,6 +626,10 @@ export type PatchUIEventParams = {
         requestId?: string
         userId?: string
         roleId?: string
+        attributeCategoryId?: string
+        attributeId?: string
+        tagCategoryId?: string
+        tagId?: string
         userList?: boolean
         requestList?: boolean
     },

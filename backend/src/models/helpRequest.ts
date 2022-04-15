@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Enum, getJsonSchema, Property, Required } from "@tsed/schema";
-import { AddressableLocation, Chat, ChatMessage, HelpRequest, HelpRequestAssignment, Location, Organization, RequestSkill, RequestStatus, RequestType, User } from "common/models";
+import { AddressableLocation, Chat, ChatMessage, HelpRequest, HelpRequestAssignment, Location, Organization, RequestSkill, RequestStatus, RequestType, TagsMap, User } from "common/models";
 import { Document } from "mongoose";
 // import { inspect } from "util";
 // import { WithRefs } from ".";
@@ -54,6 +54,9 @@ export class HelpRequestModel implements HelpRequest {
 
     @Enum(RequestSkill)
     skills: RequestSkill[]
+
+    @Property()
+    tags: TagsMap
 
     @Property()
     // otherRequirements?: any 
