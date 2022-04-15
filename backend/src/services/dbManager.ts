@@ -649,7 +649,6 @@ export class DBManager {
 
         await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
             for (const categoryId of Object.keys(attributes)) {
-                // Add this category ID to the user's org config if it doesn't already exist.
                 if (categoryId in orgConfig.attributes) {
                     // Get pre-existing attributes in this category.
                     const categoryAttributeSet = new Set(orgConfig.attributes[categoryId]);
@@ -797,22 +796,20 @@ export class DBManager {
                 org.markModified('tagCategories');
 
                 // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: check working as expected.
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagIds: tagId });
+                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
                 for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tagIds.findIndex(id => id == tagId);
+                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
                     if (tagIndex >= 0) {
                         // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tagIds.splice(tagIndex, 1);
-                        // TODO: needed?
+                        requests[i].tags[categoryId].splice(tagIndex, 1);
                         requests[i].markModified('tagIds');
                     }
                 }
 
                 if (session) {
-                    // TODO: return all objects to be saved (requests and org).
+                    // TODO: return all objects to be saved (requests and org)?
                     // This would introduce different return types based on the path...
-                    // return [org, requests]
+                    // return [org, requests] vs. return or
                     for (const request of requests) {
                         await request.save({ session });
                     }

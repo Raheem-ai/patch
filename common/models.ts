@@ -104,6 +104,8 @@ export type Tag = {
     name: string
 }
 
+export type TagsMap = { [key: string]: string[] }
+
 export type MinTag = AtLeast<Tag, 'name'>
 
 export type PendingUser = {
@@ -153,7 +155,7 @@ export type HelpRequest = {
     type: RequestType[]
     notes: string
     skills: RequestSkill[]
-    tagIds: string[]
+    tags: TagsMap
     // otherRequirements?: any //TODO: nix these until later on
     respondersNeeded: number
     chat: Chat
