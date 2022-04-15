@@ -16,7 +16,7 @@ export default class OrganizationStore implements IOrganizationStore {
     };
 
     get isReady() {
-        return userStore().signedIn && (userStore().currentOrgId == this.metadata.id)
+        return userStore().signedIn && (userStore().currentOrgId == this.metadata?.id)
     }
 
     get roles()  {
