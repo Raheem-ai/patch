@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { MinRole, OrganizationMetadata, PatchPermissions, resolvePermissionsFromRoles, Role } from '../../../common/models';
+import { Attribute, AttributeCategory, MinRole, OrganizationMetadata, PatchPermissions, resolvePermissionsFromRoles, Role, Tag, TagCategory } from '../../../common/models';
 import { OrgContext } from '../../../common/api';
 
 @Store(IOrganizationStore)
@@ -10,11 +10,13 @@ export default class OrganizationStore implements IOrganizationStore {
     metadata: OrganizationMetadata = {
         id: '',
         name: '',
-        roleDefinitions: []
+        roleDefinitions: [],
+        attributeCategories: [],
+        tagCategories: []
     };
 
     get isReady() {
-        return userStore().signedIn && (userStore().currentOrgId == this.metadata.id)
+        return userStore().signedIn && (userStore().currentOrgId == this.metadata?.id)
     }
 
     get roles()  {
@@ -105,7 +107,9 @@ export default class OrganizationStore implements IOrganizationStore {
             this.metadata = {
                 id: updatedOrg.id,
                 name: updatedOrg.name,
-                roleDefinitions: updatedOrg.roleDefinitions
+                roleDefinitions: updatedOrg.roleDefinitions,
+                attributeCategories: updatedOrg.attributeCategories,
+                tagCategories: updatedOrg.tagCategories
             }
         });
     }
@@ -126,6 +130,80 @@ export default class OrganizationStore implements IOrganizationStore {
             // consistency + when we have multiple orgs to keep track of
             this.metadata = Object.assign({}, this.metadata)
         });
+    }
+
+    updateOrAddAttributeCategory(updatedCategory: AttributeCategory) {
+        let index = this.metadata.attributeCategories.findIndex(
+            category => category.id == updatedCategory.id
+        );
+
+        runInAction(() => {
+            if (index >= 0) {
+                this.metadata.attributeCategories[index] = updatedCategory;
+            } else {
+                this.metadata.attributeCategories.push(updatedCategory);
+            }
+        });
+    }
+
+    updateOrAddAttribute(categoryId: string, updatedAttribute: Attribute) {
+        let index = this.metadata.attributeCategories.findIndex(
+            category => category.id == categoryId
+        );
+
+        if (index >= 0) {
+            let attrIndex = this.metadata.attributeCategories[index].attributes.findIndex(
+                attr => attr.id == updatedAttribute.id
+            );
+
+            runInAction(() => {
+                // TODO: Will this trigger a re-render bc this is observable or is the update too deep in the object?
+                if (attrIndex >= 0) {
+                    this.metadata.attributeCategories[index].attributes[attrIndex] = updatedAttribute;
+                } else {
+                    this.metadata.attributeCategories[index].attributes.push(updatedAttribute);
+                }
+            });
+        }
+
+        // TODO: Can we throw an error or warning here?
+    }
+
+    updateOrAddTagCategory(updatedCategory: TagCategory) {
+        let index = this.metadata.tagCategories.findIndex(
+            category => category.id == updatedCategory.id
+        );
+
+        runInAction(() => {
+            if (index >= 0) {
+                this.metadata.tagCategories[index] = updatedCategory;
+            } else {
+                this.metadata.tagCategories.push(updatedCategory);
+            }
+        });
+    }
+
+    updateOrAddTag(categoryId: string, updatedTag: Tag) {
+        let index = this.metadata.tagCategories.findIndex(
+            category => category.id == categoryId
+        );
+
+        if (index >= 0) {
+            let tagIndex = this.metadata.tagCategories[index].tags.findIndex(
+                tag => tag.id == updatedTag.id
+            );
+
+            runInAction(() => {
+                // TODO: Will this trigger a re-render bc this is observable or is the update too deep in the object?
+                if (tagIndex >= 0) {
+                    this.metadata.tagCategories[index].tags[tagIndex] = updatedTag;
+                } else {
+                    this.metadata.tagCategories[index].tags.push(updatedTag);
+                }
+            });
+        }
+
+        // TODO: Can we throw an error or warning here?
     }
 
     clear() {

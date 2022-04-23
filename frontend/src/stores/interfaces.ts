@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -31,7 +31,7 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIDs: string[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap, skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
@@ -100,7 +100,7 @@ export interface IDispatchStore extends IBaseStore {
     selectedResponders: ClientSideFormat<ProtectedUser>[]
 }
 
-export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded'>
+export type CreateReqData = Pick<HelpRequest, 'location' | 'type' | 'notes' | 'skills' | 'respondersNeeded' | 'tags'>
 
 export interface ITempRequestStore extends CreateReqData {
     clear(prop?: keyof CreateReqData): void
@@ -163,8 +163,7 @@ export interface IRequestStore extends IBaseStore {
     removeUserFromRequest(userId: string, reqId: string): Promise<void>
 }
 
-// TO DO: Add 'tags' and 'attributes'
-export type EditOrganizationData = Pick<OrganizationMetadata, 'roleDefinitions' | 'name'>
+export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
 
 export interface ITempOrganizationStore extends EditOrganizationData {
     clear(prop?: keyof EditOrganizationData): void
@@ -175,8 +174,43 @@ export namespace IEditOrganizationStore {
 }
 
 export interface IEditOrganizationStore extends ITempOrganizationStore {
+    // Organization Metadata
+    name: string
+    roleDefinitions: Role[]
+    attributeCategories: AttributeCategory[]
+    tagCategories: TagCategory[]
+
+    // Edit Attribute Category
+    currentAttributeCategoryName: string
+    currentAttributeCategoryAttributes: Attribute[]
+
+    // Edit Attribute
+    currentAttributeName: string
+
+    // Edit Tag Category
+    currentTagCategoryName: string
+    currentTagCategoryTags: Tag[]
+
+    // Edit Tag
+    currentTagName: string
+
     editOrganization(orgId: string): Promise<OrganizationMetadata>
-    deleteRoles(roleIds: string[]): Promise<OrganizationMetadata>
+
+    createNewAttributeCategory(): Promise<AttributeCategory>
+    editAttributeCategory(categoryId: string): Promise<AttributeCategory>
+    deleteAttributeCategory(categoryId: string): Promise<OrganizationMetadata>
+
+    createNewAttribute(categoryId: string): Promise<Attribute>
+    editAttribute(categoryId: string, attributeId: string): Promise<Attribute>
+    deleteAttribute(categoryId: string, attributeId: string): Promise<OrganizationMetadata>
+
+    createNewTagCategory(): Promise<TagCategory>
+    editTagCategory(categoryId: string): Promise<TagCategory>
+    deleteTagCategory(categoryId: string): Promise<OrganizationMetadata>
+
+    createNewTag(categoryId: string): Promise<Tag>
+    editTag(categoryId: string, tagId: string): Promise<Tag>
+    deleteTag(categoryId: string, tagId: string): Promise<OrganizationMetadata>
 }
 
 export namespace IOrganizationStore {
@@ -194,6 +228,10 @@ export interface IOrganizationStore extends IBaseStore {
     getOrgData(): Promise<void>;
     updateOrgData(updatedOrg: OrganizationMetadata): void
     updateOrAddRole(updatedRole: Role): void
+    updateOrAddAttributeCategory(updatedCategory: AttributeCategory): void
+    updateOrAddAttribute(categoryId: string, updatedAttribute: Attribute): void
+    updateOrAddTagCategory(updatedCategory: TagCategory): void
+    updateOrAddTag(categoryId: string, updatedTag: Tag): void
 }
 
 export namespace ITeamStore {
@@ -317,6 +355,8 @@ export namespace INewUserStore {
 
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
+    roleIds: string[]
+    attributes: AttributesMap
 
     isValid: boolean
     phoneValid: boolean

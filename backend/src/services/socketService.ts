@@ -127,6 +127,26 @@ export class MySocketService {
             case PatchEventType.OrganizationRoleDeleted:
                 await this.handleOrganizationRoleUpdate(event, params as any)
                 break;
+
+            case PatchEventType.OrganizationAttributeCategoryEdited:
+            case PatchEventType.OrganizationAttributeCategoryDeleted:
+                await this.handleOrganizationAttributeCateogryUpdate(event, params as any);
+                break;
+
+            case PatchEventType.OrganizationAttributeEdited:
+            case PatchEventType.OrganizationAttributeDeleted:
+                await this.handleOrganizationAttributeUpdate(event, params as any);
+                break;
+
+            case PatchEventType.OrganizationTagCategoryEdited:
+            case PatchEventType.OrganizationTagCategoryDeleted:
+                await this.handleOrganizationTagCategoryUpdate(event, params as any);
+                break;
+
+            case PatchEventType.OrganizationTagEdited:
+            case PatchEventType.OrganizationTagDeleted:
+                await this.handleOrganizationTagUpdate(event, params as any);
+                break;
         }
     }
 
@@ -266,6 +286,192 @@ export class MySocketService {
             await this.notifications.sendBulk(notifications)
         } catch (e) {
             console.error(`Error sending organization Role update over notification: ${e}`)
+        }
+    }
+
+    async handleOrganizationAttributeCateogryUpdate<SysEvent extends 
+        PatchEventType.OrganizationAttributeCategoryEdited
+        | PatchEventType.OrganizationAttributeCategoryDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {
+        const { categoryId, orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    attributeCategoryId: categoryId,
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
+
+            // Only send notifications to users affected by the Attribute Category update.
+            if (categoryId in user.organizations[orgId].attributes) {
+                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                    type: NotificationType.UIUpdate,
+                    to: (user as UserModel).push_token,
+                    body: ``,
+                    payload: { uiEvent: msg }
+                }
+                notifications.push(notification);
+            }
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Attribute Category update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Attribute Category update over notification: ${e}`)
+        }
+    }
+
+    async handleOrganizationAttributeUpdate<SysEvent extends 
+        PatchEventType.OrganizationAttributeEdited
+        | PatchEventType.OrganizationAttributeDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {
+        const { orgId, categoryId, attributeId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    attributeId,
+                    orgId,
+                    attributeCategoryId: categoryId
+                },
+                sysEvent,
+                sysParams
+            };
+
+            // Only send notifications to users affected by the Attribute update.
+            if (categoryId in user.organizations[orgId].attributes) {
+                if (attributeId in user.organizations[orgId].attributes[categoryId]) {
+                    const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                        type: NotificationType.UIUpdate,
+                        to: (user as UserModel).push_token,
+                        body: ``,
+                        payload: { uiEvent: msg }
+                    }
+                    notifications.push(notification);
+                }
+            }
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Attribute update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Attribute update over notification: ${e}`)
+        }
+    }
+
+    async handleOrganizationTagCategoryUpdate<SysEvent extends 
+        PatchEventType.OrganizationTagCategoryDeleted
+        | PatchEventType.OrganizationTagCategoryEdited
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {
+        const { categoryId, orgId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    tagCategoryId: categoryId,
+                    orgId,
+                },
+                sysEvent,
+                sysParams
+            };
+
+            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                type: NotificationType.UIUpdate,
+                to: (user as UserModel).push_token,
+                body: ``,
+                payload: { uiEvent: msg }
+            }
+            notifications.push(notification);
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Tag Category update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Tag Category update over notification: ${e}`)
+        }
+    }
+
+    async handleOrganizationTagUpdate<SysEvent extends 
+        PatchEventType.OrganizationTagEdited
+        | PatchEventType.OrganizationTagDeleted
+    >(
+        sysEvent: SysEvent, 
+        sysParams: PatchEventParams[SysEvent]
+    ) {
+        const { orgId, tagId, categoryId } = sysParams;
+        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
+
+        const notifications: NotificationMetadata<any>[] = [];
+        for (const user of org.members as UserModel[]) {
+            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
+                event: PatchUIEvent.UpdateResource,
+                params: { 
+                    tagId,
+                    orgId,
+                    tagCategoryId: categoryId
+                },
+                sysEvent,
+                sysParams
+            };
+
+            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
+                type: NotificationType.UIUpdate,
+                to: (user as UserModel).push_token,
+                body: ``,
+                payload: { uiEvent: msg }
+            }
+            notifications.push(notification);
+
+            try {
+                await this.send(user.id, msg)
+            } catch (e) {
+                console.error(`Error sending organization Tag update over socket: ${e}`)
+            }
+        }
+
+        try {
+            await this.notifications.sendBulk(notifications)
+        } catch (e) {
+            console.error(`Error sending organization Tag update over notification: ${e}`)
         }
     }
 
