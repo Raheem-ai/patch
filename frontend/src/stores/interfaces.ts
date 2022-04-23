@@ -416,6 +416,55 @@ export interface IUpsertRoleStore extends Role, IBaseStore {
     nameIsValid: () => boolean
 }
 
+export type Category = { 
+    name: string, 
+    items: {
+        id: string,
+        name: string 
+    }[]
+}
+
+
+export namespace IEditCategorizedItemStore {
+    export const id = Symbol('IEditCategorizedItemStore');
+}
+
+export interface IEditCategorizedItemStore {
+    categories: { [id: string]: Category }
+
+    addCategory: (categoryName: string) => void
+    editCategory: (categoryId: string, categoryName: string) => void
+    removeCategory: (categoryId: string) => void
+
+    addItemToCategory: (categoryId: string, itemName: string) => void
+    editItem: (categoryId: string, itemId: string, itemName: string) => void
+    removeItemFromCategory: (categoryId: string, itemId: string) => void
+
+    save: () => Promise<void>
+}
+
+export namespace ISelectCategorizedItemStore {
+    export const id = Symbol('ISelectCategorizedItemStore');
+}
+
+export interface ISelectCategorizedItemStore {
+    categories: { [id: string]: Category }
+    selectedItems: { [categoryId: string]: [string] }
+
+    toggleItem: (categoryId: string, itemId: string) => void
+}
+
+export namespace IManageTagsStore {
+    export const id = Symbol('IManageTagsStore');
+}
+
+export namespace IManageAttributesStore {
+    export const id = Symbol('IManageAttributesStore');
+}
+
+export interface IManageTagsStore extends IEditCategorizedItemStore {};
+export interface IManageAttributesStore extends IEditCategorizedItemStore {};
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -437,6 +486,8 @@ export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
 export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore);
+export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore);
+export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
 
 export const AllStores = [
     IUserStore,
@@ -459,5 +510,7 @@ export const AllStores = [
     IUpdateStore,
     IOrganizationStore,
     IEditOrganizationStore,
-    IUpsertRoleStore
+    IUpsertRoleStore,
+    IManageAttributesStore,
+    IManageTagsStore
 ]

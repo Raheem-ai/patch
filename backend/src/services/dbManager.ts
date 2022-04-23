@@ -730,14 +730,14 @@ export class DBManager {
                 email: 'Charlie@test.com', 
                 password: 'Test', 
                 displayColor: "#25db00",
-                name: "Chuck LePartay",
+                name: "Charlie Lipford",
                 race: "nunya",
                 phone: "8045166822",
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
             });
 
             let [ org, admin1 ] = await this.createOrganization({
-                name: 'Test Org'
+                name: 'Community Response Program'
             }, user1.id);
 
             admin1 = await this.addUserRoles(org.id, admin1, [ UserRole.Dispatcher, UserRole.Responder ]);
@@ -745,42 +745,42 @@ export class DBManager {
             let user2 = await this.createUser({ 
                 email: 'Nadav@test.com', 
                 password: 'Test',
-                name: 'Nadav Sorrynotsry',
+                name: 'Nadav Savio',
                 skills: [ RequestSkill.French, RequestSkill.ConflictResolution ]
             });
 
             let user3 = await this.createUser({ 
                 email: 'Cosette@test.com', 
                 password: 'Test',
-                name: 'Cosette Ayyayy',
+                name: 'Cosette Ayele',
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
             let user4 = await this.createUser({ 
                 email: 'tevn@test.com', 
                 password: 'Test',
-                name: 'Tevy Tev',
+                name: `Tev'n Powers`,
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
             let userAdmin = await this.createUser({ 
                 email: 'admin@test.com', 
                 password: 'Test',
-                name: 'Adminess Hater',
+                name: 'Admin',
                 skills: []
             });
 
             let userDispatcher = await this.createUser({ 
                 email: 'dispatcher@test.com', 
                 password: 'Test',
-                name: 'Dee Patcher',
+                name: 'Dispatcher',
                 skills: []
             });
 
             let userResponder = await this.createUser({ 
                 email: 'responder@test.com', 
                 password: 'Test',
-                name: 'Reece Ponder II',
+                name: 'Responder',
                 skills: []
             });
 
