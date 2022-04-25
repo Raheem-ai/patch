@@ -8,7 +8,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped } from "./types";
+import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
@@ -41,10 +41,18 @@ export type FormProps = {
         label: string,
         handler: () => Promise<void>
     },
-
-    // meant to be used together but maybe there is a case where they wouldn't be???
-    // navigateToScreen?: (id: string) => void
     homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
+    adHocScreens?: AdHocScreenConfig[]
+
+    /**
+     * TODO:
+     * 
+     * screens?: {
+     *   name: string,
+     *   screen: ({ back }) => JSX.Element
+     * }[]
+     * 
+     *  */ 
 }
 
 export type CustomFormHomeScreenProps = {
@@ -52,7 +60,8 @@ export type CustomFormHomeScreenProps = {
     onContainerPress: () => void,
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
     inputs: () => Grouped<StandAloneFormInputConfig>[],
-    isValid: () => boolean
+    isValid: () => boolean,
+    navigateToScreen: (screenName: string) => void
 }
 
 const FormViewMap: FormInputViewMap = {
@@ -350,7 +359,8 @@ export default class Form extends React.Component<FormProps> {
                 onContainerPress: onPress,
                 renderInputs,
                 inputs: () => this.groupedInputs.get(),
-                isValid: () => this.isValid.get()
+                isValid: () => this.isValid.get(),
+                navigateToScreen
             };
 
             return <CustomHomeScreen {...customProps} />
@@ -391,6 +401,15 @@ export default class Form extends React.Component<FormProps> {
                     </Pressable>
                 </WrappedScrollView>
         )
+    }
+
+    adHocScreen = (config: AdHocScreenConfig) => ({ navigation }: StackScreenProps<any>) => {
+        const back = () => {
+            navigation.goBack()
+            this.props.onBack?.()
+        }
+
+        return config.screen({ back })
     }
 
     inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation }: StackScreenProps<any>) => {
@@ -452,6 +471,14 @@ export default class Form extends React.Component<FormProps> {
                         this.screenInputs.get().map(screenInputConfig => {
                             return (
                                 <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
+                            )
+                        })
+                    }
+                    {
+                        // setup ad-hoc screen components
+                        (this.props.adHocScreens || []).map(config => {
+                            return (
+                                <Stack.Screen name={config.name} component={this.adHocScreen(config)}/>
                             )
                         })
                     }

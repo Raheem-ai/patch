@@ -1213,77 +1213,106 @@ export class DBManager {
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
-            console.log('creating second org...');
-            let [ org2, admin2 ] = await this.createOrganization({
-                name: 'Test Org 2'
-            }, user5.id);
+            // console.log('creating second org...');
+            // let [ org2, admin2 ] = await this.createOrganization({
+            //     name: 'Test Org 2'
+            // }, user5.id);
 
-            let role1: MinRole = {
-                name: 'first role',
-                permissionGroups: [
-                    PatchPermissionGroups.ManageOrg,
-                    PatchPermissionGroups.ManageChats,
-                    PatchPermissionGroups.ManageMetadata,
-                    PatchPermissionGroups.ManageRequests,
-                    PatchPermissionGroups.ManageSchedule,
-                    PatchPermissionGroups.ManageTeam
-                ]
-            };
+            // let role1: MinRole = {
+            //     name: 'first role',
+            //     permissionGroups: [
+            //         PatchPermissionGroups.ManageOrg,
+            //         PatchPermissionGroups.ManageChats,
+            //         PatchPermissionGroups.ManageMetadata,
+            //         PatchPermissionGroups.ManageRequests,
+            //         PatchPermissionGroups.ManageSchedule,
+            //         PatchPermissionGroups.ManageTeam
+            //     ]
+            // };
 
-            console.log('adding new role to org2...');
-            [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
+            // console.log('adding new role to org2...');
+            // [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
 
-            console.log('adding new role to user...');
-            user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
+            // console.log('adding new role to user...');
+            // user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
 
-            console.log('adding new Attribute category...');
-            const testAttrCat1: MinAttributeCategory = {
-                name: 'Attribute Category 1 - repopulateDB'
-            };
+            // console.log('adding new Attribute category...');
+            // const testAttrCat1: MinAttributeCategory = {
+            //     name: 'Attribute Category 1 - repopulateDB'
+            // };
 
-            const testAttrCat2: MinAttributeCategory = {
-                name: 'Attribute Category 2 - repopulateDB'
-            };
+            // const testAttrCat2: MinAttributeCategory = {
+            //     name: 'Attribute Category 2 - repopulateDB'
+            // };
 
-            let attrCat1: AttributeCategory = null;
-            let attrCat2: AttributeCategory = null;
-            [org2, attrCat1] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat1);
-            [org2, attrCat2] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat2);
+            // let attrCat1: AttributeCategory = null;
+            // let attrCat2: AttributeCategory = null;
+            // [org2, attrCat1] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat1);
+            // [org2, attrCat2] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat2);
 
-            console.log('adding new Attribute...');
+            // console.log('adding new Attribute...');
 
-            const testAttr1: MinAttribute = {
-                name: 'Attribute 1 - repopulateDb'
-            };
+            // const testAttr1: MinAttribute = {
+            //     name: 'Attribute 1 - repopulateDb'
+            // };
 
-            const testAttr2: MinAttribute = {
-                name: 'Attribute 2 - repopulateDb'
-            };
+            // const testAttr2: MinAttribute = {
+            //     name: 'Attribute 2 - repopulateDb'
+            // };
 
-            let attr1: Attribute = null;
-            let attr2: Attribute = null;
-            [org2, attr1] = await this.addAttributeToOrganization(org2.id, attrCat1.id, testAttr1);
-            [org2, attr2] = await this.addAttributeToOrganization(org2.id, attrCat2.id, testAttr2);
+            // let attr1: Attribute = null;
+            // let attr2: Attribute = null;
+            // [org2, attr1] = await this.addAttributeToOrganization(org2.id, attrCat1.id, testAttr1);
+            // [org2, attr2] = await this.addAttributeToOrganization(org2.id, attrCat2.id, testAttr2);
 
-            const attributesToAdd: AttributesMap = {
-                [attrCat1.id]: [attr1.id],
-                [attrCat2.id]: [attr2.id],
-            }
+            // const attributesToAdd: AttributesMap = {
+            //     [attrCat1.id]: [attr1.id],
+            //     [attrCat2.id]: [attr2.id],
+            // }
 
-            console.log('Assigning attributes to user...');
-            user5 = await this.addAttributesToUser(org2.id, user5.id, attributesToAdd);
+            // console.log('Assigning attributes to user...');
+            // user5 = await this.addAttributesToUser(org2.id, user5.id, attributesToAdd);
 
-            const attributesToRemove: AttributesMap = {
-                [attrCat2.id]: [attr2.id]
-            }
+            // const attributesToRemove: AttributesMap = {
+            //     [attrCat2.id]: [attr2.id]
+            // }
 
-            console.log('Removing attribute from user...');
-            org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
+            // console.log('Removing attribute from user...');
+            // org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
             // user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
             user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
-            user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+            user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ]);
+
+            let attrCat1, attr1, attr2;
+
+            [org, attrCat1] = await this.addAttributeCategoryToOrganization(org.id, {
+                name: 'Attribute Category'
+            });
+
+            [org, attr1] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
+                name: 'Foo'
+            });
+
+
+            [org, attr2] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
+                name: 'Bar'
+            });
+
+            let tagCat1, tag1, tag2;
+
+            [org, tagCat1] = await this.addTagCategoryToOrganization(org.id, {
+                name: 'Attribute Category'
+            });
+
+            [org, tag1] = await this.addTagToOrganization(org.id, tagCat1.id, {
+                name: 'Baz'
+            });
+
+            [org,tag2] = await this.addTagToOrganization(org.id, tagCat1.id, {
+                name: 'Bux'
+            });
 
             const minRequests: MinHelpRequest[] = [
                 {

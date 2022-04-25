@@ -186,6 +186,11 @@ export type CompoundFormInputFactoryParams<Type extends CompoundFormInputType = 
 // instead of exporting an input component we export a factory with a similar config interface
 export type CompoundFormInputFactory<Type extends CompoundFormInputType> = (params: CompoundFormInputFactoryParams<Type>) => CompoundFormInputConfig<Type>;
 
+export type AdHocScreenConfig = {
+    name: string,
+    screen: (props: { back: () => void }) => JSX.Element
+}
+
 type BaseFormInputConfig = {
     name: string
     disabled?: boolean

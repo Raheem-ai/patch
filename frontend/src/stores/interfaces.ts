@@ -470,7 +470,7 @@ export namespace IEditCategorizedItemStore {
 }
 
 export interface IEditCategorizedItemStore {
-    categories: { [id: string]: Category }
+    categories: Map<string, Category>
 
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void
