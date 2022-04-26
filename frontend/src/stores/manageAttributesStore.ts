@@ -1,6 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { Category, IManageAttributesStore, organizationStore } from './interfaces';
+import { alertStore, IManageAttributesStore, organizationStore, userStore } from './interfaces';
+import { api } from '../services/interfaces';
+import { CategorizedItemUpdates, Category } from '../../../common/models';
+import { OrgContext } from '../../../common/api';
+import { resolveErrorMessage } from '../errors';
+import * as uuid from 'uuid';
 
 @Store(IManageAttributesStore)
 export default class ManageAttributesStore implements IManageAttributesStore {
@@ -12,7 +17,6 @@ export default class ManageAttributesStore implements IManageAttributesStore {
     private deletedItems: { [categoryId: string]: string[] } = {};
 
     private newCategories: { [id: string]: Category; } = {}
-
     private newItems: Map<string, {
         [itemId: string]: string
     }> = new Map()
@@ -21,13 +25,31 @@ export default class ManageAttributesStore implements IManageAttributesStore {
         makeAutoObservable(this)
     }
 
-    get definedAttributes() {
+    async init() {
+        await userStore().init()
+        await organizationStore().init()
+        await alertStore().init()
+    }
+
+    orgContext(): OrgContext {
+        return {
+            token: userStore().authToken,
+            orgId: userStore().currentOrgId
+        }
+    }
+
+    tempId = (ctx: string) => {
+        return `temp-${ctx}-${uuid.v1()}`
+    }
+
+    get definedCategories() {
         const map: Map<string, Category> = new Map();
 
         organizationStore().metadata.attributeCategories.forEach(category => {
             map.set(category.id, {
                 name: category.name,
                 items: category.attributes
+                // items: JSON.parse(JSON.stringify(category.attributes))
             })
         })
 
@@ -36,7 +58,8 @@ export default class ManageAttributesStore implements IManageAttributesStore {
 
     // Projection of the defined set of categories/items + diff of changes
     get categories() {
-        const map = new Map(this.definedAttributes.entries());
+        const entries = JSON.parse(JSON.stringify(Array.from(this.definedCategories.entries())))
+        const map: Map<string, Category> = new Map(entries);
 
         // add new categories
         for (const newCategoryId in this.newCategories) {
@@ -100,7 +123,7 @@ export default class ManageAttributesStore implements IManageAttributesStore {
 
     addCategory = (categoryName: string) => {
         this.newCategories = Object.assign({}, this.newCategories, {
-            [`__temp-${categoryName}`]: {
+            [this.tempId(categoryName)]: {
                 name: categoryName,
                 items: []
             }
@@ -132,19 +155,40 @@ export default class ManageAttributesStore implements IManageAttributesStore {
     }
 
     removeCategory = (categoryId: string) => {
+        if (!!this.newCategories[categoryId]) {
+            const cpy = Object.assign({}, this.newCategories);
+            delete cpy[categoryId];
+
+            this.newCategories = cpy;
+            return
+        }
+
         if (!this.deletedCategories.includes(categoryId)) {
             this.deletedCategories.push(categoryId)
         }
     }
 
     addItemToCategory = (categoryId: string, itemName: string) => {
+        // if the category is new keep the updates local to it
+        if (!!this.newCategories[categoryId]) {
+            const cpy = Object.assign({}, this.newCategories);
+
+            cpy[categoryId].items.push({
+                id: this.tempId(itemName),
+                name: itemName
+            })
+            
+            this.newCategories = cpy;
+            return
+        }
+        
         let newItems = this.newItems.get(categoryId);
 
         if (newItems) {
-            newItems[`__temp-${itemName}`] = itemName
+            newItems[this.tempId(itemName)] = itemName
         } else {
             newItems = {
-                [`__temp-${itemName}`]: itemName
+                [this.tempId(itemName)]: itemName
             }
         }
 
@@ -158,14 +202,29 @@ export default class ManageAttributesStore implements IManageAttributesStore {
 
             this.newItems.set(categoryId, newItems);
         } else {
-            this.itemNameChanges.push({
-                categoryId, itemId, name: itemName
-            })
+            const index = this.itemNameChanges.findIndex(change => change.categoryId == categoryId && change.itemId == itemId)
+
+            if (index == -1) {
+                this.itemNameChanges.push({
+                    categoryId, itemId, name: itemName
+                })
+            } else {
+                this.itemNameChanges[index].name = itemName
+            }
+            
         }
     }
 
     removeItemFromCategory = (categoryId: string, itemId: string) => {
         const deletedItems = Object.assign({}, this.deletedItems);
+
+        // don't mark transient new items be marked as a delete
+        if (!!this.newItems.get(categoryId)?.[itemId]) {
+            const cpy = Object.assign({}, this.newItems.get(categoryId));
+            delete cpy[itemId];
+            this.newItems.set(categoryId, cpy);
+            return
+        }
 
         if (!deletedItems[categoryId]?.includes(itemId)) {
             deletedItems[categoryId] ||= [];
@@ -179,10 +238,47 @@ export default class ManageAttributesStore implements IManageAttributesStore {
         // use this.categories to send an update to the db...if another user edits the tags/attributes you are editing in real time, this 
         // should absorb most of those changes without having to do anything...direct conflicts might be an issue
         // TODO: test editing these in real time with someone else
+
+        const newItems: CategorizedItemUpdates['newItems'] = {};
+
+        for (const [categoryId, itemMap] of this.newItems.entries()) {
+            const itemNames: string[] = [];
+            
+            for (const fakeId in itemMap) {
+                itemNames.push(itemMap[fakeId])
+            }
+
+            newItems[categoryId] = itemNames
+        }
+
+        const updates: CategorizedItemUpdates = {
+            categoryNameChanges: this.categoryNameChanges,
+            itemNameChanges: this.itemNameChanges,
+
+            deletedCategories: this.deletedCategories,
+            deletedItems: this.deletedItems,
+
+            newCategories: this.newCategories,
+            newItems
+        }
+
+        console.log(updates)
+        
+        const updatedOrg = await api().updateAttributes(this.orgContext(), updates);
+        organizationStore().updateOrgData(updatedOrg);
+        
+        this.clear()
     }
 
     clear() {
-        
+        this.categoryNameChanges = [];
+        this.itemNameChanges = [];
+
+        this.deletedCategories = [];
+        this.deletedItems = {};
+
+        this.newCategories = {}
+        this.newItems.clear()
     }
 
     

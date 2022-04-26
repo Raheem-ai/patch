@@ -3,43 +3,37 @@ import React, { useState } from "react"
 import { GestureResponderEvent, Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
-import { DefaultRoleIds } from "../../../../common/models"
+import { Category, DefaultRoleIds, PatchPermissions } from "../../../../common/models"
 import { resolveErrorMessage } from "../../errors"
 import { alertStore, IEditCategorizedItemStore, organizationStore, ISelectCategorizedItemStore, upsertRoleStore, userStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
-import { AdHocScreenConfig, InlineFormInputConfig, SectionNavigationScreenViewProps } from "./types"
+import { AdHocScreenConfig, InlineFormInputConfig, SectionNavigationScreenViewProps, SectionScreenViewProps } from "./types"
 import { VisualArea } from '../helpers/visualArea';
 import TextInput from "./inputs/textInput"
+import { unwrap } from "../../../../common/utils"
+import { iHaveAllPermissions, userHasAllPermissions } from "../../utils"
 
-type Props = SectionNavigationScreenViewProps & {
-    headerLabel: string,
-    editHeaderLabel: string,
-    addCategoryPlaceholderLabel: string,
-    addItemPlaceholderLabel: string,
-    editStore: IEditCategorizedItemStore,
-    selectStore: ISelectCategorizedItemStore
-};
+type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
 const CategorizedItemForm = ({ 
     back,
-    headerLabel,
-    editHeaderLabel,
-    editStore,
-    selectStore,
-    addCategoryPlaceholderLabel,
-    addItemPlaceholderLabel
+    config
 }: Props) => {
 
     const editScreen: AdHocScreenConfig = {
         name: 'edit',
         screen: ({ back }) => {
-            return <EditCategorizedItemForm 
-                back={back} 
-                editHeaderLabel={editHeaderLabel} 
-                addCategoryPlaceholderLabel={addCategoryPlaceholderLabel}
-                addItemPlaceholderLabel={addItemPlaceholderLabel}
-                store={editStore} />
+            return (
+                <EditCategorizedItemForm 
+                    back={back} 
+                    onSaveToastLabel={config.props.onSaveToastLabel}
+                    // categories={config.props.categories}
+                    editHeaderLabel={config.props.editHeaderLabel} 
+                    addCategoryPlaceholderLabel={config.props.addCategoryPlaceholderLabel}
+                    addItemPlaceholderLabel={config.props.addItemPlaceholderLabel}
+                    store={config.props.editStore} />
+            )
         }
     } 
 
@@ -52,18 +46,40 @@ const CategorizedItemForm = ({
         navigateToScreen
     }: CustomFormHomeScreenProps) => {
 
+        const [selectedItems, setSelectedItems] = useState(config.val())
+
+        const iCanEdit = iHaveAllPermissions(config.props.editPermissions)
+
         const headerProps: BackButtonHeaderProps = {
             save: {
-                handler: back,
+                handler: () => {
+                    config.onSave(selectedItems);
+                    back();
+                },
                 outline: true
             },
-            label: headerLabel,
+            label: unwrap(config.headerLabel),
             bottomBorder: true,
-            labelDecoration: {
-                handler: () => {
-                    navigateToScreen('edit')
-                }, 
-                icon: 'pencil'
+            labelDecoration: iCanEdit 
+                ? {
+                    handler: () => {
+                        navigateToScreen('edit')
+                    }, 
+                    icon: 'pencil'
+                }
+                : null
+        }
+
+        const toggleItem = (categoryId: string, itemId: string) => {
+            const index = selectedItems.findIndex((i) => i.categoryId == categoryId && i.itemId == itemId);
+
+            if (index != -1) {
+                const updatedSelection = selectedItems.slice()
+                updatedSelection.splice(index, 1);
+                setSelectedItems(updatedSelection)
+            } else {
+                const updatedSelection = [...selectedItems, { categoryId, itemId }];
+                setSelectedItems(updatedSelection)
             }
         }
 
@@ -75,33 +91,44 @@ const CategorizedItemForm = ({
                 
                 {/* categories + items (selection) */}
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                    <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
+                    <View style={{ }}>
                     {
-                        Object.entries(selectStore.categories).map(([categoryId, category]) => {
+                        Array.from(config.props.editStore.definedCategories.entries()).map(([categoryId, category]) => {
                             
+                            const categoryLabelStyle = (categoryId): TextStyle => {
+                                return {
+                                    color: '#666',
+                                    fontWeight: 'normal'
+                                }
+                            }
+
                             const itemLabelStyle = (itemId): TextStyle => {
-                                const isSelected = !!selectStore.selectedItems[categoryId]?.includes(itemId);
+                                const isSelected = selectedItems.findIndex((i) => i.categoryId == categoryId && i.itemId == itemId) != -1;
                                     
                                 return isSelected
                                     ? { fontWeight: 'bold' }
-                                    : null
+                                    : { color: '#666'}
                             }
 
                             const itemIcon = (categoryId: string, itemId: string) => {
-                                const isSelected = !!selectStore.selectedItems[categoryId]?.includes(itemId);
-                                    
+                                const isSelected = selectedItems.findIndex((i) => i.categoryId == categoryId && i.itemId == itemId) != -1;
+                                
+                                if (!isSelected) {
+                                    return null
+                                }
+
                                 return (
                                     <IconButton
                                         icon={'check'} 
-                                        color={isSelected ? '#000' : '#666'}
-                                        size={20} 
-                                        style={{ margin: 0, padding: 0, width: 20 }}
+                                        color={'#000'}
+                                        size={30} 
+                                        style={{ margin: 0, padding: 0, width: 30 }}
                                         />
                                 )
                             }
                         
                             const itemRowPressed = (itemId: string) => {
-                                selectStore.toggleItem(categoryId, itemId)
+                                toggleItem(categoryId, itemId)
                             }
                             
                             return (
@@ -110,6 +137,7 @@ const CategorizedItemForm = ({
                                     name={category.name}
                                     items={category.items}
                                     id={categoryId}
+                                    categoryLabelStyle={categoryLabelStyle}
                                     itemLabelStyle={itemLabelStyle}
                                     itemIcon={itemIcon}
                                     itemRowPressed={itemRowPressed}/>
@@ -136,12 +164,14 @@ type EditScreenViewProps = {
     back: () => void,
     editHeaderLabel: string,
     addCategoryPlaceholderLabel: string
-    addItemPlaceholderLabel: string
+    addItemPlaceholderLabel: string,
+    onSaveToastLabel: string
 }
 
 export const EditCategorizedItemForm = observer(({ 
     back, 
     store,
+    onSaveToastLabel,
     editHeaderLabel,
     addCategoryPlaceholderLabel,
     addItemPlaceholderLabel
@@ -150,11 +180,22 @@ export const EditCategorizedItemForm = observer(({
 
     const headerProps: BackButtonHeaderProps = {
         save: {
-            handler: store.save,
+            handler: async () => {
+                try {
+                    await store.save()
+                    alertStore().toastSuccess(onSaveToastLabel)
+                    back()
+                } catch (e) {
+                    alertStore().toastError(resolveErrorMessage(e))
+                }
+            },
             label: 'Save'
         },
         cancel: {
-            handler: back,
+            handler: () => {
+                back()
+                store.clear()
+            }
         },
         label: editHeaderLabel,
         bottomBorder: true, 
@@ -200,7 +241,7 @@ export const EditCategorizedItemForm = observer(({
         }
         
         return (
-            <View key={item.id} style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60, paddingRight: 20 }}>
+            <View key={item.id} style={styles.itemContainer}>
                 <TextInput config={editItemInputConfig} />
                 {
                     itemIcon 
@@ -243,7 +284,7 @@ export const EditCategorizedItemForm = observer(({
                                 categoryId={categoryId} 
                                 addItemToCategory={store.addItemToCategory}
                                 addItemPlaceholderLabel={addItemPlaceholderLabel}/>;
-
+                   
                         return (
                             <CategoryRow 
                                 key={categoryId}
@@ -317,17 +358,19 @@ type CategoryRowProps = {
     }
     categoryFooter?: () => JSX.Element,
     itemLabelStyle?: (itemId: string ) => TextStyle,
+    categoryLabelStyle?: (categoryId: string ) => TextStyle,
     itemIcon?: (categoryId: string, itemId: string) => JSX.Element,
     itemRowPressed?: (itemId: string) => void,
     itemRow?: (props: { id: string, name: string }) => JSX.Element
 }
 
-const CategoryRow = ({
+const CategoryRow = observer(({
     id,
     name,
     items,
     categoryAction,
     categoryFooter,
+    categoryLabelStyle,
     itemLabelStyle,
     itemIcon,
     itemRowPressed,
@@ -347,7 +390,7 @@ const CategoryRow = ({
     const defaultItemRow = (item: { id: string, name: string }) => {
         return (
             <Pressable key={item.id} onPress={() => itemRowPressed?.(item.id)} style={styles.itemContainer}>
-                <Text style={itemLabelStyle ? itemLabelStyle(item.id) : null}>{item.name}</Text>
+                <Text style={[{ flex: 1, fontSize: 16 }, itemLabelStyle ? itemLabelStyle(item.id) : null]}>{item.name}</Text>
                 {
                     itemIcon 
                         ? itemIcon(id, item.id)
@@ -369,7 +412,7 @@ const CategoryRow = ({
                         />
                 </View>
                 <View style={styles.categoryLabelContainer}>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{name.toUpperCase()}</Text>
+                    <Text style={[{ fontSize: 16, fontWeight: 'bold' }, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name.toUpperCase()}</Text>
                 </View>
                 {
                     categoryAction 
@@ -400,7 +443,7 @@ const CategoryRow = ({
             }
         </View>
     )
-}
+})
 
 const styles = StyleSheet.create({
     categoryHeaderContainer: {
@@ -415,6 +458,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingLeft: 60,
-        paddingRight: 20
+        paddingRight: 20,
+        height: 60
     }
 })

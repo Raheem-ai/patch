@@ -33,7 +33,8 @@ import {
     Tag,
     AttributesMap,
     TagCategoryUpdates,
-    AttributeCategoryUpdates
+    AttributeCategoryUpdates,
+    CategorizedItemUpdates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -115,6 +116,11 @@ export interface IApiClient {
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
     deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
+    
+    updateAttributes: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
+    updateTags: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
+    
+    // TODO: these update peacemeal where the ui has a single "save" operation...should be safe to delete
     createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
     editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AttributeCategoryUpdates) => Promise<AttributeCategory>>
     deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
@@ -346,6 +352,12 @@ type ApiRoutes = {
         deleteTag: () => {
             return '/deleteTag'
         },
+        updateAttributes: () => {
+            return '/updateAttributes'
+        },
+        updateTags: () => {
+            return '/updateTags'
+        },
     }
 
     client: ApiRoutes = {
@@ -493,6 +505,13 @@ type ApiRoutes = {
         },
         deleteTag: () => {
             return `${this.base}${this.namespaces.organization}${this.server.deleteTag()}`
+        },
+
+        updateAttributes: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.updateAttributes()}`
+        },
+        updateTags: () => {
+            return `${this.base}${this.namespaces.organization}${this.server.updateTags()}`
         },
 
         // request

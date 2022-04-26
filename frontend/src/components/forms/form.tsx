@@ -29,6 +29,8 @@ import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import SwitchInput from "./inputs/switchInput";
 import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
 import PermissionGroupListInput from "./inputs/permissionGroupList";
+import CategorizedItemForm from "./categorizedItemForm";
+import CategorizedItemListLabel from "./inputs/categorizedItemListLabel";
 
 const Stack = createStackNavigator();
 
@@ -64,6 +66,8 @@ export type CustomFormHomeScreenProps = {
     navigateToScreen: (screenName: string) => void
 }
 
+// TODO: move this config to it's own file for sanity sake but also so inputs can use the form internally
+// without causing a require cycle
 const FormViewMap: FormInputViewMap = {
     'TextArea': {
         screenComponent: TextAreaInput
@@ -101,6 +105,10 @@ const FormViewMap: FormInputViewMap = {
     'PermissionGroupList': {
         labelComponent: PermissionGroupListLabel,
         screenComponent: PermissionGroupListInput
+    }, 
+    'CategorizedItemList': {
+        screenComponent: CategorizedItemForm,
+        labelComponent: CategorizedItemListLabel
     }
 }
 

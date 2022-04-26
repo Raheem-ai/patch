@@ -90,6 +90,33 @@ export type AttributesMap = { [key: string]: string[] }
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
+export type Category = { 
+    name: string, 
+    items: {
+        id: string,
+        name: string 
+    }[]
+}
+
+export type CategorizedItem = {
+    categoryId: string,
+    itemId: string
+}
+
+export type CategorizedItemUpdates = {
+    categoryNameChanges: { id: string, name: string }[];
+    itemNameChanges: { categoryId: string, itemId: string, name: string }[];
+
+    deletedCategories: string[];
+    deletedItems: { [categoryId: string]: string[] };
+
+    newCategories: { [id: string]: Category }
+    
+    newItems: { 
+        [categoryId: string]: string[]
+    }
+}
+
 export type TagCategory = {
     id: string,
     name: string,

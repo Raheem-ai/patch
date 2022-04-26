@@ -4,7 +4,7 @@ import { MongooseDocument } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Enum, Format, Minimum, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissionsFromRoles, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates, DefaultRoleIds } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, resolvePermissionsFromRoles, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -55,6 +55,7 @@ export class OrganizationController implements APIController<
     | "createNewTag"
     | "editTag"
     | "deleteTag"
+    | "updateAttributes"
     > {
     @Inject(DBManager) db: DBManager;
 
@@ -702,6 +703,88 @@ export class OrganizationController implements APIController<
             });
 
             return org;
+        } else {
+            throw new Unauthorized('You do not have permission to remove Tags from this organization.');
+        }
+    }
+
+    @Post(API.server.updateAttributes())
+    @Authenticate()
+    async updateAttributes(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('updates') updates: CategorizedItemUpdates,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {            
+            return await this.db.transaction(async (session) => {
+                let org: OrganizationDoc, 
+                    editedAttributeCategories: AttributeCategory[], 
+                    editedAttributes: (AtLeast<Attribute, 'id'> & { categoryId: string })[],
+                    newAttributes: Attribute[],
+                    newAttributeCategories: AttributeCategory[];
+
+                const deletedItems: CategorizedItem[] = [];
+                const deletedCategories: string[] = [];
+
+                // Edit Categories
+                [org, editedAttributeCategories] = await this.db.editAttributeCategories(orgId, updates.categoryNameChanges);
+                
+                // Edit Items (Attributes)
+                [org, editedAttributes] = await this.db.editAttributes(org, updates.itemNameChanges.map((change) => {
+                    return {
+                        name: change.name,
+                        categoryId: change.categoryId,
+                        id: change.itemId
+                    }
+                }))
+
+                // Delete Items (Attributes)
+                for (const categoryId in updates.deletedItems) {
+                    // deleting a category deletes its items
+                    if (updates.deletedCategories.includes(categoryId)) {
+                        continue;
+                    }
+
+                    const itemsToDelete = updates.deletedItems[categoryId];
+
+                    for (const itemId of itemsToDelete) {
+                        org = await this.db.removeAttributeWithSession(org, categoryId, itemId, session)
+                        deletedItems.push({ categoryId, itemId })
+                    }
+                }
+
+                // Delete Categories
+                for (const categoryToDelete of updates.deletedCategories) {
+                    org = await this.db.removeAttributeCategoryWithSession(org, categoryToDelete, session)
+                    deletedCategories.push(categoryToDelete)
+                }
+
+                // add items
+                for (const categoryId in updates.newItems) {
+                    const items: MinAttribute[] = updates.newItems[categoryId].map((name) => {
+                        return { name }
+                    });
+
+                    [org, newAttributes] = await this.db.addAttributesToOrganization(org, categoryId, items)
+                }
+
+                // add categories
+                const minNewCategories: MinAttributeCategory[] = []
+                for (const categoryId in updates.newCategories) {
+                    const category = updates.newCategories[categoryId];
+
+                    minNewCategories.push({ 
+                        name: category.name,
+                        attributes: category.items
+                    })
+                }
+
+                [org, newAttributeCategories] = await this.db.addAttributeCategoriesToOrganization(org, minNewCategories)
+
+                //  TODO: send updates thorugh socket service!!!
+
+                return await org.save({ session })
+            })
         } else {
             throw new Unauthorized('You do not have permission to remove Tags from this organization.');
         }

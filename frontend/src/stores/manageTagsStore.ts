@@ -1,8 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { Category, IManageTagsStore, organizationStore } from './interfaces';
+import { IManageTagsStore, organizationStore } from './interfaces';
+import { Category } from '../../../common/models';
 
 // TODO: this and ManageAttributeStore both use the same code...should be a way to reuse...
+// TODO: update with changes from ManageAttributeStore
 @Store(IManageTagsStore)
 export default class ManageTagsStore implements IManageTagsStore {
  
@@ -22,7 +24,7 @@ export default class ManageTagsStore implements IManageTagsStore {
         makeAutoObservable(this)
     }
 
-    get definedAttributes() {
+    get definedCategories() {
         const map: Map<string, Category> = new Map();
 
         organizationStore().metadata.tagCategories.forEach(category => {
@@ -37,7 +39,7 @@ export default class ManageTagsStore implements IManageTagsStore {
 
     // Projection of the defined set of categories/items + diff of changes
     get categories() {
-        const map = new Map(this.definedAttributes.entries());
+        const map = new Map(this.definedCategories.entries());
 
         // add new categories
         for (const newCategoryId in this.newCategories) {

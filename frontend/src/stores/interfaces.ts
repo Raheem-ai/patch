@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -456,21 +456,13 @@ export interface IUpsertRoleStore extends Role, IBaseStore {
     nameIsValid: () => boolean
 }
 
-export type Category = { 
-    name: string, 
-    items: {
-        id: string,
-        name: string 
-    }[]
-}
-
-
 export namespace IEditCategorizedItemStore {
     export const id = Symbol('IEditCategorizedItemStore');
 }
 
-export interface IEditCategorizedItemStore {
+export interface IEditCategorizedItemStore extends IBaseStore {
     categories: Map<string, Category>
+    definedCategories: Map<string, Category>
 
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void
@@ -488,8 +480,8 @@ export namespace ISelectCategorizedItemStore {
 }
 
 export interface ISelectCategorizedItemStore {
-    categories: { [id: string]: Category }
-    selectedItems: { [categoryId: string]: [string] }
+    // categories: Map<string, Category>
+    selectedItems: Map<string, string[]>
 
     toggleItem: (categoryId: string, itemId: string) => void
 }

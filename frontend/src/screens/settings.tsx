@@ -109,12 +109,12 @@ const Settings = ({ navigation, route }: Props) => {
                         return (
                             <VisualArea>
                                 <EditCategorizedItemForm 
-                                    back={back} 
+                                    back={back}
+                                    onSaveToastLabel={'Successfully updated Attributes'} 
                                     editHeaderLabel='Edit attributes'
                                     addCategoryPlaceholderLabel='ADD ATTRIBUTE CATEGORY'
                                     addItemPlaceholderLabel={'Add attribute'}
-                                    store={manageAttributesStore()}
-                                    />
+                                    store={manageAttributesStore()}/>
                             </VisualArea>
                         )
                     }
@@ -134,11 +134,11 @@ const Settings = ({ navigation, route }: Props) => {
                             <VisualArea>
                                 <EditCategorizedItemForm 
                                     back={back} 
+                                    onSaveToastLabel={'Successfully updated Tags'} 
                                     editHeaderLabel='Edit tags'
                                     addCategoryPlaceholderLabel='ADD TAG CATEGORY'
                                     addItemPlaceholderLabel={'Add tag'}
-                                    store={manageTagsStore()}
-                                    />
+                                    store={manageTagsStore()} />
                             </VisualArea>
                         )
                     }

@@ -16,6 +16,7 @@ import { AtLeast } from "common";
 import moment from 'moment';
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
+import { BadRequest } from "@tsed/exceptions";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -450,6 +451,30 @@ export class DBManager {
         ];
     }
 
+    async addAttributeCategoriesToOrganization(orgId: string | OrganizationDoc, minCategories: MinAttributeCategory[]): Promise<[OrganizationDoc, AttributeCategory[]]> {
+        const org = await this.resolveOrganization(orgId)
+        const newCategories: AttributeCategory[] = [];
+
+        for (const minCategory of minCategories) {
+            if (this.checkForDupes(minCategory.name, org.attributeCategories)) {
+                throw new BadRequest(`Already an Attribute Category with the name "${minCategory.name}" in organization ${org.id}`);
+            }
+
+            const newAttributeCategory: AttributeCategory = {
+                id: uuid.v1(),
+                name: minCategory.name,
+                attributes: minCategory.attributes ? minCategory.attributes : []
+            }
+
+            org.attributeCategories.push(newAttributeCategory);
+            
+            newCategories.push(newAttributeCategory)
+        }
+
+        return [org, newCategories]
+    }
+
+    // TODO: delete
     async editAttributeCategory(orgId: string, categoryUpdates: AttributeCategoryUpdates): Promise<[OrganizationDoc, AttributeCategory]> {
         const org = await this.resolveOrganization(orgId);
 
@@ -472,6 +497,32 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryUpdates.id} in organization ${orgId}`;
     }
 
+    async editAttributeCategories(orgId: string | OrganizationDoc, categoryUpdates: AttributeCategoryUpdates[]): Promise<[OrganizationDoc, AttributeCategory[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const editedAttributeCategories = []
+
+        for (const categoryUpdate of categoryUpdates) {
+            if (categoryUpdate.name && this.checkForDupes(categoryUpdate.name, org.attributeCategories.filter(cat => cat.id != categoryUpdate.id))) {
+                throw new BadRequest(`Already an Attribute Category with the name "${categoryUpdate.name}" in organization ${org.id}`);
+            }
+
+            const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryUpdate.id);
+            
+            if (categoryIndex >= 0) {
+                for (const prop in categoryUpdate) {
+                    org.attributeCategories[categoryIndex][prop] = categoryUpdate[prop];
+                }
+                org.markModified('attributeCategories');
+                editedAttributeCategories.push(org.attributeCategories[categoryIndex])
+            } else {
+                throw new BadRequest(`Unknown Attribute Category ${categoryUpdate.id} in organization ${org.id}`);
+            }
+        }
+
+        return [org, editedAttributeCategories]
+    }
+
+    // TODO: delete
     async removeAttributeCategory(orgId: string, categoryId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -494,6 +545,27 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
+    async removeAttributeCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
+
+        if (categoryIndex >= 0) {
+            for (let i = org.attributeCategories[categoryIndex].attributes.length - 1; i >= 0; i--) {
+                // Removing the attribute from the attribute category itself.
+                // Removing the attribute from users.
+                await this.removeAttributeWithSession(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id, session);
+            }
+
+            // Remove the attribute category from the organization.
+            org.attributeCategories.splice(categoryIndex, 1);
+            org.markModified('attributeCategories');
+            return org
+        }
+
+        throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+    }
+
+    // TODO: delete
     async addAttributeToOrganization(orgId: string, categoryId: string, minAttribute: MinAttribute): Promise<[OrganizationDoc, Attribute]> {
         const org = await this.resolveOrganization(orgId);
         const newAttribute: Attribute = {
@@ -519,6 +591,35 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
+    async addAttributesToOrganization(orgId: string | OrganizationDoc, categoryId: string, minAttributes: MinAttribute[]): Promise<[OrganizationDoc, Attribute[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const newAttributes: Attribute[] = [];
+        
+        for (const minAttribute of minAttributes) {
+            const newAttribute: Attribute = {
+                id: uuid.v1(),
+                name: minAttribute.name
+            }
+
+            const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
+
+            if (categoryIndex >= 0) {
+                if (this.checkForDupes(newAttribute.name, org.attributeCategories[categoryIndex].attributes)) {
+                    throw new BadRequest(`Already an Attribute with the name "${newAttribute.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${org.id}`);
+                }
+
+                org.attributeCategories[categoryIndex].attributes.push(newAttribute);
+                org.markModified('attributeCategories');
+                newAttributes.push(newAttribute)
+            } else {
+                throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+            }
+        }
+
+        return [org, newAttributes]
+    }
+
+    // TODO: delete
     async editAttribute(orgId: string, categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>): Promise<[OrganizationDoc, Attribute]> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -545,9 +646,44 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
+    async editAttributes(orgId: string | OrganizationDoc, attributeUpdates: (AtLeast<Attribute, 'id'> & { categoryId: string })[]): Promise<[OrganizationDoc, (Attribute & { categoryId: string })[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const editedAttributes: (Attribute & { categoryId: string })[] = []   
+
+        for (const update of attributeUpdates) {
+            const categoryId = update.categoryId;
+            const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
+            
+            if (categoryIndex >= 0) {
+                if (update.name && this.checkForDupes(update.name, org.attributeCategories[categoryIndex].attributes.filter(attr => attr.id != update.id))) {
+                    throw new BadRequest(`Already an Attribute with the name "${update.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${org.id}`);
+                }
+
+                const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == update.id);
+                if (attributeIndex >= 0) {
+                    for (const prop in update) {
+                        org.attributeCategories[categoryIndex].attributes[attributeIndex][prop] = update[prop];
+                    }
+                    editedAttributes.push({
+                        categoryId,
+                        ...org.attributeCategories[categoryIndex].attributes[attributeIndex]
+                    })
+                    org.markModified('attributeCategories');
+                } else {
+                    throw new BadRequest(`Unknown Attribute ${update.id} in Attribute Category ${categoryId} in organization ${org.id}`);
+                }
+            } else {
+                throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+            }
+        }
+
+        return [org, editedAttributes]
+    }
+
     // TODO: Should we just take a list of attributeIds and not worry about categoryId since we have to look through
     // all the categories anyway to find the index (given ID)?
     // TODO: Use API for removing attribute from user.
+    // TODO: delete !!!!!
     async removeAttribute(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session?: ClientSession): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -598,6 +734,47 @@ export class DBManager {
         }
 
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
+    }
+
+    async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
+        if (categoryIndex >= 0) {
+            const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeId);
+
+            // Remove the Attribute from the Attribute Category list.
+            if (attributeIndex >= 0) {
+                org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
+                org.markModified('attributeCategories');
+
+                // Create a map from user ID => attribute index (in the list of a user's attributes)
+                // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
+                const usersToSave: Map<UserDoc, number> = new Map();
+                (org.members as UserModel[]).forEach(member => {
+                    if (categoryId in member.organizations[org.id].attributes) {
+                        let attrIndex = member.organizations[org.id].attributes[categoryId].findIndex(attrId => attrId == attributeId);
+                        if (attrIndex >= 0) {
+                            usersToSave.set(member as UserDoc, attrIndex);
+                        }
+                    }
+                });
+
+                // Retrieve the users from the DB by ID, and update their attributeIds list.
+                const userIds = Array.from(usersToSave.keys());
+
+                for (const [user, attrIndex] of usersToSave) {
+                    user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
+                    user.markModified('organizations');
+                    await user.save({ session });
+                }
+
+                return org;
+            }
+
+            throw new BadRequest(`Unknown Attribute ${attributeId} in Attribute Category ${categoryId} in organization ${org.id}`);
+        }
+
+        throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
     }
 
     async addAttributesToUser(orgId: string, userId: string | UserDoc, attributes: AttributesMap) {

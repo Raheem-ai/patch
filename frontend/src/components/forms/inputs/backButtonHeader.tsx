@@ -45,7 +45,7 @@ const BackButtonHeader = observer(({
                     icon={labelDecoration.icon} 
                     color={'#666'}
                     size={20} 
-                    style={{ margin: 0, padding: 0, width: 20 }} />
+                    style={{ margin: 0, padding: 0, width: 20, marginLeft: 12 }} />
                 : null
             }
         </View>

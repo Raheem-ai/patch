@@ -1,16 +1,17 @@
 import React from "react";
-import { FormInputConfig, NavigationFormInputConfig } from "../components/forms/types";
+import { FormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig } from "../components/forms/types";
 import Form, { FormProps } from '../components/forms/form';
 import { ScreenProps } from "../types";
 import { Pressable, View } from "react-native";
 import { observable } from "mobx";
-import { AddressableLocation, RecurringDateTimeRange } from "../../../common/models";
+import { AddressableLocation, CategorizedItem, PatchPermissions, RecurringDateTimeRange } from "../../../common/models";
 import { dateToDateString, dateToDayOfWeekString } from "../../../common/utils";
 import RecurringDateTimeRangeInputConfig from "../components/forms/inputs/compound/recurringDateTimeRange";
 import moment from 'moment'
 import { exp } from "react-native-reanimated";
 import { Text } from "react-native-paper";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
+import { manageAttributesStore, manageTagsStore } from "../stores/interfaces";
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -119,7 +120,38 @@ const lib: Library = [
                 }
             ]
         ]
-    }
+    },
+    {
+        name: 'Categorized Item List',
+        description: 'basis for attributes/tags selection/management',
+        state: observable.box<CategorizedItem[]>([]),
+        icon: 'tag',
+        inputs: (state) => [{
+            onSave: (items) => {
+                state.set(items)
+            },
+            val: () => {
+                return state.get();
+            },
+            isValid: () => {
+                return true
+            },
+            icon: 'tag-heart',
+            name: 'attributes',
+            placeholderLabel: () => 'Select some attributes',
+            headerLabel: () => 'Attributes',
+            type: 'CategorizedItemList',
+            props: {
+                // categories: () => manageAttributesStore().categories,
+                editStore: manageAttributesStore(),
+                editHeaderLabel: 'Edit attributes',
+                addCategoryPlaceholderLabel: 'Add attribute category',
+                addItemPlaceholderLabel: 'Add attribute',
+                editPermissions: [PatchPermissions.AttributeAdmin],
+                onSaveToastLabel: 'Successfully updated Attributes' 
+            }
+        } as ScreenFormInputConfig<'CategorizedItemList'>]
+    },
 ]
 
 
