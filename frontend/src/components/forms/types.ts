@@ -88,7 +88,6 @@ export type ScreenFormInputOptions = {
     },
     'CategorizedItemList': {
         props: {
-            // categories: () => Map<string, Category>
             editHeaderLabel: string,
             addCategoryPlaceholderLabel: string,
             addItemPlaceholderLabel: string,

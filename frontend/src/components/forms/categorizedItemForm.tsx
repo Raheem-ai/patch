@@ -1,9 +1,9 @@
 import { observer } from "mobx-react"
-import React, { useState } from "react"
-import { GestureResponderEvent, Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
+import React, { useRef, useState } from "react"
+import { GestureResponderEvent, Keyboard, Pressable, StyleSheet, TextStyle, View, TextInput as RNTextInput } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
-import { Category, DefaultRoleIds, PatchPermissions } from "../../../../common/models"
+import { CategorizedItem, Category, DefaultRoleIds, PatchPermissions } from "../../../../common/models"
 import { resolveErrorMessage } from "../../errors"
 import { alertStore, IEditCategorizedItemStore, organizationStore, ISelectCategorizedItemStore, upsertRoleStore, userStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
@@ -13,6 +13,11 @@ import { VisualArea } from '../helpers/visualArea';
 import TextInput from "./inputs/textInput"
 import { unwrap } from "../../../../common/utils"
 import { iHaveAllPermissions, userHasAllPermissions } from "../../utils"
+import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view"
+import useFirstRenderCheck from "../../hooks/useFirstRenderCheck"
+import Tags from "../tags"
+
+const WrappedScrollView = wrapScrollView(ScrollView)
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -46,7 +51,8 @@ const CategorizedItemForm = ({
         navigateToScreen
     }: CustomFormHomeScreenProps) => {
 
-        const [selectedItems, setSelectedItems] = useState(config.val())
+        const [ selectedItems, setSelectedItems ] = useState(config.val())
+        const [ searchText, setSearchText ] = useState('');
 
         const iCanEdit = iHaveAllPermissions(config.props.editPermissions)
 
@@ -58,8 +64,10 @@ const CategorizedItemForm = ({
                 },
                 outline: true
             },
+            cancel: {
+                handler: back
+            },
             label: unwrap(config.headerLabel),
-            bottomBorder: true,
             labelDecoration: iCanEdit 
                 ? {
                     handler: () => {
@@ -83,17 +91,77 @@ const CategorizedItemForm = ({
             }
         }
 
-        return (
-            <>
-                <BackButtonHeader {...headerProps}/>
-                
-                {/* search area */}
-                
-                {/* categories + items (selection) */}
+        const itemInfo = selectedItems.map((targetItem, idx) => {
+            const category = config.props.editStore.definedCategories.get(targetItem.categoryId)
+            const name = category.items.find(item => item.id == targetItem.itemId)?.name;
+        
+            if (name) {
+                return [name, idx] as [string, number]
+            } else {
+                null
+            }
+        }).filter(x => !!x)
+
+
+        const onItemDelted = (filteredIdx: number) => {
+            const actualIndex = itemInfo[filteredIdx][1]
+            const itemToUnselect = selectedItems[actualIndex];
+            toggleItem(itemToUnselect.categoryId, itemToUnselect.itemId)
+        }
+
+        const searchItemsInputConfig: InlineFormInputConfig<'TextInput'> = {
+            val: () =>  searchText,
+            onChange: (val) => setSearchText(val),
+            isValid: () => !!searchText,
+            type: 'TextInput',
+            name: `search`
+        }
+
+        const searchListArea = () => {
+
+            const fontSize = 16;
+            const searchResults: [string, CategorizedItem][] = [];
+
+            Array.from(config.props.editStore.definedCategories.entries()).forEach(([categoryId, category]) => {
+                category.items.forEach(item => {
+                    if (item.name.startsWith(searchText) 
+                        // only show unselected results
+                        && (selectedItems.findIndex(i => i.categoryId == categoryId && i.itemId == item.id)) == -1) 
+                    {
+                        searchResults.push([item.name, { categoryId, itemId: item.id } ]);
+                    }
+                })
+            })
+
+            const onResultPressed = (itemHandle: CategorizedItem) => () => {
+                toggleItem(itemHandle.categoryId, itemHandle.itemId);
+                setSearchText('');
+                Keyboard.dismiss()
+            }
+
+            return (
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingVertical: (styles.itemContainer.height - fontSize) / 2 }}>
+                        {
+                            searchResults.map(([itemName, itemHandle]) => {
+                                return (
+                                    <Pressable onPress={onResultPressed(itemHandle)} style={[styles.itemContainer]}> 
+                                        <Text style={{ fontSize, color: '#7F7C7F'}}>{itemName}</Text>
+                                    </Pressable>
+                                )
+                            })
+                        }
+                    </View>
+                </ScrollView>
+            )
+        }
+
+        const selectedListArea = () => {
+            return (
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ }}>
                     {
-                        Array.from(config.props.editStore.definedCategories.entries()).map(([categoryId, category]) => {
+                        Array.from(config.props.editStore.definedCategories.entries()).reverse().map(([categoryId, category]) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
@@ -146,6 +214,45 @@ const CategorizedItemForm = ({
                     }
                     </View>
                 </ScrollView>
+            )
+        }
+
+        const searchPillArea = () => {
+            return (
+                <View style={{ paddingHorizontal: 20, paddingVertical: (20 - 6) }}>
+                    <Tags 
+                        verticalMargin={6} 
+                        horizontalTagMargin={6}
+                        tags={itemInfo.map(i => i[0])}
+                        onTagDeleted={onItemDelted}/>
+                </View>
+            )
+        }
+
+        const searchBox = () => {
+
+            return (
+                <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20 }}>
+                    <TextInput style={{paddingHorizontal: 40, fontSize: 16 }} config={searchItemsInputConfig}/>
+                </View>
+            )
+        }
+
+        return (
+            <>
+                <BackButtonHeader {...headerProps}/>
+                
+                {/* search area */}
+                { searchBox() }
+
+                {/* categories + items (selection) */}
+                { searchText.length
+                    ? searchListArea()
+                    : <>
+                        { searchPillArea() }
+                        { selectedListArea() }
+                    </>
+                }
             </>
         )
     })
@@ -177,6 +284,8 @@ export const EditCategorizedItemForm = observer(({
     addItemPlaceholderLabel
 }: EditScreenViewProps) => {
     const [newCategoryName, setNewCategoryName] = useState('')
+    const checkIfFirstRender = useFirstRenderCheck();
+    const isFirstRender = checkIfFirstRender();
 
     const headerProps: BackButtonHeaderProps = {
         save: {
@@ -215,8 +324,11 @@ export const EditCategorizedItemForm = observer(({
             store.addCategory(newCategoryName)
             setNewCategoryName('');
             Keyboard.dismiss();
-            // TODO: need to scroll to added category
         }
+    }
+
+    const onKeyboardSubmit = () => {
+        addCategory()
     }
 
     const itemIcon = (categoryId, itemId) => {
@@ -252,13 +364,29 @@ export const EditCategorizedItemForm = observer(({
         )
     }
 
+    const categoryLabel = (props: { id: string, name: string }) => {
+        const editCategoryInputConfig: InlineFormInputConfig<'TextInput'> = {
+            val: () =>  props.name,
+            onChange: (val) => store.editCategory(props.id, val),
+            isValid: () => !!props.name,
+            type: 'TextInput',
+            name: `${props.id}-editCategory`
+        }
+
+        return (
+            <TextInput 
+                style={{ fontSize: 18, fontWeight: 'bold' }} 
+                config={editCategoryInputConfig}/>
+        )
+    }
+
     return (
         <>
             <BackButtonHeader {...headerProps}/>
             
             {/* add category */}
             <View style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60 }}>
-                <TextInput config={addCategoryInputConfig} />
+                <TextInput config={addCategoryInputConfig} onSubmitEditing={onKeyboardSubmit} disableAutoCorrect/>
                 <View style={{ margin: 20 }}>
                     <IconButton
                         onPress={addCategory}
@@ -271,19 +399,27 @@ export const EditCategorizedItemForm = observer(({
             </View>
             
             {/* categories + items (add/remove) */}
-            <ScrollView style={{  }} showsVerticalScrollIndicator={false}>
+            <WrappedScrollView style={{  }} showsVerticalScrollIndicator={false}>
                 {
-                    Array.from(store.categories.entries()).map(([categoryId, category]) => {
+                    // reverse so the newest one is always at the top
+                    Array.from(store.categories.entries()).reverse().map(([categoryId, category]) => {
                         const removeCategory = {
                             icon: 'delete',
                             handler: store.removeCategory
                         }
 
-                        const categoryFooter = () => 
-                            <AddItemFooter 
-                                categoryId={categoryId} 
-                                addItemToCategory={store.addItemToCategory}
-                                addItemPlaceholderLabel={addItemPlaceholderLabel}/>;
+                        const categoryFooter = () => {
+                            return (
+                                <AddItemFooter
+                                    // only trigger autofocus behavior for create Category -> create first Item
+                                    // flow when a new category is created vs when there are categories with no items
+                                    // on an initial render
+                                    noItems={isFirstRender ? false : !category.items.length}
+                                    categoryId={categoryId} 
+                                    addItemToCategory={store.addItemToCategory}
+                                    addItemPlaceholderLabel={addItemPlaceholderLabel}/>
+                            )
+                        }
                    
                         return (
                             <CategoryRow 
@@ -293,11 +429,12 @@ export const EditCategorizedItemForm = observer(({
                                 id={categoryId}
                                 categoryAction={removeCategory}
                                 categoryFooter={categoryFooter}
+                                categoryLabel={categoryLabel}
                                 itemRow={editItemRow(categoryId)}/>
                         )
                     })
                 }
-            </ScrollView>
+            </WrappedScrollView>
         </>
     )
 })
@@ -305,14 +442,29 @@ export const EditCategorizedItemForm = observer(({
 const AddItemFooter = ({
     categoryId, 
     addItemToCategory,
-    addItemPlaceholderLabel
+    addItemPlaceholderLabel,
+    noItems
 }: { 
     categoryId: string, 
     addItemToCategory: IEditCategorizedItemStore['addItemToCategory'],
-    addItemPlaceholderLabel: string
+    addItemPlaceholderLabel: string,
+    noItems: boolean
 }) => {
     const [newItemText, setNewItemText] = useState('');
+    const me = useRef<View>();
+    const itemInputRef = useRef<RNTextInput>();
+    const scrollIntoView = useScrollIntoView();
+    const checkIfFirstRender = useFirstRenderCheck();
+    const isFirstRender = checkIfFirstRender();
 
+    // new category was just created in the ui
+    if (isFirstRender && noItems) {
+        setTimeout(() => {
+            // focus on the text input
+            itemInputRef.current?.focus()
+        })
+    }
+    
     const addItemInputConfig: InlineFormInputConfig<'TextInput'> = {
         val: () =>  newItemText,
         onChange: (val) => setNewItemText(val),
@@ -325,13 +477,21 @@ const AddItemFooter = ({
     const addItem = () => {
         if (addItemInputConfig.isValid()) {
             addItemToCategory(categoryId, newItemText)
-            setNewItemText('');
+            
+            setTimeout(() => {
+                setNewItemText('');
+                scrollIntoView(me.current)
+            })
         }
     }
 
+    const onKeyboardSubmit = () => {
+        addItem()
+    }
+
     return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60 }}>
-            <TextInput config={addItemInputConfig} />
+        <View ref={me} style={{ flexDirection: 'row', alignItems: 'center', height: styles.itemContainer.height, paddingLeft: 60 }}>
+            <TextInput nativeRef={itemInputRef} config={addItemInputConfig} onSubmitEditing={onKeyboardSubmit} dontBlurOnSubmit/>
             <Pressable onPress={addItem} style={{ margin: 20 }}>
                 <IconButton
                     icon={'plus'} 
@@ -362,6 +522,7 @@ type CategoryRowProps = {
     itemIcon?: (categoryId: string, itemId: string) => JSX.Element,
     itemRowPressed?: (itemId: string) => void,
     itemRow?: (props: { id: string, name: string }) => JSX.Element
+    categoryLabel?: (props: { id: string, name: string }) => JSX.Element
 }
 
 const CategoryRow = observer(({
@@ -374,7 +535,8 @@ const CategoryRow = observer(({
     itemLabelStyle,
     itemIcon,
     itemRowPressed,
-    itemRow
+    itemRow,
+    categoryLabel
 }: CategoryRowProps) => {
     const [isOpen, setIsOpen] = useState(true);
 
@@ -412,7 +574,10 @@ const CategoryRow = observer(({
                         />
                 </View>
                 <View style={styles.categoryLabelContainer}>
-                    <Text style={[{ fontSize: 16, fontWeight: 'bold' }, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name.toUpperCase()}</Text>
+                    { categoryLabel
+                        ? categoryLabel({ id, name })
+                        : <Text style={[{ fontSize: 16, fontWeight: 'bold' }, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name.toUpperCase()}</Text>
+                    }   
                 </View>
                 {
                     categoryAction 
@@ -459,6 +624,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingLeft: 60,
         paddingRight: 20,
-        height: 60
+        height: 48
     }
 })

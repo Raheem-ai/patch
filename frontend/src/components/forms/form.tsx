@@ -31,6 +31,7 @@ import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
 import PermissionGroupListInput from "./inputs/permissionGroupList";
 import CategorizedItemForm from "./categorizedItemForm";
 import CategorizedItemListLabel from "./inputs/categorizedItemListLabel";
+import { FormViewMap } from "./config";
 
 const Stack = createStackNavigator();
 
@@ -64,52 +65,6 @@ export type CustomFormHomeScreenProps = {
     inputs: () => Grouped<StandAloneFormInputConfig>[],
     isValid: () => boolean,
     navigateToScreen: (screenName: string) => void
-}
-
-// TODO: move this config to it's own file for sanity sake but also so inputs can use the form internally
-// without causing a require cycle
-const FormViewMap: FormInputViewMap = {
-    'TextArea': {
-        screenComponent: TextAreaInput
-    },
-    'TextInput': {
-        inlineComponent: TextInput
-    }, 
-    'List': {
-        screenComponent: ListInput
-    },
-    'TagList': {
-        screenComponent: ListInput,
-        labelComponent: TagListLabel
-    },
-    'NestedList': {
-        screenComponent: NestedListInput
-    },
-    'NestedTagList': {
-        screenComponent: NestedListInput,
-        labelComponent: TagListLabel
-    },
-    'Map': {
-        screenComponent: MapInput
-    },
-    'DateTimeRange': {
-        inlineComponent: DateTimeRangeInput
-    },
-    'RecurringTimePeriod': {
-        screenComponent: RecurringTimePeriodInput,
-        labelComponent: RecurringTimePeriodLabel
-    },
-    'Switch': {
-        inlineComponent: SwitchInput
-    },
-    'PermissionGroupList': {
-        labelComponent: PermissionGroupListLabel,
-        screenComponent: PermissionGroupListInput
-    }, 
-    'CategorizedItemList': {
-        screenComponent: CategorizedItemForm,
-        labelComponent: CategorizedItemListLabel
-    }
 }
 
 const WrappedScrollView = wrapScrollView(ScrollView)

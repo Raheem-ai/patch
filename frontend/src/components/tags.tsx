@@ -11,6 +11,7 @@ type Props = {
     tagContainerStyle?: StyleProp<ViewStyle>,
     tagTextStyle?: StyleProp<TextStyle>,
     centered?: boolean
+    horizontalTagMargin?: number
 }
 
 export default function Tags(props: Props) {
@@ -36,7 +37,10 @@ export default function Tags(props: Props) {
                                         : styles.light.backgroundColor 
                                 },
                                 { marginBottom: props.verticalMargin },
-                                props.tagContainerStyle
+                                props.tagContainerStyle,
+                                props.horizontalTagMargin
+                                    ? { marginRight: props.horizontalTagMargin }
+                                    : null
                             ]}
                             key={t}
                         >

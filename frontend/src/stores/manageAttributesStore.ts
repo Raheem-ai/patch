@@ -49,7 +49,6 @@ export default class ManageAttributesStore implements IManageAttributesStore {
             map.set(category.id, {
                 name: category.name,
                 items: category.attributes
-                // items: JSON.parse(JSON.stringify(category.attributes))
             })
         })
 
@@ -130,8 +129,12 @@ export default class ManageAttributesStore implements IManageAttributesStore {
         })
     }
 
-    // TODO: test...how does this show up in UI?
     editCategory = (categoryId: string, categoryName: string) => {
+        if (!categoryName.length) {
+            // don't allow fully deleting a name to be a valid state
+            return;
+        }
+        
         if (this.newCategories[categoryId]) {
             this.newCategories = Object.assign({}, this.newCategories, {
                 [categoryId]: {
@@ -196,6 +199,12 @@ export default class ManageAttributesStore implements IManageAttributesStore {
     }
 
     editItem = (categoryId: string, itemId: string, itemName: string) => {
+        if (!itemName.length) {
+            // don't allow fully deleting a name to be a valid state
+            return
+        }
+
+        // don't mark changes to new items as edits
         if (this.newItems.get(categoryId)?.[itemId]) {
             const newItems = this.newItems.get(categoryId);
             newItems[itemId] = itemName;
@@ -261,8 +270,6 @@ export default class ManageAttributesStore implements IManageAttributesStore {
             newCategories: this.newCategories,
             newItems
         }
-
-        console.log(updates)
         
         const updatedOrg = await api().updateAttributes(this.orgContext(), updates);
         organizationStore().updateOrgData(updatedOrg);
@@ -280,6 +287,4 @@ export default class ManageAttributesStore implements IManageAttributesStore {
         this.newCategories = {}
         this.newItems.clear()
     }
-
-    
 }
