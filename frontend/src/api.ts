@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, AttributeHandle } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, CategorizedItemUpdates } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -324,6 +324,16 @@ export class APIClient implements IAPIService {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
+    
+    async updateAttributes(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.updateAttributes()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            updates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
 
     async createNewAttributeCategory(ctx: OrgContext, category: MinAttributeCategory): Promise<AttributeCategory> {
         const url = `${apiHost}${API.client.createNewAttributeCategory()}`;
@@ -383,6 +393,16 @@ export class APIClient implements IAPIService {
         return (await this.tryPost<OrganizationMetadata>(url, {
             categoryId,
             attributeId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async updateTags(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.updateTags()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            updates
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data

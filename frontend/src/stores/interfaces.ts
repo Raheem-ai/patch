@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -456,6 +456,52 @@ export interface IUpsertRoleStore extends Role, IBaseStore {
     nameIsValid: () => boolean
 }
 
+export namespace IEditCategorizedItemStore {
+    export const id = Symbol('IEditCategorizedItemStore');
+}
+
+export interface IEditCategorizedItemStore extends IBaseStore {
+    categories: Map<string, Category>
+    definedCategories: Map<string, Category>
+
+    addCategory: (categoryName: string) => void
+    editCategory: (categoryId: string, categoryName: string) => void
+    removeCategory: (categoryId: string) => void
+
+    addItemToCategory: (categoryId: string, itemName: string) => void
+    editItem: (categoryId: string, itemId: string, itemName: string) => void
+    removeItemFromCategory: (categoryId: string, itemId: string) => void
+
+    save: () => Promise<void>
+}
+
+export namespace ISelectCategorizedItemStore {
+    export const id = Symbol('ISelectCategorizedItemStore');
+}
+
+export interface ISelectCategorizedItemStore {
+    // categories: Map<string, Category>
+    selectedItems: Map<string, string[]>
+
+    toggleItem: (categoryId: string, itemId: string) => void
+}
+
+export namespace IManageTagsStore {
+    export const id = Symbol('IManageTagsStore');
+}
+
+export namespace IManageAttributesStore {
+    export const id = Symbol('IManageAttributesStore');
+}
+
+interface CategorizedItemStore extends IBaseStore { 
+    editPermissions: PatchPermissions[]
+    editStore: IEditCategorizedItemStore 
+};
+
+export interface IManageTagsStore extends CategorizedItemStore {};
+export interface IManageAttributesStore extends CategorizedItemStore {};
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -477,6 +523,8 @@ export const alertStore = () => getStore<IAlertStore>(IAlertStore);
 export const socketStore = () => getStore<ISocketStore>(ISocketStore);
 export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
 export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore);
+export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore);
+export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
 
 export const AllStores = [
     IUserStore,
@@ -499,5 +547,7 @@ export const AllStores = [
     IUpdateStore,
     IOrganizationStore,
     IEditOrganizationStore,
-    IUpsertRoleStore
+    IUpsertRoleStore,
+    IManageAttributesStore,
+    IManageTagsStore
 ]

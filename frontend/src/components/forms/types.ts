@@ -1,6 +1,7 @@
 import { ComponentType } from "react"
 import { StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, DateTimeRange, PatchPermissionGroups, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
 export type Grouped<T> = T | T[];
 
@@ -85,6 +86,19 @@ export type ScreenFormInputOptions = {
         },
         type: PatchPermissionGroups[]
     },
+    'CategorizedItemList': {
+        props: {
+            editHeaderLabel: string,
+            addCategoryPlaceholderLabel: string,
+            addItemPlaceholderLabel: string,
+            onSaveToastLabel: string,
+            editStore: IEditCategorizedItemStore,
+            editPermissions: PatchPermissions[]
+            onItemDeleted?: (idx: number, val: any) => void
+            dark?: boolean
+        }, 
+        type: CategorizedItem[]
+    }
 }
 
 export type InlineFormInputOptions = { 
@@ -185,6 +199,11 @@ export type CompoundFormInputFactoryParams<Type extends CompoundFormInputType = 
 
 // instead of exporting an input component we export a factory with a similar config interface
 export type CompoundFormInputFactory<Type extends CompoundFormInputType> = (params: CompoundFormInputFactoryParams<Type>) => CompoundFormInputConfig<Type>;
+
+export type AdHocScreenConfig = {
+    name: string,
+    screen: (props: { back: () => void }) => JSX.Element
+}
 
 type BaseFormInputConfig = {
     name: string

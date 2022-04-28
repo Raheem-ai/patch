@@ -123,7 +123,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         const bottomUIOffset = activeRequestOffset + minimizedHandleOffset + (isAndroid ? BOTTOM_BAR_HEIGHT : 0);
 
-        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset;
+        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset - nativeEventStore().keyboardHeight;
 
         const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - nativeEventStore().keyboardHeight
 

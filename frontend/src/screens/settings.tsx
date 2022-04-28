@@ -4,12 +4,13 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import { PatchPermissions } from "../../../common/models";
+import { EditCategorizedItemForm } from "../components/forms/categorizedItemForm";
 import Form, { CustomFormHomeScreenProps } from "../components/forms/form";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import MangeRolesForm from "../components/forms/manageRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
-import { organizationStore } from "../stores/interfaces";
+import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
 
@@ -54,18 +55,11 @@ const Settings = ({ navigation, route }: Props) => {
 
     const organizationSettings = () => {
 
-        if (!iHaveAnyPermissions([
-            PatchPermissions.EditOrgSettings, 
-            PatchPermissions.RoleAdmin,
-            PatchPermissions.TagAdmin,
-            PatchPermissions.AttributeAdmin
-        ])) {
-            return []
-        }
+        const canEditOrgSettings = iHaveAllPermissions([PatchPermissions.EditOrgSettings])
 
         const inputs = [
             // TODO: plumb down to organization
-            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+            canEditOrgSettings
                 ? {
                     name: 'orgName',
                     type: 'TextInput',
@@ -77,7 +71,7 @@ const Settings = ({ navigation, route }: Props) => {
                 } as InlineFormInputConfig<'TextInput'>
                 : null,
             // TODO: plumb down to organization
-            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+            canEditOrgSettings
                 ? {
                     name: 'requestPrefix',
                     type: 'TextInput',
@@ -102,7 +96,7 @@ const Settings = ({ navigation, route }: Props) => {
                     }
                 } as NavigationFormInputConfig
                 : null,
-            iHaveAllPermissions([PatchPermissions.AttributeAdmin]) 
+            iHaveAllPermissions(manageAttributesStore().editPermissions) 
                 ? {
                     name: 'manageAttributes',
                     label: ({ expand }) => {
@@ -112,11 +106,21 @@ const Settings = ({ navigation, route }: Props) => {
                                     description={'Describe team members'} />
                     },
                     screen: ({ back }) => {
-                        return null
+                        return (
+                            <VisualArea>
+                                <EditCategorizedItemForm 
+                                    back={back}
+                                    onSaveToastLabel={'Successfully updated Attributes'} 
+                                    editHeaderLabel='Edit attributes'
+                                    addCategoryPlaceholderLabel='ADD ATTRIBUTE CATEGORY'
+                                    addItemPlaceholderLabel={'Add attribute'}
+                                    store={manageAttributesStore().editStore}/>
+                            </VisualArea>
+                        )
                     }
                 } as NavigationFormInputConfig
                 : null,
-            iHaveAllPermissions([PatchPermissions.TagAdmin]) 
+            iHaveAllPermissions(manageTagsStore().editPermissions) 
                 ? {
                     name: 'manageTags',
                     label: ({ expand }) => {
@@ -126,12 +130,22 @@ const Settings = ({ navigation, route }: Props) => {
                                     description={'Add context to requests'} />
                     },
                     screen: ({ back }) => {
-                        return null
+                        return (
+                            <VisualArea>
+                                <EditCategorizedItemForm 
+                                    back={back} 
+                                    onSaveToastLabel={'Successfully updated Tags'} 
+                                    editHeaderLabel='Edit tags'
+                                    addCategoryPlaceholderLabel='ADD TAG CATEGORY'
+                                    addItemPlaceholderLabel={'Add tag'}
+                                    store={manageTagsStore().editStore} />
+                            </VisualArea>
+                        )
                     }
                 } as NavigationFormInputConfig
                 : null,
             // TODO: plumb down to organization
-            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+            canEditOrgSettings
                 ? {
                     onSave: (text) => {
                         
@@ -150,7 +164,7 @@ const Settings = ({ navigation, route }: Props) => {
                 } as ScreenFormInputConfig<'TextArea'>
                 : null,
             
-            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+            canEditOrgSettings
                 ? {
                     name: 'createRequestChats',
                     type: 'Switch',
@@ -163,7 +177,7 @@ const Settings = ({ navigation, route }: Props) => {
                     }
                 } as InlineFormInputConfig<'Switch'>
                 :  null,
-            iHaveAllPermissions([PatchPermissions.EditOrgSettings])
+            canEditOrgSettings
                 ? {
                     name: 'createShiftChats',
                     type: 'Switch',

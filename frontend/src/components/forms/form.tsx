@@ -8,7 +8,7 @@ import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteRe
 import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped } from "./types";
+import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
 import TextAreaInput from "./inputs/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
 import TextInput from "./inputs/textInput";
@@ -29,6 +29,9 @@ import { NavigationContainer, NavigationState } from "@react-navigation/native";
 import SwitchInput from "./inputs/switchInput";
 import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
 import PermissionGroupListInput from "./inputs/permissionGroupList";
+import CategorizedItemForm from "./categorizedItemForm";
+import CategorizedItemListLabel from "./inputs/categorizedItemListLabel";
+import { FormViewMap } from "./config";
 
 const Stack = createStackNavigator();
 
@@ -41,10 +44,18 @@ export type FormProps = {
         label: string,
         handler: () => Promise<void>
     },
-
-    // meant to be used together but maybe there is a case where they wouldn't be???
-    // navigateToScreen?: (id: string) => void
     homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
+    adHocScreens?: AdHocScreenConfig[]
+
+    /**
+     * TODO:
+     * 
+     * screens?: {
+     *   name: string,
+     *   screen: ({ back }) => JSX.Element
+     * }[]
+     * 
+     *  */ 
 }
 
 export type CustomFormHomeScreenProps = {
@@ -52,47 +63,8 @@ export type CustomFormHomeScreenProps = {
     onContainerPress: () => void,
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
     inputs: () => Grouped<StandAloneFormInputConfig>[],
-    isValid: () => boolean
-}
-
-const FormViewMap: FormInputViewMap = {
-    'TextArea': {
-        screenComponent: TextAreaInput
-    },
-    'TextInput': {
-        inlineComponent: TextInput
-    }, 
-    'List': {
-        screenComponent: ListInput
-    },
-    'TagList': {
-        screenComponent: ListInput,
-        labelComponent: TagListLabel
-    },
-    'NestedList': {
-        screenComponent: NestedListInput
-    },
-    'NestedTagList': {
-        screenComponent: NestedListInput,
-        labelComponent: TagListLabel
-    },
-    'Map': {
-        screenComponent: MapInput
-    },
-    'DateTimeRange': {
-        inlineComponent: DateTimeRangeInput
-    },
-    'RecurringTimePeriod': {
-        screenComponent: RecurringTimePeriodInput,
-        labelComponent: RecurringTimePeriodLabel
-    },
-    'Switch': {
-        inlineComponent: SwitchInput
-    },
-    'PermissionGroupList': {
-        labelComponent: PermissionGroupListLabel,
-        screenComponent: PermissionGroupListInput
-    }
+    isValid: () => boolean,
+    navigateToScreen: (screenName: string) => void
 }
 
 const WrappedScrollView = wrapScrollView(ScrollView)
@@ -350,7 +322,8 @@ export default class Form extends React.Component<FormProps> {
                 onContainerPress: onPress,
                 renderInputs,
                 inputs: () => this.groupedInputs.get(),
-                isValid: () => this.isValid.get()
+                isValid: () => this.isValid.get(),
+                navigateToScreen
             };
 
             return <CustomHomeScreen {...customProps} />
@@ -391,6 +364,15 @@ export default class Form extends React.Component<FormProps> {
                     </Pressable>
                 </WrappedScrollView>
         )
+    }
+
+    adHocScreen = (config: AdHocScreenConfig) => ({ navigation }: StackScreenProps<any>) => {
+        const back = () => {
+            navigation.goBack()
+            this.props.onBack?.()
+        }
+
+        return config.screen({ back })
     }
 
     inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation }: StackScreenProps<any>) => {
@@ -452,6 +434,14 @@ export default class Form extends React.Component<FormProps> {
                         this.screenInputs.get().map(screenInputConfig => {
                             return (
                                 <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
+                            )
+                        })
+                    }
+                    {
+                        // setup ad-hoc screen components
+                        (this.props.adHocScreens || []).map(config => {
+                            return (
+                                <Stack.Screen name={config.name} component={this.adHocScreen(config)}/>
                             )
                         })
                     }

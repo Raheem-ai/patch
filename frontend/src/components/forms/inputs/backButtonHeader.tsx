@@ -17,6 +17,10 @@ export type BackButtonHeaderProps = {
         validator?: () => boolean
     }
     label: string | (() => string),
+    labelDecoration?: {
+        handler: () => void,
+        icon: string | (()  => string)
+    }
     bottomBorder?: boolean
 }
 
@@ -24,14 +28,27 @@ const BackButtonHeader = observer(({
     cancel, 
     save, 
     label,
-    bottomBorder
+    bottomBorder,
+    labelDecoration
 }: BackButtonHeaderProps) => {
     const headerLabel = unwrap(label);
     const cancelLabel = unwrap(cancel?.label) || 'Cancel';
     const saveLabel = unwrap(save?.label) || 'Done'
     
     return <View style={[styles.backButtonHeader, bottomBorder ? styles.bottomBorder : null ]}>
-        <Text style={{ flex: 1, fontSize: 18 }} onPress={cancel?.handler}>{headerLabel}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 18 }} onPress={cancel?.handler}>{headerLabel}</Text>
+            {
+                labelDecoration 
+                ? <IconButton
+                    onPress={labelDecoration.handler}
+                    icon={labelDecoration.icon} 
+                    color={'#666'}
+                    size={20} 
+                    style={{ margin: 0, padding: 0, width: 20, marginLeft: 12 }} />
+                : null
+            }
+        </View>
         { cancel && cancel.handler
             ? <Button
                 uppercase={false} 
