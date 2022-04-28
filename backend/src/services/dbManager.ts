@@ -431,6 +431,7 @@ export class DBManager {
     }
 
     // Attributes
+    // TODO: delete
     async addAttributeCategoryToOrganization(orgId: string, minCategory: MinAttributeCategory): Promise<[OrganizationDoc, AttributeCategory]> {
         const org = await this.resolveOrganization(orgId)
 
@@ -736,6 +737,8 @@ export class DBManager {
         throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
+    // TODO: this can be sped up by returning the users to be saved by the caller...ie if more than one attribute is removed that a user 
+    // has, it will be saved for each attribute removal
     async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -846,6 +849,7 @@ export class DBManager {
     }
 
     // Tags
+    // TODO: delete
     async addTagCategoryToOrganization(orgId: string, minCategory: MinTagCategory): Promise<[OrganizationDoc, TagCategory]> {
         const org = await this.resolveOrganization(orgId);
 
@@ -866,6 +870,29 @@ export class DBManager {
         ];
     }
 
+    async addTagCategoriesToOrganization(orgId: string | OrganizationDoc, minCategories: MinTagCategory[]): Promise<[OrganizationDoc, TagCategory[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const newCategories: TagCategory[] = []
+
+        for (const minCategory of minCategories) {
+            if (this.checkForDupes(minCategory.name, org.tagCategories)) {
+                throw `Already an Tag Category with the name "${minCategory.name}" in organization ${org.id}`;
+            }
+
+            const newTagCategory: TagCategory = {
+                id: uuid.v1(),
+                name: minCategory.name,
+                tags: minCategory.tags ? minCategory.tags : []
+            }
+
+            org.tagCategories.push(newTagCategory);
+            newCategories.push(newTagCategory)
+        }
+
+        return [org, newCategories]
+    }
+
+    // TODO: delete
     async editTagCategory(orgId: string, categoryUpdates: TagCategoryUpdates): Promise<[OrganizationDoc, TagCategory]> {
         const org = await this.resolveOrganization(orgId);
 
@@ -888,6 +915,31 @@ export class DBManager {
         throw `Unknown Tag Category ${categoryUpdates.id} in organization ${orgId}`;
     }
 
+    async editTagCategories(orgId: string | OrganizationDoc, categoryUpdates: TagCategoryUpdates[]): Promise<[OrganizationDoc, TagCategory[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const editedTagCategories = []
+
+        for (const categoryUpdate of categoryUpdates) {
+            if (categoryUpdate.name && this.checkForDupes(categoryUpdate.name, org.tagCategories.filter(cat => cat.id != categoryUpdate.id))) {
+                throw new BadRequest(`Already a Tag Category with the name "${categoryUpdate.name}" in organization ${org.id}`);
+            }
+
+            const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryUpdate.id);
+            if (categoryIndex >= 0) {
+                for (const prop in categoryUpdate) {
+                    org.tagCategories[categoryIndex][prop] = categoryUpdate[prop];
+                }
+                org.markModified('tagCategories');
+                editedTagCategories.push(org.tagCategories[categoryIndex])
+            } else {
+                throw new BadRequest(`Unknown Tag Category ${categoryUpdate.id} in organization ${org.id}`);
+            }
+        }
+
+        return [org, editedTagCategories]
+    }
+
+    // TODO: delete
     async removeTagCategory(orgId: string, categoryId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
@@ -909,6 +961,26 @@ export class DBManager {
         }
 
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+    }
+
+    async removeTagCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+
+        if (categoryIndex >= 0) {
+            for (let i = org.tagCategories[categoryIndex].tags.length - 1; i >= 0; i--) {
+                // Removing the tag from the tag category itself.
+                // Removing the tag from help requests.
+                await this.removeTag(org, categoryId, org.tagCategories[categoryIndex].tags[i].id, session);
+            }
+
+            // Remove the attribute category from the organization.
+            org.tagCategories.splice(categoryIndex, 1);
+            org.markModified('tagCategories');
+            return org;
+        }
+
+        throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
     }
 
     async addTagToOrganization(orgId: string, categoryId: string, minTag: MinTag): Promise<[OrganizationDoc, Tag]> {
@@ -936,6 +1008,35 @@ export class DBManager {
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
     }
 
+    async addTagsToOrganization(orgId: string | OrganizationDoc, categoryId: string, minTags: MinTag[]): Promise<[OrganizationDoc, Tag[]]> {
+        const org = await this.resolveOrganization(orgId)
+        const newTags: Tag[] = []
+            
+        for (const minTag of minTags) {
+            const newTag: Tag = {
+                id: uuid.v1(),
+                name: minTag.name
+            }
+
+            const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+
+            if (categoryIndex >= 0) {
+                if (this.checkForDupes(newTag.name, org.tagCategories[categoryIndex].tags)) {
+                    throw new BadRequest(`Already a Tag with the name "${newTag.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${org.id}`);
+                }
+
+                org.tagCategories[categoryIndex].tags.push(newTag);
+                org.markModified('tagCategories');
+                newTags.push(newTag)
+            } else {
+                throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+            }
+        }
+
+        return [org, newTags]
+    }
+
+    // TODO: delete
     async editTag(orgId: string, categoryId: string, tagUpdates: AtLeast<Tag, 'id'>): Promise<[OrganizationDoc, Tag]> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
@@ -963,6 +1064,41 @@ export class DBManager {
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
     }
 
+    async editTags(orgId: string | OrganizationDoc, tagUpdates: (AtLeast<Tag, 'id'> & { categoryId: string })[]): Promise<[OrganizationDoc, (Tag & { categoryId: string })[]]> {
+        const org = await this.resolveOrganization(orgId);
+        const editedTags: (Tag & { categoryId: string })[] = []  
+
+        for (const update of tagUpdates) {
+            const categoryId = update.categoryId;
+            const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+
+            if (categoryIndex >= 0) {
+                if (this.checkForDupes(update.name, org.tagCategories[categoryIndex].tags.filter(tag => tag.id != update.id))) {
+                    throw new BadRequest(`Already a Tag with the name "${update.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${org.id}`);
+                }
+
+                const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == update.id);
+                if (tagIndex >= 0) {
+                    for (const prop in update) {
+                        org.tagCategories[categoryIndex].tags[tagIndex][prop] = update[prop];
+                    }
+                    org.markModified('tagCategories');
+                    editedTags.push({
+                        categoryId,
+                        ...org.tagCategories[categoryIndex].tags[tagIndex]
+                    })
+                } else {
+                    throw new BadRequest(`Unknown Tag ${update.id} in Tag Category ${categoryId} in organization ${org.id}`);
+                }
+            } else {
+                throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+            }
+        }
+
+        return [org, editedTags]
+    }
+
+    // TODO: delete
     async removeTag(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session?: ClientSession): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
@@ -1009,6 +1145,45 @@ export class DBManager {
         }
 
         throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+    }
+
+    // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
+    // has, it will be saved for each attribute removal
+    async removeTagWithSession(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session: ClientSession): Promise<OrganizationDoc> {
+        const org = await this.resolveOrganization(orgId);
+        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+        if (categoryIndex >= 0) {
+            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+
+            // Remove the Tag from the Tag Category list.
+            if (tagIndex >= 0) {
+                org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+                org.markModified('tagCategories');
+
+                // Remove the tag id from Help Requests that currently have this tag.
+                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
+                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
+                
+                for (let i = 0; i < requests.length; i++) {
+                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
+                    if (tagIndex >= 0) {
+                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+                        requests[i].tags[categoryId].splice(tagIndex, 1);
+                        requests[i].markModified('tagIds');
+                    }
+                }
+
+                for (const request of requests) {
+                    await request.save({ session });
+                }
+
+                return org;
+            }
+
+            throw new BadRequest(`Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${org.id}`);
+        }
+
+        throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
     }
 
     checkForDupes(name: string, collection: AtLeast<any, 'name'>[]) {

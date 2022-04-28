@@ -479,20 +479,24 @@ export enum PatchEventType {
     OrganizationRoleDeleted = '2.1.2',
 
     // Organization.Attributes.<_>
-    OrganizationAttributeCreated = '2.2.0',
-    OrganizationAttributeEdited = '2.2.1',
-    OrganizationAttributeDeleted = '2.2.2',
-    OrganizationAttributeCategoryCreated = '2.2.3',
-    OrganizationAttributeCategoryEdited = '2.2.4',
-    OrganizationAttributeCategoryDeleted = '2.2.5',
+    OrganizationAttributesUpdated = '2.2.0',
+    // TODO: not sure these make sense anymore now that we have a single update command
+    OrganizationAttributeCreated = '2.2.1',
+    OrganizationAttributeEdited = '2.2.2',
+    OrganizationAttributeDeleted = '2.2.3',
+    OrganizationAttributeCategoryCreated = '2.2.4',
+    OrganizationAttributeCategoryEdited = '2.2.5',
+    OrganizationAttributeCategoryDeleted = '2.2.6',
 
     // Organization.Tags.<_>
-    OrganizationTagCreated = '2.3.0',
-    OrganizationTagEdited = '2.3.1',
-    OrganizationTagDeleted = '2.3.2',
-    OrganizationTagCategoryCreated = '2.3.3',
-    OrganizationTagCategoryEdited = '2.3.4',
-    OrganizationTagCategoryDeleted = '2.3.5',
+    OrganizationTagsUpdated = '2.3.0',
+    // TODO: not sure these make sense anymore now that we have a single update command
+    OrganizationTagCreated = '2.3.1',
+    OrganizationTagEdited = '2.3.2',
+    OrganizationTagDeleted = '2.3.3',
+    OrganizationTagCategoryCreated = '2.3.4',
+    OrganizationTagCategoryEdited = '2.3.5',
+    OrganizationTagCategoryDeleted = '2.3.6',
 }
 
 export type PatchEventParams = {
@@ -631,6 +635,14 @@ export type PatchEventParams = {
     [PatchEventType.OrganizationTagCategoryDeleted]: {
         orgId: string,
         categoryId: string
+    },
+    // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
+    // the updates
+    [PatchEventType.OrganizationAttributesUpdated]: {
+        orgId: string
+    },
+    [PatchEventType.OrganizationTagsUpdated]: {
+        orgId: string
     },
 }
 

@@ -96,7 +96,7 @@ const Settings = ({ navigation, route }: Props) => {
                     }
                 } as NavigationFormInputConfig
                 : null,
-            iHaveAllPermissions([PatchPermissions.AttributeAdmin]) 
+            iHaveAllPermissions(manageAttributesStore().editPermissions) 
                 ? {
                     name: 'manageAttributes',
                     label: ({ expand }) => {
@@ -114,13 +114,13 @@ const Settings = ({ navigation, route }: Props) => {
                                     editHeaderLabel='Edit attributes'
                                     addCategoryPlaceholderLabel='ADD ATTRIBUTE CATEGORY'
                                     addItemPlaceholderLabel={'Add attribute'}
-                                    store={manageAttributesStore()}/>
+                                    store={manageAttributesStore().editStore}/>
                             </VisualArea>
                         )
                     }
                 } as NavigationFormInputConfig
                 : null,
-            iHaveAllPermissions([PatchPermissions.TagAdmin]) 
+            iHaveAllPermissions(manageTagsStore().editPermissions) 
                 ? {
                     name: 'manageTags',
                     label: ({ expand }) => {
@@ -138,7 +138,7 @@ const Settings = ({ navigation, route }: Props) => {
                                     editHeaderLabel='Edit tags'
                                     addCategoryPlaceholderLabel='ADD TAG CATEGORY'
                                     addItemPlaceholderLabel={'Add tag'}
-                                    store={manageTagsStore()} />
+                                    store={manageTagsStore().editStore} />
                             </VisualArea>
                         )
                     }

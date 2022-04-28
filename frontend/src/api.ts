@@ -398,6 +398,16 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async updateTags(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.updateTags()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            updates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async createNewTagCategory(ctx: OrgContext, category: MinTagCategory): Promise<TagCategory> {
         const url = `${apiHost}${API.client.createNewTagCategory()}`;
 

@@ -56,6 +56,7 @@ export class OrganizationController implements APIController<
     | "editTag"
     | "deleteTag"
     | "updateAttributes"
+    | "updateTags"
     > {
     @Inject(DBManager) db: DBManager;
 
@@ -781,9 +782,99 @@ export class OrganizationController implements APIController<
 
                 [org, newAttributeCategories] = await this.db.addAttributeCategoriesToOrganization(org, minNewCategories)
 
-                //  TODO: send updates thorugh socket service!!!
+                const updatedOrg = await org.save({ session });
 
-                return await org.save({ session })
+                await this.pubSub.sys(PatchEventType.OrganizationAttributesUpdated, { 
+                    orgId: updatedOrg.id
+                });
+
+                return updatedOrg;
+            })
+        } else {
+            throw new Unauthorized('You do not have permission to remove Tags from this organization.');
+        }
+    }
+
+    @Post(API.server.updateTags())
+    @Authenticate()
+    async updateTags(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('updates') updates: CategorizedItemUpdates,
+    ) {
+        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {            
+            return await this.db.transaction(async (session) => {
+                let org: OrganizationDoc, 
+                    editedTagCategories: TagCategory[], 
+                    editedTags: (AtLeast<Tag, 'id'> & { categoryId: string })[],
+                    newTags: Tag[],
+                    newTagCategories: TagCategory[];
+
+                const deletedItems: CategorizedItem[] = [];
+                const deletedCategories: string[] = [];
+
+                // Edit Categories
+                [org, editedTagCategories] = await this.db.editTagCategories(orgId, updates.categoryNameChanges);
+                
+                // Edit Items (Tags)
+                [org, editedTags] = await this.db.editTags(org, updates.itemNameChanges.map((change) => {
+                    return {
+                        name: change.name,
+                        categoryId: change.categoryId,
+                        id: change.itemId
+                    }
+                }))
+
+                // Delete Items (Tags)
+                for (const categoryId in updates.deletedItems) {
+                    // deleting a category deletes its items
+                    if (updates.deletedCategories.includes(categoryId)) {
+                        continue;
+                    }
+
+                    const itemsToDelete = updates.deletedItems[categoryId];
+
+                    for (const itemId of itemsToDelete) {
+                        org = await this.db.removeTagWithSession(org, categoryId, itemId, session)
+                        deletedItems.push({ categoryId, itemId })
+                    }
+                }
+
+                // Delete Categories
+                for (const categoryToDelete of updates.deletedCategories) {
+                    org = await this.db.removeTagCategoryWithSession(org, categoryToDelete, session)
+                    deletedCategories.push(categoryToDelete)
+                }
+
+                // add items
+                for (const categoryId in updates.newItems) {
+                    const items: MinTag[] = updates.newItems[categoryId].map((name) => {
+                        return { name }
+                    });
+
+                    [org, newTags] = await this.db.addTagsToOrganization(org, categoryId, items)
+                }
+
+                // add categories
+                const minNewCategories: MinTagCategory[] = []
+                for (const categoryId in updates.newCategories) {
+                    const category = updates.newCategories[categoryId];
+
+                    minNewCategories.push({ 
+                        name: category.name,
+                        tags: category.items
+                    })
+                }
+
+                [org, newTagCategories] = await this.db.addTagCategoriesToOrganization(org, minNewCategories)
+
+                const updatedOrg = await org.save({ session });
+
+                await this.pubSub.sys(PatchEventType.OrganizationTagsUpdated, { 
+                    orgId: updatedOrg.id
+                });
+
+                return updatedOrg;
             })
         } else {
             throw new Unauthorized('You do not have permission to remove Tags from this organization.');

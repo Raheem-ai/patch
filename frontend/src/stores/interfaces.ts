@@ -494,8 +494,13 @@ export namespace IManageAttributesStore {
     export const id = Symbol('IManageAttributesStore');
 }
 
-export interface IManageTagsStore extends IEditCategorizedItemStore {};
-export interface IManageAttributesStore extends IEditCategorizedItemStore {};
+interface CategorizedItemStore extends IBaseStore { 
+    editPermissions: PatchPermissions[]
+    editStore: IEditCategorizedItemStore 
+};
+
+export interface IManageTagsStore extends CategorizedItemStore {};
+export interface IManageAttributesStore extends CategorizedItemStore {};
 
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);

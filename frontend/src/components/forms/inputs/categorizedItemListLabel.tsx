@@ -38,16 +38,17 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
     return (
         <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
             {
-                Array.from(tagMap.entries()).map(([categoryId, itemIds]) => {
+                Array.from(tagMap.entries()).map(([categoryId, itemIds], idx, arr) => {
                     const category = config.props.editStore.definedCategories.get(categoryId)
                     const categoryName = category.name;
+                    const isLast = (idx == arr.length - 1);
 
                     const itemNames = itemIds.map(selectedItemId => {
                         return category.items.find(item => item.id == selectedItemId)?.name || null
                     }).filter(x => !!x)
                     
                     return (
-                        <View style={{ paddingTop: 20 }}>
+                        <View style={{ paddingTop: 20, paddingBottom: isLast ? (20 - 6) : 0 }}>
                             <Text style={{ color: '#999' }}>{categoryName.toUpperCase()}</Text>
                             <Tags 
                                 disabled={config.disabled}
