@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet, Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, List, Text } from "react-native-paper";
-import { PatchPermissionGroups, PermissionGroupMetadata, resolvePermissionGroups, resolvePermissionsFromPermissionGroups, resolvePermissionsFromRoles } from "../../../../../common/models";
-import { SectionScreenViewProps } from "../types";
-import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
+import { PatchPermissionGroups, PermissionGroupMetadata, resolvePermissionGroups, resolvePermissionsFromPermissionGroups, resolvePermissionsFromRoles } from "../../../../../../common/models";
+import { SectionScreenViewProps } from "../../types";
+import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
 /**
  * Note: for this to work visually, all groups that are forced must be directly under the group that forces them
@@ -101,7 +101,7 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
     render(): React.ReactNode {
         const headerProps: BackButtonHeaderProps = {
             cancel: {
-                handler: this.props.back
+                handler: () => this.props.back()
             },
             save: {
                 handler: this.save,

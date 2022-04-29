@@ -953,7 +953,13 @@ export const DefaultRoles: Role[] = [
 ]
 
 
-
+export type Position = {
+    id: string,
+    attributes: CategorizedItem[],
+    role: string,
+    min: number,
+    max: number
+}
 
 
 

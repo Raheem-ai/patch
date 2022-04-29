@@ -9,28 +9,28 @@ import Tags from "../../components/tags";
 import { computed, configure, observable, runInAction } from "mobx";
 import { AddressableLocation } from "../../../../common/models";
 import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
-import TextAreaInput from "./inputs/textAreaInput";
+import TextAreaInput from "./inputs/screen/textAreaInput";
 import { sleep, unwrap } from "../../../../common/utils";
-import TextInput from "./inputs/textInput";
+import TextInput from "./inputs/inline/textInput";
 import { Colors } from "../../types";
-import ListInput from "./inputs/listInput";
-import TagListLabel from "./inputs/tagListLabel";
-import NestedListInput from "./inputs/nestedListInput";
+import ListInput from "./inputs/screen/listInput";
+import TagListLabel from "./inputs/labels/tagListLabel";
+import NestedListInput from "./inputs/screen/nestedListInput";
 import { INativeEventStore, nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import Loader from "../loader";
-import MapInput from "./inputs/mapInput";
-import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
-import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
-import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
+import MapInput from "./inputs/screen/mapInput";
+import DateTimeRangeInput from "./inputs/inline/dateTimeRangeInput";
+import RecurringTimePeriodInput from "./inputs/screen/recurringTimePeriodInput";
+import RecurringTimePeriodLabel from "./inputs/labels/recurringTimePeriodLabel";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
-import SwitchInput from "./inputs/switchInput";
-import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
-import PermissionGroupListInput from "./inputs/permissionGroupList";
-import CategorizedItemForm from "./categorizedItemForm";
-import CategorizedItemListLabel from "./inputs/categorizedItemListLabel";
+import SwitchInput from "./inputs/inline/switchInput";
+import PermissionGroupListLabel from "./inputs/labels/permissionGroupListLabel";
+import PermissionGroupListInput from "./inputs/screen/permissionGroupListInput";
+import CategorizedItemListInput from "./inputs/screen/categorizedItemListInput";
+import CategorizedItemListLabel from "./inputs/labels/categorizedItemListLabel";
 import { FormViewMap } from "./config";
 
 const Stack = createStackNavigator();
@@ -216,9 +216,13 @@ export default class Form extends React.Component<FormProps> {
             }
         }
 
-        const navigateToScreen = (id: string) => {
-            navigation.navigate(id);
+        const navigateToScreenWithParams = (id: string, params?) => {
+            navigation.navigate(id, params);
             this.props.onExpand?.()
+        }
+
+        const navigateToScreen = (id: string) => {
+            navigateToScreenWithParams(id)
         }
 
         const renderInput = (inputConfig: StandAloneFormInputConfig, position?: GroupPosition) => {
@@ -232,6 +236,10 @@ export default class Form extends React.Component<FormProps> {
             } else {
             
                 const viewConfig = FormViewMap[inputConfig.type];
+
+                if (!viewConfig) {
+                    throw `View config for input type: ${inputConfig.type} hasn't been set up`
+                }
 
                 // make sure any inline store updates are being run in an action 
                 // (for convenience)
@@ -248,13 +256,15 @@ export default class Form extends React.Component<FormProps> {
                 }
 
                 const screenInputConfig = inputConfig as ScreenFormInputConfig;
+                const screenViewConfig = viewConfig as ScreenFormInputViewConfig;
 
-                const labelComponent = (viewConfig as ScreenFormInputViewConfig).labelComponent || null
+                const labelComponent = screenViewConfig.labelComponent || null
 
                 if (labelComponent) {
                     return <LabelSection 
                         key={inputConfig.name}
                         inputConfig={screenInputConfig}
+                        viewConfig={screenViewConfig}
                         labelComponent={labelComponent}
                         openLink={navigateToScreen}  
                         linkTo={inputConfig.name} 
@@ -375,7 +385,7 @@ export default class Form extends React.Component<FormProps> {
         return config.screen({ back })
     }
 
-    inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation }: StackScreenProps<any>) => {
+    inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation, route }: StackScreenProps<any>) => {
         const viewConfig = FormViewMap[inputConfig.type];
 
         const ScreenComponent: ComponentType<SectionScreenViewProps> = (viewConfig as ScreenFormInputViewConfig).screenComponent;
@@ -396,7 +406,9 @@ export default class Form extends React.Component<FormProps> {
                 this.props.onBack?.()
             }
 
-            return <ScreenComponent back={back} config={inputConfig}/>
+            const paramsFromLabel = route.params;
+
+            return <ScreenComponent paramsFromLabel={paramsFromLabel} back={back} config={inputConfig}/>
         }
     }
 
@@ -614,12 +626,13 @@ function InlineSection(props: {
 const LabelSection = observer((props: { 
     inputConfig: ScreenFormInputConfig,
     linkTo: string,
-    openLink: (screenId: string) => void,
+    openLink: (screenId: string, params?: any) => void,
     groupPosition?: GroupPosition,
     labelComponent: ComponentType<SectionLabelViewProps>,
+    viewConfig: ScreenFormInputViewConfig
 }) => {
 
-    const expand = () => {
+    const expand = (params?) => {
         if (nativeEventStore().keyboardOpen) {
             return Keyboard.dismiss()
         } 
@@ -628,7 +641,15 @@ const LabelSection = observer((props: {
             return;
         }
 
-        props.openLink(props.linkTo);
+        props.openLink(props.linkTo, params);
+    }
+
+    const autoExpand = () => {
+        if (props.viewConfig.disableAutoExpandFromLabel) {
+            return
+        }
+
+        expand()
     }
 
     const Label: ComponentType<SectionLabelViewProps> = props.labelComponent;
@@ -665,7 +686,7 @@ const LabelSection = observer((props: {
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon='chevron-right' 
                         color='rgba(60,60,67,.3)'
-                        onPress={expand}
+                        onPress={autoExpand}
                         size={30} />
                     : null
                 }

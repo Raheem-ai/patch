@@ -3,15 +3,15 @@ import { FormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig } fro
 import Form, { FormProps } from '../components/forms/form';
 import { ScreenProps } from "../types";
 import { Pressable, View } from "react-native";
-import { observable } from "mobx";
-import { AddressableLocation, CategorizedItem, PatchPermissions, RecurringDateTimeRange } from "../../../common/models";
+import { IObservableValue, observable } from "mobx";
+import { AddressableLocation, CategorizedItem, PatchPermissions, Position, RecurringDateTimeRange } from "../../../common/models";
 import { dateToDateString, dateToDayOfWeekString } from "../../../common/utils";
 import RecurringDateTimeRangeInputConfig from "../components/forms/inputs/compound/recurringDateTimeRange";
 import moment from 'moment'
 import { exp } from "react-native-reanimated";
 import { Text } from "react-native-paper";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
-import { manageAttributesStore, manageTagsStore } from "../stores/interfaces";
+import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -177,7 +177,31 @@ const lib: Library = [
                 }
             } as ScreenFormInputConfig<'CategorizedItemList'>
         ]]
-    }
+    },
+    {
+        name: 'Positions input',
+        description: '',
+        state: observable.box<Position[]>([]),
+        icon: 'clipboard-account',
+        inputs: (state: IObservableValue<Position[]>) => [{
+            onSave: (data) => {
+                console.log(data)
+                state.set(data)
+            },
+            val: () => {
+                return state.get();
+            },
+            isValid: () => true,
+            headerLabel: () => 'People needed',
+            placeholderLabel: () => 'People needed',
+            previewLabel: () => {
+                return state.get().map(pos => `${pos.id} :: ${pos.role} :: ${pos.attributes.length}`).join('\n')
+            },
+            props: {},
+            name: 'positions',
+            type: 'Positions'
+        } as ScreenFormInputConfig<'Positions'>]
+    },
 ]
 
 

@@ -1,6 +1,6 @@
 import { ComponentType } from "react"
 import { StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
 export type Grouped<T> = T | T[];
@@ -11,12 +11,16 @@ export type SectionInlineViewProps<Type extends InlineFormInputType = InlineForm
 
 export type SectionLabelViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
     config: ScreenFormInputConfig<Type>,
-    expand: () => void
+    expand: (params?: any) => void
 }
 
 export type SectionScreenViewProps<Type extends ScreenFormInputType = ScreenFormInputType> = {
+    // pass if save/cancel should go back
     back: () => void,
-    config: ScreenFormInputConfig<Type>
+    // pass if you want to replace the default header
+    config: ScreenFormInputConfig<Type>,
+    // TODO: tie type to ScreenFormInputOptions but make it optional and default to any
+    paramsFromLabel?: any
 }
 
 // navigation input config decides completely how to render the label
@@ -50,12 +54,7 @@ export type ScreenFormInputOptions = {
         type: RecurringTimeConstraints
     },
     'List': {
-        props: {
-            options: any[]
-            optionToPreviewLabel: (opt) => string
-            optionToListLabel?: (opt) => string
-            multiSelect?: boolean
-        },
+        props: InlineFormInputOptions['InlineList']['props'],
         type: any[]
     },
     'TagList': {
@@ -98,6 +97,18 @@ export type ScreenFormInputOptions = {
             dark?: boolean
         }, 
         type: CategorizedItem[]
+    }, 
+    'RoleList': {
+        props: {
+            multiSelect?: boolean
+        },
+        type: string[]
+    },
+    'Positions' : {
+        props: {
+
+        },
+        type: Position[]
     }
 }
 
@@ -115,6 +126,15 @@ export type InlineFormInputOptions = {
             label: string | (() => string)
         },
         type: boolean
+    },
+    'InlineList': {
+        props: {
+            options: any[]
+            optionToPreviewLabel: (opt) => string
+            optionToListLabel?: (opt) => string
+            multiSelect?: boolean
+        },
+        type: any[]
     }
 }
 
@@ -223,6 +243,9 @@ export type InlineFormInputViewConfig<InputType extends InlineFormInputType = In
 export type ScreenFormInputViewConfig<InputType extends ScreenFormInputType = ScreenFormInputType> = {
     labelComponent?: ComponentType<SectionLabelViewProps<InputType>>,
     screenComponent: ComponentType<SectionScreenViewProps<InputType>>
+    // tell label component container not to navigate to screen 
+    // component if areas outside the label component are pressed
+    disableAutoExpandFromLabel?: boolean
 }
 
 

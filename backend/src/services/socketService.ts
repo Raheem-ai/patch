@@ -119,6 +119,8 @@ export class MySocketService {
 
             case PatchEventType.OrganizationEdited:
             case PatchEventType.OrganizationDeleted:
+            case PatchEventType.OrganizationTagsUpdated:
+            case PatchEventType.OrganizationAttributesUpdated:
                 await this.handleOrganizationUpdate(event, params as any)
                 break;
 
@@ -197,6 +199,8 @@ export class MySocketService {
     async handleOrganizationUpdate<SysEvent extends 
         PatchEventType.OrganizationEdited
         | PatchEventType.OrganizationDeleted
+        | PatchEventType.OrganizationTagsUpdated
+        | PatchEventType.OrganizationAttributesUpdated
     >(
         sysEvent: SysEvent, 
         sysParams: PatchEventParams[SysEvent]

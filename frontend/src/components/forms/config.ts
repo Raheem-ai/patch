@@ -1,18 +1,21 @@
-import CategorizedItemForm from "./categorizedItemForm";
-import CategorizedItemListLabel from "./inputs/categorizedItemListLabel";
-import DateTimeRangeInput from "./inputs/dateTimeRangeInput";
-import ListInput from "./inputs/listInput";
-import MapInput from "./inputs/mapInput";
-import NestedListInput from "./inputs/nestedListInput";
-import PermissionGroupListInput from "./inputs/permissionGroupList";
-import PermissionGroupListLabel from "./inputs/permissionGroupListLabel";
-import RecurringTimePeriodInput from "./inputs/recurringTimePeriodInput";
-import RecurringTimePeriodLabel from "./inputs/recurringTimePeriodLabel";
-import SwitchInput from "./inputs/switchInput";
-import TagListLabel from "./inputs/tagListLabel";
-import TextAreaInput from "./inputs/textAreaInput";
-import TextInput from "./inputs/textInput";
+import CategorizedItemListInput from "./inputs/screen/categorizedItemListInput";
+import CategorizedItemListLabel from "./inputs/labels/categorizedItemListLabel";
+import DateTimeRangeInput from "./inputs/inline/dateTimeRangeInput";
+import ListInput from "./inputs/screen/listInput";
+import MapInput from "./inputs/screen/mapInput";
+import NestedListInput from "./inputs/screen/nestedListInput";
+import PermissionGroupListInput from "./inputs/screen/permissionGroupListInput";
+import PermissionGroupListLabel from "./inputs/labels/permissionGroupListLabel";
+import RecurringTimePeriodInput from "./inputs/screen/recurringTimePeriodInput";
+import RecurringTimePeriodLabel from "./inputs/labels/recurringTimePeriodLabel";
+import SwitchInput from "./inputs/inline/switchInput";
+import TagListLabel from "./inputs/labels/tagListLabel";
+import TextAreaInput from "./inputs/screen/textAreaInput";
+import TextInput from "./inputs/inline/textInput";
 import { FormInputViewMap } from "./types";
+import InlineListInput from "./inputs/inline/inlineListInput";
+import RoleListInput from "./inputs/screen/roleListInput";
+import PositionsInput from "./inputs/screen/positionsInput";
 
 // TODO: the only way to remove a cycle and also allow input components to use 
 // Form, is to have a FormStore return this 
@@ -30,6 +33,11 @@ export const FormViewMap: FormInputViewMap = {
         screenComponent: ListInput,
         labelComponent: TagListLabel
     },
+    // disabling this for now because it doesn't fully handle being 
+    // an inline input ie. being disabled 
+    // 'InlineList': {
+    //     inlineComponent: InlineListInput
+    // },
     'NestedList': {
         screenComponent: NestedListInput
     },
@@ -55,7 +63,13 @@ export const FormViewMap: FormInputViewMap = {
         screenComponent: PermissionGroupListInput
     }, 
     'CategorizedItemList': {
-        screenComponent: CategorizedItemForm,
+        screenComponent: CategorizedItemListInput,
         labelComponent: CategorizedItemListLabel
+    },
+    'RoleList': {
+        screenComponent: RoleListInput
+    },
+    'Positions': {
+        screenComponent: PositionsInput
     }
 }
