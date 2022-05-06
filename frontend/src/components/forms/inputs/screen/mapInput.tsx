@@ -2,14 +2,14 @@ import { observer } from "mobx-react";
 import React, { useCallback, useRef, useState } from "react";
 import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable, Animated } from "react-native";
 import { IconButton, List, Text } from "react-native-paper";
-import { IMapsService } from "../../../services/interfaces";
-import { getService } from "../../../services/meta";
-import { locationStore } from "../../../stores/interfaces";
-import { SectionScreenViewProps } from "../types";
+import { IMapsService } from "../../../../services/interfaces";
+import { getService } from "../../../../services/meta";
+import { locationStore } from "../../../../stores/interfaces";
+import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
-import { AddressableLocation } from "../../../../../common/models";
+import { AddressableLocation } from "../../../../../../common/models";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const mapsService = getService<IMapsService>(IMapsService);
@@ -169,7 +169,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             style={{ alignSelf: 'center', margin: 0 , width: 35}}
                             icon='chevron-left' 
                             color='#000'
-                            onPress={back}
+                            onPress={() => back()}
                             size={35} />
                         <RNTextInput 
                             onChangeText={onTextUpdated}

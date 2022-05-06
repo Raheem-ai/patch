@@ -242,7 +242,7 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
         const deletedItems = Object.assign({}, this.deletedItems);
 
         if (!deletedItems[categoryId]?.includes(itemId)) {
-            deletedItems[categoryId] ||= [];
+            deletedItems[categoryId] = deletedItems[categoryId] || [];
             deletedItems[categoryId].push(itemId)
 
             this.deletedItems = deletedItems

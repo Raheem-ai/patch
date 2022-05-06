@@ -2,9 +2,9 @@ import { observer } from "mobx-react";
 import React from "react";
 import { View, Switch, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
-import { unwrap } from "../../../../../common/utils";
-import { Colors } from "../../../types";
-import { SectionInlineViewProps } from "../types";
+import { unwrap } from "../../../../../../common/utils";
+import { Colors } from "../../../../types";
+import { SectionInlineViewProps } from "../../types";
 
 const SwitchInput = observer(({ config }: SectionInlineViewProps<'Switch'>) => {
     return (

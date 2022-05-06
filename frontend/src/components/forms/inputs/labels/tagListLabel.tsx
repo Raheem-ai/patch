@@ -1,11 +1,10 @@
-import { runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
-import { unwrap } from "../../../../../common/utils"
-import Tags from "../../tags"
-import { SectionScreenViewProps, SectionInlineViewProps, SectionLabelViewProps } from "../types"
+import { unwrap } from "../../../../../../common/utils"
+import Tags from "../../../tags"
+import { SectionLabelViewProps } from "../../types"
 
 const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagList' | 'NestedTagList'>) => {
 

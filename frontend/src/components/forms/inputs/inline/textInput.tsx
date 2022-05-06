@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
 import React, { Ref } from "react";
 import { TextInput as RNTextInput, StyleSheet, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
-import { unwrap } from "../../../../../common/utils";
-import { SectionInlineViewProps } from "../types";
+import { unwrap } from "../../../../../../common/utils";
+import { SectionInlineViewProps } from "../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
     style?: TextStyle

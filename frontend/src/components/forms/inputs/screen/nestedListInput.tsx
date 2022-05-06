@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
-import { useKeyboard } from "../../../hooks/useKeyboard";
-import { HeaderHeight } from "../../header/header";
-import { SectionScreenViewProps } from "../types";
-import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
+import { useKeyboard } from "../../../../hooks/useKeyboard";
+import { HeaderHeight } from "../../../header/header";
+import { SectionScreenViewProps } from "../../types";
+import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
 const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'NestedList' | 'NestedTagList'>) => {
 
@@ -37,7 +37,7 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
 
     const headerProps: BackButtonHeaderProps = {
         cancel: {
-            handler: back
+            handler: () => back()
         },
         save: {
             handler: save,

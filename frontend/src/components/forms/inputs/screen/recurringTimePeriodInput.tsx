@@ -4,14 +4,14 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../common/models";
-import { dateToDateYearString, dateToEndDateLabel, dateToEndRepititionsLabel, dayNumToDayNameLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../common/utils";
-import CalendarPicker from "../../calendarPicker";
-import WheelPicker, { PickerOption } from "../../wheelPicker";
-import { SectionScreenViewProps } from "../types";
-import BackButtonHeader, { BackButtonHeaderProps } from "./backButtonHeader";
+import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../../common/models";
+import { dateToDateYearString, dateToEndDateLabel, dateToEndRepititionsLabel, dayNumToDayNameLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../../common/utils";
+import CalendarPicker from "../../../calendarPicker";
+import WheelPicker, { PickerOption } from "../../../wheelPicker";
+import { SectionScreenViewProps } from "../../types";
+import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 import moment from 'moment'
-import { alertStore } from "../../../stores/interfaces";
+import { alertStore } from "../../../../stores/interfaces";
 
 type RecurringTimePeriodInputProps = SectionScreenViewProps<'RecurringTimePeriod'>;
 
@@ -377,7 +377,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
     const headerProps: BackButtonHeaderProps = {
         cancel: {
-            handler: back
+            handler: () => back()
         },
         save: {
             handler: save,
