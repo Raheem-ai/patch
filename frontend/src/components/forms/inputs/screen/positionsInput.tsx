@@ -3,58 +3,74 @@ import React, { useState } from "react"
 import { StyleSheet } from "react-native"
 import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
-import { AdHocScreenConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
+import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
 import { unwrap } from "../../../../../../common/utils"
-import { iHaveAllPermissions } from "../../../../utils"
-import ListInput, { ListInputProps } from "./listInput"
-import MangeRolesForm from "../../editRolesForm"
-import { PatchPermissions, Position } from "../../../../../../common/models"
-import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
+import { Position } from "../../../../../../common/models"
 import { organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
+import { observable } from "mobx"
 
 export type PositionsInputProps = SectionScreenViewProps<'Positions'> 
 
-const PositionsInput = ({ 
+const PositionsInput = observer(({ 
     back,
     config,
     paramsFromLabel
 }: PositionsInputProps) => {
-    const [ position, setPosition ] = useState((paramsFromLabel || {
+    const [ position ] = useState(observable.box((paramsFromLabel || {
         role: null,
         attributes: [],
-        min: -1,
+        min: 0,
         max: -1
-    }) as Position)
-
+    }) as Position))
+    
     const inputs = [[
         {
-            val: () => [position.role],
+            val: () => {
+                return { 
+                    min: position.get().min, 
+                    max: position.get().max
+                }
+            },
+            onChange: (val) => { 
+                const cpy = Object.assign({}, position.get(), { min: val.min, max: val.max }) as Position
+                position.set(cpy) 
+                console.log(cpy)
+            },
+            isValid: () => true,
+            name: 'minmax',
+            type: 'Slider',
+            icon: 'clipboard-account',
+            props: {
+                maxBeforeOrMore: 10
+            }
+        },
+        {
+            val: () => [position.get().role],
             onSave: (val) => { 
-                const cpy = Object.assign({}, position, { role: val[0] || null })
-                setPosition(cpy) 
+                const cpy = Object.assign({}, position.get(), { role: val[0] || null }) as Position
+                position.set(cpy) 
             },
             isValid: () => true,
             headerLabel: 'Role',
             placeholderLabel: 'Role',
-            previewLabel: () => organizationStore().roles.get(position.role)?.name,
+            previewLabel: () => organizationStore().roles.get(position.get().role)?.name,
             name: 'role',
             type: 'RoleList'
         },
         AttributesListInput({
-            val: () => position.attributes,
+            val: () => position.get().attributes,
             onSave: (val) => { 
-                console.log(val.length)
-                const cpy = Object.assign({}, position, { attributes: val })
-                console.log(cpy)
-                setPosition(cpy) 
+                const cpy = Object.assign({}, position.get(), { attributes: val }) as Position
+                position.set(cpy) 
             },
             isValid: () => true,
             name: 'attributes'
         })
     ]] as [[
+        InlineFormInputConfig<'Slider'>,
         ScreenFormInputConfig<'RoleList'>,
         ScreenFormInputConfig<'CategorizedItemList'>
     ]]
@@ -74,13 +90,9 @@ const PositionsInput = ({
                     handler: () => {
                         const updatedPositions: Position[] = JSON.parse(JSON.stringify(config.val()));
 
-                        const idx = updatedPositions.findIndex(pos => pos.id == position.id);
+                        const idx = updatedPositions.findIndex(pos => pos.id == position.get().id);
 
-                        console.log('updatedPositions: ', updatedPositions)
-
-                        console.log('position: ', position.attributes)
-
-                        const pos = Object.assign({}, position);
+                        const pos = Object.assign({}, position.get()) as Position;
 
                         if (idx == -1) {
                             pos.id = uuid.v1()
@@ -89,8 +101,6 @@ const PositionsInput = ({
                         } else {
                             updatedPositions[idx] = pos
                         }
-
-                        console.log('updatedPositions: ', updatedPositions)
 
                         config.onSave(updatedPositions);
                         back();
@@ -120,7 +130,7 @@ const PositionsInput = ({
             <Form inputs={inputs} homeScreen={homeScreen} />
         </VisualArea>
     )
-}
+})
 
 export default PositionsInput;
 

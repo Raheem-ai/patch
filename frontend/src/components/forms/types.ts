@@ -135,6 +135,15 @@ export type InlineFormInputOptions = {
             multiSelect?: boolean
         },
         type: any[]
+    },
+    'Slider': {
+        props: {
+            maxBeforeOrMore: number
+        }, 
+        type: {
+            min: number,
+            max: number
+        }
     }
 }
 

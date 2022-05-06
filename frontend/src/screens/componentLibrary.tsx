@@ -195,7 +195,7 @@ const lib: Library = [
             headerLabel: () => 'People needed',
             placeholderLabel: () => 'People needed',
             previewLabel: () => {
-                return state.get().map(pos => `${pos.id} :: ${pos.role} :: ${pos.attributes.length}`).join('\n')
+                return state.get().map(pos => `${pos.id} :: ${pos.role} :: ${pos.attributes.length} :: ${pos.min}-${pos.max}`).join('\n')
             },
             props: {},
             name: 'positions',
