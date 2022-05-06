@@ -266,7 +266,7 @@ export default class Form extends React.Component<FormProps> {
                         inputConfig={screenInputConfig}
                         viewConfig={screenViewConfig}
                         labelComponent={labelComponent}
-                        openLink={navigateToScreen}  
+                        openLink={navigateToScreenWithParams}  
                         linkTo={inputConfig.name} 
                         groupPosition={position}/>
                 }
@@ -681,7 +681,7 @@ const LabelSection = observer((props: {
                 <View style={{ flex: 1 }}>
                     <Label config={props.inputConfig} expand={expand} />
                 </View>
-                { !props.inputConfig.disabled
+                { !props.inputConfig.disabled && !props.viewConfig.hideExpandArrow
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon='chevron-right' 

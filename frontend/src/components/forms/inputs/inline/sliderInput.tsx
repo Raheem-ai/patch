@@ -21,14 +21,22 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
     // TODO: not sure this one needs to be an observable
     private minMax = observable.box(this.props.config.val() || { min: 0, max: MORE });
+    // need to know width of the container we're in...this is just where we store it
     private width = observable.box(0);
 
     private minKnobLeft = observable.box(0);
     private maxKnobLeft = observable.box(0);
     private touchStartX = observable.box(0);
 
+    // when the knobs cross, the last one being dragged should always be on top
     private topKnob = observable.box<Knobs>(null);
+    
+    // when knobs cross, their labels and value they give to onChange 
+    // need to swap
     private knobsInverted = observable.box(false);
+    
+    // check if values are the same when we're initialized
+    // otherwise this gets set when the min/max values change
     private isExact = observable.box((() => {
         const val = this.props.config.val();
 
@@ -37,31 +45,6 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             ? val.max == val.min && val.min >= 0
             : false
     })());
-
-    private insideStyle = computed<ViewStyle>(() => Object.assign({}, styles.step, styles.inRange, { width: this.stepWidth() }))
-    private outsideStyle = computed<ViewStyle>(() => Object.assign({}, styles.step, styles.outOfRange, { width: this.stepWidth() }))
-    
-    // TODO: redo this as a grey track with a purple inner bar who's width grows and shrinks to match the interior of the knobs
-    private stepStyles = computed<ViewStyle[]>(() => {
-        const stepStyles: ViewStyle[] = [];
-
-        for (let step = 0; step <= (this.steps - 1); step++) {
-            if (this.isExactValue) {
-                stepStyles.push(this.outsideStyle.get());
-                continue;
-            }
-
-            if (step < this.minKnobValue) {
-                stepStyles.push(this.outsideStyle.get())
-            } else if (this.maxKnobValue != MORE && step > (this.maxKnobValue - 1)) {
-                stepStyles.push(this.outsideStyle.get())
-            } else {
-                stepStyles.push(this.insideStyle.get())
-            }
-        }
-
-        return stepStyles;
-    })
 
     // TODO: these two are just needed for the initial value
     // should probably just be a regular variable
@@ -263,7 +246,30 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     }
 
     stepBar = () => {
-        return this.stepStyles.get().map((s, i) => <View key={i} style={s}></View>)
+        const maxLeft = this.maxKnobLeft.get()
+        const minLeft = this.minKnobLeft.get()
+
+        const lowerBound = Math.min(maxLeft, minLeft)
+        const upperBound = Math.max(maxLeft, minLeft);
+
+        const innerWidth = upperBound - lowerBound;
+        const left = lowerBound + this.knobOffset;
+
+        return (
+            <View style={{ 
+                width: '100%', 
+                height: styles.step.height, 
+                backgroundColor: styles.outOfRange.backgroundColor 
+            }}>
+                <View style={{ 
+                    width: innerWidth, 
+                    left, 
+                    position: 'absolute', 
+                    height: styles.step.height, 
+                    backgroundColor: styles.inRange.backgroundColor 
+                }}/>
+            </View>
+        )
     }
 
     exactKnobs = () => {
@@ -469,7 +475,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         height: 30,
         width: 30,
-        // top: -((30 - 4) / 2)
     },
     more: { 
         fontSize: 20

@@ -89,11 +89,9 @@ const HelpRequestCard = observer(({
         const assignedResponders = [];
 
         for (let i = 0; i < respondersToAssign; i++) {
-            unAssignedResponders.push(<IconButton
-                style={styles.unAssignedResponderIcon}
-                icon='account' 
-                color={styles.unAssignedResponderIcon.color}
-                size={16} />)
+            unAssignedResponders.push(<UserIcon 
+                style={{ backgroundColor: styles.unAssignedResponderIcon.backgroundColor }}
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>)
         }
 
         for (let i = 0; i < request.assignedResponderIds.length; i++) {
@@ -277,11 +275,6 @@ const styles = StyleSheet.create({
     unAssignedResponderIcon: {
         color: '#fff',
         backgroundColor: '#DB0000',
-        width: 28,
-        height: 28,
-        borderRadius: 20,
-        margin: 0,
-        marginRight: 4,
         borderColor:'#DB0000',
         borderStyle: 'solid',
         borderWidth: 1

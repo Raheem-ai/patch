@@ -37,7 +37,6 @@ const PositionsInput = observer(({
             onChange: (val) => { 
                 const cpy = Object.assign({}, position.get(), { min: val.min, max: val.max }) as Position
                 position.set(cpy) 
-                console.log(cpy)
             },
             isValid: () => true,
             name: 'minmax',

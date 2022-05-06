@@ -194,9 +194,7 @@ const lib: Library = [
             isValid: () => true,
             headerLabel: () => 'People needed',
             placeholderLabel: () => 'People needed',
-            previewLabel: () => {
-                return state.get().map(pos => `${pos.id} :: ${pos.role} :: ${pos.attributes.length} :: ${pos.min}-${pos.max}`).join('\n')
-            },
+            icon: 'clipboard-account',
             props: {},
             name: 'positions',
             type: 'Positions'

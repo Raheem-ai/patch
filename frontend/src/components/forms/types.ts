@@ -255,6 +255,7 @@ export type ScreenFormInputViewConfig<InputType extends ScreenFormInputType = Sc
     // tell label component container not to navigate to screen 
     // component if areas outside the label component are pressed
     disableAutoExpandFromLabel?: boolean
+    hideExpandArrow?: boolean
 }
 
 
