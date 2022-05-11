@@ -131,7 +131,7 @@ export type Tag = {
     name: string
 }
 
-export type TagsMap = { [key: string]: string[] }
+// export type TagsMap = { [key: string]: string[] }
 
 export type MinTag = AtLeast<Tag, 'name'>
 
@@ -180,11 +180,12 @@ export type HelpRequest = {
     orgId: string
     location: AddressableLocation
     type: RequestType[]
+    // TODO: change to descriptiom
     notes: string
-    skills: RequestSkill[]
-    tags: TagsMap
+    // skills: RequestSkill[]
+    // tags: TagsMap
     // otherRequirements?: any //TODO: nix these until later on
-    respondersNeeded: number
+    // respondersNeeded: number
     chat: Chat
     dispatcherId: string
     status: RequestStatus
@@ -195,6 +196,35 @@ export type HelpRequest = {
     assignedResponderIds: string[]
     declinedResponderIds: string[]
     // removedResponderIds: string[]
+
+    callerName: string,
+    callerContactInfo: string,
+    callStartedAt: string,
+    callEndedAt: string,
+    priority: RequestPriority,
+    tagHandles: CategorizedItem[],
+    positions: Position[]
+}
+
+export type Position = {
+    id: string,
+    attributes: CategorizedItem[],
+    role: string,
+    min: number,
+    max: number,
+    joinedUsers: string[]
+}
+
+export enum PositionStatus {
+    MinSatisfied,
+    MinUnSatisfied,
+    Empty
+}
+
+export enum RequestPriority {
+    Low,
+    Medium,
+    High
 }
 
 export enum HelpRequestFilter {
@@ -210,7 +240,7 @@ export enum HelpRequestSortBy {
     // ByDistance = 'bd'
 };
 
-export type MinHelpRequest = AtLeast<HelpRequest, 'location' | 'type' | 'respondersNeeded' | 'skills'>
+export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
 export enum TeamFilter {
     Everyone = 'ev',
@@ -253,7 +283,9 @@ export enum RequestStatus {
 
 export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.assignedResponderIds.length} of ${req.respondersNeeded}`,
+    // TODO: update w/ convenience method for aggregating needed vs joined positions 
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `TODO: update`,
+    // [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.assignedResponderIds.length} of ${req.respondersNeeded}`,
     [RequestStatus.Ready]: 'Ready',
     [RequestStatus.OnTheWay]: 'On the way',
     [RequestStatus.OnSite]: 'On site',
@@ -951,15 +983,6 @@ export const DefaultRoles: Role[] = [
         ]
     }
 ]
-
-
-export type Position = {
-    id: string,
-    attributes: CategorizedItem[],
-    role: string,
-    min: number,
-    max: number
-}
 
 
 

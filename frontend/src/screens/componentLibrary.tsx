@@ -12,6 +12,8 @@ import { exp } from "react-native-reanimated";
 import { Text } from "react-native-paper";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
+import { TagsListInput } from "../components/forms/inputs/defaults/defaultTagListInputConfig";
+import { AttributesListInput } from "../components/forms/inputs/defaults/defaultAttributeListInputConfig";
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -127,7 +129,7 @@ const lib: Library = [
         state: observable.box<{ attributes: CategorizedItem[], tags: CategorizedItem[]}>({ attributes: [], tags: [] }),
         icon: 'tag',
         inputs: (state) => [[
-            {
+            AttributesListInput({
                 onSave: (items) => {
                     state.set(Object.assign({}, state.get(), { attributes: items }))
                 },
@@ -138,21 +140,9 @@ const lib: Library = [
                     return true
                 },
                 icon: 'tag-heart',
-                name: 'attributes',
-                placeholderLabel: () => 'Select some attributes',
-                headerLabel: () => 'Attributes',
-                type: 'CategorizedItemList',
-                props: {
-                    // categories: () => manageAttributesStore().categories,
-                    editStore: manageAttributesStore().editStore,
-                    editHeaderLabel: 'Edit attributes',
-                    addCategoryPlaceholderLabel: 'Add attribute category',
-                    addItemPlaceholderLabel: 'Add attribute',
-                    editPermissions: manageAttributesStore().editPermissions,
-                    onSaveToastLabel: 'Successfully updated Attributes' 
-                }
-            } as ScreenFormInputConfig<'CategorizedItemList'>, 
-            {
+                name: 'attributes'
+            }), 
+            TagsListInput({
                 onSave: (items) => {
                     state.set(Object.assign({}, state.get(), { tags: items }))
                 },
@@ -162,27 +152,15 @@ const lib: Library = [
                 isValid: () => {
                     return true
                 },
-                name: 'tags',
-                placeholderLabel: () => 'Select some tags',
-                headerLabel: () => 'Tags',
-                type: 'CategorizedItemList',
-                props: {
-                    // categories: () => manageTagsStore().categories,
-                    editStore: manageTagsStore().editStore,
-                    editHeaderLabel: 'Edit tags',
-                    addCategoryPlaceholderLabel: 'Add tag category',
-                    addItemPlaceholderLabel: 'Add tag',
-                    editPermissions: manageTagsStore().editPermissions,
-                    onSaveToastLabel: 'Successfully updated Tags' 
-                }
-            } as ScreenFormInputConfig<'CategorizedItemList'>
+                name: 'tags'
+            })
         ]]
     },
     {
         name: 'Positions input',
         description: '',
         state: observable.box<Position[]>([]),
-        icon: 'clipboard-account',
+        icon: 'account-multiple',
         inputs: (state: IObservableValue<Position[]>) => [{
             onSave: (data) => {
                 console.log(data)
@@ -194,7 +172,7 @@ const lib: Library = [
             isValid: () => true,
             headerLabel: () => 'People needed',
             placeholderLabel: () => 'People needed',
-            icon: 'clipboard-account',
+            icon: 'account-multiple',
             props: {},
             name: 'positions',
             type: 'Positions'

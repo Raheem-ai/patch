@@ -106,7 +106,7 @@ export type ScreenFormInputOptions = {
     },
     'Positions' : {
         props: {
-
+            editPermissions: PatchPermissions[]
         },
         type: Position[]
     }

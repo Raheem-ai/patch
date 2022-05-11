@@ -13,6 +13,8 @@ import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view
 import { StatusSelector } from "../components/statusSelector";
 import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
+import TabbedScreen from "../components/tabbedScreen";
+import PositionDetailsCard from "../components/positionDetailsCard";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -472,9 +474,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     if (isLoading || !request) {
         return null
     }
-    
-    return (
-        <VisualArea>
+
+    const overview = () => {
+        return (
             <WrappedScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsContainer}>
                     { header() }
@@ -484,12 +486,47 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 </View>
                 { statusPicker() }
                 { teamSection() }
-            </WrappedScrollView>
+            </WrappedScrollView> 
+        )
+    }
+
+    const team = () => {
+        return (
+            <>
+                {
+                    request.positions.map(pos => {
+                        return (
+                            <PositionDetailsCard pos={pos}/>
+                        )
+                    })
+                }
+            </>
+        )
+    }
+    
+    return (
+        <VisualArea>
+            <TabbedScreen defaultTab={Tabs.Overview} tabs={[
+                {
+                    label: Tabs.Overview,
+                    view: overview
+                },
+                {
+                    label: Tabs.Team,
+                    view: team
+                }
+            ]}/>
         </VisualArea>
     );
 });
 
 export default HelpRequestDetails;
+
+enum Tabs {
+    Overview = 'OVERVIEW', 
+    Channel = 'CHANNEL',
+    Team = 'TEAM'
+}
 
 const styles = StyleSheet.create({
     detailsContainer: {

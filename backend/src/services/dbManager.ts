@@ -1100,51 +1100,52 @@ export class DBManager {
 
     // TODO: delete
     async removeTag(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session?: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-        if (categoryIndex >= 0) {
-            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+        // const org = await this.resolveOrganization(orgId);
+        // const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+        // if (categoryIndex >= 0) {
+        //     const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
 
-            // Remove the Tag from the Tag Category list.
-            if (tagIndex >= 0) {
-                org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
-                org.markModified('tagCategories');
+        //     // Remove the Tag from the Tag Category list.
+        //     if (tagIndex >= 0) {
+        //         org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+        //         org.markModified('tagCategories');
 
-                // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
-                for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
-                    if (tagIndex >= 0) {
-                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tags[categoryId].splice(tagIndex, 1);
-                        requests[i].markModified('tagIds');
-                    }
-                }
+        //         // Remove the tag id from Help Requests that currently have this tag.
+        //         // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
+        //         const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
+        //         for (let i = 0; i < requests.length; i++) {
+        //             let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
+        //             if (tagIndex >= 0) {
+        //                 // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+        //                 requests[i].tags[categoryId].splice(tagIndex, 1);
+        //                 requests[i].markModified('tagIds');
+        //             }
+        //         }
 
-                if (session) {
-                    // TODO: return all objects to be saved (requests and org)?
-                    // This would introduce different return types based on the path...
-                    // return [org, requests] vs. return or
-                    for (const request of requests) {
-                        await request.save({ session });
-                    }
+        //         if (session) {
+        //             // TODO: return all objects to be saved (requests and org)?
+        //             // This would introduce different return types based on the path...
+        //             // return [org, requests] vs. return or
+        //             for (const request of requests) {
+        //                 await request.save({ session });
+        //             }
 
-                    return await org.save({ session });
-                } else {
-                    return this.transaction(async (newSession) => {
-                        for (const request of requests) {
-                            await request.save({ session: newSession });
-                        }
-                        return await org.save({ session: newSession });
-                    })
-                }
-            }
+        //             return await org.save({ session });
+        //         } else {
+        //             return this.transaction(async (newSession) => {
+        //                 for (const request of requests) {
+        //                     await request.save({ session: newSession });
+        //                 }
+        //                 return await org.save({ session: newSession });
+        //             })
+        //         }
+        //     }
 
-            throw `Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${orgId}`;
-        }
+        //     throw `Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${orgId}`;
+        // }
 
-        throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        // throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        return null;
     }
 
     // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
@@ -1164,14 +1165,15 @@ export class DBManager {
                 // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
                 const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
                 
-                for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
-                    if (tagIndex >= 0) {
-                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tags[categoryId].splice(tagIndex, 1);
-                        requests[i].markModified('tagIds');
-                    }
-                }
+                // TODO: update logic
+                // for (let i = 0; i < requests.length; i++) {
+                //     let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
+                //     if (tagIndex >= 0) {
+                //         // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+                //         requests[i].tags[categoryId].splice(tagIndex, 1);
+                //         requests[i].markModified('tagIds');
+                //     }
+                // }
 
                 for (const request of requests) {
                     await request.save({ session });
@@ -1204,11 +1206,13 @@ export class DBManager {
         req.dispatcherId = dispatcherId;
         req.assignedResponderIds ||= [];
 
-        req.status ||= req.assignedResponderIds.length 
-            ? req.respondersNeeded && req.assignedResponderIds.length < req.respondersNeeded
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Ready
-            : RequestStatus.Unassigned;
+        // TODO: update logic
+        req.status ||= RequestStatus.Unassigned;
+        // req.status ||= req.assignedResponderIds.length 
+        //     ? req.respondersNeeded && req.assignedResponderIds.length < req.respondersNeeded
+        //         ? RequestStatus.PartiallyAssigned
+        //         : RequestStatus.Ready
+        //     : RequestStatus.Unassigned;
 
         const org = await this.resolveOrganization(orgId)
 
@@ -1344,11 +1348,12 @@ export class DBManager {
             request.declinedResponderIds.splice(idx, 1)
         }
 
-        if (request.status == RequestStatus.Unassigned || request.status == RequestStatus.PartiallyAssigned) {
-            request.status = request.respondersNeeded > request.assignedResponderIds.length
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Ready;
-        }
+        // TODO: update this logic
+        // if (request.status == RequestStatus.Unassigned || request.status == RequestStatus.PartiallyAssigned) {
+        //     request.status = request.respondersNeeded > request.assignedResponderIds.length
+        //         ? RequestStatus.PartiallyAssigned
+        //         : RequestStatus.Ready;
+        // }
 
         return await request.save()
     }
@@ -1668,7 +1673,6 @@ export class DBManager {
 
             const minRequests: MinHelpRequest[] = [
                 {
-                    skills: [RequestSkill.CPR, RequestSkill.ConflictResolution],
                     type: [RequestType.ConflictResolution, RequestType.DomesticDisturbance],
                     location: {
                         latitude: 40.69776419999999,
@@ -1676,10 +1680,8 @@ export class DBManager {
                         address: "960 Willoughby Avenue, Brooklyn, NY, USA"
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                    respondersNeeded: 2
                 },
                 {
-                    skills: [RequestSkill.SubstanceUseTreatment],
                     type: [RequestType.ConflictResolution, RequestType.FirstAid, RequestType.SubstanceCounseling],
                     location: {
                         latitude: 40.70107496314848,
@@ -1687,10 +1689,8 @@ export class DBManager {
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                    respondersNeeded: 1
                 },
                 {
-                    skills: [RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment, RequestSkill.FirstAid, RequestSkill.CPR],
                     type: [RequestType.ConflictResolution],
                     location: {
                         latitude: 40.70107496314848,
@@ -1698,10 +1698,8 @@ export class DBManager {
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    respondersNeeded: 4,
                 },
                 {
-                    skills: [RequestSkill.French, RequestSkill.TraumaCounseling, RequestSkill.SubstanceUseTreatment],
                     type: [RequestType.Counseling],
                     location: {
                         latitude: 40.70107496314848,
@@ -1709,7 +1707,6 @@ export class DBManager {
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    respondersNeeded: 2,
                     assignedResponderIds: [user1.id, user2.id],
                     status: RequestStatus.Done
                 }
