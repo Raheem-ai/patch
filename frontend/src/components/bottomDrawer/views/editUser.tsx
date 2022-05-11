@@ -7,8 +7,9 @@ import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
-import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
+import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
@@ -68,6 +69,15 @@ export default class EditUser extends React.Component {
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs()
+        }
+    }
+
+    onItemDeleted = (index: number) => {
+        console.log('Delete: ', index);
+        if (index != -1) {
+            const updatedSelection = editUserStore().roles.slice()
+            updatedSelection.splice(index, 1);
+            editUserStore().roles = updatedSelection;
         }
     }
 
@@ -170,13 +180,13 @@ export default class EditUser extends React.Component {
     }
 
     editMeInputs(): [
-        InlineFormInputConfig<'TextInput'>, 
-        InlineFormInputConfig<'TextInput'>, 
-        InlineFormInputConfig<'TextInput'>, 
-        ScreenFormInputConfig<'TagList'>,
-        ScreenFormInputConfig<'TagList'>,
-        InlineFormInputConfig<'TextInput'>, 
-        ScreenFormInputConfig<'TextArea'>
+        InlineFormInputConfig<'TextInput'>,
+        ScreenFormInputConfig<'TextArea'>,
+        InlineFormInputConfig<'TextInput'>,
+        InlineFormInputConfig<'TextInput'>,
+        InlineFormInputConfig<'TextInput'>,
+        ScreenFormInputConfig<'RoleList'>,
+        ScreenFormInputConfig<'CategorizedItemList'>
     ] {
         return [
             {
@@ -190,6 +200,47 @@ export default class EditUser extends React.Component {
                 name: 'name',
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
+                icon: 'account',
+            },
+            {
+                onSave: (bio) => editUserStore().bio = bio,
+                val: () => {
+                    return editUserStore().bio
+                },
+                isValid: () => {
+                    return editUserStore().bioValid
+                },
+                name: 'bio',
+                previewLabel: () => editUserStore().bio,
+                headerLabel: () => 'Bio',
+                placeholderLabel: () => 'Bio',
+                type: 'TextArea',
+            },
+            {
+                onChange: (pronouns) => editUserStore().pronouns = pronouns,
+                val: () => {
+                    return editUserStore().pronouns
+                },
+                isValid: () => {
+                    return editUserStore().pronounsValid
+                },
+                name: 'pronouns',
+                placeholderLabel: () => 'Pronouns',
+                type: 'TextInput',
+            },
+            {
+                onChange: (phone) => editUserStore().phone = phone,
+                val: () => {
+                    return editUserStore().phone
+                },
+                isValid: () => {
+                    return editUserStore().phoneValid
+                },
+                name: 'phone',
+                placeholderLabel: () => 'Phone',
+                type: 'TextInput',
+                icon: 'clipboard-account',
+                required: true
             },
             {
                 onChange: (email) => editUserStore().email = email,
@@ -206,93 +257,39 @@ export default class EditUser extends React.Component {
                 disabled: true
             },
             {
-                onChange: (phone) => editUserStore().phone = phone,
                 val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
-                name: 'phone',
-                placeholderLabel: () => 'Phone',
-                type: 'TextInput',
-                required: true
-            },
-            {
-                onSave: (roles) => editUserStore().roles = roles,
-                val: () => {
+                    console.log('User roles: ', editUserStore().roles);
                     return editUserStore().roles
+                },
+                onSave: (roles) => {
+                    console.log(roles)
+                    editUserStore().roles = roles
                 },
                 isValid: () => {
                     return editUserStore().rolesValid
                 },
+                headerLabel: 'Roles',
+                placeholderLabel: 'Roles',
+                previewLabel: () => editUserStore().roles.map(roleId => {
+                        return organizationStore().roles.get(roleId)?.name
+                    }).join(),
                 name: 'roles',
-                previewLabel: () => null,
-                headerLabel: () => 'Roles',
-                placeholderLabel: () => 'Roles',
-                type: 'TagList',
-                // TODO: remove when we update roles here too
-                disabled: true,
+                type: 'RoleList',
+                icon: 'key',
+                disabled: false,
                 props: {
-                    options: allEnumValues(UserRole),
-                    optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
-                    optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                     multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().roles.splice(idx, 1)
-                    },
+                    onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
             },
-            {
-                onSave: (skills) => editUserStore().skills = skills,
-                val: () => {
-                    return editUserStore().skills
+            AttributesListInput({
+                val: () => null,
+                onSave: (val) => { 
+                    
                 },
-                isValid: () => {
-                    return editUserStore().skillsValid
-                },
-                name: 'skills',
-                previewLabel: () => null,
-                headerLabel: () => 'Skills',
-                placeholderLabel: () => 'Skills',
-                type: 'TagList',
-                disabled: true,
-                props: {
-                    options: allEnumValues(RequestSkill),
-                    optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().skills.splice(idx, 1)
-                    },
-                    dark: true
-                },
-            },
-            {
-                onChange: (pronouns) => editUserStore().pronouns = pronouns,
-                val: () => {
-                    return editUserStore().pronouns
-                },
-                isValid: () => {
-                    return editUserStore().pronounsValid
-                },
-                name: 'pronouns',
-                placeholderLabel: () => 'Pronouns',
-                type: 'TextInput',
-            },
-            {
-                onSave: (bio) => editUserStore().bio = bio,
-                val: () => {
-                    return editUserStore().bio
-                },
-                isValid: () => {
-                    return editUserStore().bioValid
-                },
-                name: 'bio',
-                previewLabel: () => editUserStore().bio,
-                headerLabel: () => 'Bio',
-                placeholderLabel: () => 'Bio',
-                type: 'TextArea',
-            },
+                isValid: () => true,
+                name: 'attributes'
+            })
         ]
     }
 

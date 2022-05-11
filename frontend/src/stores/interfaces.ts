@@ -372,7 +372,7 @@ export namespace IEditUserStore {
 }
 
 export interface IEditUserStore extends ITempUserStore {
-    roles: UserRole[]
+    roles: string[]
     id: string;
 
     myChangesValid: boolean

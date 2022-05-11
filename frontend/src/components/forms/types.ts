@@ -101,6 +101,7 @@ export type ScreenFormInputOptions = {
     'RoleList': {
         props: {
             multiSelect?: boolean
+            onItemDeleted?: (idx: number, val: any) => void
         },
         type: string[]
     },

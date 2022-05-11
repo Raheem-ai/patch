@@ -55,7 +55,7 @@ export default class EditUserStore implements IEditUserStore {
         this.skills = user.skills || []
         this.pronouns = user.pronouns || ''
 
-        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roles || []
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
 
         this.oldMe = user
     }
@@ -70,7 +70,7 @@ export default class EditUserStore implements IEditUserStore {
         this.skills = user.skills || []
         this.pronouns = user.pronouns || ''
 
-        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roles || []
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
 
         this.oldUser = user
     }
@@ -154,7 +154,7 @@ export default class EditUserStore implements IEditUserStore {
             race: this.race || undefined,
             pronouns: this.pronouns || undefined,
             bio: this.bio || undefined,
+            // TODO: Add roles and attributes
         })
     }
-   
 }
