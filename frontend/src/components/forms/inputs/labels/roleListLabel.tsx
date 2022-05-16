@@ -36,6 +36,7 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
                         verticalMargin={6} 
                         horizontalTagMargin={6}
                         tags={selectedRoles}
+                        dark={true}
                         onTagDeleted={config.props?.onItemDeleted ? config.props.onItemDeleted : null}/>
                 </View>
             }
