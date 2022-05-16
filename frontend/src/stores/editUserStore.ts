@@ -166,8 +166,8 @@ export default class EditUserStore implements IEditUserStore {
             bio: this.bio || undefined
         },
         {
-            roleIds: this.roles,
-            attributes: this.attributes
+            roleIds: this.roles || undefined,
+            attributes: this.attributes || undefined
         })
     }
 }
