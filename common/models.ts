@@ -23,11 +23,15 @@ export interface User {
 
 export type EditableUser = Pick<ProtectedUser, 'organizations' | 'skills' >
 export type EditableMe = Omit<Me, 'organizations' | 'skills'>
+export type AdminEditableUser = {
+    roleIds: string[],
+    attributes: CategorizedItem[]
+}
 
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
-    attributes: AttributesMap,
+    attributes: CategorizedItem[],
     onDuty: boolean
 }
 
@@ -140,7 +144,7 @@ export type PendingUser = {
     phone: string
     roles: UserRole[]
     roleIds: string[]
-    attributes: AttributesMap
+    attributes: CategorizedItem[]
     skills: RequestSkill[]
     pendingId: string
 }
