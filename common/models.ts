@@ -23,10 +23,7 @@ export interface User {
 
 export type EditableUser = Pick<ProtectedUser, 'organizations' | 'skills' >
 export type EditableMe = Omit<Me, 'organizations' | 'skills'>
-export type AdminEditableUser = {
-    roleIds: string[],
-    attributes: CategorizedItem[]
-}
+export type AdminEditableUser = Pick<UserOrgConfig, 'roleIds' | 'attributes'>
 
 export type UserOrgConfig = {
     roles: UserRole[],
