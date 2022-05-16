@@ -1,8 +1,8 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
-import { MongooseModel } from "@tsed/mongoose";
+import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
-import { Enum, Format, Optional, Property, Required } from "@tsed/schema";
+import { CollectionOf, Enum, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
 import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, PatchPermissions, ProtectedUser, RequestSkill, resolvePermissionsFromRoles, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
@@ -15,6 +15,7 @@ import { DBManager } from "../services/dbManager";
 import config from '../config';
 import { PubSubService } from "../services/pubSubService";
 import { OrganizationDoc } from "../models/organization";
+import { userHasPermissions } from "./utils";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -37,12 +38,24 @@ export class ValidatedBasicCredentials implements BasicCredentials {
     password: string;
 }
 
+@Schema()
+class CategorizedItemSchema implements CategorizedItem {
+    @Required() categoryId: string
+    @Required() itemId: string
+}
+
 export class ValidatedEditableUser implements Partial<AdminEditableUser> {
     @Optional()
     @Property()
     @Enum(RequestSkill)
     skills: RequestSkill[]
+
+    @Optional()
+    @CollectionOf(String)
     roleIds: string[]
+
+    @Optional()
+    @CollectionOf(CategorizedItemSchema)
     attributes: CategorizedItem[]
 }
 
@@ -273,11 +286,12 @@ export class UsersController implements APIController<
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @BodyParams('me') me: ValidatedMe,
-        @BodyParams('protectedUser') protectedUser: AdminEditableUser
+        @BodyParams('protectedUser') protectedUser: ValidatedEditableUser
     ) {
-        if ('roleIds' in protectedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignRoles])) {
+        const org = await this.db.resolveOrganization(orgId);
+        if ('roleIds' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
             throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
-        } else if ('attributes' in protectedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignAttributes])) {
+        } else if ('attributes' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
             throw new Unauthorized('You do not have permission to edit Attributes associated with your profile.');
         }
 
@@ -296,11 +310,13 @@ export class UsersController implements APIController<
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @BodyParams('userId') userId: string,
-        @BodyParams('user') updatedUser: AdminEditableUser
+        @BodyParams('user') updatedUser: ValidatedEditableUser
     ) {
-        if ('roleIds' in updatedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignRoles])) {
+        const org = await this.db.resolveOrganization(orgId);
+
+        if ('roleIds' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
             throw new Unauthorized("You do not have permission to edit Roles associated with this user's profile.");
-        } else if ('attributes' in updatedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignAttributes])) {
+        } else if ('attributes' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
             throw new Unauthorized("You do not have permission to edit Attributes associated with this user's profile.");
         }
 
@@ -311,39 +327,6 @@ export class UsersController implements APIController<
         })
 
         return res;
-    }
-
-    // TODO: copied from organizationController. Where is a central location we can put this?
-    async userHasPermissions(user: UserDoc, orgId: string | OrganizationDoc, requiredPermissions: PatchPermissions[]): Promise<boolean> {
-        const org = await this.db.resolveOrganization(orgId);
-
-        const orgConfig = user.organizations && user.organizations[org.id];
-        if (!orgConfig) {
-            throw new Forbidden(`You do not have access to the requested org.`);
-        }
-
-        // Get all the roles that belong to a user.
-        const userRoles = [];
-        orgConfig.roleIds.forEach(id => {
-            const assignedRole = org.roleDefinitions.find(
-                roleDef => roleDef.id == id
-            );    
-            if (assignedRole) {
-                userRoles.push(assignedRole);
-            }
-        });
-
-        // Resolve all the permissions granted to a user based on their role(s).
-        const userPermissions = resolvePermissionsFromRoles(userRoles);
-        for (const permission of requiredPermissions) {
-            // If any required permission is missing, return false.
-            if (!userPermissions.has(permission as PatchPermissions)) {
-                return false;
-            }
-        }
-
-        // If we make it here then all required permissions were found.
-        return true;
     }
 }
 
