@@ -20,7 +20,7 @@ export default class NewUserStore implements INewUserStore {
     @persistent() skills = []
     @persistent() roles = []
     @persistent() roleIds = []
-    @persistent() attributes = {}
+    @persistent() attributes = []
     @persistent() pronouns? = ''
 
 
