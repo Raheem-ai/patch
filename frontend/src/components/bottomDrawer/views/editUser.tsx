@@ -1,14 +1,14 @@
 import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 import { PatchPermissions, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigateTo } from "../../../navigation";
+import { navigateTo, navigationRef } from "../../../navigation";
 import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
-import { routerNames, ScreenProps } from "../../../types";
+import { Colors, routerNames, ScreenProps } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -80,6 +80,18 @@ export default class EditUser extends React.Component {
             editUserStore().roles = updatedSelection;
         }
     }
+
+    removeUserFromOrg = async () => {
+        try {
+            await userStore().removeCurrentUserFromOrg();
+            // TODO: Handle navigation after removal.
+            navigationRef.current?.goBack();
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        }
+    }
+
+    canRemoveUser = () => editUserStore().id == userStore().user.id || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
 
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
@@ -211,6 +223,20 @@ export default class EditUser extends React.Component {
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
                     <Form {...this.formProps()}/>
+                    {this.canRemoveUser()
+                    ? <View style={styles.actionButtonsContainer}>
+                        <Button 
+                            mode= 'outlined'
+                            uppercase={false}
+                            style={styles.actionButton}
+                            color={styles.actionButton.borderColor}
+                            onPress={this.removeUserFromOrg}
+                            >
+                                {'Remove from organization'}
+                        </Button>
+                    </View>
+                    : null
+            }
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
@@ -218,4 +244,18 @@ export default class EditUser extends React.Component {
 }
 
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    actionButtonsContainer: {
+        alignContent: 'center',
+        marginVertical: 20
+    },
+    actionButton: {
+        borderColor: Colors.primary.alpha,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderRadius: 24,
+        height: 44,
+        justifyContent: 'center',
+        marginHorizontal: 38
+    },
+})
