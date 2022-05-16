@@ -278,7 +278,7 @@ export class UsersController implements APIController<
         if ('roleIds' in protectedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignRoles])) {
             throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
         } else if ('attributes' in protectedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignAttributes])) {
-            throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
+            throw new Unauthorized('You do not have permission to edit Attributes associated with your profile.');
         }
 
         const res = await this.db.updateUser(orgId, user, protectedUser, me);
@@ -299,9 +299,9 @@ export class UsersController implements APIController<
         @BodyParams('user') updatedUser: AdminEditableUser
     ) {
         if ('roleIds' in updatedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignRoles])) {
-            throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
+            throw new Unauthorized("You do not have permission to edit Roles associated with this user's profile.");
         } else if ('attributes' in updatedUser && !await this.userHasPermissions(user, orgId, [PatchPermissions.AssignAttributes])) {
-            throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
+            throw new Unauthorized("You do not have permission to edit Attributes associated with this user's profile.");
         }
 
         const res = await this.db.updateUser(orgId, userId, updatedUser);
