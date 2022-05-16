@@ -2,13 +2,14 @@ import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
+import { PatchPermissions, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo } from "../../../navigation";
 import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { routerNames, ScreenProps } from "../../../types";
+import { iHaveAllPermissions } from "../../../utils";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -81,14 +82,10 @@ export default class EditUser extends React.Component {
         }
     }
 
-    editUserInputs(): [
-        InlineFormInputConfig<'TextInput'>, 
-        InlineFormInputConfig<'TextInput'>, 
-        InlineFormInputConfig<'TextInput'>, 
-        ScreenFormInputConfig<'TagList'>,
-        ScreenFormInputConfig<'TagList'>,
-    ] {
-        return [
+    editUserInputs = () => {
+        const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+        const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+        const inputs = [
             {
                 onChange: (name) => editUserStore().name = name,
                 val: () => {
@@ -101,7 +98,7 @@ export default class EditUser extends React.Component {
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
                 disabled: true
-            },
+            } as InlineFormInputConfig<'TextInput'>,
             {
                 onChange: (email) => editUserStore().email = email,
                 val: () => {
@@ -114,7 +111,7 @@ export default class EditUser extends React.Component {
                 placeholderLabel: () => 'Email',
                 type: 'TextInput',
                 disabled: true
-            },
+            } as InlineFormInputConfig<'TextInput'>,
             {
                 onChange: (phone) => editUserStore().phone = phone,
                 val: () => {
@@ -127,140 +124,11 @@ export default class EditUser extends React.Component {
                 placeholderLabel: () => 'Phone',
                 type: 'TextInput',
                 disabled: true
-            },
-            {
-                onSave: (roles) => editUserStore().roles = roles,
-                val: () => {
-                    return editUserStore().roles
-                },
-                isValid: () => {
-                    return editUserStore().rolesValid
-                },
-                name: 'roles',
-                previewLabel: () => null,
-                headerLabel: () => 'Roles',
-                placeholderLabel: () => 'Roles',
-                type: 'TagList',
-                // tTODO: remove when we update roles here too
-                disabled: true,
-                props: {
-                    options: allEnumValues(UserRole),
-                    optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
-                    optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().roles.splice(idx, 1)
-                    },
-                },
-            },
-            {
-                onSave: (skills) => editUserStore().skills = skills,
-                val: () => {
-                    return editUserStore().skills
-                },
-                isValid: () => {
-                    return editUserStore().skillsValid
-                },
-                name: 'skills',
-                previewLabel: () => null,
-                headerLabel: () => 'Skills',
-                placeholderLabel: () => 'Skills',
-                type: 'TagList',
-                props: {
-                    options: allEnumValues(RequestSkill),
-                    optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().skills.splice(idx, 1)
-                    },
-                    dark: true
-                },
-            }
-        ]
-    }
-
-    editMeInputs(): [
-        InlineFormInputConfig<'TextInput'>,
-        ScreenFormInputConfig<'TextArea'>,
-        InlineFormInputConfig<'TextInput'>,
-        InlineFormInputConfig<'TextInput'>,
-        InlineFormInputConfig<'TextInput'>,
-        ScreenFormInputConfig<'RoleList'>,
-        ScreenFormInputConfig<'CategorizedItemList'>
-    ] {
-        return [
-            {
-                onChange: (name) => editUserStore().name = name,
-                val: () => {
-                    return editUserStore().name
-                },
-                isValid: () => {
-                    return editUserStore().nameValid
-                },
-                name: 'name',
-                placeholderLabel: () => 'Name',
-                type: 'TextInput',
-                icon: 'account',
-            },
-            {
-                onSave: (bio) => editUserStore().bio = bio,
-                val: () => {
-                    return editUserStore().bio
-                },
-                isValid: () => {
-                    return editUserStore().bioValid
-                },
-                name: 'bio',
-                previewLabel: () => editUserStore().bio,
-                headerLabel: () => 'Bio',
-                placeholderLabel: () => 'Bio',
-                type: 'TextArea',
-            },
-            {
-                onChange: (pronouns) => editUserStore().pronouns = pronouns,
-                val: () => {
-                    return editUserStore().pronouns
-                },
-                isValid: () => {
-                    return editUserStore().pronounsValid
-                },
-                name: 'pronouns',
-                placeholderLabel: () => 'Pronouns',
-                type: 'TextInput',
-            },
-            {
-                onChange: (phone) => editUserStore().phone = phone,
-                val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
-                name: 'phone',
-                placeholderLabel: () => 'Phone',
-                type: 'TextInput',
-                icon: 'clipboard-account',
-                required: true
-            },
-            {
-                onChange: (email) => editUserStore().email = email,
-                val: () => {
-                    return editUserStore().email
-                },
-                isValid: () => {
-                    return editUserStore().emailValid
-                },
-                name: 'email',
-                placeholderLabel: () => 'Email',
-                type: 'TextInput',
-                // TODO: remove when we have logic for changing email
-                disabled: true
-            },
-            {
-                val: () => {
-                    console.log('User roles: ', editUserStore().roles);
-                    return editUserStore().roles
-                },
+            } as InlineFormInputConfig<'TextInput'>,
+            // TODO: prevent display entirely or disable?
+            canEditRoles
+            ? {
+                val: () => editUserStore().roles,
                 onSave: (roles) => {
                     console.log(roles)
                     editUserStore().roles = roles
@@ -281,16 +149,130 @@ export default class EditUser extends React.Component {
                     multiSelect: true,
                     onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
+            } as ScreenFormInputConfig<'RoleList'>
+            : null,
+        canEditAttributes
+        ? AttributesListInput({
+            val: () => editUserStore().attributes,
+            onSave: (attributes) => { 
+                editUserStore().attributes = attributes;
             },
-            AttributesListInput({
-                val: () => null,
-                onSave: (val) => { 
-                    
+            isValid: () => true,
+            name: 'attributes'
+        }) as ScreenFormInputConfig<'CategorizedItemList'>
+        : null
+        ].filter(v => !!v);
+
+        return inputs;
+    }
+    editMeInputs = () => {
+        const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+        const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+        const inputs = [
+            {
+                onChange: (name) => editUserStore().name = name,
+                val: () => {
+                    return editUserStore().name
+                },
+                isValid: () => {
+                    return editUserStore().nameValid
+                },
+                name: 'name',
+                placeholderLabel: () => 'Name',
+                type: 'TextInput',
+                icon: 'account',
+            } as InlineFormInputConfig<'TextInput'>,
+            {
+                onSave: (bio) => editUserStore().bio = bio,
+                val: () => {
+                    return editUserStore().bio
+                },
+                isValid: () => {
+                    return editUserStore().bioValid
+                },
+                name: 'bio',
+                previewLabel: () => editUserStore().bio,
+                headerLabel: () => 'Bio',
+                placeholderLabel: () => 'Bio',
+                type: 'TextArea',
+            } as ScreenFormInputConfig<'TextArea'>,
+            {
+                onChange: (pronouns) => editUserStore().pronouns = pronouns,
+                val: () => {
+                    return editUserStore().pronouns
+                },
+                isValid: () => {
+                    return editUserStore().pronounsValid
+                },
+                name: 'pronouns',
+                placeholderLabel: () => 'Pronouns',
+                type: 'TextInput',
+            } as InlineFormInputConfig<'TextInput'>,,
+            {
+                onChange: (phone) => editUserStore().phone = phone,
+                val: () => {
+                    return editUserStore().phone
+                },
+                isValid: () => {
+                    return editUserStore().phoneValid
+                },
+                name: 'phone',
+                placeholderLabel: () => 'Phone',
+                type: 'TextInput',
+                icon: 'clipboard-account',
+                required: true
+            } as InlineFormInputConfig<'TextInput'>,,
+            {
+                onChange: (email) => editUserStore().email = email,
+                val: () => {
+                    return editUserStore().email
+                },
+                isValid: () => {
+                    return editUserStore().emailValid
+                },
+                name: 'email',
+                placeholderLabel: () => 'Email',
+                type: 'TextInput',
+                // TODO: remove when we have logic for changing email
+                disabled: true
+            } as InlineFormInputConfig<'TextInput'>,
+            // TODO: prevent display entirely or disable?
+            canEditRoles
+                ? {
+                    val: () => editUserStore().roles,
+                    onSave: (roles) => {
+                        console.log(roles)
+                        editUserStore().roles = roles
+                    },
+                    isValid: () => editUserStore().rolesValid,
+                    headerLabel: 'Roles',
+                    placeholderLabel: 'Roles',
+                    previewLabel: () => editUserStore().roles.map(roleId => {
+                            return organizationStore().roles.get(roleId)?.name
+                        }).join(),
+                    name: 'roles',
+                    type: 'RoleList',
+                    icon: 'key',
+                    disabled: false,
+                    props: {
+                        multiSelect: true,
+                        onItemDeleted: (idx) => this.onItemDeleted(idx)
+                    },
+                } as ScreenFormInputConfig<'RoleList'>
+                : null,
+            canEditAttributes
+            ? AttributesListInput({
+                val: () => editUserStore().attributes,
+                onSave: (attributes) => { 
+                    editUserStore().attributes = attributes;
                 },
                 isValid: () => true,
                 name: 'attributes'
-            })
-        ]
+            }) as ScreenFormInputConfig<'CategorizedItemList'>
+            : null
+        ].filter(v => !!v);
+
+        return inputs;
     }
 
     render() {

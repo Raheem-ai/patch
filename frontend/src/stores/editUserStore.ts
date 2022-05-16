@@ -19,6 +19,7 @@ export default class EditUserStore implements IEditUserStore {
     @persistent() bio = ''
     @persistent() skills = []
     @persistent() roles = []
+    @persistent() attributes = []
     @persistent() pronouns = ''
 
     @persistent() oldMe: Me = null;
@@ -39,6 +40,7 @@ export default class EditUserStore implements IEditUserStore {
         this.bio = ''
         this.skills = []
         this.roles = []
+        this.attributes = []
         this.pronouns = ''
         this.oldMe = null
         this.oldUser = null
@@ -56,6 +58,7 @@ export default class EditUserStore implements IEditUserStore {
         this.pronouns = user.pronouns || ''
 
         this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
+        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || []
 
         this.oldMe = user
     }
@@ -71,6 +74,7 @@ export default class EditUserStore implements IEditUserStore {
         this.pronouns = user.pronouns || ''
 
         this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
+        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || []
 
         this.oldUser = user
     }
@@ -83,7 +87,9 @@ export default class EditUserStore implements IEditUserStore {
             this.displayColorValid &&
             this.raceValid &&
             this.pronounsValid &&
-            this.bioValid 
+            this.bioValid &&
+            this.rolesValid &&
+            this.attributesValid
     }
 
     get userChangesValid() {
@@ -132,16 +138,20 @@ export default class EditUserStore implements IEditUserStore {
         // return !!this.roles.length
     }
 
+    get attributesValid(){
+        return true
+        // return !!this.attributes.length
+    }
+
     get pronounsValid(){
         // return !!this.pronouns.length
         return true
     }
 
     editUser = async () => {
-        // TODO: add roles to this
         return await userStore().editUser(this.id, {
-            skills: this.skills,
-
+            roleIds: this.roles,
+            attributes: this.attributes
         })
     }
 
@@ -153,8 +163,11 @@ export default class EditUserStore implements IEditUserStore {
             displayColor: this.displayColor || undefined,
             race: this.race || undefined,
             pronouns: this.pronouns || undefined,
-            bio: this.bio || undefined,
-            // TODO: Add roles and attributes
+            bio: this.bio || undefined
+        },
+        {
+            roleIds: this.roles,
+            attributes: this.attributes
         })
     }
 }
