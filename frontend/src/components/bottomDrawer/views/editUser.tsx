@@ -85,52 +85,10 @@ export default class EditUser extends React.Component {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
         const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
         const inputs = [
-            {
-                onChange: (name) => editUserStore().name = name,
-                val: () => {
-                    return editUserStore().name
-                },
-                isValid: () => {
-                    return editUserStore().nameValid
-                },
-                name: 'name',
-                placeholderLabel: () => 'Name',
-                type: 'TextInput',
-                disabled: true
-            } as InlineFormInputConfig<'TextInput'>,
-            {
-                onChange: (email) => editUserStore().email = email,
-                val: () => {
-                    return editUserStore().email
-                },
-                isValid: () => {
-                    return editUserStore().emailValid
-                },
-                name: 'email',
-                placeholderLabel: () => 'Email',
-                type: 'TextInput',
-                disabled: true
-            } as InlineFormInputConfig<'TextInput'>,
-            {
-                onChange: (phone) => editUserStore().phone = phone,
-                val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
-                name: 'phone',
-                placeholderLabel: () => 'Phone',
-                type: 'TextInput',
-                disabled: true
-            } as InlineFormInputConfig<'TextInput'>,
-            // TODO: prevent display entirely or disable?
             canEditRoles
             ? {
                 val: () => editUserStore().roles,
-                onSave: (roles) => {
-                    editUserStore().roles = roles
-                },
+                onSave: (roles) => editUserStore().roles = roles,
                 isValid: () => {
                     return editUserStore().rolesValid
                 },
@@ -152,10 +110,9 @@ export default class EditUser extends React.Component {
         canEditAttributes
         ? AttributesListInput({
             val: () => editUserStore().attributes,
-            onSave: (attributes) => { 
-                editUserStore().attributes = attributes;
-            },
+            onSave: (attributes) => editUserStore().attributes = attributes,
             isValid: () => true,
+            icon: 'tag-heart',
             name: 'attributes'
         }) as ScreenFormInputConfig<'CategorizedItemList'>
         : null
@@ -167,14 +124,10 @@ export default class EditUser extends React.Component {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
         const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
         const inputs = [
-            {
+            [{
                 onChange: (name) => editUserStore().name = name,
-                val: () => {
-                    return editUserStore().name
-                },
-                isValid: () => {
-                    return editUserStore().nameValid
-                },
+                val: () => editUserStore().name,
+                isValid: () => editUserStore().nameValid,
                 name: 'name',
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
@@ -182,12 +135,8 @@ export default class EditUser extends React.Component {
             } as InlineFormInputConfig<'TextInput'>,
             {
                 onSave: (bio) => editUserStore().bio = bio,
-                val: () => {
-                    return editUserStore().bio
-                },
-                isValid: () => {
-                    return editUserStore().bioValid
-                },
+                val: () => editUserStore().bio,
+                isValid: () => editUserStore().bioValid,
                 name: 'bio',
                 previewLabel: () => editUserStore().bio,
                 headerLabel: () => 'Bio',
@@ -196,24 +145,16 @@ export default class EditUser extends React.Component {
             } as ScreenFormInputConfig<'TextArea'>,
             {
                 onChange: (pronouns) => editUserStore().pronouns = pronouns,
-                val: () => {
-                    return editUserStore().pronouns
-                },
-                isValid: () => {
-                    return editUserStore().pronounsValid
-                },
+                val: () => editUserStore().pronouns,
+                isValid: () => editUserStore().pronounsValid,
                 name: 'pronouns',
                 placeholderLabel: () => 'Pronouns',
                 type: 'TextInput',
-            } as InlineFormInputConfig<'TextInput'>,,
-            {
+            } as InlineFormInputConfig<'TextInput'>],
+            [{
                 onChange: (phone) => editUserStore().phone = phone,
-                val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
+                val: () => editUserStore().phone,
+                isValid: () => editUserStore().phoneValid,
                 name: 'phone',
                 placeholderLabel: () => 'Phone',
                 type: 'TextInput',
@@ -222,25 +163,18 @@ export default class EditUser extends React.Component {
             } as InlineFormInputConfig<'TextInput'>,,
             {
                 onChange: (email) => editUserStore().email = email,
-                val: () => {
-                    return editUserStore().email
-                },
-                isValid: () => {
-                    return editUserStore().emailValid
-                },
+                val: () => editUserStore().email,
+                isValid: () => editUserStore().emailValid,
                 name: 'email',
                 placeholderLabel: () => 'Email',
                 type: 'TextInput',
                 // TODO: remove when we have logic for changing email
                 disabled: true
-            } as InlineFormInputConfig<'TextInput'>,
-            // TODO: prevent display entirely or disable?
+            } as InlineFormInputConfig<'TextInput'>],
             canEditRoles
                 ? {
                     val: () => editUserStore().roles,
-                    onSave: (roles) => {
-                        editUserStore().roles = roles
-                    },
+                    onSave: (roles) => editUserStore().roles = roles,
                     isValid: () => editUserStore().rolesValid,
                     headerLabel: 'Roles',
                     placeholderLabel: 'Roles',
@@ -260,10 +194,9 @@ export default class EditUser extends React.Component {
             canEditAttributes
             ? AttributesListInput({
                 val: () => editUserStore().attributes,
-                onSave: (attributes) => { 
-                    editUserStore().attributes = attributes;
-                },
+                onSave: (attributes) => editUserStore().attributes = attributes,
                 isValid: () => true,
+                icon: 'tag-heart',
                 name: 'attributes'
             }) as ScreenFormInputConfig<'CategorizedItemList'>
             : null
@@ -282,10 +215,7 @@ export default class EditUser extends React.Component {
             </KeyboardAvoidingView>
         )
     }
-                
 }
 
 
-const styles = StyleSheet.create({
-    
-})
+const styles = StyleSheet.create({})
