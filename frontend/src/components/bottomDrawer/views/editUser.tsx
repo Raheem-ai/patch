@@ -74,7 +74,6 @@ export default class EditUser extends React.Component {
     }
 
     onItemDeleted = (index: number) => {
-        console.log('Delete: ', index);
         if (index != -1) {
             const updatedSelection = editUserStore().roles.slice()
             updatedSelection.splice(index, 1);
@@ -130,7 +129,6 @@ export default class EditUser extends React.Component {
             ? {
                 val: () => editUserStore().roles,
                 onSave: (roles) => {
-                    console.log(roles)
                     editUserStore().roles = roles
                 },
                 isValid: () => {
@@ -241,7 +239,6 @@ export default class EditUser extends React.Component {
                 ? {
                     val: () => editUserStore().roles,
                     onSave: (roles) => {
-                        console.log(roles)
                         editUserStore().roles = roles
                     },
                     isValid: () => editUserStore().rolesValid,
