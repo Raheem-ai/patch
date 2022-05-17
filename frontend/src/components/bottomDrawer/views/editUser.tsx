@@ -84,8 +84,13 @@ export default class EditUser extends React.Component {
     removeUserFromOrg = async () => {
         try {
             await userStore().removeCurrentUserFromOrg();
-            // TODO: Handle navigation after removal.
-            navigationRef.current?.goBack();
+            const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
+            alertStore().toastSuccess(successMsg);
+
+            // TODO: Not default to navigating to the team page.
+            // But rather navigating to wherever we were two routes ago.
+            navigateTo(routerNames.teamList);
+            bottomDrawerStore().hide();
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
         }
