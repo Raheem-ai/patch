@@ -83,7 +83,7 @@ export default class DispatchStore implements IDispatchStore {
 
     async assignRequest(requestId: string, responderIds: string[]) {
         try {
-            const updatedReq = await api().assignRequest(this.orgContext(), requestId, responderIds)
+            const updatedReq = await api().notifyRespondersAboutRequest(this.orgContext(), requestId, responderIds)
 
             runInAction(() => {
                 requestStore().updateOrAddReq(updatedReq)

@@ -73,6 +73,8 @@ const TabbedScreen: React.FC<Props> = ({
         })
     }
 
+    const SelectedTab = selectedTab?.view;
+
     return (
         <VisualArea>
             <View style={styles.header}>
@@ -94,7 +96,9 @@ const TabbedScreen: React.FC<Props> = ({
             */}
             <View key={selectedTab.label} style={styles.body}>
                 {
-                    selectedTab?.view()
+                    SelectedTab
+                        ? <SelectedTab/>
+                        : null
                 }
             </View>
         </VisualArea>

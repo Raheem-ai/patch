@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Enum, getJsonSchema, Property, Required } from "@tsed/schema";
-import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, HelpRequestAssignment, Location, Organization, Position, RequestPriority, RequestSkill, RequestStatus, RequestType, User } from "common/models";
+import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, HelpRequestAssignment, Location, Organization, Position, RequestPriority, RequestSkill, RequestStatus, RequestTeamEvent, RequestType, RequestStatusEvent, User } from "common/models";
 import { Document } from "mongoose";
 // import { inspect } from "util";
 // import { WithRefs } from ".";
@@ -39,6 +39,13 @@ class PositionSchema implements Position {
     @Required() joinedUsers: string[]
 }
 
+@Schema()
+class RequestStatusEventSchema implements RequestStatusEvent {
+    @Required() status: RequestStatus
+    @Required() setBy: string
+    @Required() setAt: string
+}
+
 @Model({ 
     collection: 'help_requests',
     schemaOptions: {
@@ -70,18 +77,6 @@ export class HelpRequestModel implements HelpRequest {
     @Property()
     notes: string
 
-    // @Enum(RequestSkill)
-    // skills: RequestSkill[]
-
-    // @Property()
-    // tags: TagsMap
-
-    @Property()
-    // otherRequirements?: any 
-
-    // @Property()
-    // respondersNeeded: number
-
     @Property({
         id: String,
         messages: [ChatMessageSchema],
@@ -99,17 +94,11 @@ export class HelpRequestModel implements HelpRequest {
     @CollectionOf(String)
     declinedResponderIds: string[]
     
-    // @CollectionOf(String)
-    // removedResponderIds: string[]
-
     @CollectionOf(HelpRequestAssignmentSchema)
     assignments: HelpRequestAssignment[]
 
     @Enum(RequestStatus) 
     status: RequestStatus
-
-
-
 
     @Property()
     callerName: string
@@ -131,6 +120,13 @@ export class HelpRequestModel implements HelpRequest {
 
     @CollectionOf(PositionSchema)
     positions: Position[]
+
+    // TODO: is this the right way to do it?
+    @CollectionOf(Object)
+    teamEvents: RequestTeamEvent[];
+
+    @CollectionOf(RequestStatusEventSchema)
+    statusEvents: RequestStatusEvent[];
 }
 
 export type HelpRequestDoc = HelpRequestModel & Document;

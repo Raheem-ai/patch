@@ -86,7 +86,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('roles') roles: UserRole[],
         @Required() @BodyParams('roleIds') roleIds: string[],
-        @Required() @BodyParams('attributes') attributes: AttributesMap
+        @Required() @BodyParams('attributes') attributes: CategorizedItem[]
     ) {
         const [ org, user ] = await this.db.addUserToOrganization(orgId, userId, roles, roleIds, attributes);
 
@@ -242,7 +242,7 @@ export class OrganizationController implements APIController<
         // can't get this to validate right
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('roleIds') roleIds: string[], 
-        @Required() @BodyParams('attributes') attributes: AttributesMap, 
+        @Required() @BodyParams('attributes') attributes: CategorizedItem[], 
         @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {

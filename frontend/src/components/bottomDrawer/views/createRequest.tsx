@@ -45,9 +45,7 @@ class CreateHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
-            return true
-            //TODO
-            // return !!createRequestStore().location && !!createRequestStore().type.length && createRequestStore().respondersNeeded != null
+            return !!createRequestStore().type.length
         },
         action: async () => {
             let createdReq: HelpRequest;

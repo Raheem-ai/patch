@@ -1,8 +1,10 @@
 import { BodyParams, Controller, Inject, Post, Req } from "@tsed/common";
+import { Unauthorized } from "@tsed/exceptions";
 import { MongooseModel } from "@tsed/mongoose";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
 import { PatchEventType, UserOrgConfig, UserRole } from "common/models";
+import { userCanJoinRequestPosition } from "common/utils/requestUtils";
 import { request } from "express";
 import { APIController, OrgId } from ".";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
@@ -13,45 +15,17 @@ import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 
 @Controller(API.namespaces.responder)
-export class ResponderController implements APIController<'confirmRequestAssignment' | 'declineRequestAssignment' | 'setOnDutyStatus' | 'joinRequest' | 'leaveRequest'> {
+export class ResponderController implements APIController<
+    'setOnDutyStatus' 
+    | 'joinRequest' 
+    | 'leaveRequest'
+    | 'requestToJoinRequest'    
+    | 'ackRequestNotification'
+> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
-    @Inject(PubSubService) pubSub: PubSubService;
-
-    @Post(API.server.confirmRequestAssignment())
-    @RequireRoles([UserRole.Responder])
-    async confirmRequestAssignment(
-        @OrgId() orgId: string,
-        @User() user: UserDoc,
-        @Required() @BodyParams('requestId') requestId: string
-    ) {
-        const res = await this.db.confirmRequestAssignment(requestId, user.id);
-
-        await this.pubSub.sys(PatchEventType.RequestRespondersAccepted, {
-            responderId: user.id,
-            requestId
-        })
-
-        return res;
-    }
-
-    @Post(API.server.declineRequestAssignment())
-    @RequireRoles([UserRole.Responder])
-    async declineRequestAssignment(
-        @OrgId() orgId: string, 
-        @User() user: UserDoc,
-        @Required() @BodyParams('requestId') requestId: string
-    ) {
-        const res = await this.db.declineRequestAssignment(requestId, user.id);
-
-        await this.pubSub.sys(PatchEventType.RequestRespondersDeclined, {
-            responderId: user.id,
-            requestId
-        })
-
-        return res;
-    }
+    @Inject(PubSubService) pubSub: PubSubService;    
 
     @Post(API.server.setOnDutyStatus())
     @RequireRoles([UserRole.Responder])
@@ -79,16 +53,27 @@ export class ResponderController implements APIController<'confirmRequestAssignm
     async joinRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
-        @Required() @BodyParams('requestId') requestId: string
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('positionId') positionId: string
     ) {
-        const res = await this.db.confirmRequestAssignment(requestId, user.id)
 
-        await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
-            responderId: user.id,
-            requestId
-        })
+        const req = await this.db.resolveRequest(requestId);
 
-        return res;
+        if (userCanJoinRequestPosition(req, positionId, user, orgId)) {
+            const res = await this.db.joinRequest(requestId, user.id, positionId);
+        
+            await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
+                responderId: user.id,
+                requestId,
+                positionId
+            })
+    
+            return res;
+        } else {
+            throw new Unauthorized('You do not have the required attributes and/or role to join this poition.')
+        }
+
+        return req;
     }
 
     @Post(API.server.leaveRequest())
@@ -96,15 +81,57 @@ export class ResponderController implements APIController<'confirmRequestAssignm
     async leaveRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
-        @Required() @BodyParams('requestId') requestId: string
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('positionId') positionId: string
     ) {
-        const res = await this.db.declineRequestAssignment(requestId, user.id)
+        const res = await this.db.leaveRequest(requestId, user.id, positionId)
 
         await this.pubSub.sys(PatchEventType.RequestRespondersLeft, {
             responderId: user.id,
-            requestId
+            requestId, 
+            positionId
         })
 
         return res;
     }
+
+    @Post(API.server.requestToJoinRequest())
+    @RequireRoles([UserRole.Responder])
+    async requestToJoinRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('positionId') positionId: string
+    ) {
+        // const res = await this.db.confirmRequestAssignment(requestId, user.id)
+        const res = await this.db.requestToJoinRequest(requestId, user.id, positionId)
+
+        // 
+        // await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
+        //     responderId: user.id,
+        //     requestId
+        // })
+
+        return res
+    }
+
+    @Post(API.server.ackRequestNotification())
+    @RequireRoles([UserRole.Responder])
+    async ackRequestNotification(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string,
+    ) {
+        // const res = await this.db.confirmRequestAssignment(requestId, user.id)
+        const res = await this.db.ackRequestNotification(requestId, user.id)
+
+        // 
+        // await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
+        //     responderId: user.id,
+        //     requestId
+        // })
+
+        return res
+    }
+    
 }

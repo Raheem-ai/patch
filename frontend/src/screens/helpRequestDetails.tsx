@@ -490,20 +490,20 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const team = () => {
+    const team = observer(() => {
         return (
             <>
                 {
                     request.positions.map(pos => {
                         return (
-                            <PositionDetailsCard pos={pos}/>
+                            <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
                         )
                     })
                 }
             </>
         )
-    }
-    
+    })
+
     return (
         <VisualArea>
             <TabbedScreen defaultTab={Tabs.Overview} tabs={[

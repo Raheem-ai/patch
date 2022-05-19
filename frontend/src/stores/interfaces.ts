@@ -142,6 +142,17 @@ export namespace IRequestStore {
     export const id = Symbol('IRequestStore');
 }
 
+export type PositionMetadata = {
+    canJoin: boolean,
+    canLeave: boolean,
+    canRequestToJoin: boolean,
+    unseenJoinRequest: boolean,
+}
+
+export type RequestMetadata = {
+    unseenNotification: boolean
+}
+
 export interface IRequestStore extends IBaseStore {
     requests: Map<string, HelpRequest>
     requestsArray: HelpRequest[]
@@ -168,10 +179,13 @@ export interface IRequestStore extends IBaseStore {
     sendMessage(request: HelpRequest, message: string): Promise<void>
     // updateReq(updatedReq: HelpRequest): void
     updateOrAddReq(updatedReq: HelpRequest): void
-    confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
-    joinRequest(reqId: string): Promise<void>
-    leaveRequest(reqId: string): Promise<void>
-    removeUserFromRequest(userId: string, reqId: string): Promise<void>
+    // confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
+    
+    joinRequest(reqId: string, positionId: string): Promise<void>
+    leaveRequest(reqId: string, positionId: string): Promise<void>
+    requestToJoinRequest(reqId: string, positionId: string): Promise<void>
+    removeUserFromRequest(userId: string, reqId: string, positionId: string): Promise<void>
+    getPositionMetadata(requestId: string, positionId: string): PositionMetadata
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

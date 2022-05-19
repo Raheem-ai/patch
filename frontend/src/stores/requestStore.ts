@@ -1,10 +1,11 @@
 import { autorun, makeAutoObservable, ObservableMap, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, userStore } from './interfaces';
+import { IRequestStore, IUserStore, organizationStore, PositionMetadata, userStore } from './interfaces';
 import { OrgContext, RequestContext } from '../../../common/api';
-import { HelpRequest, HelpRequestFilter, HelpRequestSortBy, RequestStatus, ResponderRequestStatuses } from '../../../common/models';
+import { DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchPermissions, Position, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses } from '../../../common/models';
 import { api, IAPIService } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
+import { iHaveAllPermissions } from '../utils';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -79,6 +80,100 @@ export default class RequestStore implements IRequestStore {
 
     get currentUserActiveRequests() {
         return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().currentUser?.id));
+    }
+
+    get requestPositionMetadata() {
+        const map: Map<string, Map<string, PositionMetadata>> = new Map();
+
+        this.requestsArray.forEach(req => {
+            const posMap = new Map<string, PositionMetadata>();
+
+            req.positions.forEach(pos => {
+                posMap.set(pos.id, this.computePositionMetadata(req.teamEvents, pos))
+            })
+
+            map.set(req.id, posMap)
+        })
+
+        return map;
+    }
+
+    getPositionMetadata(requestId: string, positionId: string): PositionMetadata {
+        return this.requestPositionMetadata.get(requestId).get(positionId);
+    }
+
+    computePositionMetadata(teamEvents: RequestTeamEvent[], position: Position): PositionMetadata {
+        const myId = userStore().user.id;
+        const myAttributes = userStore().user.organizations[userStore().currentOrgId].attributes;
+        const myRoles = organizationStore().userRoles.get(myId)
+        const isRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin])
+        
+        const haveAllAttributes = position.attributes.every(attr => !!myAttributes.find(myAttr => myAttr.categoryId == attr.categoryId && myAttr.itemId == attr.itemId));
+        
+        const haveRole =  (position.role == DefaultRoleIds.Anyone)
+            || !!myRoles.find(role => role.id == position.role);
+
+        let haveBeenKicked = false;
+        let waitingOnRequestResults = false; 
+        let requestDenied = false;
+        let unseenJoinRequest = false;
+
+        // TODO: this can be optimized by analyzing the teamEvents for all positions in one iteration
+        // by keeping track of the state for each position individually
+        teamEvents.forEach(event => {
+            // TODO: type gaurds to make this more ergo
+            if (event.type == RequestTeamEventTypes.PositionRevoked) {
+                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>;
+                
+                if (e.user == myId && e.position == position.id) {
+                    haveBeenKicked = true
+                }
+            } else if (event.type == RequestTeamEventTypes.PositionRequested) {
+                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>;
+
+                if (e.requester == myId && e.position == position.id) {
+                    waitingOnRequestResults = true;
+                }
+
+                if (isRequestAdmin && e.position == position.id) {
+                    unseenJoinRequest = true;
+                }
+            } else if (waitingOnRequestResults && event.type == RequestTeamEventTypes.PositionRequestDenied) {
+                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>;
+
+                if (e.requester == myId && e.position == position.id) {
+                    requestDenied = true;
+                    waitingOnRequestResults = false;
+                }
+            } else if (waitingOnRequestResults && event.type == RequestTeamEventTypes.PositionRequestAccepted) {
+                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>;
+
+                if (e.requester == myId && e.position == position.id) {
+                    requestDenied = false;
+                    waitingOnRequestResults = false;
+
+                    // request to join -> approved -> kicked -> request to join -> approved
+                    haveBeenKicked = false;
+                }
+            } else if (event.type == RequestTeamEventTypes.PositionRequestSeen) {
+                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>;
+
+                if (e.by == myId && e.position == position.id) {
+                    unseenJoinRequest = false;
+                }
+            } 
+        })
+
+        const canLeave = position.joinedUsers.includes(myId);
+        const canJoin = haveAllAttributes && haveRole && !haveBeenKicked;
+        const canRequestToJoin = !waitingOnRequestResults && !requestDenied;
+
+        return {
+            canJoin, 
+            canLeave,
+            canRequestToJoin,
+            unseenJoinRequest
+        }
     }
 
     getRequestsAfterSignin = async () => {
@@ -163,13 +258,13 @@ export default class RequestStore implements IRequestStore {
         // stop loading
     }
 
-    async confirmRequestAssignment(orgId: string, reqId: string) {
-        const req = await api().confirmRequestAssignment(this.orgContext(orgId), reqId);
+    // async confirmRequestAssignment(orgId: string, reqId: string) {
+    //     const req = await api().confirmRequestToJoinRequest(this.orgContext(orgId), reqId);
 
-        runInAction(() => { 
-            this.updateOrAddReq(req);
-        })
-    }
+    //     runInAction(() => { 
+    //         this.updateOrAddReq(req);
+    //     })
+    // }
 
 
     /**
@@ -324,23 +419,56 @@ export default class RequestStore implements IRequestStore {
         this.updateOrAddReq(updatedReq);
     }
 
-    async joinRequest(requestId: string) {
-        const updatedReq = await api().joinRequest(this.orgContext(), requestId);
-        this.updateOrAddReq(updatedReq);
+    async ackRequestNotification(requestId: string) {
+        const updatedReq = await api().ackRequestNotification(this.orgContext(), requestId);
+        this.updateRequestInternals(updatedReq);
     }
 
-    async leaveRequest(requestId: string) {
-        const updatedReq = await api().leaveRequest(this.orgContext(), requestId);
-        this.updateOrAddReq(updatedReq);
+    async joinRequest(requestId: string, positionId: string) {
+        const updatedReq = await api().joinRequest(this.orgContext(), requestId, positionId);
+        this.updateRequestInternals(updatedReq)
     }
 
-    async removeUserFromRequest(userId: string, requestId: string) {
-        const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId);
-        this.updateOrAddReq(updatedReq);
+    async leaveRequest(requestId: string, positionId: string) {
+        const updatedReq = await api().leaveRequest(this.orgContext(), requestId, positionId);
+        this.updateRequestInternals(updatedReq)
+    }
+
+    async requestToJoinRequest(requestId: string, positionId: string) {
+        const updatedReq = await api().requestToJoinRequest(this.orgContext(), requestId, positionId);
+        this.updateRequestInternals(updatedReq);
+    }
+
+    async ackRequestToJoinNotification(userId: string, requestId: string, positionId: string) {
+        const updatedReq = await api().ackRequestToJoinNotification(this.orgContext(), requestId, userId, positionId);
+        this.updateRequestInternals(updatedReq);
+    }
+
+    async approveRequestToJoinRequest(userId: string, requestId: string, positionId: string) {
+        const updatedReq = await api().confirmRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
+        this.updateRequestInternals(updatedReq);
+    }
+
+    async denyRequestToJoinRequest(userId: string, requestId: string, positionId: string) {
+        const updatedReq = await api().declineRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
+        this.updateRequestInternals(updatedReq);
+    }
+
+    async removeUserFromRequest(userId: string, requestId: string, positionId: string) {
+        const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId, positionId);
+        this.updateRequestInternals(updatedReq);
     }
 
     updateOrAddReq(updatedReq: HelpRequest) {
         this.requests.set(updatedReq.id, updatedReq);
+    }
+
+    updateRequestInternals(updatedReq: HelpRequest) {
+        const req = this.requests.get(updatedReq.id);
+
+        for (const prop in updatedReq) {
+            req[prop] = updatedReq[prop]
+        }
     }
 
     // updateReq(updatedReq: HelpRequest, givenIndex?: number) {

@@ -291,7 +291,7 @@ TaskManager.defineTask(INotificationStore.BACKGROUND_NOTIFICATION_TASK, async ({
             switch (notification.type) {
                 case NotificationType.AssignedIncident:
                     const orgId = (notification as NotificationPayload<NotificationType.AssignedIncident>).orgId
-                    await api().declineRequestAssignment({ token, orgId }, notification)
+                    await api().declineRequestToJoinRequest({ token, orgId }, notification)
                     break;
             
                 default:

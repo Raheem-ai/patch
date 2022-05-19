@@ -1,5 +1,6 @@
 import { AtLeast } from '.';
 import { allEnumValues } from './utils';
+import { positionStats } from './utils/requestUtils';
 
 export interface AuthTokens {
     refreshToken: string,
@@ -27,7 +28,7 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 export type UserOrgConfig = {
     roles: UserRole[],
     roleIds: string[],
-    attributes: AttributesMap,
+    attributes: CategorizedItem[],
     onDuty: boolean
 }
 
@@ -57,7 +58,7 @@ export interface Organization {
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
     roleDefinitions: Role[]
-    attributeCategories: AttributeCategory[] // TODO: Change to AttributesMap
+    attributeCategories: AttributeCategory[] 
     tagCategories: TagCategory[]
 }
 
@@ -85,8 +86,6 @@ export type Attribute = {
     id: string,
     name: string
 }
-
-export type AttributesMap = { [key: string]: string[] }
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -132,6 +131,7 @@ export type Tag = {
 }
 
 // export type TagsMap = { [key: string]: string[] }
+export type AttributesMap = { [key: string]: string[] }
 
 export type MinTag = AtLeast<Tag, 'name'>
 
@@ -140,7 +140,7 @@ export type PendingUser = {
     phone: string
     roles: UserRole[]
     roleIds: string[]
-    attributes: AttributesMap
+    attributes: CategorizedItem[],
     skills: RequestSkill[]
     pendingId: string
 }
@@ -204,7 +204,128 @@ export type HelpRequest = {
     priority: RequestPriority,
     tagHandles: CategorizedItem[],
     positions: Position[]
+    /**
+     * 
+     * Optioon 1: array of these events that we use mobx computed caching to project into a map of what people should be in what sections in the ui
+     * 
+     * Events for
+     * - sent
+     *  - by: string 
+     *  - to: string[]
+     *  - sentAt: string
+     * - seen
+     *  - by: string
+     *  - seenAt: string
+     * - joined
+     *  - user: string
+     *  - position: string
+     *  - joinedAt: string
+     * - requested to join
+     *  - id: string
+     *  - requester: string
+     *  - position: string
+     *  - requestedAt: string
+     * - request denied
+     *  - requestId: string
+     *  - by: string
+     *  - deniedAt: string
+     * - request accepted
+     *  - requestId: string
+     *  - by: string
+     *  - acceptedAt: string
+     * - left
+     *  - user: string
+     *  - position: string
+     *  - leftAt: string
+     * - kicked
+     *  - user: string
+     *  - by: string
+     *  - kickedAt: string 
+     * 
+     * option 2:
+     * have those events only on the object the db sees but never sent to the frontend...the backend computes the new frontend model 
+     * pros: ui doesn't have data about other users activity details
+     * cons: slower api calls doing cpu bound checks
+     * 
+     * recommendation do it in ui and can port that to backend if need be
+     */
+    teamEvents: RequestTeamEvent[]
+
+    statusEvents: RequestStatusEvent[]
 }
+
+export type RequestStatusEvent = {
+    status: RequestStatus,
+    setBy: string,
+    setAt: string
+}
+
+export enum RequestTeamEventTypes {
+    NotificationSent = 'nsen',
+    NotificationSeen = 'nsee',
+    PositionJoined = 'pojo',
+    PositionRequested = 'porq',
+    PositionRequestSeen = 'prs',
+    PositionLeft = 'pole',
+    PositionRevoked = 'porv',
+    PositionRequestAccepted = 'pra',
+    PositionRequestDenied = 'prd'
+}
+
+export type RequestTeamEventParams = {
+    [RequestTeamEventTypes.NotificationSent]: {
+        by: string
+        to: string[]
+        sentAt: string
+    },
+    [RequestTeamEventTypes.NotificationSeen]: {
+        by: string,
+        seenAt: string
+    },
+    [RequestTeamEventTypes.PositionRequestSeen]: {
+        by: string,
+        seenAt: string,
+        position: string,
+        requester: string
+    },
+    [RequestTeamEventTypes.PositionJoined]: {
+        user: string
+        position: string
+        joinedAt: string
+    },
+    [RequestTeamEventTypes.PositionRequested]: {
+        requester: string
+        position: string
+        requestedAt: string
+    },
+    [RequestTeamEventTypes.PositionRequestAccepted]: {
+        requester: string
+        position: string
+        by: string
+        acceptedAt: string
+    },
+    [RequestTeamEventTypes.PositionRequestDenied]: {
+        requester: string
+        position: string
+        by: string
+        deniedAt: string
+    },
+    [RequestTeamEventTypes.PositionLeft]: {
+        user: string
+        position: string
+        leftAt: string
+    },
+    [RequestTeamEventTypes.PositionRevoked]: {
+        user: string
+        by: string
+        revokedAt: string, 
+        position: string 
+    }
+};
+
+export type RequestTeamEvent<Type extends RequestTeamEventTypes = RequestTeamEventTypes> = {
+    type: Type
+} & RequestTeamEventParams[Type];
 
 export type Position = {
     id: string,
@@ -283,9 +404,10 @@ export enum RequestStatus {
 
 export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    // TODO: update w/ convenience method for aggregating needed vs joined positions 
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `TODO: update`,
-    // [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => `${req.assignedResponderIds.length} of ${req.respondersNeeded}`,
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => {
+        const stats = positionStats(req.positions);
+        return `${stats.totalMinFilled} of ${stats.totalMinToFill}`
+    },
     [RequestStatus.Ready]: 'Ready',
     [RequestStatus.OnTheWay]: 'On the way',
     [RequestStatus.OnSite]: 'On site',
@@ -574,23 +696,28 @@ export type PatchEventParams = {
     }, 
     [PatchEventType.RequestRespondersAccepted]: {
         responderId: string,
-        requestId: string
+        requestId: string,
+        positionId: string
     }, 
     [PatchEventType.RequestRespondersJoined]: {
         responderId: string,
-        requestId: string
+        requestId: string,
+        positionId: string
     }, 
     [PatchEventType.RequestRespondersDeclined]: {
         responderId: string,
-        requestId: string
+        requestId: string,
+        positionId: string
     }, 
     [PatchEventType.RequestRespondersLeft]: {
         responderId: string,
-        requestId: string
+        requestId: string,
+        positionId: string
     }, 
     [PatchEventType.RequestRespondersRemoved]: {
         responderId: string,
-        requestId: string
+        requestId: string,
+        positionId: string
     }, 
     [PatchEventType.RequestChatNewMessage]: {
         requestId: string,

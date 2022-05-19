@@ -102,7 +102,7 @@ function validateStores() {
 export function bindStores() {
     validateStores()
 
-    for (const [ iStore, store] of storeMappings) {
+    for (const [ iStore, store ] of storeMappings) {
         container.isBound(iStore.id) || container.bind(iStore.id).to(store).inSingletonScope();
     }
 }

@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -17,6 +17,7 @@ import moment from 'moment';
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { BadRequest } from "@tsed/exceptions";
+import { resolveRequestStatus } from "common/utils/requestUtils";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -136,7 +137,7 @@ export class DBManager {
 
             const org = await (new this.orgs(newOrg)).save({ session })
 
-            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [DefaultRoleIds.Admin], {}, session)
+            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [DefaultRoleIds.Admin], [], session)
         })
     }
     
@@ -220,7 +221,7 @@ export class DBManager {
         return await user.save()
     }
 
-    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], attributes: AttributesMap, session?: ClientSession) {
+    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], session?: ClientSession) {
         const user = await this.resolveUser(userId);
         const org = await this.resolveOrganization(orgId);
 
@@ -1158,22 +1159,27 @@ export class DBManager {
 
             // Remove the Tag from the Tag Category list.
             if (tagIndex >= 0) {
-                org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+                const [tag] = org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
                 org.markModified('tagCategories');
 
                 // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
+                // TODO: test mongo query handles nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
+                const item: CategorizedItem = {
+                    categoryId: categoryId,
+                    itemId: tag.id
+                }
+
+                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagHandles: item });
                 
-                // TODO: update logic
-                // for (let i = 0; i < requests.length; i++) {
-                //     let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
-                //     if (tagIndex >= 0) {
-                //         // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                //         requests[i].tags[categoryId].splice(tagIndex, 1);
-                //         requests[i].markModified('tagIds');
-                //     }
-                // }
+                for (let i = 0; i < requests.length; i++) {
+                    let tagIndex = requests[i].tagHandles.findIndex(handle => handle.itemId == tagId && handle.categoryId == categoryId);
+                    
+                    if (tagIndex >= 0) {
+                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+                        requests[i].tagHandles.splice(tagIndex, 1);
+                        requests[i].markModified('tagHandles');
+                    }
+                }
 
                 for (const request of requests) {
                     await request.save({ session });
@@ -1206,13 +1212,9 @@ export class DBManager {
         req.dispatcherId = dispatcherId;
         req.assignedResponderIds ||= [];
 
-        // TODO: update logic
+        // no special lofic as creating a request always comes before notifying about it
+        // ...which could change the status once people join etc.
         req.status ||= RequestStatus.Unassigned;
-        // req.status ||= req.assignedResponderIds.length 
-        //     ? req.respondersNeeded && req.assignedResponderIds.length < req.respondersNeeded
-        //         ? RequestStatus.PartiallyAssigned
-        //         : RequestStatus.Ready
-        //     : RequestStatus.Unassigned;
 
         const org = await this.resolveOrganization(orgId)
 
@@ -1320,73 +1322,211 @@ export class DBManager {
         return await helpRequest.save()
     }
 
-    async assignRequest(request: string | HelpRequestDoc, to: string[]) {
-        request = await this.resolveRequest(request);
-
-        request.assignments ||= [];
-
-        request.assignments.push({
-            responderIds: to,
-            timestamp: new Date().getTime()
-        });
-
-        const updatedRequest = await request.save();
-
-        return updatedRequest;
-    }
-
-    async confirmRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
+    async notifyRespondersAboutRequest(requestId: string | HelpRequestDoc, notifierId: string, to: string[]) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.assignedResponderIds.includes(userId)) {
-            request.assignedResponderIds.push(userId);
+        request.teamEvents.push({
+            type: RequestTeamEventTypes.NotificationSent,
+            sentAt: new Date().toISOString(),
+            by: notifierId,
+            to: to
+        })
+
+        return await request.save();
+    }
+
+    async ackRequestNotification(requestId: string | HelpRequestDoc, userId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        request.teamEvents.push({
+            seenAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.NotificationSeen,
+            by: userId,
+        })
+
+        return await request.save();
+    }
+
+    async ackRequestToJoinNotification(requestId: string | HelpRequestDoc, ackerId: string, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
 
-        const idx = request.declinedResponderIds.indexOf(userId)
+        request.teamEvents.push({
+            seenAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequestSeen,
+            user: userId,
+            by: ackerId,
+            position: positionId
+        })
 
-        if (idx != -1) {
-            request.declinedResponderIds.splice(idx, 1)
+        return await request.save();
+    }
+
+    async confirmRequestToJoinPosition(requestId: string | HelpRequestDoc, approverId: string, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
 
-        // TODO: update this logic
-        // if (request.status == RequestStatus.Unassigned || request.status == RequestStatus.PartiallyAssigned) {
-        //     request.status = request.respondersNeeded > request.assignedResponderIds.length
-        //         ? RequestStatus.PartiallyAssigned
-        //         : RequestStatus.Ready;
-        // }
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
+        }
+
+        position.joinedUsers.push(userId)
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            acceptedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequestAccepted,
+            requester: userId,
+            by: approverId,
+            position: positionId
+        })
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save()
     }
 
-    async declineRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
+    async leaveRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.declinedResponderIds.includes(userId)) {
-            request.declinedResponderIds.push(userId);
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
 
-        const idx = request.assignedResponderIds.indexOf(userId)
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
 
-        if (idx != -1) {
-            request.assignedResponderIds.splice(idx, 1)
+        if (userIdx == -1) {
+            return request
         }
 
-        if (request.status == RequestStatus.Ready || request.status == RequestStatus.PartiallyAssigned) {
-            request.status = request.assignedResponderIds.length
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Unassigned;
-        }
+        position.joinedUsers.splice(userIdx, 1);
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            leftAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionLeft,
+            user: userId,
+            position: positionId
+        })
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save()
     }
 
-    async removeUserFromRequest(userId: string, requestId: string): Promise<HelpRequestDoc> {
+    async requestToJoinRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
-        const idx = request.assignedResponderIds.indexOf(userId);
 
-        if (idx != -1) {
-            request.assignedResponderIds.splice(idx, 1);
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
+        }
+
+        request.teamEvents.push({
+            requestedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequested,
+            requester: userId,
+            position: positionId
+        })
+
+        return await request.save()
+    }
+
+    async joinRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
+        }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
+        }
+
+        position.joinedUsers.push(userId);
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            joinedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionJoined,
+            user: userId,
+            position: positionId
+        })
+
+        request.status = resolveRequestStatus(request)
+
+        return await request.save()
+    }
+    
+    async declineRequestToJoinPosition(requestId: string | HelpRequestDoc, declinerId: string, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
+        }
+
+        request.teamEvents.push({
+            deniedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequestDenied,
+            requester: userId,
+            by: declinerId,
+            position: positionId
+        })
+
+        return await request.save()
+    }
+
+    async removeUserFromRequest(revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
+        const request = await this.resolveRequest(requestId);
+        
+        request.teamEvents.push({
+            revokedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRevoked,
+            by: revokerId,
+            user: userId,
+            position: positionId
+        })
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save();
     }
@@ -1555,12 +1695,12 @@ export class DBManager {
                 skills: []
             });
 
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], {});
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], {});
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], {});
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], {});
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], {});
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], {});
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
 
             console.log('creating new user...');
             let user5 = await this.createUser({ 
@@ -1642,7 +1782,7 @@ export class DBManager {
             user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ]);
 
-            let attrCat1, attr1, attr2;
+            let attrCat1: AttributeCategory, attr1: Attribute, attr2: Attribute;
 
             [org, attrCat1] = await this.addAttributeCategoryToOrganization(org.id, {
                 name: 'Attribute Category'
@@ -1671,6 +1811,35 @@ export class DBManager {
                 name: 'Bux'
             });
 
+            // await this.addAttributesToUser(org.id, user1.id, )
+
+            const allPositionSetups: Position[] = [
+                {
+                    id: 'catchall',
+                    attributes: [],
+                    min: 1,
+                    max: -1,
+                    role: DefaultRoleIds.Anyone,
+                    joinedUsers: []
+                },
+                {
+                    id: 'specific',
+                    attributes: [{ itemId: attr1.id, categoryId: attrCat1.id }],
+                    min: 2,
+                    max: 2,
+                    role: DefaultRoleIds.Responder,
+                    joinedUsers: []
+                },
+                {
+                    id: 'dispatcher',
+                    attributes: [{ itemId: attr2.id, categoryId: attrCat1.id }],
+                    min: 1,
+                    max: 3,
+                    role: DefaultRoleIds.Dispatcher,
+                    joinedUsers: []
+                }
+            ]
+
             const minRequests: MinHelpRequest[] = [
                 {
                     type: [RequestType.ConflictResolution, RequestType.DomesticDisturbance],
@@ -1679,6 +1848,7 @@ export class DBManager {
                         longitude: -73.9303333,
                         address: "960 Willoughby Avenue, Brooklyn, NY, USA"
                     },
+                    positions: allPositionSetups.slice(0, 2),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
                 },
                 {
@@ -1688,6 +1858,7 @@ export class DBManager {
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(1, 2),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
                 },
                 {
@@ -1697,6 +1868,7 @@ export class DBManager {
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(-1),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
                 },
                 {
@@ -1706,8 +1878,8 @@ export class DBManager {
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(0, 1),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    assignedResponderIds: [user1.id, user2.id],
                     status: RequestStatus.Done
                 }
             ];
@@ -1719,14 +1891,14 @@ export class DBManager {
                 fullReqs.push(await this.createRequest(req, org.id, admin1.id))
             }
 
-            fullReqs[0] = await this.assignRequest(fullReqs[0], [user1.id, user2.id, user3.id]);
-            fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
-            fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
+            // fullReqs[0] = await this.assignRequest(fullReqs[0], [user1.id, user2.id, user3.id]);
+            // fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
+            // fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
 
-            fullReqs[0] = await this.confirmRequestAssignment(fullReqs[0], user1.id);
-            fullReqs[0] = await this.declineRequestAssignment(fullReqs[0], user3.id);
-            fullReqs[1] = await this.confirmRequestAssignment(fullReqs[1], user3.id);
-            fullReqs[2] = await this.declineRequestAssignment(fullReqs[2], user1.id);
+            // fullReqs[0] = await this.confirmRequestToJoinPosition(fullReqs[0], user1.id);
+            // fullReqs[0] = await this.declineRequestToJoinPosition(fullReqs[0], user3.id);
+            // fullReqs[1] = await this.confirmRequestToJoinPosition(fullReqs[1], user3.id);
+            // fullReqs[2] = await this.declineRequestToJoinPosition(fullReqs[2], user1.id);
             
             let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah...blah blah blah blah blah ')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/models";
@@ -13,12 +13,16 @@ type PositionCardProps = {
     edit?: {
         permissions: PatchPermissions[],
         handler: () => void
-    }
+    },
+    containerStyle?: ViewStyle,
+    onlyMissingUsers?: boolean
 }
 
 const PositionCard = observer(({ 
     pos,
-    edit
+    edit,
+    containerStyle,
+    onlyMissingUsers
 }: PositionCardProps) => {
     const roleName = organizationStore().roles.get(pos.role).name
     
@@ -27,14 +31,16 @@ const PositionCard = observer(({
         return category.items.find(item => item.id == attr.itemId).name
     })
 
-    const min = pos.min;
+    const min = onlyMissingUsers
+        ? pos.min - pos.joinedUsers.length
+        : pos.min;
 
     const userIcons = [];
     
-    for (let i = 0; i < pos.min; i++) {
+    for (let i = 0; i < min; i++) {
         let user: ClientSideFormat<ProtectedUser> = null;
 
-        if (pos.joinedUsers.length && pos.joinedUsers.length > i) {
+        if (!onlyMissingUsers && pos.joinedUsers.length && pos.joinedUsers.length > i) {
             const userId = pos.joinedUsers[i];
             user = userStore().users.get(userId);
         }
@@ -50,13 +56,13 @@ const PositionCard = observer(({
     const hasPermissions = iHaveAllPermissions(edit?.permissions || []);
 
     return (
-        <Pressable onPress={edit?.handler} style={{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+        <Pressable onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }, containerStyle]}>
             <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
                 <View style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}>
                     { 
                         attrNames.map(attr => {
-                            return <Text style={{ marginRight: 12, fontSize: 12, color: '#666666' }}>{attr}</Text>
+                            return <Text key={attr} style={{ marginRight: 12, fontSize: 14, color: '#666666' }}>{attr}</Text>
                         }) 
                     }
                 </View>

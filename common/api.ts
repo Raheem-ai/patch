@@ -34,7 +34,8 @@ import {
     AttributesMap,
     TagCategoryUpdates,
     AttributeCategoryUpdates,
-    CategorizedItemUpdates
+    CategorizedItemUpdates,
+    CategorizedItem
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -135,15 +136,12 @@ export interface IApiClient {
     deleteTag: AuthenticatedWithOrg<(categoryId: string, tagId: string) => Promise<OrganizationMetadata>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
-    assignRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
-    confirmRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    declineRequestAssignment: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap) => Promise<{ user: ProtectedUser, org: Organization }>>
+    addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[]) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap, skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
 
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
@@ -154,9 +152,16 @@ export interface IApiClient {
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
     
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<EditableUser>) => Promise<ProtectedUser>>
-    joinRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    leaveRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string) => Promise<HelpRequest>>
+
+    notifyRespondersAboutRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
+    ackRequestNotification: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
+    joinRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
+    leaveRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
+    requestToJoinRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
+    ackRequestToJoinNotification: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
+    confirmRequestToJoinRequest: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
+    declineRequestToJoinRequest: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
+    removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string, positionId: string) => Promise<HelpRequest>>
     
     editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
     unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
@@ -214,14 +219,20 @@ type ApiRoutes = {
         reportPushToken: () => {
             return '/reportPushToken'
         },
-        assignRequest: () => {
+        notifyRespondersAboutRequest: () => {
             return '/assignIncident'
         },
-        confirmRequestAssignment: () => {
-            return '/confirmIncidentAssignment'
+        ackRequestNotification: () => {
+            return '/ackRequestNotification'
         },
-        declineRequestAssignment: () => {
-            return '/declineIncidentAssignment'
+        ackRequestToJoinNotification: () => {
+            return '/ackRequestToJoinNotificatoin'
+        },
+        confirmRequestToJoinRequest: () => {
+            return '/confirmRequestToJoinRequest'
+        },
+        declineRequestToJoinRequest: () => {
+            return '/declineRequestToJoinRequest'
         }, 
         createOrg: () => {
             return '/createOrg'
@@ -303,6 +314,9 @@ type ApiRoutes = {
         },
         leaveRequest: () => {
             return '/leaveRequest'
+        },
+        requestToJoinRequest: () => {
+            return '/requestToJoinRequest'
         },
         removeUserFromRequest: () => {
             return '/removeUserFromRequest'
@@ -402,22 +416,26 @@ type ApiRoutes = {
         broadcastRequest: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.broadcastRequest()}`
         },
-        assignRequest: () => {
-            return `${this.base}${this.namespaces.dispatch}${this.server.assignRequest()}`
+        notifyRespondersAboutRequest: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.notifyRespondersAboutRequest()}`
         },
         removeUserFromRequest: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.removeUserFromRequest()}`
         },
+        confirmRequestToJoinRequest: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.confirmRequestToJoinRequest()}`
+        },
+        declineRequestToJoinRequest: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.declineRequestToJoinRequest()}`
+        },
+        ackRequestToJoinNotification: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.ackRequestToJoinNotification()}`
+        },
+        
 
         // respond
         setOnDutyStatus: () => {
             return `${this.base}${this.namespaces.responder}${this.server.setOnDutyStatus()}`
-        },
-        confirmRequestAssignment: () => {
-            return `${this.base}${this.namespaces.responder}${this.server.confirmRequestAssignment()}`
-        },
-        declineRequestAssignment: () => {
-            return `${this.base}${this.namespaces.responder}${this.server.declineRequestAssignment()}`
         },
         leaveRequest: () => {
             return `${this.base}${this.namespaces.responder}${this.server.leaveRequest()}`
@@ -425,7 +443,12 @@ type ApiRoutes = {
         joinRequest: () => {
             return `${this.base}${this.namespaces.responder}${this.server.joinRequest()}`
         },
-
+        requestToJoinRequest: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.requestToJoinRequest()}`
+        },
+        ackRequestNotification: () => {
+            return `${this.base}${this.namespaces.responder}${this.server.ackRequestNotification()}`
+        },
 
         // organization
         createOrg: () => {
