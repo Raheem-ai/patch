@@ -44,12 +44,14 @@ import {
     IEditOrganizationStore,
     IUpsertRoleStore,
     IManageAttributesStore,
-    IManageTagsStore
+    IManageTagsStore,
+    INavigationStore
 } from './interfaces';
 import EditOrganizationStore from './editOrganizationStore';
 import UpsertRoleStore from './upsertRoleStore';
 import ManageAttributesStore from './manageAttributesStore';
 import ManageTagsStore from './manageTagsStore';
+import NavigationStore from './navigationStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -74,7 +76,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IEditOrganizationStore, EditOrganizationStore],
     [ IUpsertRoleStore, UpsertRoleStore],
     [ IManageAttributesStore, ManageAttributesStore ],
-    [ IManageTagsStore, ManageTagsStore ]
+    [ IManageTagsStore, ManageTagsStore ],
+    [ INavigationStore, NavigationStore]
 ];
 
 function validateStores() {
