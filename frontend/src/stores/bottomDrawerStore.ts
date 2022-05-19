@@ -1,5 +1,5 @@
 import { Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, requestStore, userStore } from './interfaces';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
@@ -42,7 +42,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     contentHeight = new Animated.Value(0)
     drawerContentHeight = new Animated.Value(0)
 
-    currentRoute: string = null;
     expanded: boolean = false;
     showing: boolean = false;
     headerShowing: boolean = false;
@@ -59,7 +58,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         makeAutoObservable(this)
 
         // Bottom drawer does not have access to navigation props/hooks so handling it here
-        reaction(() => this.currentRoute, (newRoute, prevRoute) => {
+        reaction(() => navigationStore().currentRoute, (newRoute, prevRoute) => {
            if ((prevRoute == routerNames.helpRequestMap || newRoute == routerNames.helpRequestMap) && this.showing) {
                 this.minimize()
             }
@@ -172,7 +171,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     get activeRequestShowing() {
-        const onRequestMap = this.currentRoute == routerNames.helpRequestMap;
+        const onRequestMap = navigationStore().currentRoute == routerNames.helpRequestMap;
         return requestStore().activeRequest && !onRequestMap && !nativeEventStore().keyboardOpen;
     }
 

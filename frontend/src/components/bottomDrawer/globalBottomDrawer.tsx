@@ -8,7 +8,7 @@ import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper"
 import { unwrap } from "../../../../common/utils";
 import { isAndroid } from "../../constants";
 import { navigateTo, navigationRef } from "../../navigation";
-import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, requestStore, userStore } from "../../stores/interfaces";
+import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
 import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
 import { HeaderHeight, InteractiveHeaderHeight } from "../header/header";
@@ -133,7 +133,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
     activeRequest() {
         const onPress = () => {
-            if (requestStore().activeRequest?.id != requestStore().currentRequest?.id || bottomDrawerStore().currentRoute != routerNames.helpRequestDetails) {
+            if (requestStore().activeRequest?.id != requestStore().currentRequest?.id || navigationStore().currentRoute != routerNames.helpRequestDetails) {
                 requestStore().pushRequest(requestStore().activeRequest.id)
                 navigateTo(routerNames.helpRequestDetails)
             }
@@ -158,7 +158,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
             return null
         }
 
-        const onRequestMap = bottomDrawerStore().currentRoute == routerNames.helpRequestMap;
+        const onRequestMap = navigationStore().currentRoute == routerNames.helpRequestMap;
 
         return (
             <>

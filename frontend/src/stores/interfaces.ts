@@ -35,6 +35,7 @@ export interface IUserStore extends IBaseStore {
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
+    removeMyselfFromOrg: () => Promise<void>
     editUser: (userId: string, user: Partial<AdminEditableUser>) => Promise<void>
     editMe: (user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) => Promise<void>
 }
@@ -267,7 +268,6 @@ export interface IBottomDrawerStore extends IBaseStore {
     minimizable: boolean
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
-    currentRoute: string
 
     drawerContentHeight: Animated.AnimatedInterpolation
     contentHeight: Animated.AnimatedInterpolation
@@ -495,6 +495,16 @@ export namespace IManageAttributesStore {
     export const id = Symbol('IManageAttributesStore');
 }
 
+export interface INavigationStore extends IBaseStore {
+    currentRoute: keyof RootStackParamList;
+
+    navigateToSync: (targetRoute) => Promise<void>
+}
+
+export namespace INavigationStore {
+    export const id = Symbol('INavigationStore');
+}
+
 interface CategorizedItemStore extends IBaseStore { 
     editPermissions: PatchPermissions[]
     editStore: IEditCategorizedItemStore 
@@ -526,6 +536,7 @@ export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
 export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore);
 export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore);
 export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
+export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
 
 export const AllStores = [
     IUserStore,
@@ -550,5 +561,6 @@ export const AllStores = [
     IEditOrganizationStore,
     IUpsertRoleStore,
     IManageAttributesStore,
-    IManageTagsStore
+    IManageTagsStore,
+    INavigationStore
 ]
