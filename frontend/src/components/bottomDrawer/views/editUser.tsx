@@ -8,7 +8,7 @@ import Form, { FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigateTo, navigationRef } from "../../../navigation";
 import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
-import { Colors, routerNames, ScreenProps } from "../../../types";
+import { Colors, RootStackParamList, routerNames, ScreenProps } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -19,9 +19,7 @@ import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 export default class EditUser extends React.Component {
     static submit = {
         isValid: () => {
-            const onMyProfile = editUserStore().id == userStore().user.id;
-
-            return onMyProfile
+            return EditUser.onMyProfile()
                 ? editUserStore().myChangesValid
                 : editUserStore().userChangesValid
         },
@@ -54,8 +52,12 @@ export default class EditUser extends React.Component {
         editUserStore().clear();
     }
 
+    static onMyProfile = () => {
+        return editUserStore().id == userStore().user.id;
+    }
+
     formProps = (): FormProps => {
-        const editingMe = editUserStore().id == userStore().user.id;
+        const editingMe = EditUser.onMyProfile();
 
         return {
             headerLabel: editingMe
@@ -83,20 +85,24 @@ export default class EditUser extends React.Component {
 
     removeUserFromOrg = async () => {
         try {
-            await userStore().removeCurrentUserFromOrg();
-            const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
-            alertStore().toastSuccess(successMsg);
+            if (EditUser.onMyProfile()) {
+                await userStore().removeMyselfFromOrg();
+            } else {
+                await userStore().removeCurrentUserFromOrg();
 
-            // TODO: Not default to navigating to the team page.
-            // But rather navigating to wherever we were two routes ago.
-            navigateTo(routerNames.teamList);
+                const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
+                alertStore().toastSuccess(successMsg);
+
+                navigationRef.current?.goBack();
+            }
+
             bottomDrawerStore().hide();
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
         }
     }
 
-    canRemoveUser = () => editUserStore().id == userStore().user.id || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
+    canRemoveUser = () => EditUser.onMyProfile() || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
 
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
@@ -237,7 +243,7 @@ export default class EditUser extends React.Component {
                             color={styles.actionButton.borderColor}
                             onPress={this.removeUserFromOrg}
                             >
-                                {'Remove from organization'}
+                                {EditUser.onMyProfile() ? 'Leave organization' : 'Remove from organization'}
                         </Button>
                     </View>
                     : null

@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
 import { AttributesMap, AuthTokens, EditableMe, EditableUser, Me, MinUser, AdminEditableUser, ProtectedUser, RequestSkill, UserRole, CategorizedItem } from '../../../common/models';
 import { Store } from './meta';
-import { IUserStore } from './interfaces';
+import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { routerNames } from '../types';
@@ -272,5 +272,17 @@ export default class UserStore implements IUserStore {
             this.users.set(user.id, user);
             this.currentUser = null
         })
+    }
+
+    async removeMyselfFromOrg() {
+        const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
+        await this.api.signOut({ token:this.authToken });
+
+        await navigationStore().navigateToSync(routerNames.signIn);
+
+        setTimeout(() => {
+            clearAllStores()
+            clearAllServices()
+        }, 0)
     }
 }
