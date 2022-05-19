@@ -69,6 +69,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         await nativeEventStore().init();
         await requestStore().init();
         await userStore().init();
+        await navigationStore().init();
 
         if (userStore().signedIn) {
             this.setupAnimationReactions()
