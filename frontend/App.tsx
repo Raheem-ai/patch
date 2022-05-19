@@ -25,7 +25,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -110,7 +110,7 @@ export default function App() {
         // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
         <Provider container={container}>
             <PaperProvider theme={theme}>
-                <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
+                <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
                 {/* <GlobalErrorBoundary> */}
                     <StatusBar
                         animated={true}
@@ -149,12 +149,12 @@ const userScreen = function(Component: (props) => JSX.Element) {
   })
 }
 
-const updateBottomDrawerRoute = function(state: NavigationState) {
+const updateNavigationRoute = function(state: NavigationState) {
   const routeName = state?.routes[state?.index]?.name;
 
   if (routeName) {
     runInAction(() => {
-      bottomDrawerStore().currentRoute = routeName
+        navigationStore().currentRoute = routeName as keyof RootStackParamList;
     })
   }
 }

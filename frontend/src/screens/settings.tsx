@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import { PatchPermissions } from "../../../common/models";
-import { EditCategorizedItemForm } from "../components/forms/inputs/screen/categorizedItemListInput";
 import Form, { CustomFormHomeScreenProps } from "../components/forms/form";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import MangeRolesForm from "../components/forms/editRolesForm";
@@ -13,6 +12,7 @@ import { VisualArea } from "../components/helpers/visualArea";
 import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
+import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 
 type Props = ScreenProps<'Settings'>;
 

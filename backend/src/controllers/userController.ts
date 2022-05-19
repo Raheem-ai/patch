@@ -1,10 +1,10 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Unauthorized } from "@tsed/exceptions";
-import { MongooseModel } from "@tsed/mongoose";
+import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
+import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate, Authorize } from "@tsed/passport";
-import { Enum, Format, Optional, Property, Required } from "@tsed/schema";
+import { CollectionOf, Enum, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { BasicCredentials, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, ProtectedUser, RequestSkill, UserRole } from "common/models";
+import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, PatchPermissions, ProtectedUser, RequestSkill, resolvePermissionsFromRoles, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -14,6 +14,8 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import config from '../config';
 import { PubSubService } from "../services/pubSubService";
+import { OrganizationDoc } from "../models/organization";
+import { userHasPermissions } from "./utils";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -36,11 +38,25 @@ export class ValidatedBasicCredentials implements BasicCredentials {
     password: string;
 }
 
-export class ValidatedEditableUser implements Partial<EditableUser> {
+@Schema()
+class CategorizedItemSchema implements CategorizedItem {
+    @Required() categoryId: string
+    @Required() itemId: string
+}
+
+export class ValidatedEditableUser implements Partial<AdminEditableUser> {
     @Optional()
     @Property()
     @Enum(RequestSkill)
     skills: RequestSkill[]
+
+    @Optional()
+    @CollectionOf(String)
+    roleIds: string[]
+
+    @Optional()
+    @CollectionOf(CategorizedItemSchema)
+    attributes: CategorizedItem[]
 }
 
 export class ValidatedMe implements Partial<EditableMe> {
@@ -267,10 +283,19 @@ export class UsersController implements APIController<
     @Post(API.server.editMe())
     @Authenticate()
     async editMe(
+        @OrgId() orgId: string,
         @User() user: UserDoc,
-        @BodyParams('me') me: ValidatedMe
+        @BodyParams('me') me: ValidatedMe,
+        @BodyParams('protectedUser') protectedUser: ValidatedEditableUser
     ) {
-        const res = await this.db.updateUser(user, me);
+        const org = await this.db.resolveOrganization(orgId);
+        if ('roleIds' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
+            throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
+        } else if ('attributes' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
+            throw new Unauthorized('You do not have permission to edit Attributes associated with your profile.');
+        }
+
+        const res = await this.db.updateUser(orgId, user, protectedUser, me);
 
         await this.pubSub.sys(PatchEventType.UserEdited, { 
             userId: user.id,
@@ -287,7 +312,15 @@ export class UsersController implements APIController<
         @BodyParams('userId') userId: string,
         @BodyParams('user') updatedUser: ValidatedEditableUser
     ) {
-        const res = await this.db.updateUser(userId, updatedUser);
+        const org = await this.db.resolveOrganization(orgId);
+
+        if ('roleIds' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
+            throw new Unauthorized("You do not have permission to edit Roles associated with this user's profile.");
+        } else if ('attributes' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
+            throw new Unauthorized("You do not have permission to edit Attributes associated with this user's profile.");
+        }
+
+        const res = await this.db.updateUser(orgId, userId, updatedUser);
 
         await this.pubSub.sys(PatchEventType.UserEdited, { 
             userId,
@@ -295,7 +328,6 @@ export class UsersController implements APIController<
 
         return res;
     }
-
 }
 
 

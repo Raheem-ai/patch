@@ -16,6 +16,9 @@ import { unwrap } from '../../../../common/utils';
 type Props = StackHeaderProps & {};
 
 const Header = observer((props: Props) => {
+    if (!props.navigation.isFocused()) {
+        return null;
+    }
 
     const dimensions = Dimensions.get('screen');
     const config: HeaderRouteConfig = unwrap(HeaderConfig[props.route.name]);

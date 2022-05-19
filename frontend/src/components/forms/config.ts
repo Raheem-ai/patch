@@ -18,6 +18,7 @@ import RoleListInput from "./inputs/screen/roleListInput";
 import PositionsInput from "./inputs/screen/positionsInput";
 import SliderInput from "./inputs/inline/sliderInput";
 import PositionsLabel from "./inputs/labels/positionsLabel";
+import RoleListLabel from "./inputs/labels/roleListLabel";
 
 // TODO: the only way to remove a cycle and also allow input components to use 
 // Form, is to have a FormStore return this 
@@ -69,7 +70,8 @@ export const FormViewMap: FormInputViewMap = {
         labelComponent: CategorizedItemListLabel
     },
     'RoleList': {
-        screenComponent: RoleListInput
+        screenComponent: RoleListInput,
+        labelComponent: RoleListLabel
     },
     'Positions': {
         screenComponent: PositionsInput,

@@ -257,8 +257,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             const responder = userStore().users.get(id);
 
                             const goToResponder = () => {
-                                userStore().pushCurrentUser(responder);
-                                navigateTo(routerNames.userDetails);
+                                const org = responder.organizations[userStore().currentOrgId];
+                                if (org) {
+                                    userStore().pushCurrentUser(responder);
+                                    navigateTo(routerNames.userDetails);
+                                }
                             }
                             
                             return (
