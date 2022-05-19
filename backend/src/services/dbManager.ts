@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -207,15 +207,21 @@ export class DBManager {
         user.markModified('organizations');
     }
 
-    async updateUser(userOrId: string | UserDoc, updatedUser: Partial<Omit<User, 'organizations'>>) {
+    async updateUser(orgId: string, userOrId: string | UserDoc, protectedUser: AdminEditableUser, updatedMe?: Partial<Omit<User, 'organizations'>>) {
         const user = await this.resolveUser(userOrId);
 
-        for (const prop in updatedUser) {
-            if (prop == 'organizations') {
-                continue;
+        for (const prop in protectedUser) {
+            if (prop == 'roleIds') {
+                user['organizations'][orgId]['roleIds'] = protectedUser[prop];
+                user.markModified('organizations');
+            } else if (prop == 'attributes') {
+                user['organizations'][orgId]['attributes'] = protectedUser[prop];
+                user.markModified('organizations');
             }
+        }
 
-            user[prop] = updatedUser[prop];
+        for (const prop in updatedMe) {
+            user[prop] = updatedMe[prop];
         }
 
         return await user.save()
@@ -1668,7 +1674,7 @@ export class DBManager {
             });
 
             let user4 = await this.createUser({ 
-                email: 'tevn@test.com', 
+                email: 'Tevn@test.com', 
                 password: 'Test',
                 name: `Tev'n Powers`,
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
@@ -1800,7 +1806,7 @@ export class DBManager {
             let tagCat1, tag1, tag2;
 
             [org, tagCat1] = await this.addTagCategoryToOrganization(org.id, {
-                name: 'Attribute Category'
+                name: 'Tag Category'
             });
 
             [org, tag1] = await this.addTagToOrganization(org.id, tagCat1.id, {

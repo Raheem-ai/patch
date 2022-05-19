@@ -16,7 +16,7 @@ type Props = {
 }
 
 const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
-    const isDispatcher = responder.organizations[orgId].roles.includes(UserRole.Dispatcher);
+    const isDispatcher = (responder.organizations[orgId]?.roles || []).includes(UserRole.Dispatcher);
     const skills = (responder.skills || [])
 
     return (

@@ -35,6 +35,7 @@ import {
     TagCategoryUpdates,
     AttributeCategoryUpdates,
     CategorizedItemUpdates,
+    AdminEditableUser,
     CategorizedItem
 } from './models';
 
@@ -108,7 +109,6 @@ export interface IApiClient {
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
-    editMe: Authenticated<(me: Partial<Me>) => Promise<Me>>
 
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
@@ -151,8 +151,9 @@ export interface IApiClient {
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
     
-    editUser: AuthenticatedWithOrg<(userId: string, user: Partial<EditableUser>) => Promise<ProtectedUser>>
-
+    editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
+    editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>
+    
     notifyRespondersAboutRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<HelpRequest>>
     ackRequestNotification: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     joinRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>

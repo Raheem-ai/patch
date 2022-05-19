@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -31,12 +31,13 @@ export interface IUserStore extends IBaseStore {
     signOut(): Promise<void>
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap, skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
-    editUser: (userId: string, user: Partial<EditableUser>) => Promise<void>
-    editMe: (user: Partial<EditableMe>) => Promise<void>
+    removeMyselfFromOrg: () => Promise<void>
+    editUser: (userId: string, user: Partial<AdminEditableUser>) => Promise<void>
+    editMe: (user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) => Promise<void>
 }
 
 export namespace IUserStore {
@@ -292,7 +293,6 @@ export interface IBottomDrawerStore extends IBaseStore {
     minimizable: boolean
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
-    currentRoute: string
 
     drawerContentHeight: Animated.AnimatedInterpolation
     contentHeight: Animated.AnimatedInterpolation
@@ -381,7 +381,7 @@ export namespace INewUserStore {
 export interface INewUserStore extends ITempUserStore {
     roles: UserRole[]
     roleIds: string[]
-    attributes: AttributesMap
+    attributes: CategorizedItem[]
 
     isValid: boolean
     phoneValid: boolean
@@ -397,7 +397,8 @@ export namespace IEditUserStore {
 }
 
 export interface IEditUserStore extends ITempUserStore {
-    roles: UserRole[]
+    roles: string[]
+    attributes: CategorizedItem[]
     id: string;
 
     myChangesValid: boolean
@@ -519,6 +520,16 @@ export namespace IManageAttributesStore {
     export const id = Symbol('IManageAttributesStore');
 }
 
+export interface INavigationStore extends IBaseStore {
+    currentRoute: keyof RootStackParamList;
+
+    navigateToSync: (targetRoute) => Promise<void>
+}
+
+export namespace INavigationStore {
+    export const id = Symbol('INavigationStore');
+}
+
 interface CategorizedItemStore extends IBaseStore { 
     editPermissions: PatchPermissions[]
     editStore: IEditCategorizedItemStore 
@@ -550,6 +561,7 @@ export const updateStore = () => getStore<IUpdateStore>(IUpdateStore);
 export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore);
 export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore);
 export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
+export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
 
 export const AllStores = [
     IUserStore,
@@ -574,5 +586,6 @@ export const AllStores = [
     IEditOrganizationStore,
     IUpsertRoleStore,
     IManageAttributesStore,
-    IManageTagsStore
+    IManageTagsStore,
+    INavigationStore
 ]

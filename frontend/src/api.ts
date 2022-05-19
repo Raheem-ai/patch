@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, CategorizedItemUpdates } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, CategorizedItemUpdates, AdminEditableUser, AttributesMap, CategorizedItem } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -234,11 +234,12 @@ export class APIClient implements IAPIService {
         return user;
     }
 
-    async editMe(ctx: OrgContext, me: Partial<Me>): Promise<ClientSideFormat<Me>> {
+    async editMe(ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.editMe()}`;
 
         return (await this.tryPost<ClientSideFormat<Me>>(url, {
-            me
+            me,
+            protectedUser
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data
@@ -590,7 +591,7 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributeHandle[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
@@ -606,7 +607,7 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async editUser(ctx: OrgContext, userId: string, user: Partial<Pick<ClientSideFormat<ProtectedUser>, 'skills'>>): Promise<ClientSideFormat<ProtectedUser>> {
+    async editUser(ctx: OrgContext, userId: string, user: Partial<AdminEditableUser>): Promise<ClientSideFormat<ProtectedUser>> {
         const url = `${apiHost}${API.client.editUser()}`;
 
         return (await this.tryPost<ClientSideFormat<ProtectedUser>>(url, {

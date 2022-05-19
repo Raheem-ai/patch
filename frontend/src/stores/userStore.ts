@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AttributesMap, AuthTokens, EditableMe, EditableUser, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from '../../../common/models';
+import { AttributesMap, AuthTokens, EditableMe, EditableUser, Me, MinUser, AdminEditableUser, ProtectedUser, RequestSkill, UserRole, CategorizedItem } from '../../../common/models';
 import { Store } from './meta';
-import { IUserStore } from './interfaces';
+import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { routerNames } from '../types';
@@ -163,7 +163,7 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: AttributesMap, skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) {
         return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributes, skills, baseUrl);
     }
 
@@ -237,7 +237,7 @@ export default class UserStore implements IUserStore {
         this.currentUser = user;
     }
 
-    async editUser(userId: string, user: Partial<EditableUser>) {
+    async editUser(userId: string, user: Partial<AdminEditableUser>) {
         const updatedUser = await this.api.editUser(this.orgContext(), userId, user)
 
         runInAction(() => {
@@ -249,8 +249,8 @@ export default class UserStore implements IUserStore {
         })
     }
     
-    async editMe(user: Partial<EditableMe>) {
-        const me = await this.api.editMe({ token: this.authToken }, user)
+    async editMe(user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) {
+        const me = await this.api.editMe(this.orgContext(), user, protectedUser)
 
         runInAction(() => {
             this.user = me;
@@ -272,5 +272,17 @@ export default class UserStore implements IUserStore {
             this.users.set(user.id, user);
             this.currentUser = null
         })
+    }
+
+    async removeMyselfFromOrg() {
+        const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
+        await this.api.signOut({ token:this.authToken });
+
+        await navigationStore().navigateToSync(routerNames.signIn);
+
+        setTimeout(() => {
+            clearAllStores()
+            clearAllServices()
+        }, 0)
     }
 }

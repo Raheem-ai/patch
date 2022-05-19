@@ -19,6 +19,7 @@ import { PubSubService } from "../services/pubSubService";
 import { OrganizationDoc } from "../models/organization";
 import { AtLeast } from "common";
 import { request } from "express";
+import { userHasPermissions } from "./utils";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -334,7 +335,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('orgUpdates') orgUpdates: Partial<OrganizationMetadata>,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.EditOrgSettings])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.EditOrgSettings])) {
             const org = await this.db.editOrgMetadata(orgId, orgUpdates)
 
             await this.pubSub.sys(PatchEventType.OrganizationEdited, { orgId: org.id });
@@ -360,7 +361,7 @@ export class OrganizationController implements APIController<
     ) {
         const org = await this.db.resolveOrganization(orgId);
 
-        if (await this.userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
+        if (await userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
 
             // dissallowed in front end so should never happen but just in case
             if (roleUpdates.id == DefaultRoleIds.Admin) {
@@ -391,7 +392,7 @@ export class OrganizationController implements APIController<
     ) {
         const org = await this.db.resolveOrganization(orgId);
 
-        if (await this.userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
+        if (await userHasPermissions(user, org, [PatchPermissions.RoleAdmin])) {
             // dissallowed in front end so should never happen but just in case
             if (roleIds.includes(DefaultRoleIds.Anyone)) {
                 const anyoneRoleName = org.roleDefinitions.find(def => def.id == DefaultRoleIds.Anyone)?.name || 'Anyone';
@@ -426,7 +427,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('role') newRole: MinRole,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.RoleAdmin]))
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.RoleAdmin]))
         {
             const [org, createdRole] = await this.db.addRoleToOrganization(newRole, orgId);
 
@@ -448,7 +449,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('category') newCategory: MinAttributeCategory,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin]))
         {
             const [org, createdCategory] = await this.db.addAttributeCategoryToOrganization(orgId, newCategory);
 
@@ -470,7 +471,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('categoryUpdates') categoryUpdates: AttributeCategoryUpdates,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin])) {
             const [org, updatedCategory] = await this.db.editAttributeCategory(orgId, categoryUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryEdited, { 
@@ -491,7 +492,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('categoryId') categoryId: string,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin])) {
             const org = await this.db.removeAttributeCategory(orgId, categoryId);
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeCategoryDeleted, { 
@@ -513,7 +514,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('categoryId') categoryId: string,
         @Required() @BodyParams('attribute') attribute: MinAttribute,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin]))
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin]))
         {
             const [org, createdAttribute] = await this.db.addAttributeToOrganization(orgId, categoryId, attribute);
 
@@ -537,7 +538,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('categoryId') categoryId: string,
         @Required() @BodyParams('attributeUpdates') attributeUpdates: AtLeast<Attribute, "id">,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin])) {
             const [org, updatedAttribute] = await this.db.editAttribute(orgId, categoryId, attributeUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationAttributeEdited, { 
@@ -560,7 +561,7 @@ export class OrganizationController implements APIController<
         @BodyParams('categoryId') categoryId: string,
         @BodyParams('attributeId') attributeId: string,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.AttributeAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.AttributeAdmin])) {
             const org = await this.db.removeAttribute(orgId, categoryId, attributeId);
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributeDeleted, { 
@@ -582,7 +583,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('category') newCategory: MinTagCategory,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin]))
         {
             const [org, createdCategory] = await this.db.addTagCategoryToOrganization(orgId, newCategory);
 
@@ -604,7 +605,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('categoryUpdates') categoryUpdates: TagCategoryUpdates,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {
             const [org, updatedCategory] = await this.db.editTagCategory(orgId, categoryUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationTagCategoryEdited, { 
@@ -625,7 +626,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('categoryId') categoryId: string,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {
             const org = await this.db.removeTagCategory(orgId, categoryId);
 
             await this.pubSub.sys(PatchEventType.OrganizationTagCategoryDeleted, { 
@@ -647,7 +648,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('categoryId') categoryId: string,
         @Required() @BodyParams('tag') tag: MinTag,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin]))
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin]))
         {
             const [org, createdTag] = await this.db.addTagToOrganization(orgId, categoryId, tag);
 
@@ -671,7 +672,7 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('categoryId') categoryId: string,
         @Required() @BodyParams('tagUpdates') tagUpdates: AtLeast<Tag, "id">,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {
             const [org, updatedTag] = await this.db.editTag(orgId, categoryId, tagUpdates);
     
             await this.pubSub.sys(PatchEventType.OrganizationTagEdited, { 
@@ -694,7 +695,7 @@ export class OrganizationController implements APIController<
         @BodyParams('categoryId') categoryId: string,
         @BodyParams('tagId') tagId: string,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {
             const org = await this.db.removeTag(orgId, categoryId, tagId);
 
             await this.pubSub.sys(PatchEventType.OrganizationTagDeleted, { 
@@ -716,7 +717,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('updates') updates: CategorizedItemUpdates,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {            
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {            
             return await this.db.transaction(async (session) => {
                 let org: OrganizationDoc, 
                     editedAttributeCategories: AttributeCategory[], 
@@ -802,7 +803,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @BodyParams('updates') updates: CategorizedItemUpdates,
     ) {
-        if (await this.userHasPermissions(user, orgId, [PatchPermissions.TagAdmin])) {            
+        if (await userHasPermissions(user, await this.db.resolveOrganization(orgId), [PatchPermissions.TagAdmin])) {            
             return await this.db.transaction(async (session) => {
                 let org: OrganizationDoc, 
                     editedTagCategories: TagCategory[], 
@@ -889,35 +890,4 @@ export class OrganizationController implements APIController<
         return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
     }
 
-    async userHasPermissions(user: UserDoc, orgId: string | OrganizationDoc, requiredPermissions: PatchPermissions[]): Promise<boolean> {
-        const org = await this.db.resolveOrganization(orgId);
-
-        const orgConfig = user.organizations && user.organizations[org.id];
-        if (!orgConfig) {
-            throw new Forbidden(`You do not have access to the requested org.`);
-        }
-
-        // Get all the roles that belong to a user.
-        const userRoles = [];
-        orgConfig.roleIds.forEach(id => {
-            const assignedRole = org.roleDefinitions.find(
-                roleDef => roleDef.id == id
-            );    
-            if (assignedRole) {
-                userRoles.push(assignedRole);
-            }
-        });
-
-        // Resolve all the permissions granted to a user based on their role(s).
-        const userPermissions = resolvePermissionsFromRoles(userRoles);
-        for (const permission of requiredPermissions) {
-            // If any required permission is missing, return false.
-            if (!userPermissions.has(permission as PatchPermissions)) {
-                return false;
-            }
-        }
-
-        // If we make it here then all required permissions were found.
-        return true;
-    }
 }

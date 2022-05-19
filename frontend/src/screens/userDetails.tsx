@@ -17,13 +17,6 @@ const UserDetails = observer(({ navigation, route }: Props) => {
     const [ loading, setLoading ] = useState(false)
 
     const header = () => {
-
-        const removeUserFromOrg = async () => {
-            setLoading(true);
-            await userStore().removeCurrentUserFromOrg();
-            navigationRef.current?.goBack();
-        }
-
         const startCall = async () => {
             if (userStore().currentUser.phone) {
                 await linkingStore().call(userStore().currentUser.phone)
@@ -83,21 +76,6 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                         size={styles.contactIcon.width} />
                 </Pressable>
             </View>
-            {
-                userStore().isAdmin && userStore().user.id != userStore().currentUser.id 
-                    ? <View style={styles.actionButtonsContainer}>
-                        <Button 
-                            mode= 'outlined'
-                            uppercase={false}
-                            style={styles.actionButton}
-                            color={styles.actionButton.borderColor}
-                            onPress={removeUserFromOrg}
-                            >
-                                {'Remove from organization'}
-                        </Button>
-                    </View>
-                    : null
-            }
         </View>
     }
 
