@@ -28,7 +28,6 @@ export default class NavigationStore implements INavigationStore {
         navigateTo(targetRoute);
 
         await when(() => {
-            console.log('WHEN: ', this.currentRoute, targetRoute);
             return this.currentRoute == targetRoute
         });
     }
