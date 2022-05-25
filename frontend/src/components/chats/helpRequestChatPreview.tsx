@@ -1,14 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
+import { Text } from "react-native-paper";
+import { HelpRequest } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames } from "../../types";
-import UserIcon from "../userIcon";
-import { ActiveRequestTabHeight } from "../../constants";
-import { StatusIcon, StatusSelector } from "../statusSelector";
 
 type Props = {
     request: HelpRequest,
