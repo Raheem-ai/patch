@@ -44,6 +44,7 @@ import UserDetails from './src/screens/userDetails';
 import Alerts from './src/components/alerts/alerts';
 import ComponentLibrary from './src/screens/componentLibrary';
 import Settings from './src/screens/settings';
+import Chats from './src/screens/chats';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -131,6 +132,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
                         <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
+                        <Stack.Screen name={routerNames.chats} component={userScreen(visualArea(Chats))}/>
                     </Stack.Navigator>
                     <Alerts/>
                     <GlobalBottomDrawer/>
