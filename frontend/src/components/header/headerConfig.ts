@@ -22,6 +22,10 @@ const HeaderConfig: {
     [routerNames.home]: {
         title: 'Home'
     },
+    [routerNames.landing]: {
+        title: 'Landing',
+        unauthenticated: true
+    },
     [routerNames.signIn]: {
         title: 'Sign In',
         unauthenticated: true

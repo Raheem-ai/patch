@@ -10,6 +10,7 @@ import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
 
 // // component imports
+import LandingPage from './src/screens/landingPage';
 import SignInForm from './src/screens/SignInForm';
 import WelcomePage from './src/screens/WelcomePage';
 import SignUpForm from './src/screens/SignUpForm';
@@ -103,7 +104,7 @@ export default function App() {
         ? linkingStore().initialRoute
         : userStore().signedIn
             ? routerNames.userHomePage
-            : routerNames.signIn
+            : routerNames.landing
 
     return (
         // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
@@ -118,6 +119,7 @@ export default function App() {
                         // just for android so it's behavior is *more* similiar to ios
                         translucent={true} />
                     <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
+                        <Stack.Screen name={routerNames.landing} component={LandingPage} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />

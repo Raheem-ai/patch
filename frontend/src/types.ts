@@ -22,7 +22,8 @@ export type RootStackParamList = {
     TeamList: undefined;
     ComponentLib: undefined;
     Settings: undefined;
-    SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
+    SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization];
+    Landing: undefined;
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -43,7 +44,8 @@ export const routerNames: TypedRouterNames = {
     helpRequestChat: "HelpRequestChat",
     componentLib: "ComponentLib",
     teamList: "TeamList",
-    settings: "Settings"
+    settings: "Settings",
+    landing: "Landing"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
