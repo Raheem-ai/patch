@@ -41,7 +41,7 @@ const HelpRequestChatPreview = observer(({
 
     const details = () => {
         const preview = (request.chat && request.chat.messages.length)
-                        ? request.chat.messages[request.chat.lastMessageId - 1].message
+                        ? request.chat.messages[request.chat.messages.length - 1].message
                         : 'No messages';
 
         return (
