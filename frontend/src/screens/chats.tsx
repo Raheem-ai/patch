@@ -42,7 +42,7 @@ const Chats = observer(({ navigation, route }: Props) => {
         </View>
     }
 
-    return <ScrollView showsVerticalScrollIndicator={false}>
+    return <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         { chatFeed() }
     </ScrollView>
 })
@@ -50,6 +50,10 @@ const Chats = observer(({ navigation, route }: Props) => {
 export default Chats;
 
 const styles = StyleSheet.create({
+    scrollView: {
+        backgroundColor: '#fff',
+        height: '100%'
+    },
     requestSection: {
         backgroundColor: '#fff',
     }
