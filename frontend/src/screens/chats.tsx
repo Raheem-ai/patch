@@ -11,8 +11,6 @@ import { iHaveAnyPermissions } from "../utils";
 type Props = ScreenProps<'Chats'>;
 
 const Chats = observer(({ navigation, route }: Props) => {
-    const [ loading, setLoading ] = useState(false)
-
     const seeAllRequestChats =  iHaveAnyPermissions([PatchPermissions.SeeAllChats, PatchPermissions.RequestAdmin]);
 
     const getUserRequests = () => {
@@ -42,10 +40,6 @@ const Chats = observer(({ navigation, route }: Props) => {
                 })
             }
         </View>
-    }
-
-    if (loading) {
-        return null
     }
 
     return <ScrollView showsVerticalScrollIndicator={false}>
