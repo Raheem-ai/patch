@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp } from '../types';
+import { labelNames, Colors, routerNames, SignInNavigationProp } from '../types';
 import { alertStore, IAlertStore, INotificationStore, IUserStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
@@ -13,6 +13,7 @@ type Props = {
 export default function SignInForm( { navigation } : Props) {
     const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
     const signIn = async () => {
 
@@ -31,25 +32,110 @@ export default function SignInForm( { navigation } : Props) {
     }
 
     return(
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.container}>
-            {/* <Text style={styles.title}>Sign In</Text> */}
-            <TextInput mode="outlined" label={labelNames.username} value={username} onChangeText={username => setTextUser(username)}/>
-            <TextInput mode="outlined" label={labelNames.password} value={password} onChangeText={password =>setPassword(password)}/>
-            <Button mode="contained" onPress={signIn}>Sign In</Button>
+            <View style={styles.titleContainer}>
+                <Text style={styles.titleText}>Welcome back!</Text>
+            </View>
+            <View style={styles.inputsContainer}>
+                <TextInput mode="flat" style={styles.input} label={labelNames.email} value={username} onChangeText={username => setTextUser(username)}/>
+                <TextInput
+                    mode="flat"
+                    secureTextEntry={secureTextEntry}
+                    right={
+                        <TextInput.Icon
+                          name="eye"
+                          onPress={() => {
+                            setSecureTextEntry(!secureTextEntry);
+                            return false;
+                          }}
+                        />
+                      }
+                    style={styles.input}
+                    label={labelNames.password}
+                    value={password}
+                    onChangeText={password =>setPassword(password)}/>
+            </View>
+            <View style={styles.bottomContainer}>
+                <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
+                <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+                <Text style={styles.invitationCodeText}>ENTER INVITATION CODE</Text>
+            </View>
         </View>
+        </TouchableWithoutFeedback>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        /* flex: 1,*/
         // justifyContent: 'center',
-        padding: 20,
-        paddingTop: 20
+        padding: 24,
+        backgroundColor: '#FAF9FA',
+        height: '100%'
     },
-    title: {
-        fontSize: 25,
-        fontWeight: "bold",
+    titleContainer: {
+        alignSelf: 'center',
+        paddingTop: 200,
+        paddingBottom: 100
+    },
+    titleText: {
+        fontStyle: 'normal',
+        fontWeight: '400',
+        fontSize: 21,
+        lineHeight: 25,
         textAlign: 'center',
+        color: '#713EB0'
+    },
+    inputsContainer: {
+        alignSelf: 'center',
+        marginBottom: 48,
+        height: 50,
+        width: 296
+    },
+    input: {
+        backgroundColor: '#FAF9FA'
+    },
+    bottomContainer: {
+        alignSelf: 'center',
+        marginVertical: 32
+    },
+    signInButton: {
+        borderRadius: 24,
+        backgroundColor: '#76599A',
+        justifyContent: 'center',
+        marginVertical: 24,
+        width: 296,
+        height: 44
+    },
+    forgotPasswordText: {
+        fontStyle: 'normal',
+        fontWeight: '400',
+        fontSize: 14,
+        lineHeight: 24,
+        marginBottom: 30,
+        
+        /* identical to box height, or 171% */
+        display: 'flex',
+        alignItems: 'center',
+        textAlign: 'center',
+        
+        /* primary.00 - 66% */
+        color: 'rgba(105, 79, 112, 0.66)',
+    },
+    invitationCodeText: {
+        fontStyle: 'normal',
+        fontWeight: '700',
+        fontSize: 14,
+        lineHeight: 16,
+        
+        /* identical to box height */
+        display: 'flex',
+        alignItems: 'center',
+        textAlign: 'center',
+        textTransform: 'uppercase',
+        
+        /* primary.00 - 33% */
+        color: 'rgba(118, 89, 154, 0.33)',
     },
 });
