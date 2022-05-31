@@ -22,6 +22,7 @@ export type RootStackParamList = {
     TeamList: undefined;
     ComponentLib: undefined;
     Settings: undefined;
+    Chats: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
 };
 
@@ -43,7 +44,8 @@ export const routerNames: TypedRouterNames = {
     helpRequestChat: "HelpRequestChat",
     componentLib: "ComponentLib",
     teamList: "TeamList",
-    settings: "Settings"
+    settings: "Settings",
+    chats: "Chats"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>

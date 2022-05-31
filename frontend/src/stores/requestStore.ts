@@ -68,12 +68,16 @@ export default class RequestStore implements IRequestStore {
     }
 
     get activeRequest() {
-        return this.activeRequests.length 
-            ? this.activeRequests[this.activeRequests.length - 1]
+        return this.myActiveRequests.length 
+            ? this.myActiveRequests[this.myActiveRequests.length - 1]
             : null;
     }
 
     get activeRequests() {
+        return this.requestsArray.filter((r) => r.status != RequestStatus.Done);
+    }
+
+    get myActiveRequests() {
         return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().user.id));
     }
 
