@@ -43,7 +43,7 @@ export default LandingPage;
 const styles = StyleSheet.create({
     pageContainer: {
         padding: 24,
-        backgroundColor: '#000000',
+        backgroundColor: '#42384F',
         height: '100%'
     },
     logoContainer: {
