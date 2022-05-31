@@ -15,10 +15,9 @@ const Chats = observer(({ navigation, route }: Props) => {
 
     const getUserRequests = () => {
         if (seeAllRequestChats) {
-            // TODO: more to do? set filter?
-            return requestStore().filteredSortedRequests;
-        } else {
             return requestStore().activeRequests;
+        } else {
+            return requestStore().myActiveRequests;
         }
     }
 
