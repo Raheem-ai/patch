@@ -73,8 +73,6 @@ export default function SignInForm( { navigation } : Props) {
 
 const styles = StyleSheet.create({
     container: {
-        /* flex: 1,*/
-        // justifyContent: 'center',
         padding: 24,
         backgroundColor: '#FAF9FA',
         height: '100%'
@@ -86,7 +84,7 @@ const styles = StyleSheet.create({
     },
     titleText: {
         fontStyle: 'normal',
-        fontWeight: '400',
+        fontWeight: '700',
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
