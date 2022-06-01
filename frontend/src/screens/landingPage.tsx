@@ -2,13 +2,15 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { routerNames, ScreenProps } from "../types";
+import { LandingPageNavigationProp, routerNames, ScreenProps } from "../types";
 import logo from '../../assets/logo.png';
 import { navigateTo } from "../navigation";
 
-type Props = ScreenProps<'Landing'>;
+type Props = {
+    navigation: LandingPageNavigationProp;
+};
 
-const LandingPage = observer(({ navigation, route }: Props) => {
+const LandingPage = observer(({ navigation }: Props) => {
     const [ loading, setLoading ] = useState(false)
 
     if (loading) {

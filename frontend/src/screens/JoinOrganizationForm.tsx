@@ -1,10 +1,12 @@
 import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, ScreenProps } from '../types';
+import { JoinOrganizationNavigationProp, labelNames, routerNames, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
 
-type Props = ScreenProps<'JoinOrganization'>;
+type Props = {
+    navigation: JoinOrganizationNavigationProp;
+};
 
 export default function JoinOrganizationForm( { navigation } : Props) {
     const [inivitationCode, setInvitationCode] = React.useState('');

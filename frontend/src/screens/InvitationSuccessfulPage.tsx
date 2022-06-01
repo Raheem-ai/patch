@@ -1,10 +1,12 @@
 import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import * as React from 'react';
-import { routerNames, ScreenProps } from '../types';
+import { InvitationSuccessfulProp, routerNames, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
 
-type Props = ScreenProps<'InvitationSuccessful'>;
+type Props = {
+    navigation: InvitationSuccessfulProp;
+};
 
 export default function InvitationSuccessfulPage( { navigation } : Props) {
     return(

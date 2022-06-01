@@ -10,8 +10,13 @@ type NotificationTypes<T extends NotificationType> = T extends any
     : never;
 
 export type RootStackParamList = {
-    Home: undefined;
+    Landing: undefined;
+    JoinOrganization: undefined;
+    InvitationSuccessful: undefined;
+    CreateAccount: undefined;
     SignIn: undefined;
+    // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
+    Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
     HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
@@ -23,9 +28,6 @@ export type RootStackParamList = {
     ComponentLib: undefined;
     Settings: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization];
-    Landing: undefined;
-    JoinOrganization: undefined;
-    InvitationSuccessful: undefined;
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -34,8 +36,12 @@ type TypedRouterNames = {
 }
 
 export const routerNames: TypedRouterNames = {
-    home: "Home",
+    landing: "Landing",
+    joinOrganization: "JoinOrganization",
+    invitationSuccessful: "InvitationSuccessful",
     signIn: "SignIn",
+    createAccount: "CreateAccount",
+    home: "Home",
     signUp: "SignUp",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
@@ -47,12 +53,14 @@ export const routerNames: TypedRouterNames = {
     componentLib: "ComponentLib",
     teamList: "TeamList",
     settings: "Settings",
-    landing: "Landing",
-    joinOrganization: "JoinOrganization",
-    invitationSuccessful: "InvitationSuccessful"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
+
+export type LandingPageNavigationProp = StackNavigationProp<RootStackParamList, 'Landing'>;
+export type JoinOrganizationNavigationProp = StackNavigationProp<RootStackParamList, 'JoinOrganization'>;
+export type InvitationSuccessfulProp = StackNavigationProp<RootStackParamList, 'InvitationSuccessful'>;
+export type CreateAccountNavigationProp = StackNavigationProp<RootStackParamList, 'CreateAccount'>;
 
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
