@@ -171,6 +171,9 @@ const HeaderConfig: {
     }, 
     [routerNames.settings]: {
         title: 'Settings'
+    },
+    [routerNames.chats]: {
+        title: 'Chats'
     }
 }
 

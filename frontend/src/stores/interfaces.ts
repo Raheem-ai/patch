@@ -139,6 +139,8 @@ export interface IRequestStore extends IBaseStore {
     currentRequest: HelpRequest
     currentRequestId: string
     activeRequest: HelpRequest
+    activeRequests: HelpRequest[]
+    myActiveRequests: HelpRequest[]
     currentUserActiveRequests: HelpRequest[]
     loading: boolean
 
