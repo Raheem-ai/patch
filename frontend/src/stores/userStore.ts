@@ -42,6 +42,10 @@ export default class UserStore implements IUserStore {
             // and signs you out if the refresh token has expired
             await this.api.init()
             await this.getLatestMe();
+
+            // TODO: also pull all the users from the org (like in this.afterSignIn()) and change
+            // the requestStore().getRequestsAfterSignin() to bypass updating all the users associated
+            // with the new requests it's pulled as we'll have done that already
         }
     }
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 import { InteractiveHeaderHeight } from "./header/header";
 import { VisualArea } from "./helpers/visualArea";
@@ -13,6 +13,7 @@ type Props = {
     tabs: TabConfig[]
     defaultTab?: string,
     scrollableHeader?: boolean // default to evenly spaced headers but alow for scrolling when necessary
+    bodyStyle?: ViewStyle
 };
 
 /**
@@ -41,7 +42,8 @@ type Props = {
 const TabbedScreen: React.FC<Props> = ({
     tabs,
     defaultTab,
-    scrollableHeader
+    scrollableHeader,
+    bodyStyle
 }: Props) => {
     const initialTab = defaultTab
         ? tabs.find((t) => t.label == defaultTab) || null
@@ -94,7 +96,7 @@ const TabbedScreen: React.FC<Props> = ({
             {/* without this key, it won't rerender if the tab content has the same shape 
                 ie. two <Form /> components even if they have different internals
             */}
-            <View key={selectedTab.label} style={styles.body}>
+            <View key={selectedTab.label} style={[styles.body, bodyStyle]}>
                 {
                     SelectedTab
                         ? <SelectedTab/>

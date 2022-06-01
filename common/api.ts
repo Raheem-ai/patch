@@ -159,7 +159,7 @@ export interface IApiClient {
     joinRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
     leaveRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
     requestToJoinRequest: AuthenticatedWithOrg<(requestId: string, positionId: string) => Promise<HelpRequest>>
-    ackRequestToJoinNotification: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
+    ackRequestsToJoinNotification: AuthenticatedWithOrg<(requestId: string, joinRequests: { userId: string, positionId: string }[]) => Promise<HelpRequest>>
     confirmRequestToJoinRequest: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
     declineRequestToJoinRequest: AuthenticatedWithOrg<(requestId: string, userId: string, positionId: string) => Promise<HelpRequest>>
     removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string, positionId: string) => Promise<HelpRequest>>
@@ -226,8 +226,8 @@ type ApiRoutes = {
         ackRequestNotification: () => {
             return '/ackRequestNotification'
         },
-        ackRequestToJoinNotification: () => {
-            return '/ackRequestToJoinNotificatoin'
+        ackRequestsToJoinNotification: () => {
+            return '/ackRequestsToJoinNotification'
         },
         confirmRequestToJoinRequest: () => {
             return '/confirmRequestToJoinRequest'
@@ -429,8 +429,8 @@ type ApiRoutes = {
         declineRequestToJoinRequest: () => {
             return `${this.base}${this.namespaces.dispatch}${this.server.declineRequestToJoinRequest()}`
         },
-        ackRequestToJoinNotification: () => {
-            return `${this.base}${this.namespaces.dispatch}${this.server.ackRequestToJoinNotification()}`
+        ackRequestsToJoinNotification: () => {
+            return `${this.base}${this.namespaces.dispatch}${this.server.ackRequestsToJoinNotification()}`
         },
         
 

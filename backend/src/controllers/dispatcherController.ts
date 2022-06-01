@@ -19,7 +19,7 @@ export class DispatcherController implements APIController<
     | 'declineRequestToJoinRequest' 
     | 'notifyRespondersAboutRequest' 
     | 'removeUserFromRequest'
-    | 'ackRequestToJoinNotification'
+    | 'ackRequestsToJoinNotification'
 > {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     
@@ -168,16 +168,15 @@ export class DispatcherController implements APIController<
         return res;
     }
 
-    @Post(API.server.ackRequestToJoinNotification())
+    @Post(API.server.ackRequestsToJoinNotification())
     @RequireRoles([UserRole.Dispatcher])
-    async ackRequestToJoinNotification(
+    async ackRequestsToJoinNotification(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
-        @Required() @BodyParams('userId') userId: string,
-        @Required() @BodyParams('requestId') requestId: string, 
-        @Required() @BodyParams('positionId') positionId: string, 
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('joinRequests') joinRequests: { userId: string, positionId: string }[],
     ) {
-        const res = await this.db.ackRequestToJoinNotification(user.id, userId, requestId, positionId);
+        const res = await this.db.ackRequestsToJoinNotification(user.id, requestId, joinRequests);
 
         // TODO: send notification to user that has been removed
         // TODO update the pubsub system with this event

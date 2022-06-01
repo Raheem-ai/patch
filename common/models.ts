@@ -187,7 +187,7 @@ export type HelpRequest = {
     // tags: TagsMap
     // otherRequirements?: any //TODO: nix these until later on
     // respondersNeeded: number
-    chat: Chat
+    chat?: Chat
     dispatcherId: string
     status: RequestStatus
     createdAt: string

@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
+import { visualDelim } from "../constants";
 
 export type ListHeaderProps<F, S> = {
     openHeaderLabel: string,
@@ -36,7 +37,7 @@ const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
             : [
                 props.chosenFilter ? props.filterToHeaderLabel(props.chosenFilter) : null, 
                 props.chosenSortBy ? props.sortByToHeaderLabel(props.chosenSortBy) : null
-            ].filter(val => !!val).join(' · ')
+            ].filter(val => !!val).join(` ${visualDelim} `)
 
         return (
             <Pressable onPress={toggleHeader}>

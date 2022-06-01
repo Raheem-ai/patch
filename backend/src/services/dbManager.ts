@@ -1336,7 +1336,7 @@ export class DBManager {
             sentAt: new Date().toISOString(),
             by: notifierId,
             to: to
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>)
 
         return await request.save();
     }
@@ -1348,28 +1348,30 @@ export class DBManager {
             seenAt: new Date().toISOString(),
             type: RequestTeamEventTypes.NotificationSeen,
             by: userId,
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSeen>)
 
         return await request.save();
     }
 
-    async ackRequestToJoinNotification(requestId: string | HelpRequestDoc, ackerId: string, userId: string, positionId: string) {
+    async ackRequestsToJoinNotification(requestId: string | HelpRequestDoc, ackerId: string, joinRequests: { userId: string, positionId: string }[]) {
         const request = await this.resolveRequest(requestId);
+        
+        for (const joinReq of joinRequests) {
+            const position = request.positions.find(pos => pos.id == joinReq.positionId);
 
-        const position = request.positions.find(pos => pos.id == positionId);
+            // TODO: this should throw
+            if (!position) {
+                return request;
+            }
 
-        // TODO: this should throw
-        if (!position) {
-            return request;
+            request.teamEvents.push({
+                seenAt: new Date().toISOString(),
+                type: RequestTeamEventTypes.PositionRequestSeen,
+                requester: joinReq.userId,
+                by: ackerId,
+                position: joinReq.positionId
+            } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>)
         }
-
-        request.teamEvents.push({
-            seenAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionRequestSeen,
-            user: userId,
-            by: ackerId,
-            position: positionId
-        })
 
         return await request.save();
     }
@@ -1401,7 +1403,7 @@ export class DBManager {
             requester: userId,
             by: approverId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1433,7 +1435,7 @@ export class DBManager {
             type: RequestTeamEventTypes.PositionLeft,
             user: userId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionLeft>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1462,7 +1464,7 @@ export class DBManager {
             type: RequestTeamEventTypes.PositionRequested,
             requester: userId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>)
 
         return await request.save()
     }
@@ -1493,7 +1495,7 @@ export class DBManager {
             type: RequestTeamEventTypes.PositionJoined,
             user: userId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionJoined>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1516,7 +1518,7 @@ export class DBManager {
             requester: userId,
             by: declinerId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>)
 
         return await request.save()
     }
@@ -1530,7 +1532,7 @@ export class DBManager {
             by: revokerId,
             user: userId,
             position: positionId
-        })
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1701,20 +1703,23 @@ export class DBManager {
                 skills: []
             });
 
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
-
-            console.log('creating new user...');
             let user5 = await this.createUser({ 
                 email: 'Tevn2@test.com', 
                 password: 'Test',
                 name: 'Tevy Tev2',
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
+
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user5 ] = await this.addUserToOrganization(org, user5, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
+
+            console.log('creating new user...');
+            
 
             // console.log('creating second org...');
             // let [ org2, admin2 ] = await this.createOrganization({
@@ -1906,9 +1911,41 @@ export class DBManager {
             // fullReqs[1] = await this.confirmRequestToJoinPosition(fullReqs[1], user3.id);
             // fullReqs[2] = await this.declineRequestToJoinPosition(fullReqs[2], user1.id);
             
-            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah...blah blah blah blah blah ')
+            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')
-            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah')
+            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah...blah blah blah blah blah bliggity blah')
+
+
+            // notify people 
+            reqWithMessage = await this.notifyRespondersAboutRequest(reqWithMessage, user1.id, [user2.id, user3.id, user4.id, user5.id])
+
+            // ack notification
+            reqWithMessage = await this.ackRequestNotification(reqWithMessage, user2.id);
+
+            // join
+            reqWithMessage = await this.joinRequest(reqWithMessage, user4.id, reqWithMessage.positions[0].id)
+
+            // leave
+
+            // request
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[0].id)
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[0].id)
+
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[1].id)
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[1].id)
+            
+            // ack request
+            reqWithMessage = await this.ackRequestsToJoinNotification(reqWithMessage, user1.id, [
+                { userId: user5.id, positionId: reqWithMessage.positions[0].id },
+                { userId: user3.id, positionId: reqWithMessage.positions[0].id }
+            ])
+
+            // accept
+            reqWithMessage =  await this.confirmRequestToJoinPosition(reqWithMessage, user1.id, user5.id, reqWithMessage.positions[0].id)
+
+            // deny request
+            reqWithMessage =  await this.declineRequestToJoinPosition(reqWithMessage, user1.id, user3.id, reqWithMessage.positions[0].id)
+
 
             console.log('finished populating')
         } catch (e) {

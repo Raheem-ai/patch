@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React from "react";
+import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
@@ -21,14 +21,18 @@ type PositionDetailsCardProps = {
     }
 }
 
+// Note: this is tied to requests right now vs being a general position details card
 const PositionDetailsCard = observer(({ 
     requestId,
     pos,
     edit
 }: PositionDetailsCardProps) => {
 
-    const status = pos.joinedUsers.length
-        ? pos.joinedUsers.length >= pos.min
+    const positionMetadata = requestStore().getPositionMetadata(requestId, pos.id);
+    const joinedUsers = Array.from(positionMetadata.joinedUsers.values());
+
+    const status = joinedUsers.length
+        ? joinedUsers.length >= pos.min
             ? PositionStatus.MinSatisfied
             : PositionStatus.MinUnSatisfied
         : pos.min 
@@ -48,7 +52,7 @@ const PositionDetailsCard = observer(({
         name: string,
         attributes: string[],
         userId: string
-    }[] = pos.joinedUsers.map(userId => {
+    }[] = joinedUsers.map(userId => {
         const user = userStore().users.get(userId);
 
         if (!user) {
@@ -92,8 +96,6 @@ const PositionDetailsCard = observer(({
             }
         }
 
-        const positionMetadata = requestStore().getPositionMetadata(requestId, pos.id);
-
         // const alreadyOnPosition = pos.joinedUsers.includes(userStore().user.id);
 
         if (positionMetadata.canLeave) {
@@ -121,7 +123,7 @@ const PositionDetailsCard = observer(({
         // console.log('haveRole', haveRole) 
         // console.log('haveBeenKicked', haveBeenKicked)
 
-        console.log('SEEN TEST: ', positionMetadata.unseenJoinRequest)
+        console.log('SEEN TEST: ', positionMetadata.unseenJoinRequests.size)
 
         if (positionMetadata.canJoin) {
             return <Button 

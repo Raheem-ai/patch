@@ -143,16 +143,32 @@ export namespace IRequestStore {
     export const id = Symbol('IRequestStore');
 }
 
-export type PositionMetadata = {
+export type PositionScopedMetadata = {
     canJoin: boolean,
     canLeave: boolean,
     canRequestToJoin: boolean,
-    unseenJoinRequest: boolean,
+    // relative to the current user if they 
+    // are a request admin...otherwise empty
+    unseenJoinRequests: Set<string>,
+
+    pendingJoinRequests: Set<string>,
+    deniedJoinRequests: Set<string>
+    joinedUsers: Set<string>
 }
 
-export type RequestMetadata = {
-    unseenNotification: boolean
+export type RequestScopedMetadata = {
+    unseenNotification: boolean,
+    notificationsSentTo: Map<string, Date>
+    notificationsViewedBy: Map<string, Date>
 }
+
+// this type is always in the context of being relative to a single user
+// ie.
+// frontend: always relative to the user logged in
+// backend: always relative to the user being checked against in the api call
+export type RequestMetadata = RequestScopedMetadata & {
+    positions: Map<string, PositionScopedMetadata>
+};
 
 export interface IRequestStore extends IBaseStore {
     requests: Map<string, HelpRequest>
@@ -163,6 +179,7 @@ export interface IRequestStore extends IBaseStore {
     activeRequest: HelpRequest
     currentUserActiveRequests: HelpRequest[]
     loading: boolean
+    requestMetadata:  Map<string, RequestMetadata>
 
     filter: HelpRequestFilter
     sortBy: HelpRequestSortBy
@@ -186,7 +203,15 @@ export interface IRequestStore extends IBaseStore {
     leaveRequest(reqId: string, positionId: string): Promise<void>
     requestToJoinRequest(reqId: string, positionId: string): Promise<void>
     removeUserFromRequest(userId: string, reqId: string, positionId: string): Promise<void>
-    getPositionMetadata(requestId: string, positionId: string): PositionMetadata
+    getPositionMetadata(requestId: string, positionId: string): PositionScopedMetadata
+    // getRequestMetadata(requestId: string): RequestScopedMetadata
+    
+    approveRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
+    denyRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
+    ackRequestsToJoinNotification(requestId: string): Promise<void>
+    joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
+    ackRequestNotification(requestId: string): Promise<void>
+    shouldAckRequestNotification(requestId: string): boolean
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

@@ -7,7 +7,7 @@ import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames } from "../../types";
 import UserIcon from "../userIcon";
-import { ActiveRequestTabHeight } from "../../constants";
+import { ActiveRequestTabHeight, visualDelim } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 
 type Props = {
@@ -69,7 +69,7 @@ const HelpRequestCard = observer(({
     }
 
     const details = () => {
-        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(' · ');
+        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(` ${visualDelim} `);
         const notes = request.notes;
 
         return (

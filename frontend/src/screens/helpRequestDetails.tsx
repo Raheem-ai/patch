@@ -2,12 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
-import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
+import { HelpRequestAssignment, NotificationType, PatchPermissions, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { bottomDrawerStore, BottomDrawerView, dispatchStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, dispatchStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import ResponderRow from "../components/responderRow";
-import { timestampToTimeString } from "../../../common/utils";
+import { dateToTimeString, timestampToTimeString } from "../../../common/utils";
 
 import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
@@ -15,6 +15,10 @@ import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
+import { iHaveAllPermissions } from "../utils";
+import { visualDelim } from "../constants";
+import { event } from "react-native-reanimated";
+import { resolveErrorMessage } from "../errors";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -51,6 +55,15 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 // got here through normal navigation...caller should worry about having up to date copy
                 setIsLoading(false)
             }
+
+
+            if (requestStore().shouldAckRequestNotification(request.id)) {
+                console.log('acking : ', request.displayId)
+                await requestStore().ackRequestNotification(request.id)
+            } else {
+                console.log('already seen : ', request.displayId)
+            }
+
         })();
     }, []);
 
@@ -101,7 +114,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{tags.join(' · ')}</Text>
+                    <Text style={styles.typeLabel}>{tags.join(` ${visualDelim} `)}</Text>
                 </View>
                 <View>
                     <IconButton
@@ -494,8 +507,329 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const team = observer(() => {
+        const isRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin]);
+
+        const notifyAction = () => {
+            if (!isRequestAdmin) {
+                return null
+            } else {
+                const startNotifyFlow = () => {
+                    // TODO: open notify BDV
+                }
+
+                return <View style={{ padding: 20 }}>
+                    <Button
+                        uppercase={false} 
+                        color={Colors.primary.alpha}
+                        mode={'outlined'}
+                        onPress={startNotifyFlow}
+                        style={[styles.notifyButton]}>{'Notify people'}</Button>
+                </View>
+            }
+        }
+
+        const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
+
+        const teamEventDetails = () => {
+            if (!isRequestAdmin) {
+                return null
+            } else {
+                const requestMetadata = requestStore().requestMetadata.get(request.id);
+                const numNotified = requestMetadata.notificationsSentTo.size;
+
+                const notifiedUsers = new Map(requestMetadata.notificationsSentTo);
+                const viewedUsers = new Map(requestMetadata.notificationsViewedBy);
+
+                const pendingRequests: {
+                    userId: string, 
+                    positionName: string, 
+                    positionId: string
+                }[] = [];
+
+                const deniedRequests: {
+                    userId: string, 
+                    positionName: string
+                }[] = []
+
+                const joinedUsers: {
+                    userId: string, 
+                    positionName: string
+                }[] = []
+                
+                let numUnseenPositionRequests = 0;
+
+                for (const pos of request.positions) {
+                    const posMeta = requestStore().getPositionMetadata(request.id, pos.id);
+                    
+                    // numUnseenPositionRequests += posMeta.unseenJoinRequests.size
+
+                    posMeta.unseenJoinRequests.forEach(requesterId => {
+                        if (requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id)) {
+                            numUnseenPositionRequests += 1
+                            console.log(userStore().users.get(requesterId).name, organizationStore().roles.get(pos.role).name)
+                        }
+                    })
+                    
+                    posMeta.pendingJoinRequests.forEach(userId => {
+                        pendingRequests.push({
+                            userId, 
+                            positionName: organizationStore().roles.get(pos.role)?.name,
+                            positionId: pos.id
+                        })
+
+                        notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+
+                    posMeta.deniedJoinRequests.forEach(userId => {
+                        deniedRequests.push({
+                            userId, 
+                            positionName: organizationStore().roles.get(pos.role)?.name
+                        })
+
+                        notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+
+                    Array.from(posMeta.joinedUsers.values()).forEach(userId => {
+                        joinedUsers.push({
+                            userId,
+                            positionName: organizationStore().roles.get(pos.role)?.name
+                        })
+
+                        notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+                }
+
+                viewedUsers.forEach((_, userId) => {
+                    notifiedUsers.delete(userId)
+                })
+
+                const notifiedLabel = `${numNotified} PEOPLE NOTIFIED`;
+
+                // TODO: I think the isRequestAdmin part is redundant
+                const newLabel = isRequestAdmin && numUnseenPositionRequests
+                    ? ` ${visualDelim} ${numUnseenPositionRequests} new requests`
+                    : null;
+
+                const positionScopedRow = ({ 
+                    userId, 
+                    positionName, 
+                    rightElem 
+                }: { userId: string, positionName: string, rightElem: () => JSX.Element }) => {
+                    const userName = userStore().users.get(userId)?.name;
+
+                    return (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text>
+                                    <Text>{`${userName} - `}</Text>
+                                    <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
+                                </Text>
+                            </View>
+                            { rightElem() }
+                        </View>
+                    )
+                }
+
+                const requestScopedRow = ({ 
+                    userId, 
+                    timestamp
+                }: { userId: string, timestamp: Date }) => {
+                    const userName = userStore().users.get(userId)?.name;
+
+                    return (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                            <Text>{`${userName}`}</Text>
+                            <Text>{dateToTimeString(timestamp)}</Text>
+                        </View>
+                    )
+                }
+
+                const requestSection = () => {
+
+                    const deniedLabel = () => {
+                        return <View style={{ flexGrow: 1 }}>
+                            <Text style={{ textAlign: 'right' }}>{'Denied'}</Text>
+                        </View>
+                    }
+
+                    const requestToJoinActions = (userId: string, positionId: string) => () => {
+                        const deny = async () => {
+                            try {
+                                await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
+                            } catch (e) {
+                                alertStore().toastError(resolveErrorMessage(e));
+                            }
+                        
+                        }
+
+                        const approve = async () => {                        
+                            try {
+                                await requestStore().approveRequestToJoinRequest(userId, request.id, positionId)
+                            } catch (e) {
+                                alertStore().toastError(resolveErrorMessage(e));
+                            }
+                        }
+
+                        return (
+
+                            <View style={{ justifyContent: 'center', alignItems: 'flex-end',  flexGrow: 1 }}>
+                                <View style={{ flexDirection: 'row'}}>
+                                    <Button
+                                        uppercase={false} 
+                                        color={Colors.primary.alpha}
+                                        mode={'outlined'}
+                                        onPress={deny}
+                                        style={[styles.notifyButton, { marginLeft: 10 }]}>{'Deny'}</Button>
+                                    <Button
+                                        uppercase={false} 
+                                        color={Colors.primary.alpha}
+                                        mode={'outlined'}
+                                        onPress={approve}
+                                        style={[styles.notifyButton, { marginLeft: 10 }]}>{'Accept'}</Button>
+                                </View>
+                            </View>
+                        )
+                    }
+
+                    return (
+                        <View style={{ padding: 20, backgroundColor: '#E5E3E5' }}>
+                            <Text style={{ fontWeight: 'bold' }}>{'Asked to join'}</Text>
+                            { 
+                                pendingRequests.map(({ userId, positionName, positionId }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: requestToJoinActions(userId, positionId)
+                                    })
+                                })
+                            }
+                            { 
+                                deniedRequests.map(({ userId, positionName }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: deniedLabel
+                                    })
+                                })
+                            }
+                        </View>
+                    )
+                }
+
+                const joinedSection = () => {
+
+                    const joinedIcon = () => {
+                        return (
+                            <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                <IconButton
+                                    style={styles.icon}
+                                    icon={'check-circle'}
+                                    color={Colors.good}
+                                    size={styles.icon.width} />
+                            </View>
+                        )
+                    }
+
+                    return (
+                        <View style={{ padding: 20 }}>
+                            <Text style={{ fontWeight: 'bold' }}>{'Joined'}</Text>
+                            { 
+                                joinedUsers.map(({ userId, positionName }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: joinedIcon
+                                    })
+                                })
+                            }
+                        </View>
+                    )
+                }
+
+                const viewedSection = () => {
+                    return (
+                        <View style={{ paddingHorizontal: 20 }}>
+                            <Text style={{ fontWeight: 'bold' }}>{'Viewed'}</Text>
+                            { 
+                                Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                            }
+                        </View>
+                    )
+                }
+
+                const notificationsSection = () => {
+                    return (
+                        <View style={{ padding: 20 }}>
+                            <Text style={{ fontWeight: 'bold' }}>{'Notification sent'}</Text>
+                            { 
+                                Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                            }
+                        </View>
+                    )
+                }
+
+                const toggleTeamDetails = async () => {
+                    setEventDetailsOpen(!eventDetailsOpen)
+                    
+                    if (!eventDetailsOpen) {
+                        // TODO: make this bulk call
+                        await requestStore().ackRequestsToJoinNotification(request.id)
+                    }
+                }
+
+                return (
+                    <View>
+                        <Pressable 
+                            style={{ 
+                                padding: 20, 
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }} 
+                            onPress={toggleTeamDetails}
+                        >
+                            <View>
+                                <Text style={{ fontWeight: 'bold' }}>{notifiedLabel}</Text>
+                            </View>
+                            { newLabel
+                                ? <View style={{ flex: 1 }}>
+                                    <Text style={{ 
+                                        color: Colors.primary.alpha, 
+                                        fontSize: 14
+                                    }}>{newLabel}</Text>
+                                </View>
+                                : null
+                            }
+                            <IconButton 
+                                style={styles.icon}
+                                size={styles.icon.height}
+                                color={'#999'}
+                                icon={!eventDetailsOpen ? 'chevron-up' : 'chevron-down'}/>
+                        </Pressable>
+                        {
+                            eventDetailsOpen
+                                ? <View>
+                                    { requestSection() }
+                                    { joinedSection() }
+                                    { viewedSection() }
+                                    { notificationsSection() }
+                                </View>
+                                : null
+                        }
+                    </View>
+                )
+            }
+        }
+
         return (
-            <>
+            <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
+                <View style={{ backgroundColor: '#F6F4F6', borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+                    { notifyAction() }
+                    { teamEventDetails() }
+                </View>
                 {
                     request.positions.map(pos => {
                         return (
@@ -503,22 +837,25 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         )
                     })
                 }
-            </>
+            </WrappedScrollView>
         )
     })
 
     return (
         <VisualArea>
-            <TabbedScreen defaultTab={Tabs.Overview} tabs={[
-                {
-                    label: Tabs.Overview,
-                    view: overview
-                },
-                {
-                    label: Tabs.Team,
-                    view: team
-                }
-            ]}/>
+            <TabbedScreen 
+                bodyStyle={{ backgroundColor: '#ffffff' }}
+                defaultTab={Tabs.Overview} 
+                tabs={[
+                    {
+                        label: Tabs.Overview,
+                        view: overview
+                    },
+                    {
+                        label: Tabs.Team,
+                        view: team
+                    }
+                ]}/>
         </VisualArea>
     );
 });
@@ -798,5 +1135,17 @@ const styles = StyleSheet.create({
     skillLabel: {
         color: '#7F7C7F',
         fontSize: 12
+    },
+    notifyButton: {
+        borderWidth: 1,
+        borderColor: Colors.primary.alpha,
+        backgroundColor: '#fff',
+        borderRadius: 32,
+        height: 40,
+    },
+    icon: {
+        width: 20,
+        height: 20,
+        margin: 0
     }
 })

@@ -514,33 +514,36 @@ export class APIClient implements IAPIService {
         })).data;
     }
 
-    async ackRequestToJoinNotification(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
-        const url = `${apiHost}${API.client.ackRequestToJoinNotification()}`;
+    async ackRequestsToJoinNotification(ctx: OrgContext, requestId: string, joinRequests: { userId: string, positionId: string }[]) {
+        const url = `${apiHost}${API.client.ackRequestsToJoinNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
-            userId,
+            joinRequests
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async confirmRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
+        const url = `${apiHost}${API.client.confirmRequestToJoinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId,
+            userId, 
             positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async confirmRequestToJoinRequest(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.confirmRequestToJoinRequest()}`;
-
-        return (await this.tryPost<HelpRequest>(url, {
-            requestId
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx),
-        })).data;
-    }
-
-    async declineRequestToJoinRequest(ctx: OrgContext, requestId: string) {
+    async declineRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
         const url = `${apiHost}${API.client.declineRequestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId, 
+            userId, 
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
