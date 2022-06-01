@@ -31,9 +31,11 @@ const LandingPage = observer(({ navigation, route }: Props) => {
                     <Text style={styles.signInText}>SIGN IN</Text>
                 </View>
             </Pressable>
-            <View style={styles.captionContainer}>
-                <Text style={styles.invitationCodeText}>ENTER INVITATION CODE</Text>
-            </View>
+            <Pressable onPress={() => navigateTo(routerNames.joinOrganization)}>
+                <View style={styles.captionContainer}>
+                    <Text style={styles.invitationCodeText}>ENTER INVITATION CODE</Text>
+                </View>
+            </Pressable>
         </View>
     );
 })

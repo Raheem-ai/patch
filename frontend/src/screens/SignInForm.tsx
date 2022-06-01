@@ -1,8 +1,8 @@
 import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, Colors, routerNames, SignInNavigationProp } from '../types';
-import { alertStore, IAlertStore, INotificationStore, IUserStore, notificationStore, userStore } from '../stores/interfaces';
+import { labelNames, routerNames, SignInNavigationProp } from '../types';
+import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 
@@ -38,7 +38,12 @@ export default function SignInForm( { navigation } : Props) {
                 <Text style={styles.titleText}>Welcome back!</Text>
             </View>
             <View style={styles.inputsContainer}>
-                <TextInput mode="flat" style={styles.input} label={labelNames.email} value={username} onChangeText={username => setTextUser(username)}/>
+                <TextInput
+                    mode="flat"
+                    style={styles.input}
+                    label={labelNames.email}
+                    value={username}
+                    onChangeText={username => setTextUser(username)}/>
                 <TextInput
                     mode="flat"
                     secureTextEntry={secureTextEntry}
@@ -59,7 +64,7 @@ export default function SignInForm( { navigation } : Props) {
             <View style={styles.bottomContainer}>
                 <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
                 <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                <Text style={styles.invitationCodeText}>ENTER INVITATION CODE</Text>
+                <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
             </View>
         </View>
         </TouchableWithoutFeedback>

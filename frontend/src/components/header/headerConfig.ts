@@ -26,6 +26,10 @@ const HeaderConfig: {
         title: 'Landing',
         unauthenticated: true
     },
+    [routerNames.joinOrganization]: {
+        title: 'Join Organization',
+        unauthenticated: true
+    },
     [routerNames.signIn]: {
         title: 'Sign In',
         unauthenticated: true
