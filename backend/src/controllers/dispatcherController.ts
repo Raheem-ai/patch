@@ -176,7 +176,7 @@ export class DispatcherController implements APIController<
         @Required() @BodyParams('requestId') requestId: string,
         @Required() @BodyParams('joinRequests') joinRequests: { userId: string, positionId: string }[],
     ) {
-        const res = await this.db.ackRequestsToJoinNotification(user.id, requestId, joinRequests);
+        const res = await this.db.ackRequestsToJoinNotification(requestId, user.id, joinRequests);
 
         // TODO: send notification to user that has been removed
         // TODO update the pubsub system with this event

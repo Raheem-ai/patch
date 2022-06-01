@@ -334,6 +334,10 @@ export default class RequestStore implements IRequestStore {
                         waitingOnRequestResults = false;
                     }
 
+                    if (isRequestAdmin) {
+                        unseenJoinRequests.delete(e.requester)
+                    }
+
                     pendingJoinRequests.delete(e.requester)
                     deniedJoinRequests.add(e.requester)
                 }
@@ -347,6 +351,10 @@ export default class RequestStore implements IRequestStore {
     
                         // request to join -> approved -> kicked -> request to join -> approved
                         haveBeenKicked = false;
+                    }
+
+                    if (isRequestAdmin) {
+                        unseenJoinRequests.delete(e.requester)
                     }
 
                     joinedUsers.add(e.requester)
@@ -372,8 +380,7 @@ export default class RequestStore implements IRequestStore {
             unseenJoinRequests,
             pendingJoinRequests,
             deniedJoinRequests,
-            joinedUsers // this should mirror what's on the position but we might be able to remove the field
-            // from position in favor of this
+            joinedUsers 
         }
     }
 
@@ -611,13 +618,11 @@ export default class RequestStore implements IRequestStore {
         this.updateOrAddReq(updatedReq);
     }
 
-    shouldAckRequestNotification(requestId: string) {
-        // we haven't seen it in this UI session && the teamEvents indicate we have an unseen notification
-        return !this.seenRequests.has(requestId) && this.getRequestMetadata(requestId).unseenNotification
-    }
-
     async ackRequestNotification(requestId: string) {
-        if (this.seenRequests.has(requestId)) {
+        const unseenNotification = this.getRequestMetadata(requestId).unseenNotification;
+
+        // team events say there aren't any unseen or we've seen it this session
+        if (!unseenNotification || this.seenRequests.has(requestId)) {
             return;
         } else {
             this.seenRequests.add(requestId)
@@ -680,11 +685,9 @@ export default class RequestStore implements IRequestStore {
         }
 
         if (unseenJoinRequests.length) {
-            // TODO: INVESTIGATE WHY THIS IS GIVING a 404?!?!?!
             const updatedReq = await api().ackRequestsToJoinNotification(this.orgContext(), requestId, unseenJoinRequests);
         
             runInAction(() => {
-                console.log('updating after join req ack: ', unseenJoinRequests.length)
                 this.updateRequestInternals(updatedReq);
             })
         }

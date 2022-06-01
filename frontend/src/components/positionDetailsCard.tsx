@@ -96,8 +96,6 @@ const PositionDetailsCard = observer(({
             }
         }
 
-        // const alreadyOnPosition = pos.joinedUsers.includes(userStore().user.id);
-
         if (positionMetadata.canLeave) {
             return <Button 
                 style={[styles.button]}
@@ -105,25 +103,6 @@ const PositionDetailsCard = observer(({
                 mode='contained'
                 onPress={leave}>{'Leave'}</Button>
         }
-
-        // const myAttributes = userStore().user.organizations[userStore().currentOrgId].attributes;
-        
-        // const haveAllAttributes = pos.attributes.every(attr => !!myAttributes.find(myAttr => myAttr.categoryId == attr.categoryId && myAttr.itemId == attr.itemId));
-        
-        // const haveRole = (pos.role == DefaultRoleIds.Anyone)
-        //     || !!organizationStore().userRoles.get(userStore().user.id).find(role => role.id == pos.role);
-        
-        // // TODO: get from projections of teamevents
-        // const haveBeenKicked = false;
-        // const haveRequestedAlready = true;
-        
-        // const canJoinPosition = haveAllAttributes && haveRole && !haveBeenKicked;
-
-        // console.log('haveAllAttributes', haveAllAttributes) 
-        // console.log('haveRole', haveRole) 
-        // console.log('haveBeenKicked', haveBeenKicked)
-
-        console.log('SEEN TEST: ', positionMetadata.unseenJoinRequests.size)
 
         if (positionMetadata.canJoin) {
             return <Button 
@@ -174,7 +153,7 @@ const PositionDetailsCard = observer(({
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
                                         <View style={{ flexDirection: 'row' }}>
                                             {
-                                                details.attributes.map(attr => <Text style={{ color: '#666666', marginRight: 6 }}>{attr}</Text>)
+                                                details.attributes.map(attr => <Text key={attr} style={{ color: '#666666', marginRight: 6 }}>{attr}</Text>)
                                             }
                                         </View>
                                     </View>

@@ -144,16 +144,25 @@ export namespace IRequestStore {
 }
 
 export type PositionScopedMetadata = {
+    pendingJoinRequests: Set<string>,
+    deniedJoinRequests: Set<string>
+    /** this should mirror what's on the position but we might be able to remove 
+     * the field from position in favor of this 
+     */
+    joinedUsers: Set<string>
+} & UserSpecificPositionMetadata;
+
+/**
+ * relative to the current user
+ */
+export type UserSpecificPositionMetadata = {
     canJoin: boolean,
     canLeave: boolean,
     canRequestToJoin: boolean,
-    // relative to the current user if they 
-    // are a request admin...otherwise empty
+    /**
+     * if current user isn't a request adming this is empty
+     */ 
     unseenJoinRequests: Set<string>,
-
-    pendingJoinRequests: Set<string>,
-    deniedJoinRequests: Set<string>
-    joinedUsers: Set<string>
 }
 
 export type RequestScopedMetadata = {
@@ -211,7 +220,6 @@ export interface IRequestStore extends IBaseStore {
     ackRequestsToJoinNotification(requestId: string): Promise<void>
     joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
     ackRequestNotification(requestId: string): Promise<void>
-    shouldAckRequestNotification(requestId: string): boolean
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

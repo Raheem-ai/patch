@@ -57,12 +57,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             }
 
 
-            if (requestStore().shouldAckRequestNotification(request.id)) {
-                console.log('acking : ', request.displayId)
-                await requestStore().ackRequestNotification(request.id)
-            } else {
-                console.log('already seen : ', request.displayId)
-            }
+            await requestStore().ackRequestNotification(request.id)
 
         })();
     }, []);
@@ -190,291 +185,291 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const teamSection = () => {
-        const responderIds = request?.assignedResponderIds || [];
-        const canJoin = userStore().isResponder && !request.assignedResponderIds.includes(userStore().user.id)
-        const canLeave = userStore().isResponder && request.assignedResponderIds.includes(userStore().user.id)
+    // const teamSection = () => {
+    //     const responderIds = request?.assignedResponderIds || [];
+    //     const canJoin = userStore().isResponder && !request.assignedResponderIds.includes(userStore().user.id)
+    //     const canLeave = userStore().isResponder && request.assignedResponderIds.includes(userStore().user.id)
 
-        const addResponders = () => {
-            bottomDrawerStore().show(BottomDrawerView.assignResponders, true);
-        }
+    //     const addResponders = () => {
+    //         bottomDrawerStore().show(BottomDrawerView.assignResponders, true);
+    //     }
 
-        // TODO: this should be a reaction on activeRequest changing between
-        // existing/ not existing
+    //     // TODO: this should be a reaction on activeRequest changing between
+    //     // existing/ not existing
 
-        const joinRequest = async () => {
-            await requestStore().joinRequest(request.id);
-        }
+    //     const joinRequest = async () => {
+    //         await requestStore().joinRequest(request.id);
+    //     }
 
-        const leaveRequest = async () => {
-            await requestStore().leaveRequest(request.id);
-        }
+    //     const leaveRequest = async () => {
+    //         await requestStore().leaveRequest(request.id);
+    //     }
 
-        const removeResponder = (responderId: string) => () => {
-            requestStore().removeUserFromRequest(responderId, request.id)
-        }
+    //     const removeResponder = (responderId: string) => () => {
+    //         requestStore().removeUserFromRequest(responderId, request.id)
+    //     }
 
-        const teamHeader = () => {
-            return (
-                <View style={styles.teamHeader}>
-                    <View style={styles.teamLabelContainer}>
-                        <IconButton
-                            style={styles.teamIcon}
-                            icon='account-multiple'
-                            color={styles.teamIcon.color}
-                            size={styles.teamIcon.width} />
-                        <Text style={styles.teamLabel}>TEAM</Text>
-                    </View>
-                    <View>
-                        { userStore().isDispatcher
-                            ? <IconButton 
-                                onPress={addResponders}
-                                style={styles.addResponderIcon}
-                                icon='account-plus'
-                                color={styles.addResponderIcon.color}
-                                size={styles.addResponderIcon.width} />
-                            : canJoin
-                                ? <View style={styles.teamLabelContainer}>
-                                    <IconButton 
-                                        onPress={joinRequest}
-                                        style={styles.addResponderIcon}
-                                        icon='account-check'
-                                        color={styles.addResponderIcon.color}
-                                        size={styles.addResponderIcon.width} />
-                                    <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>JOIN</Text>    
-                                </View>
-                                : canLeave
-                                    ? <View style={styles.teamLabelContainer}>
-                                        <IconButton 
-                                            onPress={leaveRequest}
-                                            style={styles.addResponderIcon}
-                                            icon='account-minus'
-                                            color={styles.addResponderIcon.color}
-                                            size={styles.addResponderIcon.width} />
-                                        <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>LEAVE</Text>    
-                                    </View>
-                                    : null
-                        }
-                    </View>
-                </View>
-            )
-        }
+    //     const teamHeader = () => {
+    //         return (
+    //             <View style={styles.teamHeader}>
+    //                 <View style={styles.teamLabelContainer}>
+    //                     <IconButton
+    //                         style={styles.teamIcon}
+    //                         icon='account-multiple'
+    //                         color={styles.teamIcon.color}
+    //                         size={styles.teamIcon.width} />
+    //                     <Text style={styles.teamLabel}>TEAM</Text>
+    //                 </View>
+    //                 <View>
+    //                     { userStore().isDispatcher
+    //                         ? <IconButton 
+    //                             onPress={addResponders}
+    //                             style={styles.addResponderIcon}
+    //                             icon='account-plus'
+    //                             color={styles.addResponderIcon.color}
+    //                             size={styles.addResponderIcon.width} />
+    //                         : canJoin
+    //                             ? <View style={styles.teamLabelContainer}>
+    //                                 <IconButton 
+    //                                     onPress={joinRequest}
+    //                                     style={styles.addResponderIcon}
+    //                                     icon='account-check'
+    //                                     color={styles.addResponderIcon.color}
+    //                                     size={styles.addResponderIcon.width} />
+    //                                 <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>JOIN</Text>    
+    //                             </View>
+    //                             : canLeave
+    //                                 ? <View style={styles.teamLabelContainer}>
+    //                                     <IconButton 
+    //                                         onPress={leaveRequest}
+    //                                         style={styles.addResponderIcon}
+    //                                         icon='account-minus'
+    //                                         color={styles.addResponderIcon.color}
+    //                                         size={styles.addResponderIcon.width} />
+    //                                     <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>LEAVE</Text>    
+    //                                 </View>
+    //                                 : null
+    //                     }
+    //                 </View>
+    //             </View>
+    //         )
+    //     }
 
-        const responders = () => {
-            if (!responderIds.length) {
-                return null;
-            }
+    //     const responders = () => {
+    //         if (!responderIds.length) {
+    //             return null;
+    //         }
 
-            return (
-                <View style={styles.respondersContainer}>
-                    {
-                        responderIds.map((id) => {
-                            const responder = userStore().users.get(id);
+    //         return (
+    //             <View style={styles.respondersContainer}>
+    //                 {
+    //                     responderIds.map((id) => {
+    //                         const responder = userStore().users.get(id);
 
-                            const goToResponder = () => {
-                                const org = responder.organizations[userStore().currentOrgId];
-                                if (org) {
-                                    userStore().pushCurrentUser(responder);
-                                    navigateTo(routerNames.userDetails);
-                                }
-                            }
+    //                         const goToResponder = () => {
+    //                             const org = responder.organizations[userStore().currentOrgId];
+    //                             if (org) {
+    //                                 userStore().pushCurrentUser(responder);
+    //                                 navigateTo(routerNames.userDetails);
+    //                             }
+    //                         }
                             
-                            return (
-                                <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-                                    <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore().currentOrgId}/>
-                                    {
-                                        userStore().isDispatcher
-                                            ? <IconButton
-                                                onPress={removeResponder(id)}
-                                                style={styles.responderRowActionIcon}    
-                                                icon='close' 
-                                                color={styles.responderRowActionIcon.color}
-                                                size={styles.responderRowActionIcon.width} />
-                                            : null
-                                    }
-                                </View>
-                            )
-                        })
-                    }
-                </View>
-            )   
-        }
+    //                         return (
+    //                             <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+    //                                 <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore().currentOrgId}/>
+    //                                 {
+    //                                     userStore().isDispatcher
+    //                                         ? <IconButton
+    //                                             onPress={removeResponder(id)}
+    //                                             style={styles.responderRowActionIcon}    
+    //                                             icon='close' 
+    //                                             color={styles.responderRowActionIcon.color}
+    //                                             size={styles.responderRowActionIcon.width} />
+    //                                         : null
+    //                                 }
+    //                             </View>
+    //                         )
+    //                     })
+    //                 }
+    //             </View>
+    //         )   
+    //     }
 
-        const assignments = () => {
-            if (!request?.assignments?.length) {
-                return null
-            }
+    //     const assignments = () => {
+    //         if (!request?.assignments?.length) {
+    //             return null
+    //         }
 
-            const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
-                const [isOpen, setIsOpen] = useState(false);
-                const numResponders = assignment.responderIds.length;
-                const me = useRef<View>();
-                const scrollIntoView = useScrollIntoView();
+    //         const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
+    //             const [isOpen, setIsOpen] = useState(false);
+    //             const numResponders = assignment.responderIds.length;
+    //             const me = useRef<View>();
+    //             const scrollIntoView = useScrollIntoView();
 
-                const toggleOpen = () => {
-                    setIsOpen(!isOpen);
+    //             const toggleOpen = () => {
+    //                 setIsOpen(!isOpen);
 
-                    // runs before the state updates
-                    if (!isOpen) {
-                        setTimeout(() => {
-                            scrollIntoView(me.current)
-                        })
-                    }
-                }
+    //                 // runs before the state updates
+    //                 if (!isOpen) {
+    //                     setTimeout(() => {
+    //                         scrollIntoView(me.current)
+    //                     })
+    //                 }
+    //             }
 
-                // should be for each sorting each responderId into pending, assigned, declined
-                const assignedResponderIds = [];
-                const pendingResponderIds = [];
-                const declinedResponderIds = [];
+    //             // should be for each sorting each responderId into pending, assigned, declined
+    //             const assignedResponderIds = [];
+    //             const pendingResponderIds = [];
+    //             const declinedResponderIds = [];
 
-                assignment.responderIds.forEach(responderId => {
-                    const accepted = request.assignedResponderIds.includes(responderId);
-                    const declined = request.declinedResponderIds.includes(responderId);
+    //             assignment.responderIds.forEach(responderId => {
+    //                 const accepted = request.assignedResponderIds.includes(responderId);
+    //                 const declined = request.declinedResponderIds.includes(responderId);
 
-                    if (accepted) {
-                        assignedResponderIds.push(responderId)
-                    } else if (declined) {
-                        declinedResponderIds.push(responderId)
-                    } else {
-                        pendingResponderIds.push(responderId)
-                    }
-                })
+    //                 if (accepted) {
+    //                     assignedResponderIds.push(responderId)
+    //                 } else if (declined) {
+    //                     declinedResponderIds.push(responderId)
+    //                 } else {
+    //                     pendingResponderIds.push(responderId)
+    //                 }
+    //             })
 
-                const sendReminders = async (event: GestureResponderEvent) => {
-                    event.stopPropagation();
+    //             const sendReminders = async (event: GestureResponderEvent) => {
+    //                 event.stopPropagation();
 
-                    await dispatchStore().assignRequest(request.id, pendingResponderIds);
-                    setIsOpen(false)
-                }
+    //                 await dispatchStore().assignRequest(request.id, pendingResponderIds);
+    //                 setIsOpen(false)
+    //             }
 
-                return (
-                    <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
-                        <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
-                            <Text>
-                                <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
-                                <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTimeString(assignment.timestamp)}`}</Text>
-                            </Text>
-                            <IconButton
-                                style={styles.assignmentSelectIcon}
-                                icon={isOpen ? 'chevron-up' : 'chevron-down'}
-                                color={styles.assignmentSelectIcon.color}
-                                size={styles.assignmentSelectIcon.width}/>
-                        </Pressable>
-                        { isOpen
-                            ? <View>
-                                {
-                                    assignedResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
+    //             return (
+    //                 <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
+    //                     <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
+    //                         <Text>
+    //                             <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
+    //                             <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTimeString(assignment.timestamp)}`}</Text>
+    //                         </Text>
+    //                         <IconButton
+    //                             style={styles.assignmentSelectIcon}
+    //                             icon={isOpen ? 'chevron-up' : 'chevron-down'}
+    //                             color={styles.assignmentSelectIcon.color}
+    //                             size={styles.assignmentSelectIcon.width}/>
+    //                     </Pressable>
+    //                     { isOpen
+    //                         ? <View>
+    //                             {
+    //                                 assignedResponderIds.map((id) => {
+    //                                     const user = userStore().users.get(id);
 
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentAcceptedIcon}
-                                                    icon={'check'}
-                                                    color={styles.assignmentAcceptedIcon.color}
-                                                    size={styles.assignmentAcceptedIcon.width}/>
-                                            </View>
-                                        )
-                                    })
-                                }
-                                {
-                                    declinedResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
+    //                                     return (
+    //                                         <View style={styles.assignmentRow}>
+    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
+    //                                             <IconButton
+    //                                                 style={styles.assignmentAcceptedIcon}
+    //                                                 icon={'check'}
+    //                                                 color={styles.assignmentAcceptedIcon.color}
+    //                                                 size={styles.assignmentAcceptedIcon.width}/>
+    //                                         </View>
+    //                                     )
+    //                                 })
+    //                             }
+    //                             {
+    //                                 declinedResponderIds.map((id) => {
+    //                                     const user = userStore().users.get(id);
 
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentDeclinedIcon}
-                                                    icon={'close'}
-                                                    color={styles.assignmentDeclinedIcon.color}
-                                                    size={styles.assignmentDeclinedIcon.width}/>
-                                            </View>
-                                        )
-                                    })    
-                                }
-                                {
-                                    pendingResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
+    //                                     return (
+    //                                         <View style={styles.assignmentRow}>
+    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
+    //                                             <IconButton
+    //                                                 style={styles.assignmentDeclinedIcon}
+    //                                                 icon={'close'}
+    //                                                 color={styles.assignmentDeclinedIcon.color}
+    //                                                 size={styles.assignmentDeclinedIcon.width}/>
+    //                                         </View>
+    //                                     )
+    //                                 })    
+    //                             }
+    //                             {
+    //                                 pendingResponderIds.map((id) => {
+    //                                     const user = userStore().users.get(id);
 
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentPendingIcon}
-                                                    icon={'clock-outline'}
-                                                    color={styles.assignmentPendingIcon.color}
-                                                    size={styles.assignmentPendingIcon.width}/>
-                                            </View>
-                                        )
-                                    })
-                                }
-                                {
-                                    pendingResponderIds.length
-                                        ? <View style={{ flexDirection: 'row'}}>
-                                            <Text style={styles.assignmentReminderButton} onPress={sendReminders}>{`SEND ${pendingResponderIds.length} REMINDER${pendingResponderIds.length > 1 ? 'S' : ''}`}</Text>
-                                        </View>
-                                        : null
-                                }
-                            </View>
-                            : null
-                        }
-                    </View>
-                )
-            }
+    //                                     return (
+    //                                         <View style={styles.assignmentRow}>
+    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
+    //                                             <IconButton
+    //                                                 style={styles.assignmentPendingIcon}
+    //                                                 icon={'clock-outline'}
+    //                                                 color={styles.assignmentPendingIcon.color}
+    //                                                 size={styles.assignmentPendingIcon.width}/>
+    //                                         </View>
+    //                                     )
+    //                                 })
+    //                             }
+    //                             {
+    //                                 pendingResponderIds.length
+    //                                     ? <View style={{ flexDirection: 'row'}}>
+    //                                         <Text style={styles.assignmentReminderButton} onPress={sendReminders}>{`SEND ${pendingResponderIds.length} REMINDER${pendingResponderIds.length > 1 ? 'S' : ''}`}</Text>
+    //                                     </View>
+    //                                     : null
+    //                             }
+    //                         </View>
+    //                         : null
+    //                     }
+    //                 </View>
+    //             )
+    //         }
 
-            return (
-                <View>
-                    {
-                        request.assignments.map((assignment, i) => {
-                            return (
-                                <Assignment 
-                                    key={i} 
-                                    assignment={assignment}
-                                    style={[i > 0 ? { marginTop: 16 } : null]}/>
-                            )
-                        })
-                    }
-                </View>
-            )
-        }
+    //         return (
+    //             <View>
+    //                 {
+    //                     request.assignments.map((assignment, i) => {
+    //                         return (
+    //                             <Assignment 
+    //                                 key={i} 
+    //                                 assignment={assignment}
+    //                                 style={[i > 0 ? { marginTop: 16 } : null]}/>
+    //                         )
+    //                     })
+    //                 }
+    //             </View>
+    //         )
+    //     }
 
-        return (
-            <View style={styles.teamSection}>
-                { teamHeader() }
-                { responders() }
-                { assignments() }
-                { userStore().isDispatcher
-                    ? <Button 
-                        uppercase={false}
-                        onPress={addResponders}
-                        color={styles.addResponderButton.color}
-                        icon='account-plus' 
-                        style={styles.addResponderButton}>Add responders</Button>
-                    : null
-                } 
-                { canJoin
-                    ? <Button 
-                        uppercase={false}
-                        onPress={joinRequest}
-                        color={styles.addResponderButton.color}
-                        icon='account-check' 
-                        style={styles.addResponderButton}>Join request</Button>
-                    : null
-                }
-                { canLeave
-                    ? <Button 
-                        uppercase={false}
-                        onPress={leaveRequest}
-                        color={styles.addResponderButton.color}
-                        icon='account-minus' 
-                        style={styles.addResponderButton}>Leave request</Button>
-                    : null
-                }
-            </View>
-        )
-    }
+    //     return (
+    //         <View style={styles.teamSection}>
+    //             { teamHeader() }
+    //             { responders() }
+    //             { assignments() }
+    //             { userStore().isDispatcher
+    //                 ? <Button 
+    //                     uppercase={false}
+    //                     onPress={addResponders}
+    //                     color={styles.addResponderButton.color}
+    //                     icon='account-plus' 
+    //                     style={styles.addResponderButton}>Add responders</Button>
+    //                 : null
+    //             } 
+    //             { canJoin
+    //                 ? <Button 
+    //                     uppercase={false}
+    //                     onPress={joinRequest}
+    //                     color={styles.addResponderButton.color}
+    //                     icon='account-check' 
+    //                     style={styles.addResponderButton}>Join request</Button>
+    //                 : null
+    //             }
+    //             { canLeave
+    //                 ? <Button 
+    //                     uppercase={false}
+    //                     onPress={leaveRequest}
+    //                     color={styles.addResponderButton.color}
+    //                     icon='account-minus' 
+    //                     style={styles.addResponderButton}>Leave request</Button>
+    //                 : null
+    //             }
+    //         </View>
+    //     )
+    // }
 
     const statusPicker = () => {
         return (
@@ -501,7 +496,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { chatPreview() }
                 </View>
                 { statusPicker() }
-                { teamSection() }
+                {/* { teamSection() } */}
             </WrappedScrollView> 
         )
     }
@@ -514,7 +509,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 return null
             } else {
                 const startNotifyFlow = () => {
-                    // TODO: open notify BDV
+                    bottomDrawerStore().show(BottomDrawerView.assignResponders, true)
                 }
 
                 return <View style={{ padding: 20 }}>
@@ -561,12 +556,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 for (const pos of request.positions) {
                     const posMeta = requestStore().getPositionMetadata(request.id, pos.id);
                     
-                    // numUnseenPositionRequests += posMeta.unseenJoinRequests.size
-
                     posMeta.unseenJoinRequests.forEach(requesterId => {
-                        if (requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id)) {
+                        const haveNotSeenThisSession = requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id);
+                    
+                        // let us mark seen events during a session even if an api call fails
+                        if (haveNotSeenThisSession) {
                             numUnseenPositionRequests += 1
-                            console.log(userStore().users.get(requesterId).name, organizationStore().roles.get(pos.role).name)
                         }
                     })
                     
@@ -608,8 +603,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 const notifiedLabel = `${numNotified} PEOPLE NOTIFIED`;
 
-                // TODO: I think the isRequestAdmin part is redundant
-                const newLabel = isRequestAdmin && numUnseenPositionRequests
+                const newLabel = numUnseenPositionRequests
                     ? ` ${visualDelim} ${numUnseenPositionRequests} new requests`
                     : null;
 
@@ -677,25 +671,23 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                             <View style={{ justifyContent: 'center', alignItems: 'flex-end',  flexGrow: 1 }}>
                                 <View style={{ flexDirection: 'row'}}>
-                                    <Button
-                                        uppercase={false} 
+                                    <IconButton
                                         color={Colors.primary.alpha}
-                                        mode={'outlined'}
                                         onPress={deny}
-                                        style={[styles.notifyButton, { marginLeft: 10 }]}>{'Deny'}</Button>
-                                    <Button
-                                        uppercase={false} 
+                                        icon='close'
+                                        style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
+                                    <IconButton
                                         color={Colors.primary.alpha}
-                                        mode={'outlined'}
                                         onPress={approve}
-                                        style={[styles.notifyButton, { marginLeft: 10 }]}>{'Accept'}</Button>
+                                        icon='check'
+                                        style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
                                 </View>
                             </View>
                         )
                     }
 
                     return (
-                        <View style={{ padding: 20, backgroundColor: '#E5E3E5' }}>
+                        <View style={{ padding: 20, borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold' }}>{'Asked to join'}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
@@ -752,7 +744,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 const viewedSection = () => {
                     return (
                         <View style={{ paddingHorizontal: 20 }}>
-                            <Text style={{ fontWeight: 'bold' }}>{'Viewed'}</Text>
+                            <Text style={{ fontWeight: 'bold' }}>{'Viewed request'}</Text>
                             { 
                                 Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
                             }
@@ -775,7 +767,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     setEventDetailsOpen(!eventDetailsOpen)
                     
                     if (!eventDetailsOpen) {
-                        // TODO: make this bulk call
                         await requestStore().ackRequestsToJoinNotification(request.id)
                     }
                 }
@@ -804,10 +795,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 : null
                             }
                             <IconButton 
-                                style={styles.icon}
-                                size={styles.icon.height}
+                                style={styles.largeIcon}
+                                size={styles.largeIcon.height}
                                 color={'#999'}
-                                icon={!eventDetailsOpen ? 'chevron-up' : 'chevron-down'}/>
+                                icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
                         </Pressable>
                         {
                             eventDetailsOpen
@@ -1146,6 +1137,11 @@ const styles = StyleSheet.create({
     icon: {
         width: 20,
         height: 20,
+        margin: 0
+    },
+    largeIcon: {
+        width: 30,
+        height: 30,
         margin: 0
     }
 })
