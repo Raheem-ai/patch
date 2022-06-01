@@ -30,6 +30,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                     uppercase={false}
                     color={'#fff'}
                     style={styles.invitationCodeButton}
+                    // TODO: Enable "Enter invitation Code" after invitation + create account flow is implemented.
                     disabled={true}
                     onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
                 <Text
