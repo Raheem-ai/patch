@@ -27,7 +27,7 @@ export default function InvitationSuccessfulPage( { navigation } : Props) {
 
             <View style={styles.bottomContainer}>
                 <Button mode='outlined' uppercase={false} color={'#76599A'} style={[styles.button, { marginBottom: 16 }]} onPress={() => navigateTo(routerNames.signIn)}>{'Sign in'}</Button>
-                <Button mode='outlined' uppercase={false} color={'#76599A'} style={styles.button}>{'Create Account'}</Button>
+                <Button mode='outlined' uppercase={false} color={'#76599A'} style={styles.button} onPress={() => navigateTo(routerNames.createAccount)}>{'Create Account'}</Button>
             </View>
         </View>
         </TouchableWithoutFeedback>

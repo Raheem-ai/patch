@@ -34,6 +34,10 @@ const HeaderConfig: {
         title: 'Invitation Successful',
         unauthenticated: true
     },
+    [routerNames.createAccount]: {
+        title: 'Create Account',
+        unauthenticated: true
+    },
     [routerNames.signIn]: {
         title: 'Sign In',
         unauthenticated: true
