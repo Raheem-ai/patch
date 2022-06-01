@@ -4,7 +4,7 @@ import * as React from 'react';
 import { labelNames, routerNames, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
 
-type Props = ScreenProps<'Landing'>;
+type Props = ScreenProps<'JoinOrganization'>;
 
 export default function JoinOrganizationForm( { navigation } : Props) {
     const [inivitationCode, setInvitationCode] = React.useState('');
