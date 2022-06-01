@@ -46,6 +46,7 @@ import Alerts from './src/components/alerts/alerts';
 import ComponentLibrary from './src/screens/componentLibrary';
 import Settings from './src/screens/settings';
 import JoinOrganizationForm from './src/screens/JoinOrganizationForm';
+import InvitationSuccessfulPage from './src/screens/InvitationSuccessfulPage';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -123,6 +124,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.landing} component={LandingPage} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />
                         <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
+                        <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
                          {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />

@@ -30,6 +30,10 @@ const HeaderConfig: {
         title: 'Join Organization',
         unauthenticated: true
     },
+    [routerNames.invitationSuccessful]: {
+        title: 'Invitation Successful',
+        unauthenticated: true
+    },
     [routerNames.signIn]: {
         title: 'Sign In',
         unauthenticated: true

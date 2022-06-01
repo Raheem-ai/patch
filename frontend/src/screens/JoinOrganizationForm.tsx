@@ -24,8 +24,14 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                     onChangeText={inivitationCode => setInvitationCode(inivitationCode)}/>
             </View>
             <View style={styles.bottomContainer}>
-                <Button uppercase={false} color={'#fff'} style={styles.invitationCodeButton}>{'Enter invitation code'}</Button>
-                <Text style={styles.signInText}  onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
+                <Button
+                    uppercase={false}
+                    color={'#fff'}
+                    style={styles.invitationCodeButton}
+                    onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
+                <Text
+                    style={styles.signInText}
+                    onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
             </View>
         </View>
         </TouchableWithoutFeedback>
@@ -34,8 +40,6 @@ export default function JoinOrganizationForm( { navigation } : Props) {
 
 const styles = StyleSheet.create({
     container: {
-        /* flex: 1,*/
-        // justifyContent: 'center',
         padding: 24,
         backgroundColor: '#FAF9FA',
         height: '100%'
@@ -47,7 +51,7 @@ const styles = StyleSheet.create({
     },
     titleText: {
         fontStyle: 'normal',
-        fontWeight: '400',
+        fontWeight: '700',
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
