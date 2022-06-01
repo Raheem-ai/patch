@@ -30,6 +30,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                     uppercase={false}
                     color={'#fff'}
                     style={styles.invitationCodeButton}
+                    disabled={true}
                     onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
                 <Text
                     style={styles.signInText}
