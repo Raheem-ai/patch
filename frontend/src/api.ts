@@ -483,12 +483,22 @@ export class APIClient implements IAPIService {
         });
     }
 
-    async assignRequest(ctx: OrgContext, requestId: string, to: string[]) {
-        const url = `${apiHost}${API.client.assignRequest()}`;
+    async notifyRespondersAboutRequest(ctx: OrgContext, requestId: string, to: string[]) {
+        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
             to
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async ackRequestNotification(ctx: OrgContext, requestId: string) {
+        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
@@ -504,52 +514,81 @@ export class APIClient implements IAPIService {
         })).data;
     }
 
-    async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
+    async ackRequestsToJoinNotification(ctx: OrgContext, requestId: string, joinRequests: { userId: string, positionId: string }[]) {
+        const url = `${apiHost}${API.client.ackRequestsToJoinNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            joinRequests
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async declineRequestAssignment(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.declineRequestAssignment()}`;
+    async confirmRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
+        const url = `${apiHost}${API.client.confirmRequestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            userId, 
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async joinRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+    async declineRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
+        const url = `${apiHost}${API.client.declineRequestToJoinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId, 
+            userId, 
+            positionId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async joinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.joinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async leaveRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+    async requestToJoinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.requestToJoinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId,
+            positionId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async leaveRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.leaveRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string): Promise<HelpRequest> {
+    async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.removeUserFromRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
-            userId
+            userId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;

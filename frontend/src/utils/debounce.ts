@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { DebounceSettings } from 'lodash';
+import { runInAction } from 'mobx';
 import { unwrap } from '../../../common/utils';
 
 type AnyFunction = (...args: any[]) => any;
@@ -28,7 +29,9 @@ export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
     const instrumentedFunc = async (...args: Parameters<F>) => {
         const res = await originalFunc(...args);
 
-        config.afterCall?.(state, ...args);
+        runInAction(() => {
+            config.afterCall?.(state, ...args);
+        })
 
         return res;
     }
@@ -46,8 +49,9 @@ export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
         this: StatefullMemoDebouncedFunction<F>,
         ...args: Parameters<F>
     ): ReturnType<F> | undefined {
-
-        config.beforeCall?.(state, ...args);
+        runInAction(() => {
+            config.beforeCall?.(state, ...args);
+        })
 
         const res = debounceMemo(...args)(...args);
 

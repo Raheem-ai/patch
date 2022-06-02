@@ -22,6 +22,7 @@ const PositionsInput = observer(({
     const [ position ] = useState(observable.box((paramsFromLabel || {
         role: null,
         attributes: [],
+        joinedUsers: [],
         min: 0,
         max: -1
     }) as Position))
@@ -41,7 +42,7 @@ const PositionsInput = observer(({
             isValid: () => true,
             name: 'minmax',
             type: 'Slider',
-            icon: 'clipboard-account',
+            icon: 'account-multiple',
             props: {
                 maxBeforeOrMore: 10
             }

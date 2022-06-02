@@ -3,12 +3,14 @@ import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from ".
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { FormProps } from "../../forms/form";
-import { RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import { ScreenFormInputConfig } from "../../forms/types";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { ResponderCountRange } from "../../../constants";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { runInAction } from "mobx";
+import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 
 type Props = {}
 
@@ -21,7 +23,7 @@ class EditHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
-            return !!editRequestStore().location && !!editRequestStore().type.length && editRequestStore().respondersNeeded >= 0
+            return !!editRequestStore().type.length
         },
         action: async () => {
             try {
@@ -56,6 +58,67 @@ class EditHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
+                [
+                    // Call Start
+                    {
+                        onChange: (callStartedAt) => editRequestStore().callStartedAt = callStartedAt,
+                        val: () => {
+                            return editRequestStore().callStartedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callStart',
+                        placeholderLabel: () => 'Call start',
+                        type: 'TextInput',
+                        icon: 'phone-incoming'
+                        // required: true
+                    },
+                    // Call End
+                    {
+                        onChange: (callEndedAt) => editRequestStore().callEndedAt = callEndedAt,
+                        val: () => {
+                            return editRequestStore().callEndedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callEnd',
+                        placeholderLabel: () => 'Call end',
+                        type: 'TextInput',
+                    },
+                ],
+                [
+                    // Caller Name
+                    {
+                        onChange: (callerName) => editRequestStore().callerName = callerName,
+                        val: () => {
+                            return editRequestStore().callerName
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerName',
+                        placeholderLabel: () => 'Caller name',
+                        type: 'TextInput',
+                        icon: 'clipboard-account'
+                        // required: true
+                    },
+                    // Caller Contact Info
+                    {
+                        onChange: (callerContactInfo) => editRequestStore().callerContactInfo = callerContactInfo,
+                        val: () => {
+                            return editRequestStore().callerContactInfo
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerContactInfo',
+                        placeholderLabel: () => 'Caller contact info',
+                        type: 'TextInput',
+                    },
+                ],
+                // Location
                 {
                     onSave: (location) => editRequestStore().location = location,
                     val: () => {
@@ -65,100 +128,126 @@ class EditHelpRequest extends React.Component<Props> {
                         return editRequestStore().locationValid
                     },
                     name: 'location',
+                    icon: 'map-marker',
                     previewLabel: () => editRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
-                {
-                    onSave: (type) => editRequestStore().type = type,
-                    val: () => {
-                        return editRequestStore().type
-                    },
-                    isValid: () => {
-                        return editRequestStore().typeValid
-                    },
-                    name: 'type',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Type of request',
-                    placeholderLabel: () => 'Type of request',
-                    type: 'TagList',
-                    required: true,
-                    props: {
-                        options: allEnumValues(RequestType),
-                        optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().type.splice(idx, 1)
+                [
+                    // Description
+                    {
+                        onSave: (notes) => editRequestStore().notes = notes,
+                        val: () => {
+                            return editRequestStore().notes
                         },
-                        dark: true
-                    }
-                },
-                {
-                    onSave: (notes) => editRequestStore().notes = notes,
-                    val: () => {
-                        return editRequestStore().notes
+                        isValid: () => {
+                            return !!editRequestStore().notes
+                        },
+                        name: 'description',
+                        icon: 'note-text',
+                        previewLabel: () => editRequestStore().notes,
+                        headerLabel: () => 'Description',
+                        placeholderLabel: () => 'Description',
+                        type: 'TextArea',
                     },
-                    isValid: () => {
-                        return !!editRequestStore().notes
+                    // Type of request
+                    {
+                        onSave: (type) => editRequestStore().type = type,
+                        val: () => {
+                            return editRequestStore().type
+                        },
+                        isValid: () => {
+                            return editRequestStore().typeValid
+                        },
+                        name: 'type',
+                        previewLabel: () => null,
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        type: 'TagList',
+                        required: true,
+                        props: {
+                            options: allEnumValues(RequestType),
+                            optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
+                            multiSelect: true,
+                            onTagDeleted: (idx: number, val: any) => {
+                                runInAction(() => editRequestStore().type.splice(idx, 1))
+                            },
+                            dark: true
+                        }
                     },
-                    name: 'notes',
-                    previewLabel: () => editRequestStore().notes,
-                    headerLabel: () => 'Notes',
-                    placeholderLabel: () => 'Notes',
-                    type: 'TextArea',
-                },
+                    // Priority
+                    {
+                        onSave: (priorities) => editRequestStore().priority = priorities[0],
+                        val: () => {
+                            return editRequestStore().priority 
+                                ? [editRequestStore().priority]
+                                : []
+                        },
+                        isValid: () => {
+                            return !!editRequestStore().priority 
+                        },
+                        name: 'priority',
+                        previewLabel: () => editRequestStore().priority as unknown as string,
+                        headerLabel: () => 'Priority',
+                        placeholderLabel: () => 'Priority',
+                        type: 'List',
+                        props: {
+                            options: allEnumValues(RequestPriority),
+                            optionToPreviewLabel: (opt) => opt
+                        },
+                    },
+                ],
+                // Positions
                 {
-                    onSave: (skills) => editRequestStore().skills = skills,
+                    onSave: (data) => {
+                        editRequestStore().positions = data
+                    },
                     val: () => {
-                        return editRequestStore().skills
+                        return editRequestStore().positions;
+                    },
+                    isValid: () => true,
+                    headerLabel: () => 'Responders needed',
+                    placeholderLabel: () => 'Responders needed',
+                    icon: 'account-multiple',
+                    props: {
+                        editPermissions: [PatchPermissions.RequestAdmin]
+                    },
+                    name: 'positions',
+                    type: 'Positions'
+                },
+                // Tags
+                TagsListInput({
+                    onSave: (items) => {
+                        editRequestStore().tagHandles = items
+                    },
+                    val: () => {
+                        return editRequestStore().tagHandles
                     },
                     isValid: () => {
                         return true
                     },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills',
-                    placeholderLabel: () => 'Skills',
-                    type: 'NestedTagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        categories: Object.keys(RequestSkillCategoryMap), 
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        categoryToLabel: (cat) => RequestSkillCategoryToLabelMap[cat],
-                        optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().skills.splice(idx, 1)
-                        },
-                    },
-                },
-                {
-                    onSave: (responders) => editRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
-                    val: () => {
-                        return [editRequestStore().respondersNeeded]
-                    },
-                    isValid: () => {
-                        return typeof editRequestStore().respondersNeeded == 'number' && editRequestStore().respondersNeeded > -1
-                    },
-                    name: 'responders',
-                    previewLabel: () => `${editRequestStore().respondersNeeded}`,
-                    headerLabel: () => 'Responders needed',
-                    placeholderLabel: () => 'Responders needed',
-                    type: 'List',
-                    props: {
-                        options: ResponderCountRange,
-                        optionToPreviewLabel: (opt) => opt
-                    },
-                }
-                
+                    icon: 'label',
+                    name: 'tags'
+                })
             ] as [
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
                 ScreenFormInputConfig<'Map'>, 
-                ScreenFormInputConfig<'TagList'>, 
-                ScreenFormInputConfig<'TextArea'>,
-                ScreenFormInputConfig<'NestedTagList'>,
-                ScreenFormInputConfig<'List'>,
+                [
+                    ScreenFormInputConfig<'TextArea'>,
+                    ScreenFormInputConfig<'TagList'>,
+                    ScreenFormInputConfig<'List'>
+                ],
+                ScreenFormInputConfig<'Positions'>,
+                ScreenFormInputConfig<'CategorizedItemList'>
             ]
         }
     }

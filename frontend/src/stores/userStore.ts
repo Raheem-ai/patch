@@ -38,9 +38,10 @@ export default class UserStore implements IUserStore {
     async init() {
         if (this.signedIn) {
             // this effectively validates that your refresh token is still valid
-            // by calling a method that takes you through the refresh auth flow
+            // by calling methods that take you through the refresh auth flow
             // and signs you out if the refresh token has expired
-            await this.api.init()
+            await this.api.init();
+            await this.updateOrgUsers([]);
             await this.getLatestMe();
         }
     }
@@ -259,6 +260,8 @@ export default class UserStore implements IUserStore {
                 this.currentUser = me;
             }
         })
+
+        await this.updateOrgUsers([me.id])
     }
 
     // Still need to keep user for legacy ui data

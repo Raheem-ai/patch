@@ -34,7 +34,7 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                         try {
                             await requestStore().init();
 
-                            await requestStore().confirmRequestAssignment(payload.orgId, payload.id);
+                            // await requestStore().confirmRequestAssignment(payload.orgId, payload.id);
 
                         } catch (e) {
                             console.error(e);
@@ -55,10 +55,10 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                             
                             await userStore().init();
 
-                            await api().declineRequestAssignment({ 
-                                token: userStore().authToken, 
-                                orgId: payload.orgId
-                            }, payload.id);
+                            // await api().declineRequestToJoinRequest({ 
+                            //     token: userStore().authToken, 
+                            //     orgId: payload.orgId
+                            // }, payload.id);
                             
                         } catch (e) {
                             console.error(e);
@@ -104,7 +104,7 @@ export interface NotificationResponseDefinition<T extends NotificationType = any
     }
 }
 
-export const NotificationHandlers: { [type in NotificationType]: NotificationHandlerDefinition<type> } = {
+export const NotificationHandlers: { [type in NotificationType]?: NotificationHandlerDefinition<type> } = {
     [NotificationType.AssignedIncident]: new AssignedIncidentHandler(),
     [NotificationType.BroadCastedIncident]: new BroadCastedIncidentHandler()
 }

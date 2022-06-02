@@ -1,6 +1,6 @@
 import { Model, ObjectID, Schema } from "@tsed/mongoose";
 import { CollectionOf, Enum, getJsonSchema, MapOf, Property } from "@tsed/schema";
-import { AttributesMap, CategorizedItem, RequestSkill, User, UserRole } from "common/models";
+import { CategorizedItem, RequestSkill, User, UserRole } from "common/models";
 import { Document } from "mongoose";
 import { PrivProps } from ".";
 import utils from 'util'

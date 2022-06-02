@@ -91,5 +91,8 @@ export const Colors = {
     },
     tertiary: {
         alpha: '#D04B00'
-    }
+    },
+    good: '#55BB76',
+    okay: '#EBAA02',
+    bad: '#D03200'
 }

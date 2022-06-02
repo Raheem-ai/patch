@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, RequestStatus, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -17,6 +17,7 @@ import moment from 'moment';
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { BadRequest } from "@tsed/exceptions";
+import { resolveRequestStatus } from "common/utils/requestUtils";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -206,7 +207,7 @@ export class DBManager {
         user.markModified('organizations');
     }
 
-    async updateUser(orgId: string, userOrId: string | UserDoc, protectedUser: AdminEditableUser, updatedMe?: Partial<Omit<User, 'organizations'>>) {
+    async updateUser(orgId: string, userOrId: string | UserDoc, protectedUser: Partial<AdminEditableUser>, updatedMe?: Partial<Omit<User, 'organizations'>>) {
         const user = await this.resolveUser(userOrId);
 
         for (const prop in protectedUser) {
@@ -786,15 +787,16 @@ export class DBManager {
         throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
     }
 
-    async addAttributesToUser(orgId: string, userId: string | UserDoc, attributes: AttributesMap) {
+    // TODO: remove?...or maybe move validation to updateUser()?
+    async addAttributesToUser(orgId: string | OrganizationDoc, userId: string | UserDoc, attributes: AttributesMap) {
         const user = await this.resolveUser(userId);
+        const org = await this.resolveOrganization(orgId);
 
-        if (!user.organizations || !user.organizations[orgId]){
+        if (!user.organizations || !user.organizations[org.id]){
             throw `User not in organization`
         }
 
         // Validate attributes exist in the proper category.
-        const org = await this.resolveOrganization(orgId);
         for (const categoryId of Object.keys(attributes)) {
             const category = org.attributeCategories.find(category => category.id == categoryId);
             if (category) {
@@ -808,7 +810,7 @@ export class DBManager {
             }
         }
 
-        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+        await this.updateUsersOrgConfig(user, org.id, (orgConfig) => {
             for (const categoryId of Object.keys(attributes)) {
                 // Add this category ID to the user's org config if it doesn't already exist.
                 if (!(categoryId in orgConfig.attributes)) {
@@ -1106,51 +1108,52 @@ export class DBManager {
 
     // TODO: delete
     async removeTag(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session?: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-        if (categoryIndex >= 0) {
-            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+        // const org = await this.resolveOrganization(orgId);
+        // const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
+        // if (categoryIndex >= 0) {
+        //     const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
 
-            // Remove the Tag from the Tag Category list.
-            if (tagIndex >= 0) {
-                org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
-                org.markModified('tagCategories');
+        //     // Remove the Tag from the Tag Category list.
+        //     if (tagIndex >= 0) {
+        //         org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+        //         org.markModified('tagCategories');
 
-                // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
-                for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
-                    if (tagIndex >= 0) {
-                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tags[categoryId].splice(tagIndex, 1);
-                        requests[i].markModified('tagIds');
-                    }
-                }
+        //         // Remove the tag id from Help Requests that currently have this tag.
+        //         // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
+        //         const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
+        //         for (let i = 0; i < requests.length; i++) {
+        //             let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
+        //             if (tagIndex >= 0) {
+        //                 // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+        //                 requests[i].tags[categoryId].splice(tagIndex, 1);
+        //                 requests[i].markModified('tagIds');
+        //             }
+        //         }
 
-                if (session) {
-                    // TODO: return all objects to be saved (requests and org)?
-                    // This would introduce different return types based on the path...
-                    // return [org, requests] vs. return or
-                    for (const request of requests) {
-                        await request.save({ session });
-                    }
+        //         if (session) {
+        //             // TODO: return all objects to be saved (requests and org)?
+        //             // This would introduce different return types based on the path...
+        //             // return [org, requests] vs. return or
+        //             for (const request of requests) {
+        //                 await request.save({ session });
+        //             }
 
-                    return await org.save({ session });
-                } else {
-                    return this.transaction(async (newSession) => {
-                        for (const request of requests) {
-                            await request.save({ session: newSession });
-                        }
-                        return await org.save({ session: newSession });
-                    })
-                }
-            }
+        //             return await org.save({ session });
+        //         } else {
+        //             return this.transaction(async (newSession) => {
+        //                 for (const request of requests) {
+        //                     await request.save({ session: newSession });
+        //                 }
+        //                 return await org.save({ session: newSession });
+        //             })
+        //         }
+        //     }
 
-            throw `Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${orgId}`;
-        }
+        //     throw `Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${orgId}`;
+        // }
 
-        throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        // throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        return null;
     }
 
     // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
@@ -1163,19 +1166,25 @@ export class DBManager {
 
             // Remove the Tag from the Tag Category list.
             if (tagIndex >= 0) {
-                org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+                const [tag] = org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
                 org.markModified('tagCategories');
 
                 // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
+                // TODO: test mongo query handles nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
+                const item: CategorizedItem = {
+                    categoryId: categoryId,
+                    itemId: tag.id
+                }
+
+                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagHandles: item });
                 
                 for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
+                    let tagIndex = requests[i].tagHandles.findIndex(handle => handle.itemId == tagId && handle.categoryId == categoryId);
+                    
                     if (tagIndex >= 0) {
                         // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tags[categoryId].splice(tagIndex, 1);
-                        requests[i].markModified('tagIds');
+                        requests[i].tagHandles.splice(tagIndex, 1);
+                        requests[i].markModified('tagHandles');
                     }
                 }
 
@@ -1210,11 +1219,9 @@ export class DBManager {
         req.dispatcherId = dispatcherId;
         req.assignedResponderIds ||= [];
 
-        req.status ||= req.assignedResponderIds.length 
-            ? req.respondersNeeded && req.assignedResponderIds.length < req.respondersNeeded
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Ready
-            : RequestStatus.Unassigned;
+        // no special lofic as creating a request always comes before notifying about it
+        // ...which could change the status once people join etc.
+        req.status ||= RequestStatus.Unassigned;
 
         const org = await this.resolveOrganization(orgId)
 
@@ -1322,72 +1329,213 @@ export class DBManager {
         return await helpRequest.save()
     }
 
-    async assignRequest(request: string | HelpRequestDoc, to: string[]) {
-        request = await this.resolveRequest(request);
-
-        request.assignments ||= [];
-
-        request.assignments.push({
-            responderIds: to,
-            timestamp: new Date().getTime()
-        });
-
-        const updatedRequest = await request.save();
-
-        return updatedRequest;
-    }
-
-    async confirmRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
+    async notifyRespondersAboutRequest(requestId: string | HelpRequestDoc, notifierId: string, to: string[]) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.assignedResponderIds.includes(userId)) {
-            request.assignedResponderIds.push(userId);
+        request.teamEvents.push({
+            type: RequestTeamEventTypes.NotificationSent,
+            sentAt: new Date().toISOString(),
+            by: notifierId,
+            to: to
+        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>)
+
+        return await request.save();
+    }
+
+    async ackRequestNotification(requestId: string | HelpRequestDoc, userId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        request.teamEvents.push({
+            seenAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.NotificationSeen,
+            by: userId,
+        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSeen>)
+
+        return await request.save();
+    }
+
+    async ackRequestsToJoinNotification(requestId: string | HelpRequestDoc, ackerId: string, joinRequests: { userId: string, positionId: string }[]) {
+        const request = await this.resolveRequest(requestId);
+        
+        for (const joinReq of joinRequests) {
+            const position = request.positions.find(pos => pos.id == joinReq.positionId);
+
+            // TODO: this should throw
+            if (!position) {
+                return request;
+            }
+
+            request.teamEvents.push({
+                seenAt: new Date().toISOString(),
+                type: RequestTeamEventTypes.PositionRequestSeen,
+                requester: joinReq.userId,
+                by: ackerId,
+                position: joinReq.positionId
+            } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>)
         }
 
-        const idx = request.declinedResponderIds.indexOf(userId)
+        return await request.save();
+    }
 
-        if (idx != -1) {
-            request.declinedResponderIds.splice(idx, 1)
+    async confirmRequestToJoinPosition(requestId: string | HelpRequestDoc, approverId: string, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
 
-        if (request.status == RequestStatus.Unassigned || request.status == RequestStatus.PartiallyAssigned) {
-            request.status = request.respondersNeeded > request.assignedResponderIds.length
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Ready;
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
         }
+
+        position.joinedUsers.push(userId)
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            acceptedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequestAccepted,
+            requester: userId,
+            by: approverId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>)
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save()
     }
 
-    async declineRequestAssignment(requestId: string | HelpRequestDoc, userId: string) {
+    async leaveRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
 
-        if (!request.declinedResponderIds.includes(userId)) {
-            request.declinedResponderIds.push(userId);
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
 
-        const idx = request.assignedResponderIds.indexOf(userId)
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
 
-        if (idx != -1) {
-            request.assignedResponderIds.splice(idx, 1)
+        if (userIdx == -1) {
+            return request
         }
 
-        if (request.status == RequestStatus.Ready || request.status == RequestStatus.PartiallyAssigned) {
-            request.status = request.assignedResponderIds.length
-                ? RequestStatus.PartiallyAssigned
-                : RequestStatus.Unassigned;
-        }
+        position.joinedUsers.splice(userIdx, 1);
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            leftAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionLeft,
+            user: userId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionLeft>)
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save()
     }
 
-    async removeUserFromRequest(userId: string, requestId: string): Promise<HelpRequestDoc> {
+    async requestToJoinRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
-        const idx = request.assignedResponderIds.indexOf(userId);
 
-        if (idx != -1) {
-            request.assignedResponderIds.splice(idx, 1);
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
         }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
+        }
+
+        request.teamEvents.push({
+            requestedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequested,
+            requester: userId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>)
+
+        return await request.save()
+    }
+
+    async joinRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
+        }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        // already joined
+        if (userIdx != -1) {
+            return request
+        }
+
+        position.joinedUsers.push(userId);
+
+        request.markModified('positions');
+
+        request.teamEvents.push({
+            joinedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionJoined,
+            user: userId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionJoined>)
+
+        request.status = resolveRequestStatus(request)
+
+        return await request.save()
+    }
+    
+    async declineRequestToJoinPosition(requestId: string | HelpRequestDoc, declinerId: string, userId: string, positionId: string) {
+        const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
+        }
+
+        request.teamEvents.push({
+            deniedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRequestDenied,
+            requester: userId,
+            by: declinerId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>)
+
+        return await request.save()
+    }
+
+    async removeUserFromRequest(revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
+        const request = await this.resolveRequest(requestId);
+        
+        request.teamEvents.push({
+            revokedAt: new Date().toISOString(),
+            type: RequestTeamEventTypes.PositionRevoked,
+            by: revokerId,
+            user: userId,
+            position: positionId
+        } as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>)
+
+        request.status = resolveRequestStatus(request)
 
         return await request.save();
     }
@@ -1556,14 +1704,6 @@ export class DBManager {
                 skills: []
             });
 
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
-
-            console.log('creating new user...');
             let user5 = await this.createUser({ 
                 email: 'Tevn2@test.com', 
                 password: 'Test',
@@ -1571,152 +1711,182 @@ export class DBManager {
                 skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
-            // console.log('creating second org...');
-            // let [ org2, admin2 ] = await this.createOrganization({
-            //     name: 'Test Org 2'
-            // }, user5.id);
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, user5 ] = await this.addUserToOrganization(org, user5, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
 
-            // let role1: MinRole = {
-            //     name: 'first role',
-            //     permissionGroups: [
-            //         PatchPermissionGroups.ManageOrg,
-            //         PatchPermissionGroups.ManageChats,
-            //         PatchPermissionGroups.ManageMetadata,
-            //         PatchPermissionGroups.ManageRequests,
-            //         PatchPermissionGroups.ManageSchedule,
-            //         PatchPermissionGroups.ManageTeam
-            //     ]
-            // };
-
-            // console.log('adding new role to org2...');
-            // [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
-
-            // console.log('adding new role to user...');
-            // user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
-
-            // console.log('adding new Attribute category...');
-            // const testAttrCat1: MinAttributeCategory = {
-            //     name: 'Attribute Category 1 - repopulateDB'
-            // };
-
-            // const testAttrCat2: MinAttributeCategory = {
-            //     name: 'Attribute Category 2 - repopulateDB'
-            // };
-
-            // let attrCat1: AttributeCategory = null;
-            // let attrCat2: AttributeCategory = null;
-            // [org2, attrCat1] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat1);
-            // [org2, attrCat2] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat2);
-
-            // console.log('adding new Attribute...');
-
-            // const testAttr1: MinAttribute = {
-            //     name: 'Attribute 1 - repopulateDb'
-            // };
-
-            // const testAttr2: MinAttribute = {
-            //     name: 'Attribute 2 - repopulateDb'
-            // };
-
-            // let attr1: Attribute = null;
-            // let attr2: Attribute = null;
-            // [org2, attr1] = await this.addAttributeToOrganization(org2.id, attrCat1.id, testAttr1);
-            // [org2, attr2] = await this.addAttributeToOrganization(org2.id, attrCat2.id, testAttr2);
-
-            // const attributesToAdd: AttributesMap = {
-            //     [attrCat1.id]: [attr1.id],
-            //     [attrCat2.id]: [attr2.id],
-            // }
-
-            // console.log('Assigning attributes to user...');
-            // user5 = await this.addAttributesToUser(org2.id, user5.id, attributesToAdd);
-
-            // const attributesToRemove: AttributesMap = {
-            //     [attrCat2.id]: [attr2.id]
-            // }
-
-            // console.log('Removing attribute from user...');
-            // org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
-            // user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
             user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ]);
 
-            let attrCat1, attr1, attr2;
+            let trainingsAttribute: AttributeCategory, 
+                cprAttribute: Attribute, 
+                firstAidAttribute: Attribute,
+                copWatchAttribute: Attribute;
 
-            [org, attrCat1] = await this.addAttributeCategoryToOrganization(org.id, {
-                name: 'Attribute Category'
+            let languageAttribute: AttributeCategory, 
+                spanishAttribute: Attribute, 
+                japaneseAttribute: Attribute,
+                swahiliAttribute: Attribute;
+
+            [org, trainingsAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
+                name: 'Trainings'
             });
 
-            [org, attr1] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
-                name: 'Foo'
+            [org, cprAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'CPR'
             });
 
-
-            [org, attr2] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
-                name: 'Bar'
+            [org, firstAidAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'First Aid'
             });
 
-            let tagCat1, tag1, tag2;
-
-            [org, tagCat1] = await this.addTagCategoryToOrganization(org.id, {
-                name: 'Tag Category'
+            [org, copWatchAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'Cop Watch'
             });
 
-            [org, tag1] = await this.addTagToOrganization(org.id, tagCat1.id, {
-                name: 'Baz'
+            [org, languageAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
+                name: 'Languages'
             });
 
-            [org,tag2] = await this.addTagToOrganization(org.id, tagCat1.id, {
-                name: 'Bux'
+            [org, spanishAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Spanish'
             });
+
+            [org, japaneseAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Japanese'
+            });
+
+            [org, swahiliAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Swahili'
+            });
+
+            let weaponCategory: TagCategory, 
+                gunTag: Tag, 
+                knifeTag: Tag,
+                molotovTag: Tag;
+
+            [org, weaponCategory] = await this.addTagCategoryToOrganization(org.id, {
+                name: 'Weapons'
+            });
+
+            [org, gunTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Gun'
+            });
+
+            [org, knifeTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Knife'
+            });
+
+            [org, molotovTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Molotov cocktail'
+            });
+
+            console.log('Assigning attributes to users');
+
+            const allAttributes: CategorizedItem[] = [
+                { categoryId: trainingsAttribute.id, itemId: cprAttribute.id },
+                { categoryId: trainingsAttribute.id, itemId: firstAidAttribute.id },
+                { categoryId: trainingsAttribute.id, itemId: copWatchAttribute.id },
+
+                { categoryId: languageAttribute.id, itemId: spanishAttribute.id },
+                { categoryId: languageAttribute.id, itemId: swahiliAttribute.id },
+                { categoryId: languageAttribute.id, itemId: japaneseAttribute.id },
+            ]
+
+            user1 = await this.updateUser(org.id, user1, {
+                attributes: allAttributes.slice(2, 4)
+            })
+
+            user2 = await this.updateUser(org.id, user2, {
+                attributes: allAttributes.slice(0, 1)
+            })
+
+            user3 = await this.updateUser(org.id, user3, {
+                attributes: allAttributes.slice(0, -2)
+            })
+
+            user4 = await this.updateUser(org.id, user4, {
+                attributes: allAttributes.slice(4, 5)
+            })
+
+            user5 = await this.updateUser(org.id, user5, {
+                attributes: allAttributes.slice(1, 3)
+            })
+
+            const allPositionSetups: Position[] = [
+                {
+                    id: 'catchall',
+                    attributes: [],
+                    min: 1,
+                    max: -1,
+                    role: DefaultRoleIds.Anyone,
+                    joinedUsers: []
+                },
+                {
+                    id: 'specific',
+                    attributes: [{ itemId: cprAttribute.id, categoryId: trainingsAttribute.id }],
+                    min: 2,
+                    max: 2,
+                    role: DefaultRoleIds.Responder,
+                    joinedUsers: []
+                },
+                {
+                    id: 'dispatcher',
+                    attributes: [{ itemId: firstAidAttribute.id, categoryId: trainingsAttribute.id }],
+                    min: 1,
+                    max: 3,
+                    role: DefaultRoleIds.Dispatcher,
+                    joinedUsers: []
+                }
+            ]
 
             const minRequests: MinHelpRequest[] = [
                 {
-                    skills: [RequestSkill.CPR, RequestSkill.ConflictResolution],
                     type: [RequestType.ConflictResolution, RequestType.DomesticDisturbance],
                     location: {
                         latitude: 40.69776419999999,
                         longitude: -73.9303333,
                         address: "960 Willoughby Avenue, Brooklyn, NY, USA"
                     },
+                    tagHandles: [{ categoryId: weaponCategory.id, itemId: molotovTag.id }],
+                    positions: allPositionSetups.slice(0, 2),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                    respondersNeeded: 2
                 },
                 {
-                    skills: [RequestSkill.SubstanceUseTreatment],
                     type: [RequestType.ConflictResolution, RequestType.FirstAid, RequestType.SubstanceCounseling],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(1, 2),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                    respondersNeeded: 1
                 },
                 {
-                    skills: [RequestSkill.MentalHealth, RequestSkill.SubstanceUseTreatment, RequestSkill.FirstAid, RequestSkill.CPR],
                     type: [RequestType.ConflictResolution],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(-1),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    respondersNeeded: 4,
                 },
                 {
-                    skills: [RequestSkill.French, RequestSkill.TraumaCounseling, RequestSkill.SubstanceUseTreatment],
                     type: [RequestType.Counseling],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
                         address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
                     },
+                    positions: allPositionSetups.slice(0, 1),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    respondersNeeded: 2,
-                    assignedResponderIds: [user1.id, user2.id],
                     status: RequestStatus.Done
                 }
             ];
@@ -1728,18 +1898,39 @@ export class DBManager {
                 fullReqs.push(await this.createRequest(req, org.id, admin1.id))
             }
 
-            fullReqs[0] = await this.assignRequest(fullReqs[0], [user1.id, user2.id, user3.id]);
-            fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
-            fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
-
-            fullReqs[0] = await this.confirmRequestAssignment(fullReqs[0], user1.id);
-            fullReqs[0] = await this.declineRequestAssignment(fullReqs[0], user3.id);
-            fullReqs[1] = await this.confirmRequestAssignment(fullReqs[1], user3.id);
-            fullReqs[2] = await this.declineRequestAssignment(fullReqs[2], user1.id);
-            
-            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah...blah blah blah blah blah ')
+            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')
-            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah')
+            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah...blah blah blah blah blah bliggity blah')
+
+            // notify people 
+            reqWithMessage = await this.notifyRespondersAboutRequest(reqWithMessage, user1.id, [user2.id, user3.id, user4.id, user5.id])
+
+            // ack notification
+            reqWithMessage = await this.ackRequestNotification(reqWithMessage, user2.id);
+
+            // join
+            reqWithMessage = await this.joinRequest(reqWithMessage, user4.id, reqWithMessage.positions[0].id)
+
+            // leave
+
+            // request
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[0].id)
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[0].id)
+
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[1].id)
+            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[1].id)
+            
+            // ack request
+            reqWithMessage = await this.ackRequestsToJoinNotification(reqWithMessage, user1.id, [
+                { userId: user5.id, positionId: reqWithMessage.positions[0].id },
+                { userId: user3.id, positionId: reqWithMessage.positions[0].id }
+            ])
+
+            // accept
+            reqWithMessage =  await this.confirmRequestToJoinPosition(reqWithMessage, user1.id, user5.id, reqWithMessage.positions[0].id)
+
+            // deny request
+            reqWithMessage =  await this.declineRequestToJoinPosition(reqWithMessage, user1.id, user3.id, reqWithMessage.positions[0].id)
 
             console.log('finished populating')
         } catch (e) {

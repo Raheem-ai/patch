@@ -3,13 +3,14 @@ import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, cr
 import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { HelpRequest, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { HelpRequest, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
-import { ScreenFormInputConfig } from "../../forms/types";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 
 type Props = {}
 
@@ -40,7 +41,7 @@ class CreateHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
-            return !!createRequestStore().location && !!createRequestStore().type.length && createRequestStore().respondersNeeded != null
+            return !!createRequestStore().type.length
         },
         action: async () => {
             let createdReq: HelpRequest;
@@ -102,6 +103,66 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
+                [
+                    // Call Start
+                    {
+                        onChange: (callStartedAt) => createRequestStore().callStartedAt = callStartedAt,
+                        val: () => {
+                            return createRequestStore().callStartedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callStart',
+                        placeholderLabel: () => 'Call start',
+                        type: 'TextInput',
+                        icon: 'phone-incoming'
+                        // required: true
+                    },
+                    // Call End
+                    {
+                        onChange: (callEndedAt) => createRequestStore().callEndedAt = callEndedAt,
+                        val: () => {
+                            return createRequestStore().callEndedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callEnd',
+                        placeholderLabel: () => 'Call end',
+                        type: 'TextInput',
+                    },
+                ],
+                [
+                    // Caller Name
+                    {
+                        onChange: (callerName) => createRequestStore().callerName = callerName,
+                        val: () => {
+                            return createRequestStore().callerName
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerName',
+                        placeholderLabel: () => 'Caller name',
+                        type: 'TextInput',
+                        icon: 'clipboard-account'
+                        // required: true
+                    },
+                    // Caller Contact Info
+                    {
+                        onChange: (callerContactInfo) => createRequestStore().callerContactInfo = callerContactInfo,
+                        val: () => {
+                            return createRequestStore().callerContactInfo
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerContactInfo',
+                        placeholderLabel: () => 'Caller contact info',
+                        type: 'TextInput',
+                    },
+                ],
                 // Location
                 {
                     onSave: (location) => createRequestStore().location = location,
@@ -112,14 +173,15 @@ class CreateHelpRequest extends React.Component<Props> {
                         return createRequestStore().locationValid
                     },
                     name: 'location',
+                    icon: 'map-marker',
                     previewLabel: () => createRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
                     type: 'Map',
                     required: true
                 },
-                // Notes
                 [
+                    // Description
                     {
                         onSave: (notes) => createRequestStore().notes = notes,
                         val: () => {
@@ -128,10 +190,11 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return !!createRequestStore().notes
                         },
-                        name: 'notes',
+                        name: 'description',
+                        icon: 'note-text',
                         previewLabel: () => createRequestStore().notes,
-                        headerLabel: () => 'Notes',
-                        placeholderLabel: () => 'Notes',
+                        headerLabel: () => 'Description',
+                        placeholderLabel: () => 'Description',
                         type: 'TextArea',
                     },
                     // Type of request
@@ -158,63 +221,78 @@ class CreateHelpRequest extends React.Component<Props> {
                             },
                             dark: true
                         }
-                    }
+                    },
+                    // Priority
+                    {
+                        onSave: (priorities) => createRequestStore().priority = priorities[0],
+                        val: () => {
+                            return createRequestStore().priority 
+                                ? [createRequestStore().priority]
+                                : []
+                        },
+                        isValid: () => {
+                            return !!createRequestStore().priority 
+                        },
+                        name: 'priority',
+                        previewLabel: () => createRequestStore().priority as unknown as string,
+                        headerLabel: () => 'Priority',
+                        placeholderLabel: () => 'Priority',
+                        type: 'List',
+                        props: {
+                            options: allEnumValues(RequestPriority),
+                            optionToPreviewLabel: (opt) => opt
+                        },
+                    },
                 ],
-                // Number of Responders
+                // Positions
                 {
-                    onSave: (responders) => createRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
+                    onSave: (data) => {
+                        createRequestStore().positions = data
+                    },
                     val: () => {
-                        return [createRequestStore().respondersNeeded]
+                        return createRequestStore().positions;
                     },
-                    isValid: () => {
-                        return typeof createRequestStore().respondersNeeded == 'number' && createRequestStore().respondersNeeded > -1
-                    },
-                    name: 'responders',
-                    previewLabel: () => createRequestStore().respondersNeeded >= 0 ? `${createRequestStore().respondersNeeded}` : null,
-                    headerLabel: () => 'Number of responders',
-                    placeholderLabel: () => 'Number of responders',
-                    type: 'List',
+                    isValid: () => true,
+                    headerLabel: () => 'Responders needed',
+                    placeholderLabel: () => 'Responders needed',
+                    icon: 'account-multiple',
                     props: {
-                        options: ResponderCountRange,
-                        optionToPreviewLabel: (opt) => opt
+                        editPermissions: [PatchPermissions.RequestAdmin]
                     },
+                    name: 'positions',
+                    type: 'Positions'
                 },
-                // Skills required
-            
-                {
-                    onSave: (skills) => createRequestStore().skills = skills,
+                // Tags
+                TagsListInput({
+                    onSave: (items) => {
+                        createRequestStore().tagHandles = items
+                    },
                     val: () => {
-                        return createRequestStore().skills
+                        return createRequestStore().tagHandles
                     },
                     isValid: () => {
                         return true
                     },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills required',
-                    placeholderLabel: () => 'Skills required',
-                    type: 'NestedTagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        categories: Object.keys(RequestSkillCategoryMap), 
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        categoryToLabel: (cat) => RequestSkillCategoryToLabelMap[cat],
-                        optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            runInAction(() => createRequestStore().skills.splice(idx, 1))
-                        },
-                    },
-                }
-                
+                    icon: 'label',
+                    name: 'tags'
+                })
             ] as [
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
                 ScreenFormInputConfig<'Map'>, 
                 [
                     ScreenFormInputConfig<'TextArea'>,
-                    ScreenFormInputConfig<'TagList'>
+                    ScreenFormInputConfig<'TagList'>,
+                    ScreenFormInputConfig<'List'>
                 ],
-                ScreenFormInputConfig<'List'>,
-                ScreenFormInputConfig<'NestedTagList'>
+                ScreenFormInputConfig<'Positions'>,
+                ScreenFormInputConfig<'CategorizedItemList'>
             ]
         }
     }
