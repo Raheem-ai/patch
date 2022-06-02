@@ -49,7 +49,6 @@ export default class RequestStore implements IRequestStore {
         }
     }) seenRequestsToJoinRequest = new Set<string>();
     
-    // make this a stack of req ids
     @persistent() currentRequestIdStack: string[] = [];
     @persistent() filter = HelpRequestFilter.Active;
     @persistent() sortBy = HelpRequestSortBy.ByTime;
@@ -105,11 +104,17 @@ export default class RequestStore implements IRequestStore {
     }
 
     get myActiveRequests() {
-        return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().user.id));
+        return this.requestsArray.filter((r) => {
+            const imOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().user.id))
+            return r.status != RequestStatus.Done && imOnRequest
+        });
     }
 
     get currentUserActiveRequests() {
-        return this.requestsArray.filter((r) => r.status != RequestStatus.Done && r.assignedResponderIds.includes(userStore().currentUser?.id));
+        return this.requestsArray.filter((r) => {
+            const isOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().currentUser?.id))
+            return r.status != RequestStatus.Done && isOnRequest
+        });
     }
 
     get requestMetadata() {
@@ -281,7 +286,6 @@ export default class RequestStore implements IRequestStore {
         let haveBeenKicked = false;
         let waitingOnRequestResults = false; 
         let requestDenied = false;
-        // let unseenJoinRequest = false;
 
         const pendingJoinRequests = new Set<string>();
         const deniedJoinRequests = new Set<string>();
@@ -389,8 +393,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     getRequestsAfterSignin = async () => {
-        // TODO: make this bypass updating the users on top of the requests
-        await this.getRequests();
+        await this.getRequests([], true);
 
         when(() => !userStore().signedIn, () => {
             when(() => userStore().signedIn, this.getRequestsAfterSignin)
@@ -402,10 +405,7 @@ export default class RequestStore implements IRequestStore {
             this.requests.clear();
             this.seenRequests.clear();
             this.seenRequestsToJoinRequest.clear();
-            // this.currentRequest = null
             this.currentRequestIdStack = []
-            // this.activeRequest = null
-            // this.activeRequests = []
         })
     }
 
@@ -473,15 +473,6 @@ export default class RequestStore implements IRequestStore {
         // stop loading
     }
 
-    // async confirmRequestAssignment(orgId: string, reqId: string) {
-    //     const req = await api().confirmRequestToJoinRequest(this.orgContext(orgId), reqId);
-
-    //     runInAction(() => { 
-    //         this.updateOrAddReq(req);
-    //     })
-    // }
-
-
     /**
      * NOTE: should only be called from header config back button for request details
      * page
@@ -535,7 +526,7 @@ export default class RequestStore implements IRequestStore {
         }
     }
     
-    async getRequests(requestIds?: string[]): Promise<void> {
+    async getRequests(requestIds?: string[], skipUpdatingUsers?: boolean): Promise<void> {
         try {
             const oldCurrentReqId = this.currentRequest?.id;
             let possibleUpdatedCurrentReq:  HelpRequest;
@@ -545,16 +536,20 @@ export default class RequestStore implements IRequestStore {
             const userIdSet = new Set<string>();
 
             for (const req of requests) {
-                this.usersAssociatedWithRequest(req).forEach(id => userIdSet.add(id));
+                if (!skipUpdatingUsers) {
+                    this.usersAssociatedWithRequest(req).forEach(id => userIdSet.add(id));
+                }
                 
                 if (req.id == oldCurrentReqId) {
                     possibleUpdatedCurrentReq = req;
                 }
             }
 
-            // TODO: might be worth having a common response type that returns 
-            // related objects to save us a round trip call for this and other tings
-            await userStore().updateOrgUsers(Array.from(userIdSet.values()));
+            if (!skipUpdatingUsers) {
+                // TODO: might be worth having a common response type that returns 
+                // related objects to save us a round trip call for this and other tings
+                await userStore().updateOrgUsers(Array.from(userIdSet.values()));
+            }
 
             runInAction(() => {
                 requests.forEach(r => this.updateOrAddReq(r))
@@ -729,22 +724,4 @@ export default class RequestStore implements IRequestStore {
             req[prop] = updatedReq[prop]
         }
     }
-
-    // updateReq(updatedReq: HelpRequest, givenIndex?: number) {
-    //     const index = typeof givenIndex == 'number' 
-    //         ? givenIndex
-    //         : this.requestsArray.findIndex(r => r.id == updatedReq.id);
-
-    //     if (index != -1) {
-    //         runInAction(() => {
-    //             for (const prop in updatedReq) {
-    //                 this.requestsArray[index][prop] = updatedReq[prop]
-    //             }
-    //         })
-
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
 }

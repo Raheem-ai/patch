@@ -206,16 +206,13 @@ export interface IRequestStore extends IBaseStore {
     resetRequestStatus(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
-    // updateReq(updatedReq: HelpRequest): void
     updateOrAddReq(updatedReq: HelpRequest): void
-    // confirmRequestAssignment(orgId: string, reqId: string): Promise<void>
     
     joinRequest(reqId: string, positionId: string): Promise<void>
     leaveRequest(reqId: string, positionId: string): Promise<void>
     requestToJoinRequest(reqId: string, positionId: string): Promise<void>
     removeUserFromRequest(userId: string, reqId: string, positionId: string): Promise<void>
     getPositionMetadata(requestId: string, positionId: string): PositionScopedMetadata
-    // getRequestMetadata(requestId: string): RequestScopedMetadata
     
     approveRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
     denyRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
@@ -570,8 +567,15 @@ interface CategorizedItemStore extends IBaseStore {
     editStore: IEditCategorizedItemStore 
 };
 
-export interface IManageTagsStore extends CategorizedItemStore {};
-export interface IManageAttributesStore extends CategorizedItemStore {};
+export interface IManageTagsStore extends CategorizedItemStore {
+    tagCategories: Map<string, Category>
+    getTag(categoryId: string, tagId: string): Tag
+};
+
+export interface IManageAttributesStore extends CategorizedItemStore {
+    attributeCategories: Map<string, Category>
+    getAttribute(categoryId: string, attributeId: string): Attribute
+};
 
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);

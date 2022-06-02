@@ -39,10 +39,6 @@ class CreateHelpRequest extends React.Component<Props> {
         createRequestStore().clear();
     }
 
-    static onShow = () => {
-        createRequestStore
-    }
-
     static submit = {
         isValid: () => {
             return !!createRequestStore().type.length

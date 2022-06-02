@@ -207,7 +207,7 @@ export class DBManager {
         user.markModified('organizations');
     }
 
-    async updateUser(orgId: string, userOrId: string | UserDoc, protectedUser: AdminEditableUser, updatedMe?: Partial<Omit<User, 'organizations'>>) {
+    async updateUser(orgId: string, userOrId: string | UserDoc, protectedUser: Partial<AdminEditableUser>, updatedMe?: Partial<Omit<User, 'organizations'>>) {
         const user = await this.resolveUser(userOrId);
 
         for (const prop in protectedUser) {
@@ -787,15 +787,16 @@ export class DBManager {
         throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
     }
 
-    async addAttributesToUser(orgId: string, userId: string | UserDoc, attributes: AttributesMap) {
+    // TODO: remove?...or maybe move validation to updateUser()?
+    async addAttributesToUser(orgId: string | OrganizationDoc, userId: string | UserDoc, attributes: AttributesMap) {
         const user = await this.resolveUser(userId);
+        const org = await this.resolveOrganization(orgId);
 
-        if (!user.organizations || !user.organizations[orgId]){
+        if (!user.organizations || !user.organizations[org.id]){
             throw `User not in organization`
         }
 
         // Validate attributes exist in the proper category.
-        const org = await this.resolveOrganization(orgId);
         for (const categoryId of Object.keys(attributes)) {
             const category = org.attributeCategories.find(category => category.id == categoryId);
             if (category) {
@@ -809,7 +810,7 @@ export class DBManager {
             }
         }
 
-        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+        await this.updateUsersOrgConfig(user, org.id, (orgConfig) => {
             for (const categoryId of Object.keys(attributes)) {
                 // Add this category ID to the user's org config if it doesn't already exist.
                 if (!(categoryId in orgConfig.attributes)) {
@@ -1718,111 +1719,105 @@ export class DBManager {
             [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
             [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
 
-            console.log('creating new user...');
-            
-
-            // console.log('creating second org...');
-            // let [ org2, admin2 ] = await this.createOrganization({
-            //     name: 'Test Org 2'
-            // }, user5.id);
-
-            // let role1: MinRole = {
-            //     name: 'first role',
-            //     permissionGroups: [
-            //         PatchPermissionGroups.ManageOrg,
-            //         PatchPermissionGroups.ManageChats,
-            //         PatchPermissionGroups.ManageMetadata,
-            //         PatchPermissionGroups.ManageRequests,
-            //         PatchPermissionGroups.ManageSchedule,
-            //         PatchPermissionGroups.ManageTeam
-            //     ]
-            // };
-
-            // console.log('adding new role to org2...');
-            // [org2, role1] = await this.addRoleToOrganization(role1, org2.id);
-
-            // console.log('adding new role to user...');
-            // user5 = await this.addRolesToUser(org2.id, user5.id, [role1.id]);
-
-            // console.log('adding new Attribute category...');
-            // const testAttrCat1: MinAttributeCategory = {
-            //     name: 'Attribute Category 1 - repopulateDB'
-            // };
-
-            // const testAttrCat2: MinAttributeCategory = {
-            //     name: 'Attribute Category 2 - repopulateDB'
-            // };
-
-            // let attrCat1: AttributeCategory = null;
-            // let attrCat2: AttributeCategory = null;
-            // [org2, attrCat1] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat1);
-            // [org2, attrCat2] = await this.addAttributeCategoryToOrganization(org2.id, testAttrCat2);
-
-            // console.log('adding new Attribute...');
-
-            // const testAttr1: MinAttribute = {
-            //     name: 'Attribute 1 - repopulateDb'
-            // };
-
-            // const testAttr2: MinAttribute = {
-            //     name: 'Attribute 2 - repopulateDb'
-            // };
-
-            // let attr1: Attribute = null;
-            // let attr2: Attribute = null;
-            // [org2, attr1] = await this.addAttributeToOrganization(org2.id, attrCat1.id, testAttr1);
-            // [org2, attr2] = await this.addAttributeToOrganization(org2.id, attrCat2.id, testAttr2);
-
-            // const attributesToAdd: AttributesMap = {
-            //     [attrCat1.id]: [attr1.id],
-            //     [attrCat2.id]: [attr2.id],
-            // }
-
-            // console.log('Assigning attributes to user...');
-            // user5 = await this.addAttributesToUser(org2.id, user5.id, attributesToAdd);
-
-            // const attributesToRemove: AttributesMap = {
-            //     [attrCat2.id]: [attr2.id]
-            // }
-
-            // console.log('Removing attribute from user...');
-            // org2 = await this.removeAttribute(org2.id, attrCat2.id, attr2.id);
-            // user5 = await this.removeAttributesFromUser(org2.id, user5.id, attributesToRemove);
             user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ]);
 
-            let attrCat1: AttributeCategory, attr1: Attribute, attr2: Attribute;
+            let trainingsAttribute: AttributeCategory, 
+                cprAttribute: Attribute, 
+                firstAidAttribute: Attribute,
+                copWatchAttribute: Attribute;
 
-            [org, attrCat1] = await this.addAttributeCategoryToOrganization(org.id, {
-                name: 'Attribute Category'
+            let languageAttribute: AttributeCategory, 
+                spanishAttribute: Attribute, 
+                japaneseAttribute: Attribute,
+                swahiliAttribute: Attribute;
+
+            [org, trainingsAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
+                name: 'Trainings'
             });
 
-            [org, attr1] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
-                name: 'Foo'
+            [org, cprAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'CPR'
             });
 
-
-            [org, attr2] = await this.addAttributeToOrganization(org.id, attrCat1.id, {
-                name: 'Bar'
+            [org, firstAidAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'First Aid'
             });
 
-            let tagCat1, tag1, tag2;
-
-            [org, tagCat1] = await this.addTagCategoryToOrganization(org.id, {
-                name: 'Tag Category'
+            [org, copWatchAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
+                name: 'Cop Watch'
             });
 
-            [org, tag1] = await this.addTagToOrganization(org.id, tagCat1.id, {
-                name: 'Baz'
+            [org, languageAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
+                name: 'Languages'
             });
 
-            [org,tag2] = await this.addTagToOrganization(org.id, tagCat1.id, {
-                name: 'Bux'
+            [org, spanishAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Spanish'
             });
 
-            // await this.addAttributesToUser(org.id, user1.id, )
+            [org, japaneseAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Japanese'
+            });
+
+            [org, swahiliAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
+                name: 'Swahili'
+            });
+
+            let weaponCategory: TagCategory, 
+                gunTag: Tag, 
+                knifeTag: Tag,
+                molotovTag: Tag;
+
+            [org, weaponCategory] = await this.addTagCategoryToOrganization(org.id, {
+                name: 'Weapons'
+            });
+
+            [org, gunTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Gun'
+            });
+
+            [org, knifeTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Knife'
+            });
+
+            [org, molotovTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
+                name: 'Molotov cocktail'
+            });
+
+            console.log('Assigning attributes to users');
+
+            const allAttributes: CategorizedItem[] = [
+                { categoryId: trainingsAttribute.id, itemId: cprAttribute.id },
+                { categoryId: trainingsAttribute.id, itemId: firstAidAttribute.id },
+                { categoryId: trainingsAttribute.id, itemId: copWatchAttribute.id },
+
+                { categoryId: languageAttribute.id, itemId: spanishAttribute.id },
+                { categoryId: languageAttribute.id, itemId: swahiliAttribute.id },
+                { categoryId: languageAttribute.id, itemId: japaneseAttribute.id },
+            ]
+
+            user1 = await this.updateUser(org.id, user1, {
+                attributes: allAttributes.slice(2, 4)
+            })
+
+            user2 = await this.updateUser(org.id, user2, {
+                attributes: allAttributes.slice(0, 1)
+            })
+
+            user3 = await this.updateUser(org.id, user3, {
+                attributes: allAttributes.slice(0, -2)
+            })
+
+            user4 = await this.updateUser(org.id, user4, {
+                attributes: allAttributes.slice(4, 5)
+            })
+
+            user5 = await this.updateUser(org.id, user5, {
+                attributes: allAttributes.slice(1, 3)
+            })
 
             const allPositionSetups: Position[] = [
                 {
@@ -1835,7 +1830,7 @@ export class DBManager {
                 },
                 {
                     id: 'specific',
-                    attributes: [{ itemId: attr1.id, categoryId: attrCat1.id }],
+                    attributes: [{ itemId: cprAttribute.id, categoryId: trainingsAttribute.id }],
                     min: 2,
                     max: 2,
                     role: DefaultRoleIds.Responder,
@@ -1843,7 +1838,7 @@ export class DBManager {
                 },
                 {
                     id: 'dispatcher',
-                    attributes: [{ itemId: attr2.id, categoryId: attrCat1.id }],
+                    attributes: [{ itemId: firstAidAttribute.id, categoryId: trainingsAttribute.id }],
                     min: 1,
                     max: 3,
                     role: DefaultRoleIds.Dispatcher,
@@ -1859,6 +1854,7 @@ export class DBManager {
                         longitude: -73.9303333,
                         address: "960 Willoughby Avenue, Brooklyn, NY, USA"
                     },
+                    tagHandles: [{ categoryId: weaponCategory.id, itemId: molotovTag.id }],
                     positions: allPositionSetups.slice(0, 2),
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
                 },
@@ -1902,19 +1898,9 @@ export class DBManager {
                 fullReqs.push(await this.createRequest(req, org.id, admin1.id))
             }
 
-            // fullReqs[0] = await this.assignRequest(fullReqs[0], [user1.id, user2.id, user3.id]);
-            // fullReqs[1] = await this.assignRequest(fullReqs[1], [user2.id, user3.id]);
-            // fullReqs[2] = await this.assignRequest(fullReqs[2], [user1.id, user2.id]);
-
-            // fullReqs[0] = await this.confirmRequestToJoinPosition(fullReqs[0], user1.id);
-            // fullReqs[0] = await this.declineRequestToJoinPosition(fullReqs[0], user3.id);
-            // fullReqs[1] = await this.confirmRequestToJoinPosition(fullReqs[1], user3.id);
-            // fullReqs[2] = await this.declineRequestToJoinPosition(fullReqs[2], user1.id);
-            
             let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')
             reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah...blah blah blah blah blah bliggity blah')
-
 
             // notify people 
             reqWithMessage = await this.notifyRespondersAboutRequest(reqWithMessage, user1.id, [user2.id, user3.id, user4.id, user5.id])
@@ -1945,7 +1931,6 @@ export class DBManager {
 
             // deny request
             reqWithMessage =  await this.declineRequestToJoinPosition(reqWithMessage, user1.id, user3.id, reqWithMessage.positions[0].id)
-
 
             console.log('finished populating')
         } catch (e) {

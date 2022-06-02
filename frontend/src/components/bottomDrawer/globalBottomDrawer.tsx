@@ -1,6 +1,6 @@
 import { Route } from "@react-navigation/routers";
 import { throws } from "assert";
-import { observable } from "mobx";
+import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
@@ -50,12 +50,16 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
         const valid = !!bottomDrawerStore().view.submit?.isValid?.()
 
         const onSubmit = async () => {
-            this.submitting.set(true)
+            runInAction(() => {
+                this.submitting.set(true)
+            })
 
             try {
                 await bottomDrawerStore().view.submit.action()
             } finally {
-                this.submitting.set(false)
+                runInAction(() => {
+                    this.submitting.set(false)
+                })
             }
         }
 

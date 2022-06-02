@@ -1,14 +1,14 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IManageTagsStore, organizationStore, userStore } from './interfaces';
-import { CategorizedItemUpdates, Category, PatchPermissions } from '../../../common/models';
+import { CategorizedItemUpdates, Category, PatchPermissions, Tag } from '../../../common/models';
 import EditCategorizedItemStore from './editCategorizedItemStore';
 import { api } from '../services/interfaces';
 import { OrgContext } from '../../../common/api';
 
 @Store(IManageTagsStore)
 export default class ManageTagsStore implements IManageTagsStore {
-    editStore = new EditCategorizedItemStore(() => this.tagCategoryMap, (...args) => this.onSave(...args))
+    editStore = new EditCategorizedItemStore(() => this.tagCategories, (...args) => this.onSave(...args))
 
     editPermissions = [PatchPermissions.TagAdmin]
 
@@ -28,7 +28,7 @@ export default class ManageTagsStore implements IManageTagsStore {
         }
     }
 
-    get tagCategoryMap() {
+    get tagCategories() {
         const map: Map<string, Category> = new Map();
 
         organizationStore().metadata.tagCategories.forEach(category => {
@@ -40,6 +40,11 @@ export default class ManageTagsStore implements IManageTagsStore {
 
         return map
     } 
+
+    getTag(categoryId: string, tagId: string): Tag {
+        const category = this.tagCategories.get(categoryId);
+        return category.items.find(item => item.id == tagId);
+    }
 
     onSave = async (updates: CategorizedItemUpdates) => {
         const updatedOrg = await api().updateTags(this.orgContext(), updates);

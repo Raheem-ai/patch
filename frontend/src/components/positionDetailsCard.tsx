@@ -60,13 +60,15 @@ const PositionDetailsCard = observer(({
         }
 
         const name = user.name;
-        // TODO: get from `user.attributes`
-        const attributes = Array.from(manageAttributesStore().editStore.categories.entries()).map(([_, category]) => category.items[0]?.name) 
+
+        const attributeNames = user.organizations[userStore().currentOrgId].attributes.map(attr => {
+            return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)?.name
+        }).filter(x => !!x)
         
         return {
             name,
             userId, 
-            attributes
+            attributes: attributeNames
         }
 
     }).filter(x => !!x); 
