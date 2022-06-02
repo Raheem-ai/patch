@@ -10,8 +10,13 @@ type NotificationTypes<T extends NotificationType> = T extends any
     : never;
 
 export type RootStackParamList = {
-    Home: undefined;
+    Landing: undefined;
+    JoinOrganization: undefined;
+    InvitationSuccessful: undefined;
+    CreateAccount: undefined;
     SignIn: undefined;
+    // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
+    Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
     HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
@@ -32,8 +37,12 @@ type TypedRouterNames = {
 }
 
 export const routerNames: TypedRouterNames = {
-    home: "Home",
+    landing: "Landing",
+    joinOrganization: "JoinOrganization",
+    invitationSuccessful: "InvitationSuccessful",
     signIn: "SignIn",
+    createAccount: "CreateAccount",
+    home: "Home",
     signUp: "SignUp",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
@@ -50,6 +59,11 @@ export const routerNames: TypedRouterNames = {
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
 
+export type LandingPageNavigationProp = StackNavigationProp<RootStackParamList, 'Landing'>;
+export type JoinOrganizationNavigationProp = StackNavigationProp<RootStackParamList, 'JoinOrganization'>;
+export type InvitationSuccessfulProp = StackNavigationProp<RootStackParamList, 'InvitationSuccessful'>;
+export type CreateAccountNavigationProp = StackNavigationProp<RootStackParamList, 'CreateAccount'>;
+
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
@@ -61,6 +75,7 @@ export const labelNames = {
     firstname: 'First Name',
     lastname: 'Last Name',
     email: 'Email',
+    invitationCode: 'Invitation code'
 };
 
 export const Colors = {

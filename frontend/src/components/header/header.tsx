@@ -36,11 +36,13 @@ const Header = observer((props: Props) => {
     const closeHeader = () => headerStore().close()
 
     const headerBar = () => {
+        if (config.unauthenticated) {
+            return null;
+        }
+
         const leftActions = config.leftActions && config.leftActions.length
             ? config.leftActions
-            : (config.unauthenticated)
-                ? []
-                : [{ icon: 'menu', callback: openHeader }];
+            : [{ icon: 'menu', callback: openHeader }];
 
         const rightActions = config.rightActions && config.rightActions.length
             ? config.rightActions

@@ -1,49 +1,40 @@
 import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp } from '../types';
-import { alertStore, notificationStore, userStore } from '../stores/interfaces';
+import { CreateAccountNavigationProp, labelNames, routerNames } from '../types';
 import { navigateTo } from '../navigation';
-import { resolveErrorMessage } from '../errors';
 
 type Props = {
-    navigation: SignInNavigationProp;
+    navigation: CreateAccountNavigationProp;
 };
 
-export default function SignInForm( { navigation } : Props) {
-    const [username, setTextUser] = React.useState('');
+export default function CreateAccountForm( { navigation } : Props) {
+    const [firstname, setFirstname] = React.useState('');
+    const [lastname, setLastname] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
-
-    const signIn = async () => {
-
-        try {
-            await userStore().signIn(username, password)
-        } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e))
-            return
-        }
-
-        setTimeout(() => {
-            notificationStore().handlePermissions();
-        }, 0);
-
-        navigateTo(routerNames.userHomePage)
-    }
 
     return(
         <Pressable onPress={Keyboard.dismiss} accessible={false}>
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleText}>Welcome back!</Text>
+                    <Text style={styles.titleText}>Create an account</Text>
                 </View>
                 <View style={styles.inputsContainer}>
-                    <TextInput
-                        mode="flat"
-                        style={styles.input}
-                        label={labelNames.email}
-                        value={username}
-                        onChangeText={username => setTextUser(username)}/>
+                    <View style={styles.nameInputsContainer}>
+                        <TextInput
+                            mode="flat"
+                            style={[styles.nameInput, { marginRight: 16 }]}
+                            label={labelNames.firstname}
+                            value={firstname}
+                            onChangeText={firstname => setFirstname(firstname)}/>
+                        <TextInput
+                            mode="flat"
+                            style={styles.nameInput}
+                            label={labelNames.lastname}
+                            value={lastname}
+                            onChangeText={lastname => setLastname(lastname)}/>
+                    </View>
                     <TextInput
                         mode="flat"
                         secureTextEntry={secureTextEntry}
@@ -62,9 +53,8 @@ export default function SignInForm( { navigation } : Props) {
                         onChangeText={password =>setPassword(password)}/>
                 </View>
                 <View style={styles.bottomContainer}>
-                    <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
-                    <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                    <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
+                    <Button uppercase={false} color={'#fff'} style={styles.createAccountButton}>{'Create account'}</Button>
+                    <Text style={styles.signInText} onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
                 </View>
             </View>
         </Pressable>
@@ -99,11 +89,20 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: '#FAF9FA'
     },
+    nameInputsContainer: {
+        flexDirection: 'row',
+        alignSelf: 'center',
+        width: 296
+    },
+    nameInput: {
+        backgroundColor: '#FAF9FA',
+        width: 140
+    },
     bottomContainer: {
         alignSelf: 'center',
         marginVertical: 32
     },
-    signInButton: {
+    createAccountButton: {
         borderRadius: 24,
         backgroundColor: '#76599A',
         justifyContent: 'center',
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
         /* primary.00 - 66% */
         color: 'rgba(105, 79, 112, 0.66)',
     },
-    invitationCodeText: {
+    signInText: {
         fontStyle: 'normal',
         fontWeight: '700',
         fontSize: 14,

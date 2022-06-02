@@ -22,6 +22,22 @@ const HeaderConfig: {
     [routerNames.home]: {
         title: 'Home'
     },
+    [routerNames.landing]: {
+        title: 'Landing',
+        unauthenticated: true
+    },
+    [routerNames.joinOrganization]: {
+        title: 'Join Organization',
+        unauthenticated: true
+    },
+    [routerNames.invitationSuccessful]: {
+        title: 'Invitation Successful',
+        unauthenticated: true
+    },
+    [routerNames.createAccount]: {
+        title: 'Create Account',
+        unauthenticated: true
+    },
     [routerNames.signIn]: {
         title: 'Sign In',
         unauthenticated: true

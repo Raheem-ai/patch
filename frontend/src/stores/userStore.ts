@@ -152,7 +152,7 @@ export default class UserStore implements IUserStore {
             const token = this.authToken;
 
             setTimeout(() => {
-                navigateTo(routerNames.signIn)
+                navigateTo(routerNames.landing)
                 clearAllStores()
                 clearAllServices()
             }, 0)
