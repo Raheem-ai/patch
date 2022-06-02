@@ -1,4 +1,4 @@
-import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { JoinOrganizationNavigationProp, labelNames, routerNames, ScreenProps } from '../types';
@@ -12,33 +12,33 @@ export default function JoinOrganizationForm( { navigation } : Props) {
     const [inivitationCode, setInvitationCode] = React.useState('');
 
     return(
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>Join an organization</Text>
+        <Pressable onPress={Keyboard.dismiss} accessible={false}>
+            <View style={styles.container}>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.titleText}>Join an organization</Text>
+                </View>
+                <View style={styles.inputsContainer}>
+                    <TextInput
+                        mode="flat"
+                        style={styles.input}
+                        label={labelNames.invitationCode}
+                        value={inivitationCode}
+                        onChangeText={inivitationCode => setInvitationCode(inivitationCode)}/>
+                </View>
+                <View style={styles.bottomContainer}>
+                    <Button
+                        uppercase={false}
+                        color={'#fff'}
+                        style={styles.invitationCodeButton}
+                        // TODO: Enable "Enter invitation Code" after invitation + create account flow is implemented.
+                        disabled={true}
+                        onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
+                    <Text
+                        style={styles.signInText}
+                        onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
+                </View>
             </View>
-            <View style={styles.inputsContainer}>
-                <TextInput
-                    mode="flat"
-                    style={styles.input}
-                    label={labelNames.invitationCode}
-                    value={inivitationCode}
-                    onChangeText={inivitationCode => setInvitationCode(inivitationCode)}/>
-            </View>
-            <View style={styles.bottomContainer}>
-                <Button
-                    uppercase={false}
-                    color={'#fff'}
-                    style={styles.invitationCodeButton}
-                    // TODO: Enable "Enter invitation Code" after invitation + create account flow is implemented.
-                    disabled={true}
-                    onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
-                <Text
-                    style={styles.signInText}
-                    onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
-            </View>
-        </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
     );
 };
 

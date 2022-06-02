@@ -1,4 +1,4 @@
-import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { labelNames, routerNames, SignInNavigationProp } from '../types';
@@ -32,42 +32,42 @@ export default function SignInForm( { navigation } : Props) {
     }
 
     return(
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>Welcome back!</Text>
+        <Pressable onPress={Keyboard.dismiss} accessible={false}>
+            <View style={styles.container}>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.titleText}>Welcome back!</Text>
+                </View>
+                <View style={styles.inputsContainer}>
+                    <TextInput
+                        mode="flat"
+                        style={styles.input}
+                        label={labelNames.email}
+                        value={username}
+                        onChangeText={username => setTextUser(username)}/>
+                    <TextInput
+                        mode="flat"
+                        secureTextEntry={secureTextEntry}
+                        right={
+                            <TextInput.Icon
+                            name="eye"
+                            onPress={() => {
+                                setSecureTextEntry(!secureTextEntry);
+                                return false;
+                            }}
+                            />
+                        }
+                        style={styles.input}
+                        label={labelNames.password}
+                        value={password}
+                        onChangeText={password =>setPassword(password)}/>
+                </View>
+                <View style={styles.bottomContainer}>
+                    <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
+                    <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+                    <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
+                </View>
             </View>
-            <View style={styles.inputsContainer}>
-                <TextInput
-                    mode="flat"
-                    style={styles.input}
-                    label={labelNames.email}
-                    value={username}
-                    onChangeText={username => setTextUser(username)}/>
-                <TextInput
-                    mode="flat"
-                    secureTextEntry={secureTextEntry}
-                    right={
-                        <TextInput.Icon
-                          name="eye"
-                          onPress={() => {
-                            setSecureTextEntry(!secureTextEntry);
-                            return false;
-                          }}
-                        />
-                      }
-                    style={styles.input}
-                    label={labelNames.password}
-                    value={password}
-                    onChangeText={password =>setPassword(password)}/>
-            </View>
-            <View style={styles.bottomContainer}>
-                <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
-                <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
-            </View>
-        </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
     );
 };
 

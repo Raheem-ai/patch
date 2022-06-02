@@ -1,66 +1,63 @@
-import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { CreateAccountNavigationProp, labelNames, routerNames } from '../types';
-import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
-import { resolveErrorMessage } from '../errors';
 
 type Props = {
     navigation: CreateAccountNavigationProp;
 };
 
 export default function CreateAccountForm( { navigation } : Props) {
-    const [username, setTextUser] = React.useState('');
     const [firstname, setFirstname] = React.useState('');
     const [lastname, setLastname] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
     return(
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>Create an account</Text>
-            </View>
-            <View style={styles.inputsContainer}>
-                <View style={styles.nameInputsContainer}>
-                    <TextInput
-                        mode="flat"
-                        style={[styles.nameInput, { marginRight: 16 }]}
-                        label={labelNames.firstname}
-                        value={firstname}
-                        onChangeText={firstname => setFirstname(firstname)}/>
-                    <TextInput
-                        mode="flat"
-                        style={styles.nameInput}
-                        label={labelNames.lastname}
-                        value={lastname}
-                        onChangeText={lastname => setLastname(lastname)}/>
+        <Pressable onPress={Keyboard.dismiss} accessible={false}>
+            <View style={styles.container}>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.titleText}>Create an account</Text>
                 </View>
-                <TextInput
-                    mode="flat"
-                    secureTextEntry={secureTextEntry}
-                    right={
-                        <TextInput.Icon
-                          name="eye"
-                          onPress={() => {
-                            setSecureTextEntry(!secureTextEntry);
-                            return false;
-                          }}
-                        />
-                      }
-                    style={styles.input}
-                    label={labelNames.password}
-                    value={password}
-                    onChangeText={password =>setPassword(password)}/>
+                <View style={styles.inputsContainer}>
+                    <View style={styles.nameInputsContainer}>
+                        <TextInput
+                            mode="flat"
+                            style={[styles.nameInput, { marginRight: 16 }]}
+                            label={labelNames.firstname}
+                            value={firstname}
+                            onChangeText={firstname => setFirstname(firstname)}/>
+                        <TextInput
+                            mode="flat"
+                            style={styles.nameInput}
+                            label={labelNames.lastname}
+                            value={lastname}
+                            onChangeText={lastname => setLastname(lastname)}/>
+                    </View>
+                    <TextInput
+                        mode="flat"
+                        secureTextEntry={secureTextEntry}
+                        right={
+                            <TextInput.Icon
+                            name="eye"
+                            onPress={() => {
+                                setSecureTextEntry(!secureTextEntry);
+                                return false;
+                            }}
+                            />
+                        }
+                        style={styles.input}
+                        label={labelNames.password}
+                        value={password}
+                        onChangeText={password =>setPassword(password)}/>
+                </View>
+                <View style={styles.bottomContainer}>
+                    <Button uppercase={false} color={'#fff'} style={styles.createAccountButton}>{'Create account'}</Button>
+                    <Text style={styles.signInText} onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
+                </View>
             </View>
-            <View style={styles.bottomContainer}>
-                <Button uppercase={false} color={'#fff'} style={styles.createAccountButton}>{'Create account'}</Button>
-                <Text style={styles.signInText} onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
-            </View>
-        </View>
-        </TouchableWithoutFeedback>
+        </Pressable>
     );
 };
 

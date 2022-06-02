@@ -1,7 +1,7 @@
-import { Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import * as React from 'react';
-import { InvitationSuccessfulProp, routerNames, ScreenProps } from '../types';
+import { InvitationSuccessfulProp, routerNames } from '../types';
 import { navigateTo } from '../navigation';
 
 type Props = {
@@ -10,7 +10,6 @@ type Props = {
 
 export default function InvitationSuccessfulPage( { navigation } : Props) {
     return(
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text style={styles.titleText}>Invitation successful</Text>
@@ -30,7 +29,6 @@ export default function InvitationSuccessfulPage( { navigation } : Props) {
                 <Button mode='outlined' uppercase={false} color={'#76599A'} style={styles.button} onPress={() => navigateTo(routerNames.createAccount)}>{'Create Account'}</Button>
             </View>
         </View>
-        </TouchableWithoutFeedback>
     );
 };
 
