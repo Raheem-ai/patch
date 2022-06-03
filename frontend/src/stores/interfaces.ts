@@ -29,6 +29,8 @@ export interface IUserStore extends IBaseStore {
     signIn(email: string, password: string): Promise<void>
     signUp(minUser: MinUser): Promise<void>
     signOut(): Promise<void>
+    onSignOut: (route?: keyof RootStackParamList) => void
+
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
     inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>

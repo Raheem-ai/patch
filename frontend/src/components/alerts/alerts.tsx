@@ -3,7 +3,7 @@ import React from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import { alertStore, IAlertStore } from "../../stores/interfaces";
+import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
 import { HeaderHeight } from "../header/header";
 
 
@@ -65,6 +65,12 @@ export const Alerts = observer(() => {
     }
 
     if (!alertsToShow) {
+        return null
+    }
+
+    // don't show alerts on unauthenticated views or when the header is open
+    // need to do this here because this sits as a sibling of the navigator in App.tsx
+    if (!userStore().signedIn || headerStore().isOpen) {
         return null
     }
 
