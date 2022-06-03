@@ -4,7 +4,7 @@ import { Store } from './meta';
 import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
-import { routerNames } from '../types';
+import { RootStackParamList, routerNames } from '../types';
 import { persistent } from '../meta';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
@@ -37,12 +37,22 @@ export default class UserStore implements IUserStore {
 
     async init() {
         if (this.signedIn) {
-            // this effectively validates that your refresh token is still valid
-            // by calling methods that take you through the refresh auth flow
-            // and signs you out if the refresh token has expired
-            await this.api.init();
-            await this.updateOrgUsers([]);
-            await this.getLatestMe();
+            // make sure this doesn't throw because any store that depends on the user store
+            // won't get initialized when there is a stale refreshToken
+            try {
+                
+
+                // wait for api to init so it's persistent state can settle
+                // before relying on it to handle the refresh token auth flow
+                await this.api.init();
+
+                // If any of these fail because of a stale refreshToken, api() will handle calling this.onSignOut() 
+                // which will clear all stores and reroute to the correct screen
+                await this.updateOrgUsers([]);
+                await this.getLatestMe();
+            } catch (e) {
+                console.error(e)
+            }
         }
     }
 
@@ -110,10 +120,6 @@ export default class UserStore implements IUserStore {
         return org.roles.includes(UserRole.Admin);
     }
 
-    onSignedOut = () => {
-        // TODO: make general 'was signed out' flow that safely clears all stores
-    }
-
     async afterSignIn(authTokens: AuthTokens) {
         const token = authTokens.accessToken;
 
@@ -152,16 +158,25 @@ export default class UserStore implements IUserStore {
         try {
             const token = this.authToken;
 
-            setTimeout(() => {
-                navigateTo(routerNames.landing)
-                clearAllStores()
-                clearAllServices()
-            }, 0)
+            setTimeout(this.onSignOut, 0)
 
             await this.api.signOut({ token });
         } catch (e) {
             console.error(e);
         }
+    }
+
+    /**
+     * Code that should be run whenever a user logs out or is logged out
+     * by the system.
+     * 
+     * NOTE: should not have a reference to 'this' as this may be called before 
+     * this.init() resolves ie. stale refresh token flow
+     */
+    onSignOut = (route?: keyof RootStackParamList) => {
+        navigateTo(route || routerNames.landing)
+        clearAllStores()
+        clearAllServices()
     }
 
     async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) {
@@ -203,34 +218,28 @@ export default class UserStore implements IUserStore {
     }
 
     async getLatestMe(prefetched?: { me: ClientSideFormat<Me>, token: string }) {
-        try {
-            const token = prefetched ? prefetched.token : this.authToken;
-            const me = prefetched ? prefetched.me : await this.api.me({ token });
+        const token = prefetched ? prefetched.token : this.authToken;
+        const me = prefetched ? prefetched.me : await this.api.me({ token });
 
-            runInAction(() => {
-                this.user = me;
+        runInAction(() => {
+            this.user = me;
 
-                if (prefetched) {
-                    this.authToken = token
-                }
+            if (prefetched) {
+                this.authToken = token
+            }
 
-                const keys = Object.keys(me.organizations);
+            const keys = Object.keys(me.organizations);
 
-                // if called when loading up a logged in user with a previously chosen org context 
-                // of an org they are still a member of, honor that org context
-                if (!prefetched && !!this.currentOrgId && keys.includes(this.currentOrgId)) {
-                    return;
-                }
+            // if called when loading up a logged in user with a previously chosen org context 
+            // of an org they are still a member of, honor that org context
+            if (!prefetched && !!this.currentOrgId && keys.includes(this.currentOrgId)) {
+                return;
+            }
 
-                if (keys.length) {
-                    this.currentOrgId = keys[0];
-                }
-            })
-        } catch (e) {
-            // TODO: if you get an auth error here we should 
-            // make you sign back in
-            console.error(e)
-        }
+            if (keys.length) {
+                this.currentOrgId = keys[0];
+            }
+        })
     }
 
     // TODO: remove this as a concept (should change routing to handle userId in route path)

@@ -73,14 +73,8 @@ export class APIClient implements IAPIService {
             try {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
-                // clear user store and reroute to signin
-                runInAction(() => {
-                    this.refreshToken = null;
-                })
-                
-                navigateTo(routerNames.signIn)
-
-                userStore().clear()
+                // route to sign in and clear all stores
+                userStore().onSignOut(routerNames.signIn)
 
                 throw 'User no longer signed in'
             }
@@ -132,14 +126,8 @@ export class APIClient implements IAPIService {
             try {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
-                // clear user store and reroute to signin
-                runInAction(() => {
-                    this.refreshToken = null;
-                })
-                
-                navigateTo(routerNames.signIn)
-
-                userStore().clear()
+                // route to sign in and clear all stores
+                userStore().onSignOut(routerNames.signIn)
 
                 throw 'User no longer signed in'
             }

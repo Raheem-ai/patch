@@ -158,6 +158,8 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     }
 
     render() {
+        // don't show bottom drawer on unauthenticated views or when the header is open
+        // need to do this here because this sits as a sibling of the navigator in App.tsx
         if (!userStore().signedIn || headerStore().isOpen) {
             return null
         }
