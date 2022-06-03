@@ -546,23 +546,63 @@ export type Location = {
 };
 
 export enum NotificationType {
-    AssignedIncident = 'ai',
-    BroadCastedIncident = 'bi',
+    // DEPRECATED
+    // AssignedIncident = 'ai',
+    // BroadCastedIncident = 'bi',
+
+    // // to users notified
+    // NewRequest = 'nr',
+    // // already joined users + request admins
+    // UserJoined = 'uj',
+    // // already joined users + request admins
+    // UserLeft = 'ul',
+    // // request admins
+    // UserRequestedToJoin = 'urj',
+    // // requester
+    // JoinRequestDenied = 'jrd',
+    // JoinRequestApproved = 'jra',
+
+    // // the kicked user
+    // UserKicked = 'uk',
+
     UIUpdate = 'uiu'
 }
 
 export type NotificationPayloads = {
-    [NotificationType.AssignedIncident] : {
-        id: string,
-        orgId: string
-    },
-    [NotificationType.BroadCastedIncident]: {
-        id: string,
-        orgId: string
-    },
+    // [NotificationType.AssignedIncident] : {
+    //     id: string,
+    //     orgId: string
+    // },
+    // [NotificationType.BroadCastedIncident]: {
+    //     id: string,
+    //     orgId: string
+    // },
     [NotificationType.UIUpdate]: {
         uiEvent: PatchUIEventPacket
-    }
+    },
+
+    // [NotificationType.NewRequest]: {
+    //     requestId: string
+    // },
+    // [NotificationType.UserJoined]: {
+    //     requestId: string,
+    //     userId: string,
+    // },
+    // [NotificationType.UserLeft]: {
+    //     requestId: string
+    // },
+    // [NotificationType.UserRequestedToJoin]: {
+    //     requestId: string
+    // },
+    // [NotificationType.JoinRequestDenied]: {
+    //     requestId: string
+    // },
+    // [NotificationType.JoinRequestApproved]: {
+    //     requestId: string
+    // },
+    // [NotificationType.UserKicked]: {
+    //     requestId: string
+    // },
 }
 
 export type NotificationPayload<T extends NotificationType> = NotificationPayloads[T];
@@ -592,6 +632,24 @@ export type LinkParams = {
     } 
 } 
 
+/**
+ * TODO: 
+ * 1) make these the ONLY event list/params
+ * 2) remove PatchUIEvent all together and make ui do logic for how it should
+ * handle updating data and/or showing notifications
+ *     a) update store
+ * 3) backend only handles the different update/notification heuristics  
+ *     a) as a "Best try" over the websocket (user only see's if they are in app)
+ *     b) as a notification so it will be picked up in the background
+ *     c) can we try socket and tell if it fails/succeeds from an ack from the front end to fall back to notifications?
+ * 4) UI unifies how it handles events from notifications vs the websocket and decides what warrants
+ * a visual (system) notification vs handling in app ui (even if it comes through a notification!)
+ * 5) delete dead code around old properties types on
+ *     a) the user model
+ *     b) the request model
+ *     c) notification types
+ *     d) old concepts ie. roles.v1/skills/etc
+ */
 export enum PatchEventType {
     // User.System.<_>
     UserForceLogout = '0.0.0',
@@ -609,17 +667,60 @@ export enum PatchEventType {
     UserOffDuty = '0.2.1',
 
     // Request.System.<_>
-    RequestCreated = '1.0.0',
+    RequestCreated = '1.0.0', // to users notified
     RequestEdited =	'1.0.1',
     RequestDeleted = '1.0.2',
 
     // Request.Responders.<_>
-    RequestRespondersAssigned =	'1.1.0',
-    RequestRespondersAccepted =	'1.1.1',
-    RequestRespondersJoined =	'1.1.2',
-    RequestRespondersDeclined =	'1.1.3',
-    RequestRespondersLeft =	'1.1.4',
-    RequestRespondersRemoved =	'1.1.5',
+    // RequestRespondersAssigned =	'1.1.0',
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRequestToJoin = '1.1.0',  
+    /**
+     * SENT TO: requester...NOTE: already joined users get same as joined notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersAccepted =	'1.1.1',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersJoined =	'1.1.2',  
+    /**
+     * SENT TO: requester 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersDeclined =	'1.1.3',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes 
+     * SENT VIA NOTIFICATION: yes
+     */
+     RequestRespondersLeft =	'1.1.4',      
+    /**
+     * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRemoved =	'1.1.5',  
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: no
+     */
+     RequestRespondersNotificationAck = '1.1.6',
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
@@ -692,9 +793,9 @@ export type PatchEventParams = {
     [PatchEventType.RequestDeleted]: {
         requestId: string
     }, 
-    [PatchEventType.RequestRespondersAssigned]: {
-        requestId: string
-    }, 
+    // [PatchEventType.RequestRespondersAssigned]: {
+    //     requestId: string
+    // }, 
     [PatchEventType.RequestRespondersAccepted]: {
         responderId: string,
         requestId: string,
