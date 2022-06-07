@@ -352,6 +352,7 @@ export enum RequestPriority {
 export enum HelpRequestFilter {
     Active = 'ac',
     Finished = 'fi',
+    Closed = 'cl',
     All = 'al'
 };
 
@@ -400,7 +401,8 @@ export enum RequestStatus {
     // TODO: should you be able to skip to ontheway before all responders are ready?
     OnTheWay,
     OnSite,
-    Done
+    Done,
+    Closed
 }
 
 export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
@@ -413,12 +415,14 @@ export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: 
     [RequestStatus.OnTheWay]: 'On the way',
     [RequestStatus.OnSite]: 'On site',
     [RequestStatus.Done]: 'Finished',
+    [RequestStatus.Closed]: 'Closed'
 }
 
 export type ResponderRequestStatuses = 
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
-    | RequestStatus.Done;
+    | RequestStatus.Done
+    | RequestStatus.Closed;
 
 export enum RequestSkillCategory {
     Medical = 'me',
