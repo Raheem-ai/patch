@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
-import { HelpRequestAssignment, NotificationType, PatchPermissions, RequestTypeToLabelMap } from "../../../common/models";
+import { HelpRequestAssignment, NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, dispatchStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -15,7 +15,7 @@ import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
-import { iHaveAllPermissions } from "../utils";
+import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { visualDelim } from "../constants";
 import { event } from "react-native-reanimated";
 import { resolveErrorMessage } from "../errors";
@@ -31,6 +31,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const request = requestStore().currentRequest;
+    const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
     useEffect(() => {
         (async () => {
@@ -472,14 +473,62 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     // }
 
     const statusPicker = () => {
+        if (!currentRequestIsOpen()) {
+            return null;
+        }
+
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#454343'
+                backgroundColor: '#FFFFFF'
             }}>
                 <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
             </View>
         )
+    }
+
+    const closeRequestButton = () => {
+        const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+        const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+        const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
+        if (userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission)) {
+            const currentRequestOpen = currentRequestIsOpen();
+
+            return (
+                <View style={{ 
+                    height: 65, 
+                    backgroundColor: '#FFFFFF',
+                    marginTop: 12
+                }}>
+                    <Button
+                        uppercase={false}
+                        color={currentRequestOpen ? '#fff' : '#76599A'}
+                        style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
+                        onPress={currentRequestOpen ? closeRequest() : resetRequestStatus()}
+                        >
+                            {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                    </Button>
+                </View>
+            )
+        }
+
+        return null;
+    }
+
+    const closeRequest = () => async () => {
+        await requestStore().setRequestStatus(requestStore().currentRequest.id, RequestStatus.Closed);
+        setRequestIsOpen(false);
+    }
+
+    const resetRequestStatus = () => async () => {
+        await requestStore().resetRequestStatus(requestStore().currentRequest.id);
+        setRequestIsOpen(true);
+    }
+
+    // TODO: Added this getter because "requestIsOpen" state variable isn't being computed properly.
+    //       currently still using state variable to trigger re-render.
+    function currentRequestIsOpen() {
+        return requestStore().currentRequest?.status != RequestStatus.Closed;
     }
 
     if (isLoading || !request) {
@@ -496,6 +545,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { chatPreview() }
                 </View>
                 { statusPicker() }
+                { closeRequestButton() }
                 {/* { teamSection() } */}
             </WrappedScrollView> 
         )
@@ -1143,5 +1193,24 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         margin: 0
+    },
+    closeRequestButton: {
+        backgroundColor: '#76599A',
+    },
+    openRequestButton: {
+        borderColor: '#76599A',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        backgroundColor: '#ffffff',
+    },
+    button: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        borderRadius: 24,
+        marginVertical: 24,
+        width: 328,
+        height: 44
     }
 })
