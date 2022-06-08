@@ -1,6 +1,6 @@
 import { Inject, registerExceptionType } from "@tsed/common";
 import { IO, Nsp, Socket, SocketService as Service, SocketSession} from "@tsed/socketio";
-import { NotificationType, PatchEventParams, PatchEventType, PatchUIEvent, PatchUIEventPacket, UserRole } from "common/models";
+import { NotificationType, PatchEventPacket, PatchEventParams, PatchEventType, PatchUIEvent, PatchUIEventPacket, UserRole } from "common/models";
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc, UserModel } from "../models/user";
@@ -170,14 +170,20 @@ export class MySocketService {
         for (const socket of sockets) {
 
             // send refreshToken we're looking to invalidate so UI can dedup races
-            const msg: PatchUIEventPacket<PatchUIEvent.ForceLogout> = {
-                event: PatchUIEvent.ForceLogout,
-                params: {
-                    refreshToken: socket.data?.refreshToken,
-                },
-                sysEvent,
-                sysParams
-            };
+            // const msg: PatchUIEventPacket<PatchUIEvent.ForceLogout> = {
+            //     event: PatchUIEvent.ForceLogout,
+            //     params: {
+            //         refreshToken: socket.data?.refreshToken,
+            //     },
+            //     sysEvent,
+            //     sysParams
+            // };
+
+            // TODO: update notification service to use patch events
+            const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
+                event: sysEvent,
+                params: sysParams
+            }
 
             // piggyback on background notifications in case their socket isn't connected right now
             const notification: NotificationMetadata<NotificationType.UIUpdate> = {
@@ -688,7 +694,10 @@ export class MySocketService {
         try {
             await verifyRefreshToken(socket.data?.refreshToken, this.db);
         } catch (e) {
-            await this.pubSub.sys(PatchEventType.UserForceLogout, { userId })
+            await this.pubSub.sys(PatchEventType.UserForceLogout, { 
+                userId,
+                refreshToken: socket.data?.refreshToken,
+            })
 
             return false;
         }

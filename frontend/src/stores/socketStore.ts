@@ -1,11 +1,12 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { ISocketStore, requestStore, updateStore, userStore } from './interfaces';
+import { ISocketStore, notificationStore, requestStore, updateStore, userStore } from './interfaces';
 import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../api';
 import { api } from '../services/interfaces';
-import { PatchEventType, PatchUIEvent, PatchUIEventPacket, PatchUIEventParams } from '../../../common/models';
+import { PatchEventPacket } from '../../../common/models';
+import { NotificationHandlers } from '../notifications/notificationActions';
 
 @Store(ISocketStore)
 export default class SocketStore implements ISocketStore {
@@ -19,6 +20,8 @@ export default class SocketStore implements ISocketStore {
 
     async init() {
         await userStore().init()
+        await updateStore().init()
+        await notificationStore().init()
 
         if (userStore().signedIn) {
             await this.connectAfterSignIn()
@@ -57,9 +60,19 @@ export default class SocketStore implements ISocketStore {
             console.log('disconnect', args)
         })
 
-        this.socket.on('message', async (args, cb?) => {
+        this.socket.on('message', async (packet: PatchEventPacket, cb?) => {
+            // ack so the backend knows not to send a fallback notification
             cb?.()
-            await updateStore().onUIEvent(args);
+
+            const notificationHandler = NotificationHandlers[packet.event];
+
+            // if there is a notification handler for this event type 
+            // let the notificationStore worry about passing it to the updateStore
+            if (notificationHandler) {
+                await notificationStore().onEvent(packet)
+            } else {
+                await updateStore().onEvent(packet);
+            }
         })
 
         // reconnection tings

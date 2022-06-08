@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchUIEvent, PatchUIEventPacket, PatchUIEventParams } from '../../../common/models';
+import { PatchEventType, PatchUIEventPacket } from '../../../common/models';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
 @Store(IUpdateStore)
@@ -32,13 +32,12 @@ export default class UpdateStore implements IUpdateStore {
         makeAutoObservable(this)
     }
 
-    onUIEvent = async (packet: PatchUIEventPacket) => {
+    // TODO: restructure this to switch on the PatchEventType
+    // and decide if/how to update based on that
+    onEvent = async (packet: PatchUIEventPacket) => {
         console.log('UI EVENT: ', packet.event, packet.params)
         try {
             switch (packet.event) {
-                case PatchUIEvent.ForceLogout:
-                    await userStore().signOut()
-                    break;
             
                 case PatchUIEvent.UpdateResource:
                     const params = packet.params as PatchUIEventParams[PatchUIEvent.UpdateResource]
@@ -73,7 +72,7 @@ export default class UpdateStore implements IUpdateStore {
         paramsToMemoCacheKey: () => this.UPDATE_REQ,
         initialState: this.reqState,
         beforeCall: (state, params, packet) => {
-            if (packet.sysEvent == PatchEventType.RequestDeleted) {
+            if (packet.event == PatchEventType.RequestDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes
@@ -103,7 +102,7 @@ export default class UpdateStore implements IUpdateStore {
         paramsToMemoCacheKey: () => this.UPDATE_USER,
         initialState: this.userState,
         beforeCall: (state, params, packet) => {
-            if (packet.sysEvent == PatchEventType.UserDeleted) {
+            if (packet.event == PatchEventType.UserDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes

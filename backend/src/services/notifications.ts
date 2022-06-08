@@ -1,4 +1,4 @@
-import { NotificationType, NotificationPayload } from "common/models";
+import { NotificationType, PatchEventPacket } from "common/models";
 import { expo } from "../expo";
 import { ExpoPushMessage, ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from 'expo-server-sdk';
 import { NotificationModel } from "../models/notification";

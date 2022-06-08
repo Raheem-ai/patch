@@ -1,14 +1,16 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { HelpRequest, LinkExperience, LinkParams, NotificationPayload, NotificationType } from "../../common/models";
+import { HelpRequest, LinkExperience, LinkParams, PatchEventPacket, NotificationType } from "../../common/models";
 
 export type NotificationRouteParams<T extends NotificationType, P = {}> = {
     notification?: NotificationTypes<T>
 } & P;
 
 type NotificationTypes<T extends NotificationType> = T extends any 
-    ? { type: T, payload: NotificationPayload<T> } 
+    ? { type: T, payload: PatchEventPacket } 
     : never;
 
+
+// TODO: update these types as well
 export type RootStackParamList = {
     Landing: undefined;
     JoinOrganization: undefined;

@@ -261,62 +261,62 @@ export type RequestStatusEvent = {
     setAt: string
 }
 
-export enum RequestTeamEventTypes {
-    NotificationSent = 'nsen',
-    NotificationSeen = 'nsee',
-    PositionJoined = 'pojo',
-    PositionRequested = 'porq',
-    PositionRequestSeen = 'prs',
-    PositionLeft = 'pole',
-    PositionRevoked = 'porv',
-    PositionRequestAccepted = 'pra',
-    PositionRequestDenied = 'prd'
-}
+export type RequestTeamEventTypes =
+    PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestRespondersNotificationAck
+    | PatchEventType.RequestRespondersJoined
+    | PatchEventType.RequestRespondersRequestToJoin
+    | PatchEventType.RequestRespondersRequestToJoinAck
+    | PatchEventType.RequestRespondersLeft
+    | PatchEventType.RequestRespondersRemoved
+    | PatchEventType.RequestRespondersAccepted
+    | PatchEventType.RequestRespondersDeclined;
+
 
 export type RequestTeamEventParams = {
-    [RequestTeamEventTypes.NotificationSent]: {
+    [PatchEventType.RequestRespondersNotified]: {
         by: string
         to: string[]
         sentAt: string
     },
-    [RequestTeamEventTypes.NotificationSeen]: {
+    [PatchEventType.RequestRespondersNotificationAck]: {
         by: string,
         seenAt: string
     },
-    [RequestTeamEventTypes.PositionRequestSeen]: {
+    [PatchEventType.RequestRespondersRequestToJoinAck]: {
         by: string,
         seenAt: string,
         position: string,
         requester: string
     },
-    [RequestTeamEventTypes.PositionJoined]: {
+    [PatchEventType.RequestRespondersJoined]: {
         user: string
         position: string
         joinedAt: string
     },
-    [RequestTeamEventTypes.PositionRequested]: {
+    [PatchEventType.RequestRespondersRequestToJoin]: {
         requester: string
         position: string
         requestedAt: string
     },
-    [RequestTeamEventTypes.PositionRequestAccepted]: {
+    [PatchEventType.RequestRespondersAccepted]: {
         requester: string
         position: string
         by: string
         acceptedAt: string
     },
-    [RequestTeamEventTypes.PositionRequestDenied]: {
+    [PatchEventType.RequestRespondersDeclined]: {
         requester: string
         position: string
         by: string
         deniedAt: string
     },
-    [RequestTeamEventTypes.PositionLeft]: {
+    [PatchEventType.RequestRespondersLeft]: {
         user: string
         position: string
         leftAt: string
     },
-    [RequestTeamEventTypes.PositionRevoked]: {
+    [PatchEventType.RequestRespondersRemoved]: {
         user: string
         by: string
         revokedAt: string, 
@@ -568,7 +568,7 @@ export enum NotificationType {
     UIUpdate = 'uiu'
 }
 
-export type NotificationPayloads = {
+export type PatchEventPackets = {
     // [NotificationType.AssignedIncident] : {
     //     id: string,
     //     orgId: string
@@ -605,7 +605,8 @@ export type NotificationPayloads = {
     // },
 }
 
-export type NotificationPayload<T extends NotificationType> = NotificationPayloads[T];
+// export type PatchEventPacket<T extends PatchEventType = PatchEventType> = PatchEventPacket;
+// export type PatchEventPacket<T extends NotificationType> = PatchEventPackets[T];
 
 export type AppSecrets = {
     googleMapsApiKey: string
@@ -634,7 +635,7 @@ export type LinkParams = {
 
 /**
  * TODO: 
- * 1) make these the ONLY event list/params
+ * 1) make these the ONLY event list
  * 2) remove PatchUIEvent all together and make ui do logic for how it should
  * handle updating data and/or showing notifications
  *     a) update store
@@ -671,56 +672,81 @@ export enum PatchEventType {
     RequestEdited =	'1.0.1',
     RequestDeleted = '1.0.2',
 
+
+    // TODO: what do we do about team events on request?!?!
+    // 1) roll TeamEventType into these and have TeamEventType just be 
+    // a subset of this type
+    // 2) have different bindings from PatchEventType variants to the params it needs for
+    // - PatchEvent (used in background and sent to user)
+    // - RequestTeamEvent (used on request model)
+
     // Request.Responders.<_>
     // RequestRespondersAssigned =	'1.1.0',
-    /**
-     * SENT TO: request admins 
-     * SENT VIA WEBSOCKET: yes
-     * SENT VIA NOTIFICATION: yes
-     * SHOULD SHOW NOTIFICATION: yes
-     */
-     RequestRespondersRequestToJoin = '1.1.0',  
-    /**
-     * SENT TO: requester...NOTE: already joined users get same as joined notification 
-     * SENT VIA WEBSOCKET: yes
-     * SENT VIA NOTIFICATION: yes
-     * SHOULD SHOW NOTIFICATION: yes
-     */
-     RequestRespondersAccepted =	'1.1.1',  
-    /**
-     * SENT TO: already joined users + request admins 
-     * SENT VIA WEBSOCKET: yes
-     * SENT VIA NOTIFICATION: yes
-     * SHOULD SHOW NOTIFICATION: yes
-     */
-     RequestRespondersJoined =	'1.1.2',  
-    /**
-     * SENT TO: requester 
-     * SENT VIA WEBSOCKET: yes
-     * SENT VIA NOTIFICATION: yes
-     * SHOULD SHOW NOTIFICATION: yes
-     */
-     RequestRespondersDeclined =	'1.1.3',  
-    /**
-     * SENT TO: already joined users + request admins 
-     * SENT VIA WEBSOCKET: yes 
-     * SENT VIA NOTIFICATION: yes
-     */
-     RequestRespondersLeft =	'1.1.4',      
-    /**
-     * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
-     * SENT VIA WEBSOCKET: yes
-     * SENT VIA NOTIFICATION: yes
-     * SHOULD SHOW NOTIFICATION: yes
-     */
-     RequestRespondersRemoved =	'1.1.5',  
+
     /**
      * SENT TO: request admins 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: no
      */
-     RequestRespondersNotificationAck = '1.1.6',
+    RequestRespondersNotified = '1.1.0',
+
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: no
+     */
+     RequestRespondersNotificationAck = '1.1.1',
+
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRequestToJoin = '1.1.2',  
+     /**
+     * SENT TO: nobody currently
+     * SENT VIA WEBSOCKET: n/a
+     * SENT VIA NOTIFICATION: n/a
+     * SHOULD SHOW NOTIFICATION: n/a
+     */
+      RequestRespondersRequestToJoinAck = '1.1.3',  
+    /**
+     * SENT TO: requester...NOTE: already joined users get same as joined notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersAccepted =	'1.1.4',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersJoined =	'1.1.5',  
+    /**
+     * SENT TO: requester 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersDeclined =	'1.1.6',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes 
+     * SENT VIA NOTIFICATION: yes
+     */
+     RequestRespondersLeft =	'1.1.7',      
+    /**
+     * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRemoved =	'1.1.8',  
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
@@ -757,7 +783,8 @@ export enum PatchEventType {
 
 export type PatchEventParams = {
     [PatchEventType.UserForceLogout]: {
-        userId: string
+        userId: string,
+        refreshToken: string
     },
     [PatchEventType.UserCreated]: {}
     [PatchEventType.UserEdited]: {
@@ -793,9 +820,17 @@ export type PatchEventParams = {
     [PatchEventType.RequestDeleted]: {
         requestId: string
     }, 
-    // [PatchEventType.RequestRespondersAssigned]: {
-    //     requestId: string
-    // }, 
+    [PatchEventType.RequestRespondersNotified]: {
+        requestId: string
+    },
+    [PatchEventType.RequestRespondersNotificationAck]: {
+        requestId: string
+    },
+    [PatchEventType.RequestRespondersRequestToJoin]: {
+        userId: string,
+        requestId: string,
+        positionId: string
+    },
     [PatchEventType.RequestRespondersAccepted]: {
         responderId: string,
         requestId: string,
@@ -904,43 +939,46 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationTagsUpdated]: {
         orgId: string
-    },
+    }
 }
 
-export type PatchEventPacket<T extends PatchEventType = any> = {
+export type PatchEventPacket<T extends PatchEventType = PatchEventType> = {
     event: T,
     params: PatchEventParams[T]
 }
 
-export enum PatchUIEvent {
-    ForceLogout = 'fl',
-    UpdateResource = 'ur'
-}
+// export enum PatchUIEvent {
+//     ForceLogout = 'fl',
+//     UpdateResource = 'ur'
+// }
 
-export type PatchUIEventParams = {
-    [PatchUIEvent.ForceLogout]: {
-        refreshToken: string
-    },
-    [PatchUIEvent.UpdateResource]: {
-        orgId?: string
-        requestId?: string
-        userId?: string
-        roleId?: string
-        attributeCategoryId?: string
-        attributeId?: string
-        tagCategoryId?: string
-        tagId?: string
-        userList?: boolean
-        requestList?: boolean
-    },
-}
+// export type PatchUIEventParams = {
+//     [PatchUIEvent.ForceLogout]: {
+//         refreshToken: string
+//     },
+//     [PatchUIEvent.UpdateResource]: {
+//         orgId?: string
+//         requestId?: string
+//         userId?: string
+//         roleId?: string
+//         attributeCategoryId?: string
+//         attributeId?: string
+//         tagCategoryId?: string
+//         tagId?: string
+//         userList?: boolean
+//         requestList?: boolean
+//     },
+// }
 
-export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent extends PatchEventType = any> = {
-    event: UIEvent
-    params: PatchUIEventParams[UIEvent]
-    sysEvent: SysEvent
-    sysParams: PatchEventParams[SysEvent]
-}
+// export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent extends PatchEventType = any> = {
+//     event: UIEvent
+//     params: PatchUIEventParams[UIEvent]
+//     sysEvent: SysEvent
+//     sysParams: PatchEventParams[SysEvent]
+// }
+
+export type PatchUIEventPacket = PatchEventPacket;
+
 
 export type DateTimeRange = {
     startDate: Date

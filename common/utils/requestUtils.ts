@@ -1,4 +1,4 @@
-import { CategorizedItem, DefaultRoleIds, HelpRequest, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
+import { CategorizedItem, DefaultRoleIds, HelpRequest, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 
 export function resolveRequestStatus(request: HelpRequest): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
@@ -51,14 +51,14 @@ export function userCurrentlyKickedFromRequestPosition(teamEvents: RequestTeamEv
 
     teamEvents.forEach(event => {
         // TODO: type gaurds to make this more ergo
-        if (event.type == RequestTeamEventTypes.PositionRevoked) {
-            const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>;
+        if (event.type == PatchEventType.RequestRespondersRemoved) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRemoved>;
             
             if (e.user == userId && e.position == positionId) {
                 kicked = true
             }
-        } else if (kicked && event.type == RequestTeamEventTypes.PositionRequestAccepted) {
-            const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>;
+        } else if (kicked && event.type == PatchEventType.RequestRespondersAccepted) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersAccepted>;
             
             if (e.position == positionId) {
                 kicked = false

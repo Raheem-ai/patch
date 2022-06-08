@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinOrg, MinRole, MinTag, MinTagCategory, MinUser, NotificationType, Organization, OrganizationMetadata, PatchEventType, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -1333,11 +1333,11 @@ export class DBManager {
         const request = await this.resolveRequest(requestId);
 
         request.teamEvents.push({
-            type: RequestTeamEventTypes.NotificationSent,
+            type: PatchEventType.RequestRespondersNotified,
             sentAt: new Date().toISOString(),
             by: notifierId,
             to: to
-        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersNotified>)
 
         return await request.save();
     }
@@ -1347,9 +1347,9 @@ export class DBManager {
 
         request.teamEvents.push({
             seenAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.NotificationSeen,
+            type: PatchEventType.RequestRespondersNotificationAck,
             by: userId,
-        } as RequestTeamEvent<RequestTeamEventTypes.NotificationSeen>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersNotificationAck>)
 
         return await request.save();
     }
@@ -1367,11 +1367,11 @@ export class DBManager {
 
             request.teamEvents.push({
                 seenAt: new Date().toISOString(),
-                type: RequestTeamEventTypes.PositionRequestSeen,
+                type: PatchEventType.RequestRespondersRequestToJoinAck,
                 requester: joinReq.userId,
                 by: ackerId,
                 position: joinReq.positionId
-            } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>)
+            } as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoinAck>)
         }
 
         return await request.save();
@@ -1400,11 +1400,11 @@ export class DBManager {
 
         request.teamEvents.push({
             acceptedAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionRequestAccepted,
+            type: PatchEventType.RequestRespondersAccepted,
             requester: userId,
             by: approverId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersAccepted>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1433,10 +1433,10 @@ export class DBManager {
 
         request.teamEvents.push({
             leftAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionLeft,
+            type: PatchEventType.RequestRespondersLeft,
             user: userId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionLeft>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersLeft>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1462,10 +1462,10 @@ export class DBManager {
 
         request.teamEvents.push({
             requestedAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionRequested,
+            type: PatchEventType.RequestRespondersRequestToJoin,
             requester: userId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoin>)
 
         return await request.save()
     }
@@ -1493,10 +1493,10 @@ export class DBManager {
 
         request.teamEvents.push({
             joinedAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionJoined,
+            type: PatchEventType.RequestRespondersJoined,
             user: userId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionJoined>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersJoined>)
 
         request.status = resolveRequestStatus(request)
 
@@ -1515,11 +1515,11 @@ export class DBManager {
 
         request.teamEvents.push({
             deniedAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionRequestDenied,
+            type: PatchEventType.RequestRespondersDeclined,
             requester: userId,
             by: declinerId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersDeclined>)
 
         return await request.save()
     }
@@ -1529,11 +1529,11 @@ export class DBManager {
         
         request.teamEvents.push({
             revokedAt: new Date().toISOString(),
-            type: RequestTeamEventTypes.PositionRevoked,
+            type: PatchEventType.RequestRespondersRemoved,
             by: revokerId,
             user: userId,
             position: positionId
-        } as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>)
+        } as RequestTeamEvent<PatchEventType.RequestRespondersRemoved>)
 
         request.status = resolveRequestStatus(request)
 
