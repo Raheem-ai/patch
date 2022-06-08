@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest } from "../../../../../common/models";
+import { HelpRequest, RequestStatus } from "../../../../../common/models";
 import { HeaderHeight, InteractiveHeaderHeight } from "../../header/header";
 import UserIcon from "../../userIcon";
 import { useKeyboard } from "../../../hooks/useKeyboard";
@@ -68,34 +68,8 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
         )
     }
 
-    sendMessage = async () => {
-        this.setState({ loading: true })
-        
-        try {
-            await requestStore().sendMessage(requestStore().currentRequest, this.state.message)
-            // this.loading = false
-            // this.message = ''
-            this.setState({
-                loading: false,
-                message: ''
-            })
-
-            setTimeout(() => this.scrollRef.current.scrollToEnd({ animated: true }), 0)
-        } catch (e) {
-            console.error(e)
-            // this.loading = false
-            this.setState({ loading: false })
-
-        }
-    }
-
-    updateMessage = (m: string) => {
-        this.setState({ message: m })
-    }
-
-    render() {
+    enabledChat = () => {
         const targetHeight = dimensions.height - styles.inputContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - nativeEventStore().keyboardHeight;
-
         return (
             <KeyboardAvoidingView
                 behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
@@ -125,6 +99,59 @@ class HelpRequestChat extends React.Component<Props, { loading: boolean, message
                     </View>
                 </View>
             </KeyboardAvoidingView>
+        )
+    }
+
+    disabledChat = () => {
+        Keyboard.dismiss();
+
+        const targetHeight = dimensions.height - styles.inputContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - nativeEventStore().keyboardHeight;
+        return (
+            <View style={styles.chatContainer}>
+                <View style={{ height: targetHeight }}>
+                    <View style={styles.messagesContainer}>
+                        { this.messages() }
+                    </View>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                    </View>
+                </View>
+            </View>
+        )
+    }
+
+    sendMessage = async () => {
+        this.setState({ loading: true })
+        
+        try {
+            await requestStore().sendMessage(requestStore().currentRequest, this.state.message)
+            // this.loading = false
+            // this.message = ''
+            this.setState({
+                loading: false,
+                message: ''
+            })
+
+            setTimeout(() => this.scrollRef.current.scrollToEnd({ animated: true }), 0)
+        } catch (e) {
+            console.error(e)
+            // this.loading = false
+            this.setState({ loading: false })
+
+        }
+    }
+
+    updateMessage = (m: string) => {
+        this.setState({ message: m })
+    }
+
+    render() {
+        return (
+            <View>
+                { requestStore().currentRequest.status == RequestStatus.Closed
+                  ? this.disabledChat()
+                  : this.enabledChat() }
+            </View>
         )
     }
 }
@@ -162,7 +189,10 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         padding: 12,
-        height: 78 // TODO: not sure why this is 78...should probably explicity specify input text/container height for this
+        justifyContent: 'center',
+        height: 80, // TODO: not sure why this is 80...should probably explicity specify input text/container height for this
+        borderTopWidth: 1,
+        borderColor: '#F3F1F3'
     }, 
     inputAction: {
         alignSelf: 'flex-end',
@@ -195,5 +225,11 @@ const styles = StyleSheet.create({
     },
     messageText: {
         color: '#000'
+    },
+    disabledChatMessage: {
+        backgroundColor: '#fff',
+        color: '#999799',
+        fontWeight: '400',
+        fontSize: 17
     }
 })

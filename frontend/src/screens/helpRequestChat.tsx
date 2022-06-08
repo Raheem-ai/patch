@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
+import { RequestStatus } from "../../../common/models";
 import { HeaderHeight } from "../components/header/header";
 import UserIcon from "../components/userIcon";
 import { useKeyboard } from "../hooks/useKeyboard";
@@ -75,36 +76,64 @@ const HelpRequestChat = observer(({ navigation, route }: Props) => {
         }
     }
 
-    return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-            style={styles.chatContainer}>
-            <View style={{ height: targetHeight }}>
-                <View style={styles.messagesContainer}>
-                    { messages() }
-                </View>
-                <View style={styles.inputContainer}>
-                    <IconButton 
-                        disabled={loading}
-                        icon='paperclip'
-                        style={styles.inputAction}/>
-                    <View style={styles.messageInputContainer} >
-                        <TextInput 
-                            multiline
-                            autoFocus
-                            value={message} 
-                            style={styles.messageInput} 
-                            
-                            onChangeText={(s: string) => setMessage(s)}/>
+    const enabledChat = () => {
+        return (
+            <KeyboardAvoidingView
+                behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+                style={styles.chatContainer}>
+                <View style={{ height: targetHeight }}>
+                    <View style={styles.messagesContainer}>
+                        { messages() }
                     </View>
-                    <IconButton 
-                        disabled={loading}
-                        onPress={sendMessage}
-                        icon='send'
-                        style={styles.inputAction}/>
+                    <View style={styles.inputContainer}>
+                        <IconButton 
+                            disabled={loading}
+                            icon='paperclip'
+                            style={styles.inputAction}/>
+                        <View style={styles.messageInputContainer} >
+                            <TextInput 
+                                multiline
+                                autoFocus
+                                value={message} 
+                                style={styles.messageInput} 
+                                
+                                onChangeText={(s: string) => setMessage(s)}/>
+                        </View>
+                        <IconButton 
+                            disabled={loading}
+                            onPress={sendMessage}
+                            icon='send'
+                            style={styles.inputAction}/>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
+        )
+    }
+
+    const disabledChat = () => {
+        Keyboard.dismiss();
+
+        return (
+            <View style={styles.chatContainer}>
+                <View style={{ height: targetHeight }}>
+                    <View style={styles.messagesContainer}>
+                        { messages() }
+                    </View>
+                    <View style={[styles.inputContainer, styles.disabledChatContainer]}>
+                        <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                    </View>
                 </View>
             </View>
-        </KeyboardAvoidingView>
+        )
+    }
+
+    return (
+        <View>
+            { request.status == RequestStatus.Closed
+              ? disabledChat()
+              : enabledChat()
+            }
+        </View>
     )
 })
 
@@ -139,7 +168,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flexDirection: 'row',
-        padding: 12
+        padding: 12,
     }, 
     inputAction: {
         alignSelf: 'flex-end',
@@ -172,5 +201,20 @@ const styles = StyleSheet.create({
     },
     messageText: {
         color: '#000'
+    },
+    disabledChatContainer: {
+        justifyContent: 'center',
+        height: 80, // TODO: not sure why this is 80...should probably explicity specify input text/container height for this
+        backgroundColor: '#fff',
+        borderColor: '#666',
+        borderStyle: 'solid',
+        borderTopWidth: 1,
+        width: '100%'
+    },
+    disabledChatMessage: {
+        backgroundColor: '#fff',
+        color: '#999799',
+        fontWeight: '400',
+        fontSize: 17
     }
 })
