@@ -487,7 +487,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const closeRequestButton = () => {
+    const toggleRequestButton = () => {
         const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
         const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
         const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
@@ -545,7 +545,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { chatPreview() }
                 </View>
                 { statusPicker() }
-                { closeRequestButton() }
+                { toggleRequestButton() }
                 {/* { teamSection() } */}
             </WrappedScrollView> 
         )
