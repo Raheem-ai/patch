@@ -1,10 +1,11 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
-import { IconButton, Text } from "react-native-paper";
-import { RequestStatus } from "../../../../common/models";
+import { Button, IconButton, Text } from "react-native-paper";
+import { PatchPermissions, RequestStatus } from "../../../../common/models";
 import { useKeyboard } from "../../hooks/useKeyboard";
 import { BottomDrawerHandleHeight, requestStore, userStore } from "../../stores/interfaces";
+import { iHaveAnyPermissions } from "../../utils";
 import { HeaderHeight } from "../header/header";
 import UserIcon from "../userIcon";
 
@@ -18,10 +19,13 @@ const ChatChannel = observer(({ bottomDrawerView }: Props) => {
 
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [requestIsOpen, setRequestIsOpen] = useState(requestStore().currentRequest?.status != RequestStatus.Closed);
+
     const scrollRef = useRef<ScrollView>();
 
     const dimensions = Dimensions.get('screen');
     const keyboardHeight = useKeyboard()
+
     // TODO: The calculation for the bottom drawer view chat channel has a couple of "magic" numbers.
     // Figure out more descriptive/meaningful variable names.
     const targetHeight = bottomDrawerView
@@ -115,8 +119,18 @@ const ChatChannel = observer(({ bottomDrawerView }: Props) => {
         )
     }
 
+    const resetRequestStatus = () => async () => {
+        await requestStore().resetRequestStatus(requestStore().currentRequest.id);
+        setRequestIsOpen(true);
+    }
+
     const disabledChat = () => {
         Keyboard.dismiss();
+
+        const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+        const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+        const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
+        const userCanReopenRequest = userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission);
 
         return (
             <View style={styles.chatContainer}>
@@ -124,9 +138,19 @@ const ChatChannel = observer(({ bottomDrawerView }: Props) => {
                     <View style={styles.messagesContainer}>
                         { messages() }
                     </View>
-                    <View style={[styles.inputContainer, styles.disabledChatContainer]}>
-                        <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
-                    </View>
+                        <View style={[styles.inputContainer, styles.disabledChatContainer]}>
+                            {userCanReopenRequest ?
+                                <Button
+                                    uppercase={false}
+                                    color={'#76599A'}
+                                    style={styles.openRequestButton}
+                                    onPress={resetRequestStatus()}>
+                                        {'Re-open this request'}
+                                </Button>
+                                :
+                                <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                            }
+                        </View>
                 </View>
             </View>
         )
@@ -221,5 +245,19 @@ const styles = StyleSheet.create({
         color: '#999799',
         fontWeight: '400',
         fontSize: 17
+    },
+    openRequestButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff',
+        borderColor: '#76599A',
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderRadius: 24,
+        marginVertical: 24,
+        width: 328,
+        height: 44,
     }
 })
