@@ -545,69 +545,6 @@ export type Location = {
     timestamp: number;
 };
 
-export enum NotificationType {
-    // DEPRECATED
-    // AssignedIncident = 'ai',
-    // BroadCastedIncident = 'bi',
-
-    // // to users notified
-    // NewRequest = 'nr',
-    // // already joined users + request admins
-    // UserJoined = 'uj',
-    // // already joined users + request admins
-    // UserLeft = 'ul',
-    // // request admins
-    // UserRequestedToJoin = 'urj',
-    // // requester
-    // JoinRequestDenied = 'jrd',
-    // JoinRequestApproved = 'jra',
-
-    // // the kicked user
-    // UserKicked = 'uk',
-
-    UIUpdate = 'uiu'
-}
-
-export type PatchEventPackets = {
-    // [NotificationType.AssignedIncident] : {
-    //     id: string,
-    //     orgId: string
-    // },
-    // [NotificationType.BroadCastedIncident]: {
-    //     id: string,
-    //     orgId: string
-    // },
-    [NotificationType.UIUpdate]: {
-        uiEvent: PatchUIEventPacket
-    },
-
-    // [NotificationType.NewRequest]: {
-    //     requestId: string
-    // },
-    // [NotificationType.UserJoined]: {
-    //     requestId: string,
-    //     userId: string,
-    // },
-    // [NotificationType.UserLeft]: {
-    //     requestId: string
-    // },
-    // [NotificationType.UserRequestedToJoin]: {
-    //     requestId: string
-    // },
-    // [NotificationType.JoinRequestDenied]: {
-    //     requestId: string
-    // },
-    // [NotificationType.JoinRequestApproved]: {
-    //     requestId: string
-    // },
-    // [NotificationType.UserKicked]: {
-    //     requestId: string
-    // },
-}
-
-// export type PatchEventPacket<T extends PatchEventType = PatchEventType> = PatchEventPacket;
-// export type PatchEventPacket<T extends NotificationType> = PatchEventPackets[T];
-
 export type AppSecrets = {
     googleMapsApiKey: string
 }

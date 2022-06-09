@@ -24,20 +24,20 @@ export default function UserHomePage({ navigation, route }: Props) {
 
     //         const notifSubs = [
     //             // handle getting notifications of these type in the ui (ie fetch latest data for list)
-    //             notificationStore.onNotification(NotificationType.AssignedIncident, () => {
+    //             notificationStore.onNotification(PatchEventType.AssignedIncident, () => {
 
     //             }),
-    //             notificationStore.onNotification(NotificationType.BroadCastedIncident, () => {
+    //             notificationStore.onNotification(PatchEventType.BroadCastedIncident, () => {
 
     //             })
     //         ];
 
     //         const notifResSubs = [
     //             // handle users response to these notification type (ie change ui to indicate we're currently en route to an incident)
-    //             notificationStore.onNotificationResponse(NotificationType.AssignedIncident, () => {
+    //             notificationStore.onNotificationResponse(PatchEventType.AssignedIncident, () => {
 
     //             }),
-    //             notificationStore.onNotificationResponse(NotificationType.BroadCastedIncident, () => {
+    //             notificationStore.onNotificationResponse(PatchEventType.BroadCastedIncident, () => {
 
     //             })
     //         ];

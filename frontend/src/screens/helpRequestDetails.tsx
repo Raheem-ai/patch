@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, routerNames, ScreenProps } from "../types";
-import { HelpRequestAssignment, NotificationType, PatchPermissions, RequestTypeToLabelMap } from "../../../common/models";
+import { PatchEventType, PatchPermissions, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, dispatchStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -38,10 +38,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
             if (params && params.notification) {
                 switch (params.notification.type) {
-                    case NotificationType.AssignedIncident:
+                    case PatchEventType.AssignedIncident:
                         // ui specific to assignment
                         break;
-                    case NotificationType.BroadCastedIncident:
+                    case PatchEventType.BroadCastedIncident:
                         // ui specific to broadcasting
                         break;
                 }

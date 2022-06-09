@@ -5,7 +5,7 @@ import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
 import { INotificationStore, notificationStore, updateStore, userStore } from "./interfaces";
-import { NotificationType, PatchEventPacket, PatchEventType } from "../../../common/models";
+import { PatchEventPacket, PatchEventType } from "../../../common/models";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
@@ -20,7 +20,7 @@ export default class NotificationStore implements INotificationStore {
     
     // TODO: set badge number on app 
 
-    private notificationResponseCallbacks = new Map<NotificationType, { [id: string]: ((data: PatchEventPacket<any>,  res: NotificationResponse) => void) }>();
+    private notificationResponseCallbacks = new Map<PatchEventType, { [id: string]: ((data: PatchEventPacket<any>,  res: NotificationResponse) => void) }>();
 
     // in case we want to stop listening at some point
     private notificationsSub = null;
@@ -37,12 +37,12 @@ export default class NotificationStore implements INotificationStore {
     clear() {}
 
     static async registerInteractiveNotifications() {
-        for (const notificationType in NotificationHandlers) {
-            const handler: NotificationHandlerDefinition = NotificationHandlers[notificationType];
+        for (const PatchEventType in NotificationHandlers) {
+            const handler: NotificationHandlerDefinition = NotificationHandlers[PatchEventType];
             const actions = handler.actions?.();
 
             if (actions && actions.length) {
-                await Notifications.setNotificationCategoryAsync(notificationType, actions)       
+                await Notifications.setNotificationCategoryAsync(PatchEventType, actions)       
             } 
         }
     }
@@ -167,9 +167,9 @@ export default class NotificationStore implements INotificationStore {
         }
     }
 
-    handleNotificationResponse = async (res: NotificationResponse) => {
+    handleNotificationResponse = async <T extends PatchEventType>(res: NotificationResponse) => {
         const payload = res.notification.request.content.data as PatchEventPacket;
-        const type = payload.event as PatchEventType;
+        const type = payload.event as T;
         const actionId = res.actionIdentifier;
 
         const notificationHandler = NotificationHandlers[type];
@@ -178,7 +178,7 @@ export default class NotificationStore implements INotificationStore {
             if (notificationHandler.defaultRouteTo) {
                 navigateTo(notificationHandler.defaultRouteTo, {
                     notification: {
-                        type: type,
+                        type: type as any,
                         payload: payload
                     }
                 })
@@ -197,7 +197,7 @@ export default class NotificationStore implements INotificationStore {
     
             navigateTo(route, {
                 notification: {
-                    type: type,
+                    type: type as any,
                     payload: payload
                 }
             })

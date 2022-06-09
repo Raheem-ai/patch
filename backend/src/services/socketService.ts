@@ -1,6 +1,6 @@
 import { Inject, registerExceptionType } from "@tsed/common";
 import { IO, Nsp, Socket, SocketService as Service, SocketSession} from "@tsed/socketio";
-import { NotificationType, PatchEventPacket, PatchEventParams, PatchEventType, PatchUIEvent, PatchUIEventPacket, UserRole } from "common/models";
+import { PatchEventPacket, PatchEventParams, PatchEventType, PatchUIEventPacket, UserRole } from "common/models";
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc, UserModel } from "../models/user";
@@ -186,8 +186,8 @@ export class MySocketService {
             }
 
             // piggyback on background notifications in case their socket isn't connected right now
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: user.push_token,
                 body: ``,
                 payload: { uiEvent: msg }
@@ -226,8 +226,8 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: (user as UserModel).push_token,
                 body: ``,
                 payload: { uiEvent: msg }
@@ -276,8 +276,8 @@ export class MySocketService {
             // Only send notifications to users affected by the Role change.
             // TODO: Maybe also send to other Role Admins?
             if (user.organizations[orgId].roleIds.includes(roleId)) {
-                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                    type: NotificationType.UIUpdate,
+                const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                    type: PatchEventType.UIUpdate,
                     to: (user as UserModel).push_token,
                     body: ``,
                     payload: { uiEvent: msg }
@@ -323,8 +323,8 @@ export class MySocketService {
 
             // Only send notifications to users affected by the Attribute Category update.
             if (categoryId in user.organizations[orgId].attributes) {
-                const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                    type: NotificationType.UIUpdate,
+                const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                    type: PatchEventType.UIUpdate,
                     to: (user as UserModel).push_token,
                     body: ``,
                     payload: { uiEvent: msg }
@@ -372,8 +372,8 @@ export class MySocketService {
             // Only send notifications to users affected by the Attribute update.
             if (categoryId in user.organizations[orgId].attributes) {
                 if (attributeId in user.organizations[orgId].attributes[categoryId]) {
-                    const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                        type: NotificationType.UIUpdate,
+                    const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                        type: PatchEventType.UIUpdate,
                         to: (user as UserModel).push_token,
                         body: ``,
                         payload: { uiEvent: msg }
@@ -418,8 +418,8 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: (user as UserModel).push_token,
                 body: ``,
                 payload: { uiEvent: msg }
@@ -463,8 +463,8 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: (user as UserModel).push_token,
                 body: ``,
                 payload: { uiEvent: msg }
@@ -585,8 +585,8 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: (user as UserModel).push_token,
                 body: ``,
                 payload: { uiEvent: msg }
@@ -645,8 +645,8 @@ export class MySocketService {
                 sysParams
             };
 
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
+            const notification: NotificationMetadata<PatchEventType.UIUpdate> = {
+                type: PatchEventType.UIUpdate,
                 to: (user as UserModel).push_token,
                 body: ``,
                 payload: { uiEvent: msg }

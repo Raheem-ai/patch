@@ -1,4 +1,4 @@
-import { NotificationType, PatchEventPacket, PatchEventType } from "../../../common/models";
+import { PatchEventPacket, PatchEventType } from "../../../common/models";
 import { Notification, NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
 import { requestStore, updateStore, userStore } from "../stores/interfaces";
