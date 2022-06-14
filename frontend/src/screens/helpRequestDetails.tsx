@@ -1,24 +1,23 @@
-import React, { useEffect, useRef } from "react";
-import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, routerNames, ScreenProps } from "../types";
-import { HelpRequestAssignment, NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
+import { Colors, ScreenProps } from "../types";
+import { NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { alertStore, bottomDrawerStore, BottomDrawerView, dispatchStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
-import ResponderRow from "../components/responderRow";
-import { dateToTimeString, timestampToTimeString } from "../../../common/utils";
+import { dateToTimeString } from "../../../common/utils";
 
-import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
+import { wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
-import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { visualDelim } from "../constants";
-import { event } from "react-native-reanimated";
 import { resolveErrorMessage } from "../errors";
+import ChatChannel from "../components/chats/chatChannel";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -124,66 +123,27 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const chatPreview = () => {
-
-        const lastChatMessage = requestStore().currentRequest.chat?.messages[requestStore().currentRequest.chat.messages.length - 1];
-
-        const chatMessageText = !!lastChatMessage
-            ? lastChatMessage.message
-            : '';
-
-        const lastMessageAuthor = !!lastChatMessage
-            ? userStore().users.get(lastChatMessage.userId)?.name
-            : ''
-
-        const lastMessageTime = !!lastChatMessage
-            ? timestampToTimeString(lastChatMessage.timestamp)
-            : ''
-
-        const hasUnreadMessages = (requestStore().currentRequest.chat && requestStore().currentRequest.chat.messages.length) 
-            && (!requestStore().currentRequest.chat.userReceipts[userStore().user.id] 
-                || (requestStore().currentRequest.chat.userReceipts[userStore().user.id] < requestStore().currentRequest.chat.lastMessageId));
-
-        const openChat = () => {
-            bottomDrawerStore().show(BottomDrawerView.requestChat, true);
-        }
-
+    const mapPreview = () => {
+        const initialRegion =  {
+            latitude: requestStore().currentRequest.location.latitude,
+            longitude: requestStore().currentRequest.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+        };
+        
         return (
-            <Pressable style={styles.chatContainer} onPress={openChat}>
-
-                <View style={styles.chatLabelContainer}>
-                    <IconButton
-                        style={styles.chatIcon}
-                        icon='forum'
-                        color={styles.chatIcon.color}
-                        size={styles.chatIcon.width} />
-                    <Text style={styles.chatLabel}>CHAT</Text>
-                </View>
-
-                <View style={styles.chatPreviewContainer}>
-                    {
-                        !!chatMessageText
-                            ? <View>
-                                <View style={styles.chatPreviewHeader}>
-                                    <Text>
-                                        <Text style={styles.chatAuthorLabel}>{lastMessageAuthor}</Text>
-                                        <Text>{` · ${lastMessageTime}`}</Text>
-                                    </Text>
-                                    {
-                                        hasUnreadMessages
-                                            ? <View style={styles.newLabelContainer}>
-                                                <Text style={styles.newLabel}>NEW</Text>
-                                              </View>
-                                            : null
-                                    }
-                                </View>
-                                <Text>{chatMessageText}</Text>
-                              </View>
-                            : <Text>Start chat for this response</Text>
-                    }
-                </View>
-            </Pressable>
-        )
+            <MapView 
+                provider={PROVIDER_GOOGLE} 
+                showsUserLocation={true}
+                initialRegion={initialRegion}
+                style={styles.mapView}>
+                    <Marker
+                        coordinate={{ 
+                            latitude: requestStore().currentRequest.location.latitude, 
+                            longitude: requestStore().currentRequest.location.longitude
+                        }}/>
+            </MapView>
+        );
     }
 
     // const teamSection = () => {
@@ -541,13 +501,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
+                    { mapPreview() }
                     { timeAndPlace() }
-                    { chatPreview() }
                 </View>
                 { statusPicker() }
                 { toggleRequestButton() }
                 {/* { teamSection() } */}
             </WrappedScrollView> 
+        )
+    }
+
+    const channel = () => {
+        return (
+            <View>
+                <ChatChannel screenView={false}/>
+            </View>
         )
     }
 
@@ -893,6 +861,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         view: overview
                     },
                     {
+                        label: Tabs.Channel,
+                        view: channel
+                    },
+                    {
                         label: Tabs.Team,
                         view: team
                     }
@@ -921,12 +893,13 @@ const styles = StyleSheet.create({
         marginBottom: 16
     },
     timeAndPlaceSection: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
-        marginBottom: 16
+        marginBottom: 16,
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
+        marginVertical: 8
     },
     locationIcon: { 
         width: 14,
@@ -1212,5 +1185,8 @@ const styles = StyleSheet.create({
         marginVertical: 24,
         width: 328,
         height: 44
+    },
+    mapView: {
+        height: 120
     }
 })
