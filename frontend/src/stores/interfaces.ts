@@ -346,7 +346,6 @@ export namespace IBottomDrawerStore {
 export enum BottomDrawerView {
     createRequest = 'cr',
     editRequest = 'er',
-    requestChat = 'rc',
     assignResponders = 'ar',
     inviteUserToOrg ='iu',
     editMe = 'em',

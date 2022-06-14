@@ -19,7 +19,6 @@ const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
     [BottomDrawerView.createRequest]: CreateHelpRequest,
     [BottomDrawerView.editRequest]: EditHelpRequest,
-    [BottomDrawerView.requestChat]: RequestChat,
     [BottomDrawerView.inviteUserToOrg]: AddUser,
     [BottomDrawerView.editMe]: EditUser,
     [BottomDrawerView.editUser]: EditUser
