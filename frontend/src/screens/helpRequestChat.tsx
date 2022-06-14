@@ -7,7 +7,7 @@ type Props = ScreenProps<'HelpRequestChat'>;
 
 const HelpRequestChat = observer(({ navigation, route }: Props) => {
     return (
-        <ChatChannel bottomDrawerView={false}/>
+        <ChatChannel screenView={true}/>
     )
 })
 

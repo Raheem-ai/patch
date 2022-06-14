@@ -10,10 +10,10 @@ import { HeaderHeight } from "../header/header";
 import UserIcon from "../userIcon";
 
 type Props =  {
-    bottomDrawerView: boolean
+    screenView: boolean
 }
 
-const ChatChannel = observer(({ bottomDrawerView }: Props) => {
+const ChatChannel = observer(({ screenView }: Props) => {
     const request = requestStore().currentRequest;
     const chat = request.chat;
 
@@ -26,12 +26,11 @@ const ChatChannel = observer(({ bottomDrawerView }: Props) => {
     const dimensions = Dimensions.get('screen');
     const keyboardHeight = useKeyboard()
 
-    // TODO: The calculation for the bottom drawer view chat channel has a couple of "magic" numbers.
+    // TODO: The non-screenView calculation has a couple of "magic" numbers.
     // Figure out more descriptive/meaningful variable names.
-    const targetHeight = bottomDrawerView
-                         ? dimensions.height - styles.disabledChatContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - keyboardHeight
-                         : dimensions.height - HeaderHeight - keyboardHeight;
-
+    const targetHeight = screenView
+                            ? dimensions.height - HeaderHeight - keyboardHeight
+                            : dimensions.height - styles.disabledChatContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - keyboardHeight - 20;
 
     useEffect(() => {
         Keyboard.addListener('keyboardDidShow', () => {
