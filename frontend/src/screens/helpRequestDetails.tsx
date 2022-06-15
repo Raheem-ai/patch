@@ -850,25 +850,39 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     })
 
+    const tabs = []
+    // TODO: Should request admin see all chats as well?
+    const userIsOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+    const userHasPermissionToSeeChat = iHaveAnyPermissions([PatchPermissions.ChatAdmin, PatchPermissions.SeeRequestChats])
+    tabs.push(
+        {
+            label: Tabs.Overview,
+            view: overview
+        }
+    );
+
+    if (userIsOnRequest || userHasPermissionToSeeChat) {
+        tabs.push(
+            {
+                label: Tabs.Channel,
+                view: channel
+            }
+        );
+    }
+
+    tabs.push(
+        {
+            label: Tabs.Team,
+            view: team
+        }
+    );
+
     return (
         <VisualArea>
             <TabbedScreen 
                 bodyStyle={{ backgroundColor: '#ffffff' }}
                 defaultTab={Tabs.Overview} 
-                tabs={[
-                    {
-                        label: Tabs.Overview,
-                        view: overview
-                    },
-                    {
-                        label: Tabs.Channel,
-                        view: channel
-                    },
-                    {
-                        label: Tabs.Team,
-                        view: team
-                    }
-                ]}/>
+                tabs={tabs}/>
         </VisualArea>
     );
 });
