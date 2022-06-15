@@ -51,8 +51,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.OnTheWay]: 'arrow-right',
     [RequestStatus.OnSite]: 'map-marker',
     [RequestStatus.Done]: 'check',
-    // TODO: which icon, if any?
-    [RequestStatus.Closed]: 'check',
+    [RequestStatus.Closed]: 'lock',
 }
 
 type StatusIconProps = { 
