@@ -152,7 +152,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         helpRequest.statusEvents.push({
             status: status,
             setBy: user.id,
-            setAt: new Date().toString() // TODO: specific format?
+            setAt: new Date().toISOString()
         });
 
         helpRequest.markModified('statusEvents');
