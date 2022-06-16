@@ -118,8 +118,8 @@ const ChatChannel = observer(({ screenView }: Props) => {
         )
     }
 
-    const resetRequestStatus = () => async () => {
-        await requestStore().resetRequestStatus(requestStore().currentRequest.id);
+    const reopenRequest = () => async () => {
+        await requestStore().reopenRequest(requestStore().currentRequest.id);
         setRequestIsOpen(true);
     }
 
@@ -143,7 +143,7 @@ const ChatChannel = observer(({ screenView }: Props) => {
                                     uppercase={false}
                                     color={'#76599A'}
                                     style={styles.openRequestButton}
-                                    onPress={resetRequestStatus()}>
+                                    onPress={reopenRequest()}>
                                         {'Re-open this request'}
                                 </Button>
                                 :

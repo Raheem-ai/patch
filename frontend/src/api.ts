@@ -756,6 +756,14 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async reopenRequest(ctx: RequestContext): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.reopenRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {}, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async updateRequestChatReceipt(ctx: RequestContext, lastMessageId: number): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.updateRequestChatReceipt()}`;
 

@@ -464,7 +464,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         uppercase={false}
                         color={currentRequestOpen ? '#fff' : '#76599A'}
                         style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
-                        onPress={currentRequestOpen ? closeRequest() : resetRequestStatus()}
+                        onPress={currentRequestOpen ? closeRequest() : reopenRequest()}
                         >
                             {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
                     </Button>
@@ -480,8 +480,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         setRequestIsOpen(false);
     }
 
-    const resetRequestStatus = () => async () => {
-        await requestStore().resetRequestStatus(requestStore().currentRequest.id);
+    const reopenRequest = () => async () => {
+        await requestStore().reopenRequest(requestStore().currentRequest.id);
         setRequestIsOpen(true);
     }
 

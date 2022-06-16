@@ -602,6 +602,11 @@ export default class RequestStore implements IRequestStore {
         this.updateOrAddReq(req);
     }
 
+    async reopenRequest(requestId: string): Promise<void> {
+        const req = await api().reopenRequest(this.requestContext(requestId));
+        this.updateOrAddReq(req);
+    }
+
     async updateChatReceipt(request: HelpRequest): Promise<void> {
         const chat = request.chat;
 
