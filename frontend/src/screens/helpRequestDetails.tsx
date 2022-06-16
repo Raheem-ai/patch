@@ -81,20 +81,45 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.timeAndPlaceSection}>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.locationIcon}
+                        style={styles.detailsIcon}
                         icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.locationText}>{address}</Text>
                 </View>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.timeIcon}
+                        style={styles.detailsIcon}
                         icon='clock-outline' 
-                        color={styles.timeIcon.color}
-                        size={styles.timeIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.timeText}>{time.toLocaleString()}</Text>
                 </View>
+                {requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='phone-incoming' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
+                    </View>
+                    : null
+                }
+                {requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='account' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <View style={styles.contactInfoRow}>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                    </View>
+                    : null
+                }
             </View>
         )
     }
@@ -913,13 +938,16 @@ const styles = StyleSheet.create({
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
-        marginVertical: 8
+        marginVertical: 5
     },
-    locationIcon: { 
+    contactInfoRow: {
+        flexDirection: 'column',
+    },
+    detailsIcon: { 
         width: 14,
         color: '#666',
         alignSelf: 'center',
-        margin: 0
+        marginRight: 5
     },
     assignmentSelectIcon: { 
         width: 30,
@@ -991,12 +1019,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: '#666',
         marginLeft: 2
-    },
-    timeIcon: { 
-        width: 14,
-        color: '#666',
-        alignSelf: 'center',
-        margin: 0
     },
     timeText: {
         fontSize: 14,
