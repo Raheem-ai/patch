@@ -151,6 +151,14 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @Required() @BodyParams('status') status: ResponderRequestStatuses,
     ) {
         helpRequest.status = status;
+        helpRequest.statusEvents.push({
+            status: status,
+            setBy: user.id,
+            setAt: new Date().toString() // TODO: specific format?
+        });
+
+        helpRequest.markModified('statusEvents');
+
         const res = await helpRequest.save();
 
         await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
