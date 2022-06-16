@@ -100,20 +100,20 @@ export default class RequestStore implements IRequestStore {
     }
 
     get activeRequests() {
-        return this.requestsArray.filter((r) => r.status != RequestStatus.Done);
+        return this.requestsArray.filter((r) => this.requestIsActive(r));
     }
 
     get myActiveRequests() {
         return this.requestsArray.filter((r) => {
             const imOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().user.id))
-            return r.status != RequestStatus.Done && imOnRequest
+            return this.requestIsActive(r) && imOnRequest
         });
     }
 
     get currentUserActiveRequests() {
         return this.requestsArray.filter((r) => {
             const isOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().currentUser?.id))
-            return r.status != RequestStatus.Done && isOnRequest
+            return this.requestIsActive(r) && isOnRequest
         });
     }
 
@@ -141,6 +141,10 @@ export default class RequestStore implements IRequestStore {
         })
 
         return metadataMap
+    }
+
+    requestIsActive(request: HelpRequest) {
+        return request.status != RequestStatus.Done && request.status != RequestStatus.Closed;
     }
 
     getPositionMetadata(requestId: string, positionId: string): PositionScopedMetadata {
@@ -426,10 +430,14 @@ export default class RequestStore implements IRequestStore {
     get filteredRequests(): HelpRequest[] {
         return this.requestsArray.filter((r) => {
             switch (this.filter) {
+                // TODO: Do the definitiions/semantics of any filters change?
+                // e.g. is there a filter that shows "Finished" and "Closed"?
                 case HelpRequestFilter.Active:
-                    return r.status != RequestStatus.Done
+                    return this.requestIsActive(r);
                 case HelpRequestFilter.Finished:
-                    return r.status == RequestStatus.Done
+                    return r.status == RequestStatus.Done;
+                case HelpRequestFilter.Closed:
+                    return r.status == RequestStatus.Closed;
                 case HelpRequestFilter.All:
                     return true;
             }
@@ -591,6 +599,11 @@ export default class RequestStore implements IRequestStore {
 
     async resetRequestStatus(requestId: string): Promise<void> {
         const req = await api().resetRequestStatus(this.requestContext(requestId));
+        this.updateOrAddReq(req);
+    }
+
+    async reopenRequest(requestId: string): Promise<void> {
+        const req = await api().reopenRequest(this.requestContext(requestId));
         this.updateOrAddReq(req);
     }
 

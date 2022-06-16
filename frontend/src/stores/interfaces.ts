@@ -206,6 +206,7 @@ export interface IRequestStore extends IBaseStore {
     setCurrentRequest(request: HelpRequest): void;
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
     resetRequestStatus(requestId: string): Promise<void>
+    reopenRequest(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateOrAddReq(updatedReq: HelpRequest): void
@@ -346,7 +347,6 @@ export namespace IBottomDrawerStore {
 export enum BottomDrawerView {
     createRequest = 'cr',
     editRequest = 'er',
-    requestChat = 'rc',
     assignResponders = 'ar',
     inviteUserToOrg ='iu',
     editMe = 'em',
