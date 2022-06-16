@@ -2,6 +2,8 @@ import { AtLeast } from '.';
 import { allEnumValues } from './utils';
 import { positionStats } from './utils/requestUtils';
 
+export type AnyFunction = (...args: any[]) => any;
+
 export interface AuthTokens {
     refreshToken: string,
     accessToken: string
@@ -260,18 +262,6 @@ export type RequestStatusEvent = {
     setBy: string,
     setAt: string
 }
-
-export type RequestTeamEventTypes =
-    PatchEventType.RequestRespondersNotified
-    | PatchEventType.RequestRespondersNotificationAck
-    | PatchEventType.RequestRespondersJoined
-    | PatchEventType.RequestRespondersRequestToJoin
-    | PatchEventType.RequestRespondersRequestToJoinAck
-    | PatchEventType.RequestRespondersLeft
-    | PatchEventType.RequestRespondersRemoved
-    | PatchEventType.RequestRespondersAccepted
-    | PatchEventType.RequestRespondersDeclined;
-
 
 export type RequestTeamEventParams = {
     [PatchEventType.RequestRespondersNotified]: {
@@ -699,31 +689,72 @@ export enum PatchEventType {
 
     // Organization.Attributes.<_>
     OrganizationAttributesUpdated = '2.2.0',
-    // TODO: not sure these make sense anymore now that we have a single update command
-    OrganizationAttributeCreated = '2.2.1',
-    OrganizationAttributeEdited = '2.2.2',
-    OrganizationAttributeDeleted = '2.2.3',
-    OrganizationAttributeCategoryCreated = '2.2.4',
-    OrganizationAttributeCategoryEdited = '2.2.5',
-    OrganizationAttributeCategoryDeleted = '2.2.6',
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
-    // TODO: not sure these make sense anymore now that we have a single update command
-    OrganizationTagCreated = '2.3.1',
-    OrganizationTagEdited = '2.3.2',
-    OrganizationTagDeleted = '2.3.3',
-    OrganizationTagCategoryCreated = '2.3.4',
-    OrganizationTagCategoryEdited = '2.3.5',
-    OrganizationTagCategoryDeleted = '2.3.6',
 }
+
+// PatchEventType Convenience Type
+export type RequestTeamEventTypes =
+    PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestRespondersNotificationAck
+    | PatchEventType.RequestRespondersJoined
+    | PatchEventType.RequestRespondersRequestToJoin
+    | PatchEventType.RequestRespondersRequestToJoinAck
+    | PatchEventType.RequestRespondersLeft
+    | PatchEventType.RequestRespondersRemoved
+    | PatchEventType.RequestRespondersAccepted
+    | PatchEventType.RequestRespondersDeclined;
+
+// PatchEventType Convenience Type
+export type RequestEventType = RequestTeamEventTypes
+    | PatchEventType.RequestChatNewMessage
+    | PatchEventType.RequestCreated
+    | PatchEventType.RequestDeleted
+    | PatchEventType.RequestEdited;
+
+// PatchEventType Convenience Type
+export type UserEventType = PatchEventType.UserCreated
+    | PatchEventType.UserEdited
+    | PatchEventType.UserDeleted
+    | PatchEventType.UserAddedToOrg
+    | PatchEventType.UserRemovedFromOrg
+    | PatchEventType.UserChangedRolesInOrg
+    | PatchEventType.UserOnDuty
+    | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+export type OrgEventType = PatchEventType.OrganizationEdited
+    | PatchEventType.OrganizationDeleted
+    | PatchEventType.OrganizationRoleCreated
+    | PatchEventType.OrganizationRoleEdited
+    | PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
+
+export type NotificationEventType = SilentNotificationEventType | NoisyNotificationEventType;
+
+// PatchEventType Convenience Type
+export type SilentNotificationEventType = PatchEventType.UserForceLogout
+    | PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestRespondersNotificationAck
+
+// PatchEventType Convenience Type
+export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
+    | PatchEventType.RequestRespondersLeft
+    | PatchEventType.RequestRespondersAccepted
+    | PatchEventType.RequestRespondersDeclined
+    | PatchEventType.RequestRespondersRemoved
+    | PatchEventType.RequestRespondersRequestToJoin
 
 export type PatchEventParams = {
     [PatchEventType.UserForceLogout]: {
         userId: string,
         refreshToken: string
     },
-    [PatchEventType.UserCreated]: {}
+    [PatchEventType.UserCreated]: {
+        userId: string
+    }
     [PatchEventType.UserEdited]: {
         userId: string
     },
@@ -764,36 +795,49 @@ export type PatchEventParams = {
         requestId: string
     },
     [PatchEventType.RequestRespondersRequestToJoin]: {
-        userId: string,
+        orgId: string,
+        responderId: string,
+        requestId: string,
+        positionId: string
+    },
+    [PatchEventType.RequestRespondersRequestToJoinAck]: {
+        orgId: string,
+        responderId: string,
         requestId: string,
         positionId: string
     },
     [PatchEventType.RequestRespondersAccepted]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersJoined]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersDeclined]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersLeft]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersRemoved]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestChatNewMessage]: {
+        orgId: string,
         requestId: string,
         userId: string
     },
@@ -815,60 +859,6 @@ export type PatchEventParams = {
         orgId: string,
         roleId: string
     },
-    [PatchEventType.OrganizationAttributeCreated]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeEdited]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeDeleted]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryCreated]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryEdited]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryDeleted]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCreated]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagEdited]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagDeleted]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagCategoryCreated]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCategoryEdited]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCategoryDeleted]: {
-        orgId: string,
-        categoryId: string
-    },
     // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
     // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
@@ -881,41 +871,9 @@ export type PatchEventParams = {
 
 export type PatchEventPacket<T extends PatchEventType = PatchEventType> = {
     event: T,
-    params: PatchEventParams[T]
+    params: PatchEventParams[T],
+    silent?: boolean
 }
-
-// export enum PatchUIEvent {
-//     ForceLogout = 'fl',
-//     UpdateResource = 'ur'
-// }
-
-// export type PatchUIEventParams = {
-//     [PatchUIEvent.ForceLogout]: {
-//         refreshToken: string
-//     },
-//     [PatchUIEvent.UpdateResource]: {
-//         orgId?: string
-//         requestId?: string
-//         userId?: string
-//         roleId?: string
-//         attributeCategoryId?: string
-//         attributeId?: string
-//         tagCategoryId?: string
-//         tagId?: string
-//         userList?: boolean
-//         requestList?: boolean
-//     },
-// }
-
-// export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent extends PatchEventType = any> = {
-//     event: UIEvent
-//     params: PatchUIEventParams[UIEvent]
-//     sysEvent: SysEvent
-//     sysParams: PatchEventParams[SysEvent]
-// }
-
-export type PatchUIEventPacket = PatchEventPacket;
-
 
 export type DateTimeRange = {
     startDate: Date

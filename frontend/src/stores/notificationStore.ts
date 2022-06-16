@@ -5,7 +5,7 @@ import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
 import { INotificationStore, notificationStore, updateStore, userStore } from "./interfaces";
-import { PatchEventPacket, PatchEventType } from "../../../common/models";
+import { NotificationEventType, PatchEventPacket, PatchEventType } from "../../../common/models";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
@@ -152,7 +152,7 @@ export default class NotificationStore implements INotificationStore {
     }
 
 
-    handleNotification = async <T extends PatchEventType>(notification: Notification) => {
+    handleNotification = async <T extends NotificationEventType>(notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
 
@@ -167,7 +167,7 @@ export default class NotificationStore implements INotificationStore {
         }
     }
 
-    handleNotificationResponse = async <T extends PatchEventType>(res: NotificationResponse) => {
+    handleNotificationResponse = async <T extends NotificationEventType>(res: NotificationResponse) => {
         const payload = res.notification.request.content.data as PatchEventPacket;
         const type = payload.event as T;
         const actionId = res.actionIdentifier;
@@ -214,7 +214,13 @@ Notifications.setNotificationHandler({
 
         const notificationHandler = NotificationHandlers[type];
 
-        if (notificationHandler && !notificationHandler.dontShowNotification) {
+        // TODO: let this decide if it should be shown based on the users relation to the event by either,
+        // 1) making this an async function that returns a boolean
+        // 2) sending an optional silent flag on the event sent from the backend
+        if (notificationHandler 
+            && !notificationHandler.dontShowNotification
+            && !payload.silent
+        ) {
             return {
                 shouldShowAlert: true,
                 shouldPlaySound: true,

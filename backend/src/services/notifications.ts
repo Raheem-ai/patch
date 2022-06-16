@@ -104,10 +104,10 @@ export default class Notifications {
             body: notification.body,
             data: {
                 ...notification.payload,
-                type: notification.type,
+                // type: notification.type,
                 "content-available": 1
             },
-            categoryId: notification.type,
+            categoryId: notification.payload.event,
             "content-available": 1
         } as any; // expo allows for category id but their types arent up to date
     }

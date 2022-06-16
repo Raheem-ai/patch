@@ -38,12 +38,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
             if (params && params.notification) {
                 switch (params.notification.type) {
-                    case PatchEventType.AssignedIncident:
-                        // ui specific to assignment
-                        break;
-                    case PatchEventType.BroadCastedIncident:
-                        // ui specific to broadcasting
-                        break;
+                    // case PatchEventType.AssignedIncident:
+                    //     // ui specific to assignment
+                    //     break;
+                    // case PatchEventType.BroadCastedIncident:
+                    //     // ui specific to broadcasting
+                    //     break;
                 }
 
                 // call store method to get helprequest from api (so we have latest value)

@@ -14,7 +14,6 @@ import * as uuid from 'uuid';
 import timespace from '@mapbox/timespace';
 import { AtLeast } from "common";
 import moment from 'moment';
-import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { BadRequest } from "@tsed/exceptions";
 import { resolveRequestStatus } from "common/utils/requestUtils";

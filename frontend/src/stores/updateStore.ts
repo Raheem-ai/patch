@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchUIEventPacket } from '../../../common/models';
+import { PatchEventType, PatchEventPacket, RequestEventType, UserEventType, OrgEventType } from '../../../common/models';
+import { isOrgEventPacket, isRequestEventPacket, isUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
 @Store(IUpdateStore)
@@ -15,13 +16,11 @@ export default class UpdateStore implements IUpdateStore {
     private maxWait = 30 * 1000;
 
     private reqState = {
-        specificIds: new Set<string>(),
-        list: false
+        specificIds: new Set<string>()
     }
 
     private userState = {
         specificIds: new Set<string>(),
-        list: false
     }
 
     private orgState = {
@@ -32,29 +31,19 @@ export default class UpdateStore implements IUpdateStore {
         makeAutoObservable(this)
     }
 
-    // TODO: restructure this to switch on the PatchEventType
-    // and decide if/how to update based on that
-    onEvent = async (packet: PatchUIEventPacket) => {
-        console.log('UI EVENT: ', packet.event, packet.params)
+    onEvent = async <T extends PatchEventType>(packet: PatchEventPacket<T>) => {
+        console.log('UI onEvent(): ', packet.event, packet.params)
         try {
-            switch (packet.event) {
-            
-                case PatchUIEvent.UpdateResource:
-                    const params = packet.params as PatchUIEventParams[PatchUIEvent.UpdateResource]
+            if (isRequestEventPacket(packet)) {
+                await this.updateRequests(packet.params.requestId, packet.event)
+            }
 
-                    if (params.orgId) {
-                        await this.updateOrg(params, packet);
-                    }
+            if (isUserEventPacket(packet)) {
+                await this.updateUsers(packet.params.userId, packet.event)
+            }
 
-                    if (params.requestId) {
-                        await this.updateRequests(params, packet);
-                    }
-
-                    if (params.userId) {
-                        await this.updateUsers(params, packet);
-                    }
-
-                    break;
+            if (isOrgEventPacket(packet)) {
+                await this.updateOrg(packet.params.orgId, packet.event)
             }
         } catch (e) {
 
@@ -62,8 +51,8 @@ export default class UpdateStore implements IUpdateStore {
     }
 
     updateRequests = stateFullMemoDebounce(async (
-        params: PatchUIEventParams[PatchUIEvent.UpdateResource],
-        packet: PatchUIEventPacket
+        requestId: string,
+        event: RequestEventType
     ) => {
         await requestStore().getRequests(Array.from(this.reqState.specificIds.values()))
     }, {
@@ -71,29 +60,24 @@ export default class UpdateStore implements IUpdateStore {
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_REQ,
         initialState: this.reqState,
-        beforeCall: (state, params, packet) => {
-            if (packet.event == PatchEventType.RequestDeleted) {
+        beforeCall: (state, requestId, event) => {
+            if (event == PatchEventType.RequestDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state.specificIds.add(params.requestId)
-            }
-             
-            if (params.requestList) {
-                state.list = true
+                state.specificIds.add(requestId)
             }
         },
-        afterCall: (state, params) => {
-            state.list = false
+        afterCall: (state, requestId, event) => {
             state.specificIds.clear()
         }
     })
 
     updateUsers = stateFullMemoDebounce(async (
-        params: PatchUIEventParams[PatchUIEvent.UpdateResource],
-        packet: PatchUIEventPacket
+        userId: string,
+        event: UserEventType
     ) => {
         await userStore().updateOrgUsers(Array.from(this.userState.specificIds.values()))
     }, {
@@ -101,29 +85,24 @@ export default class UpdateStore implements IUpdateStore {
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_USER,
         initialState: this.userState,
-        beforeCall: (state, params, packet) => {
-            if (packet.event == PatchEventType.UserDeleted) {
+        beforeCall: (state, userId, event) => {
+            if (event == PatchEventType.UserDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state.specificIds.add(params.userId)
-            }
-             
-            if (params.userList) {
-                state.list = true
+                state.specificIds.add(userId)
             }
         },
-        afterCall: (state, params) => {
-            state.list = false
+        afterCall: (state, userId, event) => {
             state.specificIds.clear()
         }
     })
 
     updateOrg = stateFullMemoDebounce(async (
-        params: PatchUIEventParams[PatchUIEvent.UpdateResource],
-        packet: PatchUIEventPacket
+        orgId: string,
+        event: OrgEventType
     ) => {
         await organizationStore().getOrgData()
     }, {
@@ -131,10 +110,10 @@ export default class UpdateStore implements IUpdateStore {
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_ORG,
         initialState: this.orgState,
-        beforeCall: (state, params, packet) => {
-            state.specificId = params.orgId;
+        beforeCall: (state, orgId, event) => {
+            state.specificId = orgId;
         },
-        afterCall: (state, params) => {
+        afterCall: (state, orgId, event) => {
             state.specificId = null;
         }
     })

@@ -122,18 +122,18 @@ export interface IApiClient {
     updateTags: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
     
     // TODO: these update peacemeal where the ui has a single "save" operation...should be safe to delete
-    createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
-    editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AttributeCategoryUpdates) => Promise<AttributeCategory>>
-    deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    createNewAttribute: AuthenticatedWithOrg<(categoryId: string, attribute: MinAttribute) => Promise<Attribute>>
-    editAttribute: AuthenticatedWithOrg<(categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
-    deleteAttribute: AuthenticatedWithOrg<(categoryId: string, attributeId: string) => Promise<OrganizationMetadata>>
-    createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
-    editTagCategory: AuthenticatedWithOrg<(categoryUpdates: TagCategoryUpdates) => Promise<TagCategory>>
-    deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    createNewTag: AuthenticatedWithOrg<(categoryId: string, tag: MinTag) => Promise<Tag>>
-    editTag: AuthenticatedWithOrg<(categoryId: string, tagUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
-    deleteTag: AuthenticatedWithOrg<(categoryId: string, tagId: string) => Promise<OrganizationMetadata>>
+    // createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
+    // editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AttributeCategoryUpdates) => Promise<AttributeCategory>>
+    // deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
+    // createNewAttribute: AuthenticatedWithOrg<(categoryId: string, attribute: MinAttribute) => Promise<Attribute>>
+    // editAttribute: AuthenticatedWithOrg<(categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
+    // deleteAttribute: AuthenticatedWithOrg<(categoryId: string, attributeId: string) => Promise<OrganizationMetadata>>
+    // createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
+    // editTagCategory: AuthenticatedWithOrg<(categoryUpdates: TagCategoryUpdates) => Promise<TagCategory>>
+    // deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
+    // createNewTag: AuthenticatedWithOrg<(categoryId: string, tag: MinTag) => Promise<Tag>>
+    // editTag: AuthenticatedWithOrg<(categoryId: string, tagUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
+    // deleteTag: AuthenticatedWithOrg<(categoryId: string, tagId: string) => Promise<OrganizationMetadata>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[]) => Promise<{ user: ProtectedUser, org: Organization }>>
@@ -331,42 +331,42 @@ type ApiRoutes = {
         editUser: () => {
             return '/editUser'
         },
-        createNewAttributeCategory: () => {
-            return '/createNewAttributeCategory'
-        },
-        editAttributeCategory: () => {
-            return '/editAttributeCategory'
-        },
-        deleteAttributeCategory: () => {
-            return '/deleteAttributeCategory'
-        },
-        createNewAttribute: () => {
-            return '/createNewAttribute'
-        },
-        editAttribute: () => {
-            return '/editAttribute'
-        },
-        deleteAttribute: () => {
-            return '/deleteAttribute'
-        },
-        createNewTagCategory: () => {
-            return '/createNewTagCategory'
-        },
-        editTagCategory: () => {
-            return '/editTagCategory'
-        },
-        deleteTagCategory: () => {
-            return '/deleteTagCategory'
-        },
-        createNewTag: () => {
-            return '/createNewTag'
-        },
-        editTag: () => {
-            return '/editTag'
-        },
-        deleteTag: () => {
-            return '/deleteTag'
-        },
+        // createNewAttributeCategory: () => {
+        //     return '/createNewAttributeCategory'
+        // },
+        // editAttributeCategory: () => {
+        //     return '/editAttributeCategory'
+        // },
+        // deleteAttributeCategory: () => {
+        //     return '/deleteAttributeCategory'
+        // },
+        // createNewAttribute: () => {
+        //     return '/createNewAttribute'
+        // },
+        // editAttribute: () => {
+        //     return '/editAttribute'
+        // },
+        // deleteAttribute: () => {
+        //     return '/deleteAttribute'
+        // },
+        // createNewTagCategory: () => {
+        //     return '/createNewTagCategory'
+        // },
+        // editTagCategory: () => {
+        //     return '/editTagCategory'
+        // },
+        // deleteTagCategory: () => {
+        //     return '/deleteTagCategory'
+        // },
+        // createNewTag: () => {
+        //     return '/createNewTag'
+        // },
+        // editTag: () => {
+        //     return '/editTag'
+        // },
+        // deleteTag: () => {
+        //     return '/deleteTag'
+        // },
         updateAttributes: () => {
             return '/updateAttributes'
         },
@@ -494,42 +494,42 @@ type ApiRoutes = {
         inviteUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.inviteUserToOrg()}`
         },
-        createNewAttributeCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.createNewAttributeCategory()}`
-        },
-        editAttributeCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.editAttributeCategory()}`
-        },
-        deleteAttributeCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.deleteAttributeCategory()}`
-        },
-        createNewAttribute: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.createNewAttribute()}`
-        },
-        editAttribute: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.editAttribute()}`
-        },
-        deleteAttribute: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.deleteAttribute()}`
-        },
-        createNewTagCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.createNewTagCategory()}`
-        },
-        editTagCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.editTagCategory()}`
-        },
-        deleteTagCategory: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.deleteTagCategory()}`
-        },
-        createNewTag: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.createNewTag()}`
-        },
-        editTag: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.editTag()}`
-        },
-        deleteTag: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.deleteTag()}`
-        },
+        // createNewAttributeCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.createNewAttributeCategory()}`
+        // },
+        // editAttributeCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.editAttributeCategory()}`
+        // },
+        // deleteAttributeCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.deleteAttributeCategory()}`
+        // },
+        // createNewAttribute: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.createNewAttribute()}`
+        // },
+        // editAttribute: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.editAttribute()}`
+        // },
+        // deleteAttribute: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.deleteAttribute()}`
+        // },
+        // createNewTagCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.createNewTagCategory()}`
+        // },
+        // editTagCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.editTagCategory()}`
+        // },
+        // deleteTagCategory: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.deleteTagCategory()}`
+        // },
+        // createNewTag: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.createNewTag()}`
+        // },
+        // editTag: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.editTag()}`
+        // },
+        // deleteTag: () => {
+        //     return `${this.base}${this.namespaces.organization}${this.server.deleteTag()}`
+        // },
 
         updateAttributes: () => {
             return `${this.base}${this.namespaces.organization}${this.server.updateAttributes()}`

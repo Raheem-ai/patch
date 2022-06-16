@@ -72,7 +72,7 @@ export class DispatcherController implements APIController<
         const usersToAssign = await this.db.getUsersByIds(to);
         const request = await this.db.resolveRequest(requestId)
 
-        const notifications: NotificationMetadata<PatchEventType.AssignedIncident>[] = [];
+        const notifications: NotificationMetadata<PatchEventType.RequestRespondersNotified>[] = [];
 
         for (const user of usersToAssign) {
 
@@ -83,12 +83,13 @@ export class DispatcherController implements APIController<
 
             notifications.push({
                 // TODO: update to this type to be about Requests needing help
-                type: PatchEventType.AssignedIncident,
                 to: user.push_token,
                 body: `Help is needed with Request: ${request.displayId}`,
                 payload: {
-                    id: requestId,
-                    orgId: orgId
+                    event: PatchEventType.RequestRespondersNotified,
+                    params: {
+                        requestId
+                    }
                 }
             });
         }

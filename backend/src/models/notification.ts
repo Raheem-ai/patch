@@ -7,9 +7,6 @@ import { ExpoPushSuccessTicket, ExpoPushErrorTicket, ExpoPushErrorReceipt } from
 export class NotificationModel<T extends PatchEventType = any> {
 
     @Property()
-    type: T
-
-    @Property()
     payload: PatchEventPacket<T>
 
     @Property()
