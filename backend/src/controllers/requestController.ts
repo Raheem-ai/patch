@@ -188,6 +188,14 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @HelpReq() helpRequest: HelpRequestDoc,
     ) {
         helpRequest.status = getPreviousOpenStatus(helpRequest);
+        helpRequest.statusEvents.push({
+            status: helpRequest.status,
+            setBy: user.id,
+            setAt: new Date().toISOString()
+        });
+
+        helpRequest.markModified('statusEvents');
+
         const res = await helpRequest.save();
 
         await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
