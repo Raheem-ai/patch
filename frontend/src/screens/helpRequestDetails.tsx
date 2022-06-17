@@ -4,7 +4,7 @@ import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
 import { NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { alertStore, bottomDrawerStore, BottomDrawerView, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import { dateToTimeString } from "../../../common/utils";
 
@@ -18,6 +18,7 @@ import { visualDelim } from "../constants";
 import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import Tags from "../components/tags";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -76,6 +77,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
             <View style={styles.timeAndPlaceSection}>
@@ -95,7 +97,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         size={styles.detailsIcon.width} />
                     <Text style={styles.timeText}>{time.toLocaleString()}</Text>
                 </View>
-                {requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
                     ? <View style={styles.timeAndPlaceRow}>
                         <IconButton
                             style={styles.detailsIcon}
@@ -106,7 +108,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     </View>
                     : null
                 }
-                {requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
                     ? <View style={styles.timeAndPlaceRow}>
                         <IconButton
                             style={styles.detailsIcon}
@@ -117,6 +119,19 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
                             <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
                         </View>
+                    </View>
+                    : null
+                }
+                { tags.length != 0
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='tag' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Tags 
+                            centered
+                            tags={tags}/>
                     </View>
                     : null
                 }
