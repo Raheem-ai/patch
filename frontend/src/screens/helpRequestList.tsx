@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { HelpRequestFilter, HelpRequestSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
-import ListHeader, { ListHeaderProps } from "../components/listHeader";
+import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { requestStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 
@@ -28,33 +28,37 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<HelpRequestFilter>(HelpRequestFilter);
     const allSortBys = allEnumValues<HelpRequestSortBy>(HelpRequestSortBy)
 
-    const headerProps: ListHeaderProps<HelpRequestFilter, HelpRequestSortBy> = {
+    const headerProps: ListHeaderProps = {
         openHeaderLabel: 'Requests to show',
-        chosenFilter: requestStore().filter,
-        chosenSortBy: requestStore().sortBy,
-    
-        filters: allFilters,
-        sortBys: allSortBys,
-    
-        filterToHeaderLabel: (filter: HelpRequestFilter) => {
-            return `${HelpRequestFilterToLabelMap[filter]} requests`
-        },
-        sortByToHeaderLabel: (sortBy: HelpRequestSortBy) => {
-            return HelpRequestSortByToLabelMap[sortBy].toLowerCase()
-        },
-        filterToOptionLabel: (filter: HelpRequestFilter) => HelpRequestFilterToLabelMap[filter],
-        sortByToOptionLabel: (sortBy: HelpRequestSortBy) => HelpRequestSortByToLabelMap[sortBy],
-    
-        onFilterUpdate: requestStore().setFilter,
-        onSortByUpdate: requestStore().setSortBy,
-
-        closedHeaderStyles: styles.closedFilterHeader
+        closedHeaderStyles: styles.closedFilterHeader,
+        optionConfigs: [
+            {
+                chosenOption: requestStore().filter,
+                options: allFilters,
+                toHeaderLabel: (filter: HelpRequestFilter) => {
+                    return `${HelpRequestFilterToLabelMap[filter]} requests`
+                },
+                toOptionLabel: (filter: HelpRequestFilter) => HelpRequestFilterToLabelMap[filter],
+                onUpdate: requestStore().setFilter,
+            },
+            {
+                chosenOption: requestStore().sortBy,
+                options: allSortBys,
+                toHeaderLabel: (sortBy: HelpRequestSortBy) => {
+                    return HelpRequestSortByToLabelMap[sortBy].toLowerCase()
+                },
+                toOptionLabel: (sortBy: HelpRequestSortBy) => HelpRequestSortByToLabelMap[sortBy],
+                onUpdate: requestStore().setSortBy,
+            }
+        ] as [
+            ListHeaderOptionConfig<HelpRequestFilter>, 
+            ListHeaderOptionConfig<HelpRequestSortBy> 
+        ]
     }
     
     return (
         <View style={styles.container}>
-            <ListHeader<HelpRequestFilter, HelpRequestSortBy> 
-                { ...headerProps } />
+            <ListHeader { ...headerProps } />
             <ScrollView style={{ flex: 1}}>
                 {
                     requestStore().filteredSortedRequests.map(r => {

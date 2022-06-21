@@ -547,7 +547,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             if (!isRequestAdmin) {
                 return null
             } else {
-                const requestMetadata = requestStore().requestMetadata.get(request.id);
+                const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
                 const numNotified = requestMetadata.notificationsSentTo.size;
 
                 const notifiedUsers = new Map(requestMetadata.notificationsSentTo);
@@ -572,7 +572,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 let numUnseenPositionRequests = 0;
 
                 for (const pos of request.positions) {
-                    const posMeta = requestStore().getPositionMetadata(request.id, pos.id);
+                    const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
                     
                     posMeta.unseenJoinRequests.forEach(requesterId => {
                         const haveNotSeenThisSession = requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id);

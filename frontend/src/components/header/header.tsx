@@ -27,8 +27,6 @@ const Header = observer((props: Props) => {
         ? config.title
         : config.title();
 
-    // TODO: get this from stores at some point
-
     const openHeader = () => {
         headerStore().open()
     }

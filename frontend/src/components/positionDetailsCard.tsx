@@ -28,7 +28,7 @@ const PositionDetailsCard = observer(({
     edit
 }: PositionDetailsCardProps) => {
 
-    const positionMetadata = requestStore().getPositionMetadata(requestId, pos.id);
+    const positionMetadata = requestStore().getPositionScopedMetadata(userStore().user.id, requestId, pos.id);
     const joinedUsers = Array.from(positionMetadata.joinedUsers.values());
 
     const status = joinedUsers.length

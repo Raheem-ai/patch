@@ -3,7 +3,7 @@ import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, cr
 import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { HelpRequest, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -199,26 +199,20 @@ class CreateHelpRequest extends React.Component<Props> {
                     },
                     // Type of request
                     {
-                        onSave: (type) => createRequestStore().type = type,
+                        type: 'CategorizedItemList',
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        onSave: (type) => createRequestStore().type = categorizedItemsToRequestType(type),
                         val: () => {
-                            return createRequestStore().type
+                            return requestTypesToCategorizedItems(createRequestStore().type)
                         },
                         isValid: () => {
                             return createRequestStore().typeValid
                         },
                         name: 'type',
-                        previewLabel: () => null,
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
-                        type: 'TagList',
                         required: true,
                         props: {
-                            options: allEnumValues(RequestType),
-                            optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
-                            multiSelect: true,
-                            onTagDeleted: (idx: number, val: any) => {
-                                runInAction(() => createRequestStore().type.splice(idx, 1))
-                            },
+                            definedCategories: RequestTypeCategories,
                             dark: true
                         }
                     },
@@ -288,7 +282,7 @@ class CreateHelpRequest extends React.Component<Props> {
                 ScreenFormInputConfig<'Map'>, 
                 [
                     ScreenFormInputConfig<'TextArea'>,
-                    ScreenFormInputConfig<'TagList'>,
+                    ScreenFormInputConfig<'CategorizedItemList'>,
                     ScreenFormInputConfig<'List'>
                 ],
                 ScreenFormInputConfig<'Positions'>,

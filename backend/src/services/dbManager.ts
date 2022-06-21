@@ -1848,7 +1848,7 @@ export class DBManager {
 
             const minRequests: MinHelpRequest[] = [
                 {
-                    type: [RequestType.ConflictResolution, RequestType.DomesticDisturbance],
+                    type: [RequestType.CallerInDanger, RequestType.DirectActionAssistance],
                     location: {
                         latitude: 40.69776419999999,
                         longitude: -73.9303333,
@@ -1859,7 +1859,7 @@ export class DBManager {
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
                 },
                 {
-                    type: [RequestType.ConflictResolution, RequestType.FirstAid, RequestType.SubstanceCounseling],
+                    type: [RequestType.CallerInDanger, RequestType.Fireworks, RequestType.SelfHarming],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
@@ -1869,7 +1869,7 @@ export class DBManager {
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
                 },
                 {
-                    type: [RequestType.ConflictResolution],
+                    type: [RequestType.CallerInDanger],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
@@ -1879,7 +1879,7 @@ export class DBManager {
                     notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
                 },
                 {
-                    type: [RequestType.Counseling],
+                    type: [RequestType.Carjacking],
                     location: {
                         latitude: 40.70107496314848,
                         longitude: -73.90470642596483,
