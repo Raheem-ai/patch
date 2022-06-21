@@ -3,7 +3,7 @@ import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from ".
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { FormProps } from "../../forms/form";
-import { PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -154,26 +154,20 @@ class EditHelpRequest extends React.Component<Props> {
                     },
                     // Type of request
                     {
-                        onSave: (type) => editRequestStore().type = type,
+                        type: 'CategorizedItemList',
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
                         val: () => {
-                            return editRequestStore().type
+                            return requestTypesToCategorizedItems(editRequestStore().type)
                         },
                         isValid: () => {
                             return editRequestStore().typeValid
                         },
                         name: 'type',
-                        previewLabel: () => null,
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
-                        type: 'TagList',
                         required: true,
                         props: {
-                            options: allEnumValues(RequestType),
-                            optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
-                            multiSelect: true,
-                            onTagDeleted: (idx: number, val: any) => {
-                                runInAction(() => editRequestStore().type.splice(idx, 1))
-                            },
+                            definedCategories: RequestTypeCategories,
                             dark: true
                         }
                     },
@@ -243,7 +237,7 @@ class EditHelpRequest extends React.Component<Props> {
                 ScreenFormInputConfig<'Map'>, 
                 [
                     ScreenFormInputConfig<'TextArea'>,
-                    ScreenFormInputConfig<'TagList'>,
+                    ScreenFormInputConfig<'CategorizedItemList'>,
                     ScreenFormInputConfig<'List'>
                 ],
                 ScreenFormInputConfig<'Positions'>,

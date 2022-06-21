@@ -28,12 +28,12 @@ const CategorizedItemListInput = ({
             return (
                 <EditCategorizedItemForm 
                     back={back} 
-                    onSaveToastLabel={config.props.onSaveToastLabel}
-                    // categories={config.props.categories}
-                    editHeaderLabel={config.props.editHeaderLabel} 
-                    addCategoryPlaceholderLabel={config.props.addCategoryPlaceholderLabel}
-                    addItemPlaceholderLabel={config.props.addItemPlaceholderLabel}
-                    store={config.props.editStore} />
+                    onSaveToastLabel={config.props.editConfig.onSaveToastLabel}
+                    // categories={config.props.editConfig.categories}
+                    editHeaderLabel={config.props.editConfig.editHeaderLabel} 
+                    addCategoryPlaceholderLabel={config.props.editConfig.addCategoryPlaceholderLabel}
+                    addItemPlaceholderLabel={config.props.editConfig.addItemPlaceholderLabel}
+                    store={config.props.editConfig.editStore} />
             )
         }
     } 
@@ -50,7 +50,8 @@ const CategorizedItemListInput = ({
         const [ selectedItems, setSelectedItems ] = useState(config.val())
         const [ searchText, setSearchText ] = useState('');
 
-        const iCanEdit = iHaveAllPermissions(config.props.editPermissions)
+        const isEditable = !!config.props.editConfig
+        const iCanEdit = isEditable && iHaveAllPermissions(config.props.editConfig.editPermissions)
 
         const headerProps: BackButtonHeaderProps = {
             save: {
@@ -88,7 +89,7 @@ const CategorizedItemListInput = ({
         }
 
         const itemInfo = selectedItems.map((targetItem, idx) => {
-            const category = config.props.editStore.definedCategories.get(targetItem.categoryId)
+            const category = config.props.definedCategories.get(targetItem.categoryId)
             const name = category.items.find(item => item.id == targetItem.itemId)?.name;
         
             if (name) {
@@ -118,7 +119,7 @@ const CategorizedItemListInput = ({
             const fontSize = 16;
             const searchResults: [string, CategorizedItem][] = [];
 
-            Array.from(config.props.editStore.definedCategories.entries()).forEach(([categoryId, category]) => {
+            Array.from(config.props.definedCategories.entries()).forEach(([categoryId, category]) => {
                 category.items.forEach(item => {
                     if (item.name.startsWith(searchText) 
                         // only show unselected results
@@ -157,7 +158,7 @@ const CategorizedItemListInput = ({
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ }}>
                     {
-                        Array.from(config.props.editStore.definedCategories.entries()).reverse().map(([categoryId, category]) => {
+                        Array.from(config.props.definedCategories.entries()).reverse().map(([categoryId, category]) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {

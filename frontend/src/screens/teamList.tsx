@@ -4,7 +4,7 @@ import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, View } from "
 import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
-import ListHeader, { ListHeaderProps } from "../components/listHeader";
+import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ITeamStore, IUserStore, teamStore, userStore } from "../stores/interfaces";
 import { ScreenProps, routerNames } from "../types";
 import { IconButton } from "react-native-paper";
@@ -33,29 +33,35 @@ const TeamList = observer(({ navigation, route }: Props) => {
         teamStore().refreshUsers();
     }, [])
 
-    const headerProps: ListHeaderProps<TeamFilter, TeamSortBy> = {
+    const headerProps: ListHeaderProps = {
         openHeaderLabel: 'People to show',
-        chosenFilter: teamStore().filter,
-        chosenSortBy: teamStore().sortBy,
-    
-        filters: allFilters,
-        sortBys: allSortBys,
-    
-        filterToHeaderLabel: (filter: TeamFilter) => {
-            return filter == TeamFilter.Everyone 
-                ? TeamFilterToLabelMap[filter] 
-                : `${TeamFilterToLabelMap[filter]} people`;
-        },
-        sortByToHeaderLabel: (sortBy: TeamSortBy) => {
-            return TeamSortByToLabelMap[sortBy].toLowerCase()
-        },
-        filterToOptionLabel: (filter: TeamFilter) => TeamFilterToLabelMap[filter],
-        sortByToOptionLabel: (sortBy: TeamSortBy) => TeamSortByToLabelMap[sortBy],
-    
-        onFilterUpdate: teamStore().setFilter,
-        onSortByUpdate: teamStore().setSortBy,
+        closedHeaderStyles: styles.closedFilterHeader,
 
-        closedHeaderStyles: styles.closedFilterHeader
+        optionConfigs: [
+            {
+                chosenOption: teamStore().filter,
+                options: allFilters,
+                toHeaderLabel: (filter: TeamFilter) => {
+                    return filter == TeamFilter.Everyone 
+                        ? TeamFilterToLabelMap[filter] 
+                        : `${TeamFilterToLabelMap[filter]} people`;
+                },
+                toOptionLabel: (filter: TeamFilter) => TeamFilterToLabelMap[filter],
+                onUpdate: teamStore().setFilter,
+            }, 
+            {
+                chosenOption: teamStore().sortBy,
+                options: allSortBys,
+                toHeaderLabel: (sortBy: TeamSortBy) => {
+                    return TeamSortByToLabelMap[sortBy].toLowerCase()
+                },
+                toOptionLabel: (sortBy: TeamSortBy) => TeamSortByToLabelMap[sortBy],
+                onUpdate: teamStore().setSortBy,
+            }
+        ] as [
+            ListHeaderOptionConfig<TeamFilter>, 
+            ListHeaderOptionConfig<TeamSortBy> 
+        ]
     }
 
     const goToResponder =  (user: ClientSideFormat<ProtectedUser>) => {
@@ -69,8 +75,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
     
     return (
         <View style={styles.container}>
-            <ListHeader<TeamFilter, TeamSortBy> 
-                { ...headerProps } />
+            <ListHeader { ...headerProps } />
             <ScrollView style={styles.scrollView}>
                 {
                     teamStore().sortedUsers.map(r => {
