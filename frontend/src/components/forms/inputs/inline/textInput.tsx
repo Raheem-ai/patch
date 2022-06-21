@@ -24,6 +24,7 @@ const TextInput = observer(({
     return (
         
             <RNTextInput 
+                placeholderTextColor={'#aaa'}
                 style={[
                     { 
                         fontSize: styles.label.fontSize,
