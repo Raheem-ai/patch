@@ -1322,7 +1322,9 @@ export type PatchEventParams = {
         requestId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {
-        requestId: string
+        requestId: string,
+        notifierId: string,
+        userIds: string[]
     },
     [PatchEventType.RequestRespondersNotificationAck]: {
         requestId: string
