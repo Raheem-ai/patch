@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, PatchEventPacket } from '../../../common/models'
+import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -93,16 +93,34 @@ export namespace IDispatchStore {
 }
 
 export interface IDispatchStore extends IBaseStore {
-    broadcastRequest(requestId: string, to: string[]): Promise<void>
     assignRequest(requestId: string, to: string[]): Promise<void>
     toggleSelectAll(): Promise<void>;
-    toggleIncludeOffDuty(): Promise<void>;
     toggleResponder(userId: string): Promise<void>;
+
     assignableResponders: ClientSideFormat<ProtectedUser>[]
-    includeOffDuty: boolean
     selectAll: boolean
     selectedResponderIds: Set<string>
     selectedResponders: ClientSideFormat<ProtectedUser>[]
+
+    roleOption: string
+    statusOption: StatusOption
+    eligibilityOption: EligibilityOption
+
+    roleOptions: string[]
+    statusOptions: StatusOption[]
+    eligibilityOptions: EligibilityOption[]
+
+    setRoleOption(roleId: string): void
+    setStatusOption(statusOpt: StatusOption): void
+    setEligibilityOption(eOpt: EligibilityOption): void
+
+    roleOptionToHeaderLabel(roleId: string): string
+    statusOptionToHeaderLabel(statusOpt: StatusOption): string
+    eligibilityOptionToHeaderLabel(eOpt: EligibilityOption): string
+
+    roleOptionToOptionLabel(roleId: string): string
+    statusOptionToOptionLabel(statusOpt: StatusOption): string
+    eligibilityOptionToOptionLabel(eOpt: EligibilityOption): string
 }
 
 export type CreateReqData = Pick<HelpRequest, 
@@ -194,7 +212,7 @@ export interface IRequestStore extends IBaseStore {
     myActiveRequests: HelpRequest[]
     currentUserActiveRequests: HelpRequest[]
     loading: boolean
-    requestMetadata:  Map<string, RequestMetadata>
+    // requestMetadata:  Map<string, RequestMetadata>
 
     filter: HelpRequestFilter
     sortBy: HelpRequestSortBy
@@ -208,6 +226,7 @@ export interface IRequestStore extends IBaseStore {
     setCurrentRequest(request: HelpRequest): void;
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
     resetRequestStatus(requestId: string): Promise<void>
+    reopenRequest(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateOrAddReq(updatedReq: HelpRequest): void
@@ -216,8 +235,10 @@ export interface IRequestStore extends IBaseStore {
     leaveRequest(reqId: string, positionId: string): Promise<void>
     requestToJoinRequest(reqId: string, positionId: string): Promise<void>
     removeUserFromRequest(userId: string, reqId: string, positionId: string): Promise<void>
-    getPositionMetadata(requestId: string, positionId: string): PositionScopedMetadata
-    
+    getRequestMetadata(userId: string, requestId: string): RequestMetadata
+    getPositionScopedMetadata(userId: string, requestId: string, positionId: string): PositionScopedMetadata
+    getRequestScopedMetadata(userId: string, requestId: string): RequestScopedMetadata
+
     approveRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
     denyRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
     ackRequestsToJoinNotification(requestId: string): Promise<void>
@@ -348,7 +369,6 @@ export namespace IBottomDrawerStore {
 export enum BottomDrawerView {
     createRequest = 'cr',
     editRequest = 'er',
-    requestChat = 'rc',
     assignResponders = 'ar',
     inviteUserToOrg ='iu',
     editMe = 'em',
@@ -524,7 +544,6 @@ export namespace IEditCategorizedItemStore {
 
 export interface IEditCategorizedItemStore extends IBaseStore {
     categories: Map<string, Category>
-    definedCategories: Map<string, Category>
 
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void

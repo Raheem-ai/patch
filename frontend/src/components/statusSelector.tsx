@@ -51,6 +51,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.OnTheWay]: 'arrow-right',
     [RequestStatus.OnSite]: 'map-marker',
     [RequestStatus.Done]: 'check',
+    [RequestStatus.Closed]: 'lock',
 }
 
 type StatusIconProps = { 
@@ -274,9 +275,9 @@ const styles = StyleSheet.create({
         marginLeft: 42
     },
     darkStatusIcon: {
-        borderColor:'#C3C3C3',
-        color: '#7F7C7F',
-        backgroundColor: '#C3C3C3',
+        borderColor:'#333333',
+        color: '#fff',
+        backgroundColor: '#333333',
     },
     darkStatusIconToGo: {
         color: '#C3C3C3'
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
         borderStyle: 'dotted', 
     },
     darkToGoStatusSelectorDivider: {
-        borderBottomColor: '#7d7d7d',
+        borderBottomColor: '#ECEBEC',
         borderBottomWidth: 2,
         borderStyle: 'dotted', 
     },

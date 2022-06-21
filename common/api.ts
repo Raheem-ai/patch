@@ -170,6 +170,7 @@ export interface IApiClient {
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
+    reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
 
     
 
@@ -297,6 +298,9 @@ type ApiRoutes = {
         },
         resetRequestStatus: () => {
             return '/resetRequestStatus'
+        },
+        reopenRequest: () => {
+            return '/reopenRequest'
         },
         setOnDutyStatus: () => {
             return '/setOnDutyStatus'
@@ -562,6 +566,9 @@ type ApiRoutes = {
         },
         resetRequestStatus: () => {
             return `${this.base}${this.namespaces.request}${this.server.resetRequestStatus()}`
+        },
+        reopenRequest: () => {
+            return `${this.base}${this.namespaces.request}${this.server.reopenRequest()}`
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`

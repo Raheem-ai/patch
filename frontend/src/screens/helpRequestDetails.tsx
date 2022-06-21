@@ -1,24 +1,24 @@
-import React, { useEffect, useRef } from "react";
-import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, routerNames, ScreenProps } from "../types";
-import { PatchEventType, PatchPermissions, RequestTypeToLabelMap } from "../../../common/models";
+import { Colors, ScreenProps } from "../types";
+import { PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { alertStore, bottomDrawerStore, BottomDrawerView, dispatchStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
-import ResponderRow from "../components/responderRow";
-import { dateToTimeString, timestampToTimeString } from "../../../common/utils";
+import { dateToTimeString } from "../../../common/utils";
 
-import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
+import { wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
-import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
-import { iHaveAllPermissions } from "../utils";
+import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { visualDelim } from "../constants";
-import { event } from "react-native-reanimated";
 import { resolveErrorMessage } from "../errors";
+import ChatChannel from "../components/chats/chatChannel";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import Tags from "../components/tags";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -31,6 +31,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const request = requestStore().currentRequest;
+    const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
     useEffect(() => {
         (async () => {
@@ -76,25 +77,64 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
             <View style={styles.timeAndPlaceSection}>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.locationIcon}
+                        style={styles.detailsIcon}
                         icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.locationText}>{address}</Text>
                 </View>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.timeIcon}
+                        style={styles.detailsIcon}
                         icon='clock-outline' 
-                        color={styles.timeIcon.color}
-                        size={styles.timeIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.timeText}>{time.toLocaleString()}</Text>
                 </View>
+                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='phone-incoming' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
+                    </View>
+                    : null
+                }
+                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='account' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <View style={styles.contactInfoRow}>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                    </View>
+                    : null
+                }
+                { tags.length != 0
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='tag' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Tags 
+                            centered
+                            tags={tags}/>
+                    </View>
+                    : null
+                }
             </View>
         )
     }
@@ -123,66 +163,27 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const chatPreview = () => {
-
-        const lastChatMessage = requestStore().currentRequest.chat?.messages[requestStore().currentRequest.chat.messages.length - 1];
-
-        const chatMessageText = !!lastChatMessage
-            ? lastChatMessage.message
-            : '';
-
-        const lastMessageAuthor = !!lastChatMessage
-            ? userStore().users.get(lastChatMessage.userId)?.name
-            : ''
-
-        const lastMessageTime = !!lastChatMessage
-            ? timestampToTimeString(lastChatMessage.timestamp)
-            : ''
-
-        const hasUnreadMessages = (requestStore().currentRequest.chat && requestStore().currentRequest.chat.messages.length) 
-            && (!requestStore().currentRequest.chat.userReceipts[userStore().user.id] 
-                || (requestStore().currentRequest.chat.userReceipts[userStore().user.id] < requestStore().currentRequest.chat.lastMessageId));
-
-        const openChat = () => {
-            bottomDrawerStore().show(BottomDrawerView.requestChat, true);
-        }
-
+    const mapPreview = () => {
+        const initialRegion =  {
+            latitude: requestStore().currentRequest.location.latitude,
+            longitude: requestStore().currentRequest.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+        };
+        
         return (
-            <Pressable style={styles.chatContainer} onPress={openChat}>
-
-                <View style={styles.chatLabelContainer}>
-                    <IconButton
-                        style={styles.chatIcon}
-                        icon='forum'
-                        color={styles.chatIcon.color}
-                        size={styles.chatIcon.width} />
-                    <Text style={styles.chatLabel}>CHAT</Text>
-                </View>
-
-                <View style={styles.chatPreviewContainer}>
-                    {
-                        !!chatMessageText
-                            ? <View>
-                                <View style={styles.chatPreviewHeader}>
-                                    <Text>
-                                        <Text style={styles.chatAuthorLabel}>{lastMessageAuthor}</Text>
-                                        <Text>{` · ${lastMessageTime}`}</Text>
-                                    </Text>
-                                    {
-                                        hasUnreadMessages
-                                            ? <View style={styles.newLabelContainer}>
-                                                <Text style={styles.newLabel}>NEW</Text>
-                                              </View>
-                                            : null
-                                    }
-                                </View>
-                                <Text>{chatMessageText}</Text>
-                              </View>
-                            : <Text>Start chat for this response</Text>
-                    }
-                </View>
-            </Pressable>
-        )
+            <MapView 
+                provider={PROVIDER_GOOGLE} 
+                showsUserLocation={true}
+                initialRegion={initialRegion}
+                style={styles.mapView}>
+                    <Marker
+                        coordinate={{ 
+                            latitude: requestStore().currentRequest.location.latitude, 
+                            longitude: requestStore().currentRequest.location.longitude
+                        }}/>
+            </MapView>
+        );
     }
 
     // const teamSection = () => {
@@ -472,14 +473,62 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     // }
 
     const statusPicker = () => {
+        if (!currentRequestIsOpen()) {
+            return null;
+        }
+
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#454343'
+                backgroundColor: '#FFFFFF'
             }}>
                 <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
             </View>
         )
+    }
+
+    const toggleRequestButton = () => {
+        const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+        const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+        const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
+        if (userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission)) {
+            const currentRequestOpen = currentRequestIsOpen();
+
+            return (
+                <View style={{ 
+                    height: 65, 
+                    backgroundColor: '#FFFFFF',
+                    marginTop: 12
+                }}>
+                    <Button
+                        uppercase={false}
+                        color={currentRequestOpen ? '#fff' : '#76599A'}
+                        style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
+                        onPress={currentRequestOpen ? closeRequest() : reopenRequest()}
+                        >
+                            {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                    </Button>
+                </View>
+            )
+        }
+
+        return null;
+    }
+
+    const closeRequest = () => async () => {
+        await requestStore().setRequestStatus(requestStore().currentRequest.id, RequestStatus.Closed);
+        setRequestIsOpen(false);
+    }
+
+    const reopenRequest = () => async () => {
+        await requestStore().reopenRequest(requestStore().currentRequest.id);
+        setRequestIsOpen(true);
+    }
+
+    // TODO: Added this getter because "requestIsOpen" state variable isn't being computed properly.
+    //       currently still using state variable to trigger re-render.
+    function currentRequestIsOpen() {
+        return requestStore().currentRequest?.status != RequestStatus.Closed;
     }
 
     if (isLoading || !request) {
@@ -492,12 +541,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
+                    { mapPreview() }
                     { timeAndPlace() }
-                    { chatPreview() }
                 </View>
                 { statusPicker() }
+                { toggleRequestButton() }
                 {/* { teamSection() } */}
             </WrappedScrollView> 
+        )
+    }
+
+    const channel = () => {
+        return (
+            <View>
+                <ChatChannel screenView={false}/>
+            </View>
         )
     }
 
@@ -529,7 +587,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             if (!isRequestAdmin) {
                 return null
             } else {
-                const requestMetadata = requestStore().requestMetadata.get(request.id);
+                const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
                 const numNotified = requestMetadata.notificationsSentTo.size;
 
                 const notifiedUsers = new Map(requestMetadata.notificationsSentTo);
@@ -554,7 +612,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 let numUnseenPositionRequests = 0;
 
                 for (const pos of request.positions) {
-                    const posMeta = requestStore().getPositionMetadata(request.id, pos.id);
+                    const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
                     
                     posMeta.unseenJoinRequests.forEach(requesterId => {
                         const haveNotSeenThisSession = requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id);
@@ -832,21 +890,39 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     })
 
+    const tabs = []
+    // TODO: Should request admin see all chats as well?
+    const userIsOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+    const userHasPermissionToSeeChat = iHaveAnyPermissions([PatchPermissions.ChatAdmin, PatchPermissions.SeeRequestChats])
+    tabs.push(
+        {
+            label: Tabs.Overview,
+            view: overview
+        }
+    );
+
+    if (userIsOnRequest || userHasPermissionToSeeChat) {
+        tabs.push(
+            {
+                label: Tabs.Channel,
+                view: channel
+            }
+        );
+    }
+
+    tabs.push(
+        {
+            label: Tabs.Team,
+            view: team
+        }
+    );
+
     return (
         <VisualArea>
             <TabbedScreen 
                 bodyStyle={{ backgroundColor: '#ffffff' }}
                 defaultTab={Tabs.Overview} 
-                tabs={[
-                    {
-                        label: Tabs.Overview,
-                        view: overview
-                    },
-                    {
-                        label: Tabs.Team,
-                        view: team
-                    }
-                ]}/>
+                tabs={tabs}/>
         </VisualArea>
     );
 });
@@ -871,18 +947,22 @@ const styles = StyleSheet.create({
         marginBottom: 16
     },
     timeAndPlaceSection: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
-        marginBottom: 16
+        marginBottom: 16,
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
+        marginVertical: 5
     },
-    locationIcon: { 
+    contactInfoRow: {
+        flexDirection: 'column',
+    },
+    detailsIcon: { 
         width: 14,
         color: '#666',
         alignSelf: 'center',
-        margin: 0
+        marginRight: 5
     },
     assignmentSelectIcon: { 
         width: 30,
@@ -954,12 +1034,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: '#666',
         marginLeft: 2
-    },
-    timeIcon: { 
-        width: 14,
-        color: '#666',
-        alignSelf: 'center',
-        margin: 0
     },
     timeText: {
         fontSize: 14,
@@ -1143,5 +1217,27 @@ const styles = StyleSheet.create({
         width: 30,
         height: 30,
         margin: 0
+    },
+    closeRequestButton: {
+        backgroundColor: '#76599A',
+    },
+    openRequestButton: {
+        borderColor: '#76599A',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        backgroundColor: '#ffffff',
+    },
+    button: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        borderRadius: 24,
+        marginVertical: 24,
+        width: 328,
+        height: 44
+    },
+    mapView: {
+        height: 120
     }
 })

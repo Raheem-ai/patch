@@ -22,6 +22,17 @@ export function assignedResponderBasedRequestStatus(request: HelpRequest): Reque
             : RequestStatus.Ready;
 }
 
+export function getPreviousOpenStatus(request: HelpRequest): RequestStatus {
+    const statusEvents = request.statusEvents.slice().reverse();
+    for (const event of statusEvents) {
+        if (event.status != RequestStatus.Closed) {
+            return event.status;
+        }
+    }
+
+    return RequestStatus.Unassigned;
+}
+
 type AggregatePositionStats = {
     totalMinFilled: number,
     totalMinToFill: number,

@@ -87,12 +87,15 @@ export type ScreenFormInputOptions = {
     },
     'CategorizedItemList': {
         props: {
-            editHeaderLabel: string,
-            addCategoryPlaceholderLabel: string,
-            addItemPlaceholderLabel: string,
-            onSaveToastLabel: string,
-            editStore: IEditCategorizedItemStore,
-            editPermissions: PatchPermissions[]
+            definedCategories: Map<string, Category>,
+            editConfig?: {
+                editHeaderLabel: string,
+                addCategoryPlaceholderLabel: string,
+                addItemPlaceholderLabel: string,
+                onSaveToastLabel: string,
+                editStore: IEditCategorizedItemStore,
+                editPermissions: PatchPermissions[]
+            },
             onItemDeleted?: (idx: number, val: any) => void
             dark?: boolean
         }, 

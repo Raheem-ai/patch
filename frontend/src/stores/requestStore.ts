@@ -1,11 +1,11 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
 import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
-import { OrgContext, RequestContext } from '../../../common/api';
-import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
+import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
+import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api, IAPIService } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
-import { iHaveAllPermissions } from '../utils';
+import { iHaveAllPermissions, userHasAllPermissions } from '../utils';
 import { ContainerModule } from 'inversify';
 
 @Store(IRequestStore)
@@ -100,39 +100,48 @@ export default class RequestStore implements IRequestStore {
     }
 
     get activeRequests() {
-        return this.requestsArray.filter((r) => r.status != RequestStatus.Done);
+        return this.requestsArray.filter((r) => this.requestIsActive(r));
     }
 
     get myActiveRequests() {
         return this.requestsArray.filter((r) => {
             const imOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().user.id))
-            return r.status != RequestStatus.Done && imOnRequest
+            return this.requestIsActive(r) && imOnRequest
         });
     }
 
     get currentUserActiveRequests() {
         return this.requestsArray.filter((r) => {
             const isOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().currentUser?.id))
-            return r.status != RequestStatus.Done && isOnRequest
+            return this.requestIsActive(r) && isOnRequest
         });
     }
 
-    get requestMetadata() {
+    get orgUserRequestMetadata() {
+        const map = new Map<string, Map<string, RequestMetadata>>()
+
+        userStore().usersInOrg.forEach(user => {
+            map.set(user.id, this.userRequestMetadata(user))
+        })
+
+        return map
+    }
+
+    userRequestMetadata(user: ClientSideFormat<ProtectedUser>) {
         const metadataMap = new Map<string, RequestMetadata>()
 
-        const myId = userStore().user.id;
-        const myAttributes = userStore().user.organizations[userStore().currentOrgId].attributes;
-        const myRoles = organizationStore().userRoles.get(myId)
-        const isRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin])
+        const attributes = user.organizations[userStore().currentOrgId]?.attributes || [];
+        const roles = organizationStore().userRoles.get(user.id)
+        const isRequestAdmin = userHasAllPermissions(user.id, [PatchPermissions.RequestAdmin])
 
         this.requestsArray.forEach(req => {
             const posMap = new Map<string, PositionScopedMetadata>();
 
             req.positions.forEach(pos => {
-                posMap.set(pos.id, this.computePositionScopedMetadata(req.teamEvents, pos, myId, myAttributes, myRoles, isRequestAdmin))
+                posMap.set(pos.id, this.computePositionScopedMetadata(req.teamEvents, pos, user.id, attributes, roles, isRequestAdmin))
             })
             
-            const reqMeta = this.computeRequestScopedMetadata(req.teamEvents, myId, isRequestAdmin);
+            const reqMeta = this.computeRequestScopedMetadata(req.teamEvents, user.id, isRequestAdmin);
 
             metadataMap.set(req.id, {
                 positions: posMap,
@@ -143,12 +152,20 @@ export default class RequestStore implements IRequestStore {
         return metadataMap
     }
 
-    getPositionMetadata(requestId: string, positionId: string): PositionScopedMetadata {
-        return this.requestMetadata.get(requestId).positions.get(positionId);
+    requestIsActive(request: HelpRequest) {
+        return request.status != RequestStatus.Done && request.status != RequestStatus.Closed;
     }
 
-    getRequestMetadata(requestId: string): RequestScopedMetadata {
-        const { unseenNotification, notificationsSentTo, notificationsViewedBy } = this.requestMetadata.get(requestId);
+    getRequestMetadata(userId: string, requestId: string): RequestMetadata {
+        return this.orgUserRequestMetadata.get(userId)?.get(requestId)
+    }
+
+    getPositionScopedMetadata(userId: string, requestId: string, positionId: string): PositionScopedMetadata {
+        return this.orgUserRequestMetadata.get(userId)?.get(requestId)?.positions.get(positionId);
+    }
+
+    getRequestScopedMetadata(userId: string, requestId: string): RequestScopedMetadata {
+        const { unseenNotification, notificationsSentTo, notificationsViewedBy } = this.orgUserRequestMetadata.get(userId)?.get(requestId);
 
         return {
             unseenNotification,
@@ -426,10 +443,14 @@ export default class RequestStore implements IRequestStore {
     get filteredRequests(): HelpRequest[] {
         return this.requestsArray.filter((r) => {
             switch (this.filter) {
+                // TODO: Do the definitiions/semantics of any filters change?
+                // e.g. is there a filter that shows "Finished" and "Closed"?
                 case HelpRequestFilter.Active:
-                    return r.status != RequestStatus.Done
+                    return this.requestIsActive(r);
                 case HelpRequestFilter.Finished:
-                    return r.status == RequestStatus.Done
+                    return r.status == RequestStatus.Done;
+                case HelpRequestFilter.Closed:
+                    return r.status == RequestStatus.Closed;
                 case HelpRequestFilter.All:
                     return true;
             }
@@ -594,6 +615,11 @@ export default class RequestStore implements IRequestStore {
         this.updateOrAddReq(req);
     }
 
+    async reopenRequest(requestId: string): Promise<void> {
+        const req = await api().reopenRequest(this.requestContext(requestId));
+        this.updateOrAddReq(req);
+    }
+
     async updateChatReceipt(request: HelpRequest): Promise<void> {
         const chat = request.chat;
 
@@ -618,7 +644,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async ackRequestNotification(requestId: string) {
-        const unseenNotification = this.getRequestMetadata(requestId).unseenNotification;
+        const unseenNotification = this.getRequestScopedMetadata(userStore().user.id, requestId).unseenNotification;
 
         // team events say there aren't any unseen or we've seen it this session
         if (!unseenNotification || this.seenRequests.has(requestId)) {
@@ -667,7 +693,7 @@ export default class RequestStore implements IRequestStore {
         }
 
         for (const pos of request.positions) {
-            const posMeta = this.getPositionMetadata(request.id, pos.id);
+            const posMeta = this.getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
             
             posMeta.unseenJoinRequests.forEach(requesterId => {
                 if (this.joinRequestIsUnseen(requesterId, request.id, pos.id)) {

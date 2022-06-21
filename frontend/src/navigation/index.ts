@@ -33,35 +33,31 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
       routeTo: 'helpRequestMap'
     },
     {
-      name: 'Chats',
+      name: 'Channels',
       routeTo: 'chats'
     },
-    {
-      name: 'Resources',
-      routeTo: 'home',
-      disabled: true
-    }, 
-    {
-      name: 'Schedule',
-      routeTo: 'signIn',
-      disabled: true
-    }, 
+    // {
+    //   name: 'Resources',
+    //   routeTo: 'home',
+    //   disabled: true
+    // }, 
+    // {
+    //   name: 'Schedule',
+    //   routeTo: 'signIn',
+    //   disabled: true
+    // }, 
     {
       name: 'Team',
       routeTo: 'teamList'
     },
-    {
-      name: 'Settings',
-      routeTo: 'settings'
-    }
   ]
 
-  if (!runningOnProd) {
-    options.push({
-      name: 'Component Lib', 
-      routeTo: 'componentLib'
-    })
-  }
+  // if (!runningOnProd) {
+  //   options.push({
+  //     name: 'Component Lib', 
+  //     routeTo: 'componentLib'
+  //   })
+  // }
 
   return options
 })()
@@ -81,8 +77,7 @@ export type SubMenuOption = ({
 export const SubMenuOptions: SubMenuOption[] = [
   {
     name: 'Settings',
-    routeTo: 'userHomePage',
-    disabled: true
+    routeTo: 'settings',
   }, 
   {
     name: 'Help',

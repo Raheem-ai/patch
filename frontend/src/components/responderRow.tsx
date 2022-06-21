@@ -3,6 +3,7 @@ import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyl
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { HelpRequest, ProtectedUser, UserRole } from "../../../common/models";
+import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import SkillTag from "./skillTag";
 import UserIcon from "./userIcon";
 
@@ -17,7 +18,7 @@ type Props = {
 
 const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
     const isDispatcher = (responder.organizations[orgId]?.roles || []).includes(UserRole.Dispatcher);
-    const skills = (responder.skills || [])
+    const attributes = (responder.organizations[userStore().currentOrgId]?.attributes || []).map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId));
 
     return (
         <Pressable onPress={onPress} style={[styles.responderRow, style ]}>
@@ -48,24 +49,16 @@ const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }:
                 </View>
                 <View style={styles.skillTagsContainer}>
                     {
-                        skills.map((s, i) => {
-                            const addDelim = i < skills.length - 1;
+                        attributes.map((attr, i) => {
+                            const addDelim = i < attributes.length - 1;
 
-                            const type = !!request
-                                ? request.skills.includes(s)
-                                    ? isSelected
-                                        ? 'fulfilled'
-                                        : 'fulfillable'
-                                    : null
-                                : null;
-
-                            // TODO: figure keys here
                             return addDelim 
                                 ? <>
-                                    <SkillTag type={type} style={styles.skillTag} skill={s} />
+                                    <Text style={styles.skillDelim}>{attr.name}</Text>
                                     <Text style={styles.skillDelim}>{'·'}</Text>
                                 </>
-                                : <SkillTag key={s}  type={type} style={styles.skillTag} skill={s} />
+                                : <Text style={styles.skillDelim}>{attr.name}</Text>
+
                         })
                     }
                 </View>

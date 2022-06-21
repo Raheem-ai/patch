@@ -27,7 +27,7 @@ const PositionCard = observer(({
     const roleName = organizationStore().roles.get(pos.role).name
     
     const attrNames = pos.attributes.map(attr => {
-        const category = manageAttributesStore().editStore.categories.get(attr.categoryId);
+        const category = manageAttributesStore().attributeCategories.get(attr.categoryId);
         return category.items.find(item => item.id == attr.itemId).name
     })
 

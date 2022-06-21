@@ -59,7 +59,8 @@ export default function SignInForm( { navigation } : Props) {
                         style={styles.input}
                         label={labelNames.password}
                         value={password}
-                        onChangeText={password =>setPassword(password)}/>
+                        onChangeText={password =>setPassword(password)}
+                        onSubmitEditing={signIn}/>
                 </View>
                 <View style={styles.bottomContainer}>
                     <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>

@@ -1,16 +1,14 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { MongooseDocument } from "@tsed/mongoose";
-import { Authenticate } from "@tsed/passport";
 import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
-import { ChatMessage, HelpRequest, HelpRequestFilter, MinHelpRequest, MinOrg, PatchEventType, ResponderRequestStatuses, UserRole } from "common/models";
-import { assignedResponderBasedRequestStatus } from "common/utils/requestUtils";
+import { HelpRequest, MinHelpRequest, MinOrg, PatchEventType, ResponderRequestStatuses, UserRole } from "common/models";
+import { assignedResponderBasedRequestStatus, getPreviousOpenStatus as getPreviousOpenStatus } from "common/utils/requestUtils";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
 import { RequireRoles } from "../middlewares/userRoleMiddleware";
 import { HelpRequestDoc } from "../models/helpRequest";
-import { UserDoc, UserModel } from "../models/user";
+import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
@@ -151,6 +149,14 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @Required() @BodyParams('status') status: ResponderRequestStatuses,
     ) {
         helpRequest.status = status;
+        helpRequest.statusEvents.push({
+            status: status,
+            setBy: user.id,
+            setAt: new Date().toISOString()
+        });
+
+        helpRequest.markModified('statusEvents');
+
         const res = await helpRequest.save();
 
         await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
@@ -172,5 +178,28 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
 
         return res
     }
-    
+
+
+    @Post(API.server.reopenRequest())
+    @RequestAccess()
+    async reopenRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+    ) {
+        helpRequest.status = getPreviousOpenStatus(helpRequest);
+        helpRequest.statusEvents.push({
+            status: helpRequest.status,
+            setBy: user.id,
+            setAt: new Date().toISOString()
+        });
+
+        helpRequest.markModified('statusEvents');
+
+        const res = await helpRequest.save();
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+
+        return res
+    }
 }

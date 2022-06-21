@@ -3,28 +3,24 @@ import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
 import { visualDelim } from "../constants";
 
-export type ListHeaderProps<F, S> = {
+export type ListHeaderOptionConfig<T = any> = {
+    chosenOption: T,
+    options: T[],
+    toHeaderLabel: (option: T) => string,
+    toOptionLabel: (option: T) => string,
+    onUpdate: (option: T) => void
+}
+
+export type ListHeaderProps = {
     openHeaderLabel: string,
-    
-    chosenFilter: F
-    chosenSortBy: S
 
-    filters: F[]
-    sortBys: S[]
-
-    filterToHeaderLabel: (filter: F) => string
-    sortByToHeaderLabel: (sortBy: S) => string
-    filterToOptionLabel: (filter: F) => string
-    sortByToOptionLabel: (sortBy: S) => string
-
-    onFilterUpdate: (filter: F) => void
-    onSortByUpdate: (sortBy: S) => void
+    optionConfigs: ListHeaderOptionConfig[]
 
     openHeaderStyles?: StyleProp<ViewStyle>
     closedHeaderStyles?: StyleProp<ViewStyle>
 }
 
-const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
+const ListHeader = (props: ListHeaderProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleHeader = () => {
@@ -34,10 +30,7 @@ const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
     const headerSection = () => {
         let label = isOpen
             ? props.openHeaderLabel
-            : [
-                props.chosenFilter ? props.filterToHeaderLabel(props.chosenFilter) : null, 
-                props.chosenSortBy ? props.sortByToHeaderLabel(props.chosenSortBy) : null
-            ].filter(val => !!val).join(` ${visualDelim} `)
+            : (props.optionConfigs || []).map(conf => conf.toHeaderLabel(conf.chosenOption)).filter(val => !!val).join(` ${visualDelim} `)
 
         return (
             <Pressable onPress={toggleHeader}>
@@ -53,60 +46,32 @@ const ListHeader = <Filter, SortBy>(props: ListHeaderProps<Filter, SortBy>) => {
         )
     }
 
-    const filterSection = () => {
-        return (
-            <View style={styles.filterContainer}>
-                {
-                    props.filters.map(filter => {
-                        const label = props.filterToOptionLabel(filter);
-                        const isChosen = filter == props.chosenFilter;
+    const optionConfigToSection = (conf: ListHeaderOptionConfig, i: number) => {
+        return <View key={i} style={styles.optionRowContainer}>
+            {
+                conf.options.map(opt => {
+                    const label = conf.toOptionLabel(opt);
+                    const isChosen = opt == conf.chosenOption;
 
-                        const chooseMe = () => {
-                            props.onFilterUpdate(filter)
-                        }
+                    const chooseMe = () => {
+                        conf.onUpdate(opt)
+                    }
 
-                        return isChosen 
-                            ? <View style={[styles.optionContainer, styles.chosenOptionContainer]}>
-                                <Text style={[styles.option, styles.chosenOption]}>{label}</Text>
-                            </View>
-                            : <Text onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
-                    })
-                }
-            </View>
-        )
-    }
-
-    const sortSection = () => {
-        return (
-            <View style={styles.sortyByContainer}>
-                {
-                    props.sortBys.map(sortBy => {
-                        const label = props.sortByToOptionLabel(sortBy);
-                        const isChosen = sortBy == props.chosenSortBy;
-
-                        const chooseMe = () => {
-                            props.onSortByUpdate(sortBy)
-                        }
-
-                        return isChosen 
-                            ? <View style={[styles.optionContainer, styles.chosenOptionContainer]}>
-                                <Text style={[styles.option, styles.chosenOption]}>{label}</Text>
-                            </View>
-                            : <Text onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
-                    })
-                }
-            </View>
-        )
+                    return isChosen 
+                        ? <View style={[styles.optionContainer, styles.chosenOptionContainer]}>
+                            <Text style={[styles.option, styles.chosenOption]}>{label}</Text>
+                        </View>
+                        : <Text onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
+                })
+            }
+        </View>
     }
     
     return (
         <View style={styles.container}>
             {headerSection()}
             { isOpen 
-                ? [
-                    filterSection(),
-                    sortSection()
-                ]
+                ? props.optionConfigs.map(optionConfigToSection)
                 : null
             }
         </View>
@@ -130,17 +95,12 @@ const styles = StyleSheet.create({
     toggleHeaderButton: {
         alignSelf: 'center'
     },
-    filterContainer: {
+    optionRowContainer: {
         height: 48,
         flexDirection: 'row',
         borderBottomColor: '#E0E0E0',
         borderBottomWidth: 1,
         borderStyle: "solid",
-        marginHorizontal: 12
-    },
-    sortyByContainer: {
-        height: 48,
-        flexDirection: 'row',
         marginHorizontal: 12
     },
     headerLabel: {
