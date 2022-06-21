@@ -1,41 +1,115 @@
-import { NotificationPayload, NotificationType } from "../../../common/models";
-import { NotificationAction } from 'expo-notifications';
+import { NoisyNotificationEventType, NotificationEventType, PatchEventPacket, PatchEventType, SilentNotificationEventType } from "../../../common/models";
+import { Notification, NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
-import { requestStore, userStore } from "../stores/interfaces";
+import { requestStore, updateStore, userStore } from "../stores/interfaces";
 import { api } from "../services/interfaces";
 
-export class NotificationHandlerDefinition<T extends NotificationType = any> {
-    defaultRouteTo?: keyof RootStackParamList
+export interface NotificationHandlerDefinition<T extends PatchEventType = PatchEventType> {
+    actions: () => NotificationResponseDefinition<T>[];
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void>;
 
-    actions(): NotificationResponseDefinition<T>[] {
-        return []
-    }
-
-    constructor(private type: T) { }
+    dontForwardUpdates: boolean
+    dontShowNotification: boolean
+    defaultRouteTo: keyof RootStackParamList
 }
 
-export class AssignedIncidentHandler extends NotificationHandlerDefinition<NotificationType.AssignedIncident> {
-    defaultRouteTo = routerNames.helpRequestDetails;
-    
-    constructor() {
-        super(NotificationType.AssignedIncident)
-    }
+export abstract class NotificationHandler<T extends NoisyNotificationEventType> implements NotificationHandlerDefinition<T> {
+    actions: () => NotificationResponseDefinition<T>[] = null
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void> = null
 
-    actions(): NotificationResponseDefinition<NotificationType.AssignedIncident>[] {
+    dontForwardUpdates = false
+    dontShowNotification = false
+    defaultRouteTo: keyof RootStackParamList = null
+}
+
+export abstract class SilentNotificationHandlerDefinition<T extends SilentNotificationEventType> implements NotificationHandlerDefinition<T> {
+    actions: () => NotificationResponseDefinition<T>[] = null
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void> = null
+
+    dontForwardUpdates = false
+    dontShowNotification = true
+    defaultRouteTo: keyof RootStackParamList = null
+}
+
+////////////////////////////////////////////////////////////
+// Don't show notification but do something when an event //
+// comes in through the notification route (so it can be  //
+// picked up in the background) or via the websocket      //
+////////////////////////////////////////////////////////////
+
+export class ForcedLogoutHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserForceLogout> {
+    dontShowNotification = true
+    dontForwardUpdates = true
+
+    onNotificationRecieved = async (payload: PatchEventPacket<PatchEventType.UserForceLogout>) => {
+        await api().init()
+        await userStore().init()
+
+        if (userStore().user.id == payload.params.userId && api().refreshToken == payload.params.refreshToken) {
+            await userStore().signOut()
+        }
+    }
+}
+
+export class RequestRespondersNotifiedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotified> {
+    dontShowNotification = true
+}
+
+export class RequestRespondersNotificationAckHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotificationAck> {
+    dontShowNotification = true
+}
+
+////////////////////////////////////////////////////////////
+// Show notification with no actions but route to a view  //
+// when user interacts with it                            //
+////////////////////////////////////////////////////////////
+
+export class RequestRespondersJoinedHandler extends NotificationHandler<PatchEventType.RequestRespondersJoined> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+export class RequestRespondersLeftHandler extends NotificationHandler<PatchEventType.RequestRespondersLeft> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+export class RequestRespondersAcceptedHandler extends NotificationHandler<PatchEventType.RequestRespondersAccepted> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+export class RequestRespondersDeclinedHandler extends NotificationHandler<PatchEventType.RequestRespondersDeclined> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+export class RequestRespondersRemovedHandler extends NotificationHandler<PatchEventType.RequestRespondersRemoved> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+////////////////////////////////////////////////////////////
+// Show notification with actions and a defeult route to  //
+// a view when user interacts with it                     //
+////////////////////////////////////////////////////////////
+
+export class RequestRespondersRequestToJoinHandler extends NotificationHandler<PatchEventType.RequestRespondersRequestToJoin> {
+    defaultRouteTo = routerNames.helpRequestDetails
+
+    actions = (): NotificationResponseDefinition<PatchEventType.RequestRespondersRequestToJoin>[] => {
         return [
             {
-                identifier: 'AcceptIncident',
-                buttonTitle: 'Confirm',
+                identifier: 'ApproveJoinRequest',
+                buttonTitle: 'Approve',
                 options: {
                     isDestructive: false,
                     isAuthenticationRequired: false,
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await requestStore().init();
+                            await requestStore().init()
 
-                            // await requestStore().confirmRequestAssignment(payload.orgId, payload.id);
-
+                            await requestStore().approveRequestToJoinRequest(
+                                payload.params.responderId,
+                                payload.params.requestId,
+                                payload.params.positionId,
+                            )
                         } catch (e) {
                             console.error(e);
                         }
@@ -43,23 +117,21 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                 },
             },
             {
-                identifier: 'DeclineIncident',
-                buttonTitle: 'Decline',
+                identifier: 'DenyJoinRequest',
+                buttonTitle: 'Deny',
                 options: {
                     isDestructive: true,
                     isAuthenticationRequired: false,
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await api().init();
-                            
-                            await userStore().init();
+                            await requestStore().init()
 
-                            // await api().declineRequestToJoinRequest({ 
-                            //     token: userStore().authToken, 
-                            //     orgId: payload.orgId
-                            // }, payload.id);
-                            
+                            await requestStore().denyRequestToJoinRequest(
+                                payload.params.responderId,
+                                payload.params.requestId,
+                                payload.params.positionId,
+                            )
                         } catch (e) {
                             console.error(e);
                         }
@@ -80,15 +152,7 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
     }
 }
 
-export class BroadCastedIncidentHandler extends NotificationHandlerDefinition<NotificationType.BroadCastedIncident> {
-    defaultRouteTo = routerNames.helpRequestDetails;
-    
-    constructor() {
-        super(NotificationType.BroadCastedIncident)
-    }
-}
-
-export interface NotificationResponseDefinition<T extends NotificationType = any> extends NotificationAction {
+export interface NotificationResponseDefinition<T extends PatchEventType = any> extends NotificationAction {
     options: {
         isDestructive: boolean,
         isAuthenticationRequired: boolean,
@@ -100,11 +164,18 @@ export interface NotificationResponseDefinition<T extends NotificationType = any
         isDestructive: boolean,
         isAuthenticationRequired: boolean,
         opensAppToForeground: false,
-        handler: (payload: NotificationPayload<T>) => Promise<void>
+        handler: (payload: PatchEventPacket<T>) => Promise<void>
     }
 }
 
-export const NotificationHandlers: { [type in NotificationType]?: NotificationHandlerDefinition<type> } = {
-    [NotificationType.AssignedIncident]: new AssignedIncidentHandler(),
-    [NotificationType.BroadCastedIncident]: new BroadCastedIncidentHandler()
+export const NotificationHandlers: { [type in NotificationEventType]: NotificationHandlerDefinition<type> } = {
+    [PatchEventType.UserForceLogout]: new ForcedLogoutHandler(),
+    [PatchEventType.RequestRespondersNotified]: new RequestRespondersNotifiedHandler(),
+    [PatchEventType.RequestRespondersNotificationAck]: new RequestRespondersNotificationAckHandler(), 
+    [PatchEventType.RequestRespondersJoined]: new RequestRespondersJoinedHandler(), 
+    [PatchEventType.RequestRespondersLeft]: new RequestRespondersLeftHandler(), 
+    [PatchEventType.RequestRespondersAccepted]: new RequestRespondersAcceptedHandler(), 
+    [PatchEventType.RequestRespondersDeclined]: new RequestRespondersDeclinedHandler(), 
+    [PatchEventType.RequestRespondersRemoved]: new RequestRespondersRemovedHandler(), 
+    [PatchEventType.RequestRespondersRequestToJoin]: new RequestRespondersRequestToJoinHandler(), 
 }

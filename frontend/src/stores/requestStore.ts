@@ -2,11 +2,12 @@ import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, ru
 import { Store } from './meta';
 import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
-import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
+import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api, IAPIService } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
 import { iHaveAllPermissions, userHasAllPermissions } from '../utils';
 import { ContainerModule } from 'inversify';
+import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -195,8 +196,8 @@ export default class RequestStore implements IRequestStore {
         let notificationsViewedBy = new Map();
 
         teamEvents.forEach(event => {
-            if (event.type == RequestTeamEventTypes.NotificationSent) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>;
+            if (event.type == PatchEventType.RequestRespondersNotified) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersNotified>;
                 
                 if (e.to.includes(targetUserId)) {
                     unseenNotification = true
@@ -208,8 +209,8 @@ export default class RequestStore implements IRequestStore {
                     notificationsSentTo.set(notifiedUser, timestamp)
                 })
 
-            } else if (event.type == RequestTeamEventTypes.NotificationSeen) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.NotificationSeen>;
+            } else if (event.type == PatchEventType.RequestRespondersNotificationAck) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersNotificationAck>;
                 
                 if (unseenNotification && e.by == targetUserId) {
                     unseenNotification = false
@@ -224,65 +225,6 @@ export default class RequestStore implements IRequestStore {
             notificationsSentTo, 
             notificationsViewedBy
         }
-    }
-
-    // TODO: move to common
-    // Can be optimized in the future by putting this on the req object 
-    // and just updating it whenever we update the team events on the backend
-    // so the ui can just use the latest set associated to this version of the
-    // req
-    usersAssociatedWithRequest(req: HelpRequest) {
-        const users = new Set<string>();
-
-        // add dispatcher id
-        users.add(req.dispatcherId);
-
-        // add ids of users who
-        // 1) were sent a notification 
-        // 2) joined a position
-        // 3) requested to join a position
-        // 4) saw/approved/denied a request to join a position
-        // 5) removed a user from a position
-        req.teamEvents.forEach(event => {
-            const e = event as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>;
-
-            if (event.type == RequestTeamEventTypes.NotificationSent) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.NotificationSent>;
-
-                users.add(e.by);
-                e.to.forEach(userId =>  users.add(userId))
-            } else if (event.type == RequestTeamEventTypes.PositionJoined) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionJoined>;
-
-                users.add(e.user)
-            } else if (event.type == RequestTeamEventTypes.PositionRequested) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>;
-
-                users.add(e.requester)
-            } else if (event.type == RequestTeamEventTypes.PositionRequestSeen) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>;
-
-                users.add(e.by)
-            } else if (event.type == RequestTeamEventTypes.PositionRequestAccepted) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>;
-
-                users.add(e.by)
-            } else if (event.type == RequestTeamEventTypes.PositionRequestDenied) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>;
-
-                users.add(e.by)
-            } else if (event.type == RequestTeamEventTypes.PositionRevoked) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>;
-                users.add(e.by)
-            }
-        })
-
-        // add users that have sent a chat message
-        req.chat?.messages?.forEach(msg => {
-            users.add(msg.userId)
-        })
-
-        return Array.from(users.values())
     }
 
     // TODO: pull this into common so backend can use the same logic
@@ -313,20 +255,20 @@ export default class RequestStore implements IRequestStore {
         // by keeping track of the state for each position individually
         teamEvents.forEach(event => {
             // TODO: type gaurds to make this more ergo
-            if (event.type == RequestTeamEventTypes.PositionJoined) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionJoined>;
+            if (event.type == PatchEventType.RequestRespondersJoined) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersJoined>;
 
                 if (e.position == position.id) {
                     joinedUsers.add(e.user)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionLeft) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionLeft>;
+            } else if (event.type == PatchEventType.RequestRespondersLeft) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersLeft>;
 
                 if (e.position == position.id) {
                     joinedUsers.delete(e.user)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionRevoked) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRevoked>;
+            } else if (event.type == PatchEventType.RequestRespondersRemoved) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRemoved>;
                 
                 if (e.position == position.id) {
 
@@ -336,8 +278,8 @@ export default class RequestStore implements IRequestStore {
 
                     joinedUsers.delete(e.user)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionRequested) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequested>;
+            } else if (event.type == PatchEventType.RequestRespondersRequestToJoin) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoin>;
 
                 if (e.position == position.id) {
                     if (e.requester == targetUserId) {
@@ -350,8 +292,8 @@ export default class RequestStore implements IRequestStore {
 
                     pendingJoinRequests.add(e.requester)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionRequestDenied) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestDenied>;
+            } else if (event.type == PatchEventType.RequestRespondersDeclined) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersDeclined>;
 
                 if (e.position == position.id) {
                     if (waitingOnRequestResults && e.requester == targetUserId) {
@@ -366,8 +308,8 @@ export default class RequestStore implements IRequestStore {
                     pendingJoinRequests.delete(e.requester)
                     deniedJoinRequests.add(e.requester)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionRequestAccepted) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestAccepted>;
+            } else if (event.type == PatchEventType.RequestRespondersAccepted) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersAccepted>;
 
                 if (e.position == position.id) {
                     if (waitingOnRequestResults && e.requester == targetUserId) {
@@ -385,8 +327,8 @@ export default class RequestStore implements IRequestStore {
                     joinedUsers.add(e.requester)
                     pendingJoinRequests.delete(e.requester)
                 }
-            } else if (event.type == RequestTeamEventTypes.PositionRequestSeen) {
-                const e = event as RequestTeamEvent<RequestTeamEventTypes.PositionRequestSeen>;
+            } else if (event.type == PatchEventType.RequestRespondersRequestToJoinAck) {
+                const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoinAck>;
 
                 if (e.by == targetUserId && e.position == position.id) {
                     unseenJoinRequests.delete(e.requester)
@@ -558,7 +500,7 @@ export default class RequestStore implements IRequestStore {
 
             for (const req of requests) {
                 if (!skipUpdatingUsers) {
-                    this.usersAssociatedWithRequest(req).forEach(id => userIdSet.add(id));
+                    usersAssociatedWithRequest(req).forEach(id => userIdSet.add(id));
                 }
                 
                 if (req.id == oldCurrentReqId) {
@@ -584,7 +526,7 @@ export default class RequestStore implements IRequestStore {
     async getRequest(requestId: string) {
         const req = await api().getRequest(this.orgContext(), requestId);
 
-        const associatedUsers = this.usersAssociatedWithRequest(req);
+        const associatedUsers = usersAssociatedWithRequest(req);
 
         // TODO: might be worth having a common response type that returns 
         // related objects to save us a round trip call for this and other tings

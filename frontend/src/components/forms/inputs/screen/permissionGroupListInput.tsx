@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet, Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, List, Text } from "react-native-paper";
-import { PatchPermissionGroups, PermissionGroupMetadata, resolvePermissionGroups, resolvePermissionsFromPermissionGroups, resolvePermissionsFromRoles } from "../../../../../../common/models";
+import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
+import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 

@@ -1,4 +1,4 @@
-import { NotificationType, NotificationPayload } from "common/models";
+import { PatchEventType, PatchEventPacket } from "common/models";
 import { expo } from "../expo";
 import { ExpoPushMessage, ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from 'expo-server-sdk';
 import { NotificationModel } from "../models/notification";
@@ -12,7 +12,7 @@ import {Job} from "agenda";
 import { JobNames } from "../jobs";
 import { DBManager } from "./dbManager";
 
-export type NotificationMetadata<T extends NotificationType> = Omit<NotificationModel<T>, 'sent_count'>
+export type NotificationMetadata<T extends PatchEventType> = Omit<NotificationModel<T>, 'sent_count'>
 
 @Agenda()
 @Service()
@@ -26,11 +26,11 @@ export default class Notifications {
     // stale job
     private backOffIncrementInMins = 4;
 
-    async send<T extends NotificationType>(notification: NotificationMetadata<T>): Promise<void> {
+    async send<T extends PatchEventType>(notification: NotificationMetadata<T>): Promise<void> {
         await this.sendBulk([notification])
     }
 
-    async sendBulk<T extends NotificationType>(notifications: NotificationMetadata<T>[]): Promise<void> {
+    async sendBulk<T extends PatchEventType>(notifications: NotificationMetadata<T>[]): Promise<void> {
         // convert json obj to mongoose document before sending bulk
         const { successfulSends, failedSends } = await this.sendBulkInternal(notifications.map(n => new this.notifications(n)));
 
@@ -58,7 +58,7 @@ export default class Notifications {
     }
 
     // only deals with documents
-    private async sendBulkInternal<T extends NotificationType, N extends NotificationModel<T>>(notifications: N[]): Promise<{ successfulSends: N[], failedSends: N[] }> {
+    private async sendBulkInternal<T extends PatchEventType, N extends NotificationModel<T>>(notifications: N[]): Promise<{ successfulSends: N[], failedSends: N[] }> {
         const chunks = expo.chunkPushNotifications(notifications.map(this.metadataToExpoMessage));
 
         const successNotifications: N[] = [];
@@ -96,7 +96,7 @@ export default class Notifications {
         }
     }
 
-    metadataToExpoMessage<T extends NotificationType>(notification: NotificationMetadata<T>): ExpoPushMessage {
+    metadataToExpoMessage<T extends PatchEventType>(notification: NotificationMetadata<T>): ExpoPushMessage {
         // TODO: test which one of these is right when we can actually test background notifs
         return {
             to: notification.to,
@@ -104,10 +104,10 @@ export default class Notifications {
             body: notification.body,
             data: {
                 ...notification.payload,
-                type: notification.type,
+                // type: notification.type,
                 "content-available": 1
             },
-            categoryId: notification.type,
+            categoryId: notification.payload.event,
             "content-available": 1
         } as any; // expo allows for category id but their types arent up to date
     }
@@ -312,7 +312,7 @@ export default class Notifications {
     // async sendBackgroundNotification(job: Job) {
     //     const user = await this.db.getUser({ email: 'Test@test.com' });
     //     await this.send({
-    //         type: NotificationType.AssignedIncident,
+    //         type: PatchEventType.AssignedIncident,
     //         to: user.push_token,
     //         body: `You've been assigned to Incident #1234`,
     //         payload: {
@@ -327,7 +327,7 @@ export default class Notifications {
 
     //     const notifications: NotificationModel[] = [{
     //         // should retry sending on first round of job
-    //     //     type: NotificationType.AssignedIncident,
+    //     //     type: PatchEventType.AssignedIncident,
     //     //     to: user.push_token,
     //     //     body: `TRANSIENT TICKET: should retry sending on first round of job`,
     //     //     payload: {
@@ -345,7 +345,7 @@ export default class Notifications {
     //     // }, 
     //     // {
     //     //     // should retry sending on second round of job
-    //     //     type: NotificationType.AssignedIncident,
+    //     //     type: PatchEventType.AssignedIncident,
     //     //     to: user.push_token,
     //     //     body: `TRANSIENT TICKET: should retry sending on second round of job`,
     //     //     payload: {
@@ -363,7 +363,7 @@ export default class Notifications {
     //     // },
     //     // {
     //         // should retry sending on first round of job
-            // type: NotificationType.AssignedIncident,
+            // type: PatchEventType.AssignedIncident,
             // to: user.push_token,
             // body: `TRANSIENT RECEIPT: should retry sending on first round of job`,
             // payload: {
@@ -381,7 +381,7 @@ export default class Notifications {
     //     // },  
     //     // {
     //     //     // should log and delete
-    //     //     type: NotificationType.AssignedIncident,
+    //     //     type: PatchEventType.AssignedIncident,
     //     //     to: user.push_token,
     //     //     body: `should log and delete`,
     //     //     payload: {

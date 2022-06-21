@@ -65,15 +65,14 @@ export class ResponderController implements APIController<
             await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
                 responderId: user.id,
                 requestId,
-                positionId
+                positionId,
+                orgId
             })
     
             return res;
         } else {
             throw new Unauthorized('You do not have the required attributes and/or role to join this poition.')
         }
-
-        return req;
     }
 
     @Post(API.server.leaveRequest())
@@ -89,7 +88,8 @@ export class ResponderController implements APIController<
         await this.pubSub.sys(PatchEventType.RequestRespondersLeft, {
             responderId: user.id,
             requestId, 
-            positionId
+            positionId,
+            orgId
         })
 
         return res;

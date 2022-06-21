@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
-import { NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
+import { PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -39,12 +39,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
             if (params && params.notification) {
                 switch (params.notification.type) {
-                    case NotificationType.AssignedIncident:
-                        // ui specific to assignment
-                        break;
-                    case NotificationType.BroadCastedIncident:
-                        // ui specific to broadcasting
-                        break;
+                    // case PatchEventType.AssignedIncident:
+                    //     // ui specific to assignment
+                    //     break;
+                    // case PatchEventType.BroadCastedIncident:
+                    //     // ui specific to broadcasting
+                    //     break;
                 }
 
                 // call store method to get helprequest from api (so we have latest value)
@@ -630,7 +630,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionId: pos.id
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
 
@@ -640,7 +640,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionName: organizationStore().roles.get(pos.role)?.name
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
 
@@ -650,13 +650,13 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionName: organizationStore().roles.get(pos.role)?.name
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
                 }
 
                 viewedUsers.forEach((_, userId) => {
-                    notifiedUsers.delete(userId)
+                    // notifiedUsers.delete(userId)
                 })
 
                 const notifiedLabel = `${numNotified} PEOPLE NOTIFIED`;

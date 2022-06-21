@@ -2,8 +2,9 @@ import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
-import { PermissionGroupMetadata, resolvePermissionGroups } from "../../../../../../common/models"
+import { PermissionGroupMetadata } from "../../../../../../common/models"
 import { unwrap } from "../../../../../../common/utils"
+import { resolvePermissionGroups } from "../../../../../../common/utils/permissionUtils"
 import { SectionLabelViewProps } from "../../types"
 
 const DefaultPlaceholder = 'Set permissions'

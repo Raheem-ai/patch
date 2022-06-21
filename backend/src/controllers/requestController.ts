@@ -122,6 +122,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         const res =  this.includeVirtuals(await this.db.sendMessageToReq(user, helpRequest, message));
 
         await this.pubSub.sys(PatchEventType.RequestChatNewMessage, { 
+            orgId,
             requestId: res.id,
             userId: user.id 
         });

@@ -1,14 +1,16 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { HelpRequest, LinkExperience, LinkParams, NotificationPayload, NotificationType } from "../../common/models";
+import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes } from "../../common/models";
 
-export type NotificationRouteParams<T extends NotificationType, P = {}> = {
-    notification?: NotificationTypes<T>
+export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
+    notification?: PatchEventTypes<T>
 } & P;
 
-type NotificationTypes<T extends NotificationType> = T extends any 
-    ? { type: T, payload: NotificationPayload<T> } 
+type PatchEventTypes<T extends PatchEventType> = T extends any 
+    ? { type: T, payload: PatchEventPacket } 
     : never;
 
+
+// TODO: update these types as well
 export type RootStackParamList = {
     Landing: undefined;
     JoinOrganization: undefined;
@@ -19,7 +21,7 @@ export type RootStackParamList = {
     Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    HelpRequestDetails: NotificationRouteParams<NotificationType.AssignedIncident | NotificationType.BroadCastedIncident>;
+    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
     HelpRequestChat: undefined;

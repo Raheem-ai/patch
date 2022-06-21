@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import { DebounceSettings } from 'lodash';
 import { runInAction } from 'mobx';
+import { AnyFunction } from '../../../common/models';
 import { unwrap } from '../../../common/utils';
 
-type AnyFunction = (...args: any[]) => any;
 
 export interface StatefullMemoDebouncedFunction<F extends AnyFunction, S extends {} = {}> extends _.DebouncedFunc<F> {
     (...args: Parameters<F>): ReturnType<F> | undefined;

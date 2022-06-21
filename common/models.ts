@@ -2,6 +2,8 @@ import { AtLeast } from '.';
 import { allEnumValues } from './utils';
 import { positionStats } from './utils/requestUtils';
 
+export type AnyFunction = (...args: any[]) => any;
+
 export interface AuthTokens {
     refreshToken: string,
     accessToken: string
@@ -261,62 +263,50 @@ export type RequestStatusEvent = {
     setAt: string
 }
 
-export enum RequestTeamEventTypes {
-    NotificationSent = 'nsen',
-    NotificationSeen = 'nsee',
-    PositionJoined = 'pojo',
-    PositionRequested = 'porq',
-    PositionRequestSeen = 'prs',
-    PositionLeft = 'pole',
-    PositionRevoked = 'porv',
-    PositionRequestAccepted = 'pra',
-    PositionRequestDenied = 'prd'
-}
-
 export type RequestTeamEventParams = {
-    [RequestTeamEventTypes.NotificationSent]: {
+    [PatchEventType.RequestRespondersNotified]: {
         by: string
         to: string[]
         sentAt: string
     },
-    [RequestTeamEventTypes.NotificationSeen]: {
+    [PatchEventType.RequestRespondersNotificationAck]: {
         by: string,
         seenAt: string
     },
-    [RequestTeamEventTypes.PositionRequestSeen]: {
+    [PatchEventType.RequestRespondersRequestToJoinAck]: {
         by: string,
         seenAt: string,
         position: string,
         requester: string
     },
-    [RequestTeamEventTypes.PositionJoined]: {
+    [PatchEventType.RequestRespondersJoined]: {
         user: string
         position: string
         joinedAt: string
     },
-    [RequestTeamEventTypes.PositionRequested]: {
+    [PatchEventType.RequestRespondersRequestToJoin]: {
         requester: string
         position: string
         requestedAt: string
     },
-    [RequestTeamEventTypes.PositionRequestAccepted]: {
+    [PatchEventType.RequestRespondersAccepted]: {
         requester: string
         position: string
         by: string
         acceptedAt: string
     },
-    [RequestTeamEventTypes.PositionRequestDenied]: {
+    [PatchEventType.RequestRespondersDeclined]: {
         requester: string
         position: string
         by: string
         deniedAt: string
     },
-    [RequestTeamEventTypes.PositionLeft]: {
+    [PatchEventType.RequestRespondersLeft]: {
         user: string
         position: string
         leftAt: string
     },
-    [RequestTeamEventTypes.PositionRevoked]: {
+    [PatchEventType.RequestRespondersRemoved]: {
         user: string
         by: string
         revokedAt: string, 
@@ -1078,28 +1068,6 @@ export type Location = {
     timestamp: number;
 };
 
-export enum NotificationType {
-    AssignedIncident = 'ai',
-    BroadCastedIncident = 'bi',
-    UIUpdate = 'uiu'
-}
-
-export type NotificationPayloads = {
-    [NotificationType.AssignedIncident] : {
-        id: string,
-        orgId: string
-    },
-    [NotificationType.BroadCastedIncident]: {
-        id: string,
-        orgId: string
-    },
-    [NotificationType.UIUpdate]: {
-        uiEvent: PatchUIEventPacket
-    }
-}
-
-export type NotificationPayload<T extends NotificationType> = NotificationPayloads[T];
-
 export type AppSecrets = {
     googleMapsApiKey: string
 }
@@ -1125,6 +1093,24 @@ export type LinkParams = {
     } 
 } 
 
+/**
+ * TODO: 
+ * 1) make these the ONLY event list
+ * 2) remove PatchUIEvent all together and make ui do logic for how it should
+ * handle updating data and/or showing notifications
+ *     a) update store
+ * 3) backend only handles the different update/notification heuristics  
+ *     a) as a "Best try" over the websocket (user only see's if they are in app)
+ *     b) as a notification so it will be picked up in the background
+ *     c) can we try socket and tell if it fails/succeeds from an ack from the front end to fall back to notifications?
+ * 4) UI unifies how it handles events from notifications vs the websocket and decides what warrants
+ * a visual (system) notification vs handling in app ui (even if it comes through a notification!)
+ * 5) delete dead code around old properties types on
+ *     a) the user model
+ *     b) the request model
+ *     c) notification types
+ *     d) old concepts ie. roles.v1/skills/etc
+ */
 export enum PatchEventType {
     // User.System.<_>
     UserForceLogout = '0.0.0',
@@ -1142,17 +1128,85 @@ export enum PatchEventType {
     UserOffDuty = '0.2.1',
 
     // Request.System.<_>
-    RequestCreated = '1.0.0',
+    RequestCreated = '1.0.0', // to users notified
     RequestEdited =	'1.0.1',
     RequestDeleted = '1.0.2',
 
+
+    // TODO: what do we do about team events on request?!?!
+    // 1) roll TeamEventType into these and have TeamEventType just be 
+    // a subset of this type
+    // 2) have different bindings from PatchEventType variants to the params it needs for
+    // - PatchEvent (used in background and sent to user)
+    // - RequestTeamEvent (used on request model)
+
     // Request.Responders.<_>
-    RequestRespondersAssigned =	'1.1.0',
-    RequestRespondersAccepted =	'1.1.1',
-    RequestRespondersJoined =	'1.1.2',
-    RequestRespondersDeclined =	'1.1.3',
-    RequestRespondersLeft =	'1.1.4',
-    RequestRespondersRemoved =	'1.1.5',
+    // RequestRespondersAssigned =	'1.1.0',
+
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: no
+     */
+    RequestRespondersNotified = '1.1.0',
+
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: no
+     */
+     RequestRespondersNotificationAck = '1.1.1',
+
+    /**
+     * SENT TO: request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRequestToJoin = '1.1.2',  
+     /**
+     * SENT TO: nobody currently
+     * SENT VIA WEBSOCKET: n/a
+     * SENT VIA NOTIFICATION: n/a
+     * SHOULD SHOW NOTIFICATION: n/a
+     */
+      RequestRespondersRequestToJoinAck = '1.1.3',  
+    /**
+     * SENT TO: requester...NOTE: already joined users get same as joined notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersAccepted =	'1.1.4',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersJoined =	'1.1.5',  
+    /**
+     * SENT TO: requester 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersDeclined =	'1.1.6',  
+    /**
+     * SENT TO: already joined users + request admins 
+     * SENT VIA WEBSOCKET: yes 
+     * SENT VIA NOTIFICATION: yes
+     */
+     RequestRespondersLeft =	'1.1.7',      
+    /**
+     * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
+     * SENT VIA WEBSOCKET: yes
+     * SENT VIA NOTIFICATION: yes
+     * SHOULD SHOW NOTIFICATION: yes
+     */
+     RequestRespondersRemoved =	'1.1.8',  
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
@@ -1168,30 +1222,72 @@ export enum PatchEventType {
 
     // Organization.Attributes.<_>
     OrganizationAttributesUpdated = '2.2.0',
-    // TODO: not sure these make sense anymore now that we have a single update command
-    OrganizationAttributeCreated = '2.2.1',
-    OrganizationAttributeEdited = '2.2.2',
-    OrganizationAttributeDeleted = '2.2.3',
-    OrganizationAttributeCategoryCreated = '2.2.4',
-    OrganizationAttributeCategoryEdited = '2.2.5',
-    OrganizationAttributeCategoryDeleted = '2.2.6',
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
-    // TODO: not sure these make sense anymore now that we have a single update command
-    OrganizationTagCreated = '2.3.1',
-    OrganizationTagEdited = '2.3.2',
-    OrganizationTagDeleted = '2.3.3',
-    OrganizationTagCategoryCreated = '2.3.4',
-    OrganizationTagCategoryEdited = '2.3.5',
-    OrganizationTagCategoryDeleted = '2.3.6',
 }
+
+// PatchEventType Convenience Type
+export type RequestTeamEventTypes =
+    PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestRespondersNotificationAck
+    | PatchEventType.RequestRespondersJoined
+    | PatchEventType.RequestRespondersRequestToJoin
+    | PatchEventType.RequestRespondersRequestToJoinAck
+    | PatchEventType.RequestRespondersLeft
+    | PatchEventType.RequestRespondersRemoved
+    | PatchEventType.RequestRespondersAccepted
+    | PatchEventType.RequestRespondersDeclined;
+
+// PatchEventType Convenience Type
+export type RequestEventType = RequestTeamEventTypes
+    | PatchEventType.RequestChatNewMessage
+    | PatchEventType.RequestCreated
+    | PatchEventType.RequestDeleted
+    | PatchEventType.RequestEdited;
+
+// PatchEventType Convenience Type
+export type UserEventType = PatchEventType.UserCreated
+    | PatchEventType.UserEdited
+    | PatchEventType.UserDeleted
+    | PatchEventType.UserAddedToOrg
+    | PatchEventType.UserRemovedFromOrg
+    | PatchEventType.UserChangedRolesInOrg
+    | PatchEventType.UserOnDuty
+    | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+export type OrgEventType = PatchEventType.OrganizationEdited
+    | PatchEventType.OrganizationDeleted
+    | PatchEventType.OrganizationRoleCreated
+    | PatchEventType.OrganizationRoleEdited
+    | PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
+
+export type NotificationEventType = SilentNotificationEventType | NoisyNotificationEventType;
+
+// PatchEventType Convenience Type
+export type SilentNotificationEventType = PatchEventType.UserForceLogout
+    | PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestRespondersNotificationAck
+
+// PatchEventType Convenience Type
+export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
+    | PatchEventType.RequestRespondersLeft
+    | PatchEventType.RequestRespondersAccepted
+    | PatchEventType.RequestRespondersDeclined
+    | PatchEventType.RequestRespondersRemoved
+    | PatchEventType.RequestRespondersRequestToJoin
 
 export type PatchEventParams = {
     [PatchEventType.UserForceLogout]: {
-        userId: string
+        userId: string,
+        refreshToken: string
     },
-    [PatchEventType.UserCreated]: {}
+    [PatchEventType.UserCreated]: {
+        userId: string
+    }
     [PatchEventType.UserEdited]: {
         userId: string
     },
@@ -1225,35 +1321,56 @@ export type PatchEventParams = {
     [PatchEventType.RequestDeleted]: {
         requestId: string
     }, 
-    [PatchEventType.RequestRespondersAssigned]: {
+    [PatchEventType.RequestRespondersNotified]: {
         requestId: string
-    }, 
+    },
+    [PatchEventType.RequestRespondersNotificationAck]: {
+        requestId: string
+    },
+    [PatchEventType.RequestRespondersRequestToJoin]: {
+        orgId: string,
+        responderId: string,
+        requestId: string,
+        positionId: string
+    },
+    [PatchEventType.RequestRespondersRequestToJoinAck]: {
+        orgId: string,
+        responderId: string,
+        requestId: string,
+        positionId: string
+    },
     [PatchEventType.RequestRespondersAccepted]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersJoined]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersDeclined]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersLeft]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestRespondersRemoved]: {
+        orgId: string,
         responderId: string,
         requestId: string,
         positionId: string
     }, 
     [PatchEventType.RequestChatNewMessage]: {
+        orgId: string,
         requestId: string,
         userId: string
     },
@@ -1275,60 +1392,6 @@ export type PatchEventParams = {
         orgId: string,
         roleId: string
     },
-    [PatchEventType.OrganizationAttributeCreated]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeEdited]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeDeleted]: {
-        orgId: string,
-        categoryId: string,
-        attributeId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryCreated]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryEdited]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationAttributeCategoryDeleted]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCreated]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagEdited]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagDeleted]: {
-        orgId: string,
-        categoryId: string,
-        tagId: string
-    },
-    [PatchEventType.OrganizationTagCategoryCreated]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCategoryEdited]: {
-        orgId: string,
-        categoryId: string
-    },
-    [PatchEventType.OrganizationTagCategoryDeleted]: {
-        orgId: string,
-        categoryId: string
-    },
     // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
     // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
@@ -1336,42 +1399,13 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationTagsUpdated]: {
         orgId: string
-    },
+    }
 }
 
-export type PatchEventPacket<T extends PatchEventType = any> = {
+export type PatchEventPacket<T extends PatchEventType = PatchEventType> = {
     event: T,
-    params: PatchEventParams[T]
-}
-
-export enum PatchUIEvent {
-    ForceLogout = 'fl',
-    UpdateResource = 'ur'
-}
-
-export type PatchUIEventParams = {
-    [PatchUIEvent.ForceLogout]: {
-        refreshToken: string
-    },
-    [PatchUIEvent.UpdateResource]: {
-        orgId?: string
-        requestId?: string
-        userId?: string
-        roleId?: string
-        attributeCategoryId?: string
-        attributeId?: string
-        tagCategoryId?: string
-        tagId?: string
-        userList?: boolean
-        requestList?: boolean
-    },
-}
-
-export type PatchUIEventPacket<UIEvent extends PatchUIEvent = any, SysEvent extends PatchEventType = any> = {
-    event: UIEvent
-    params: PatchUIEventParams[UIEvent]
-    sysEvent: SysEvent
-    sysParams: PatchEventParams[SysEvent]
+    params: PatchEventParams[T],
+    silent?: boolean
 }
 
 export type DateTimeRange = {
@@ -1564,39 +1598,6 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
             PatchPermissions.CloseRequests
         ]
     }
-}
-
-export function resolvePermissionsFromPermissionGroups(groups: PatchPermissionGroups[], userPermissions?: Set<PatchPermissions>) {
-    const setOfPermissions = userPermissions || new Set();
-    
-    for (const group of groups) {
-        (PermissionGroupMetadata[group]?.permissions || []).forEach(permission => {
-            setOfPermissions.add(permission);
-        });
-
-        resolvePermissionsFromPermissionGroups(PermissionGroupMetadata[group]?.forces || [], setOfPermissions)
-    }
-}
-
-export function resolvePermissionsFromRoles(roles: Role[]): Set<PatchPermissions> {
-    const userPermissions = new Set<PatchPermissions>();
-
-    for (const role of roles) {
-        resolvePermissionsFromPermissionGroups(role.permissionGroups, userPermissions)
-    }
-
-    return userPermissions;
-}
-
-export function resolvePermissionGroups(selectedGroups: PatchPermissionGroups[], visuallySelectedGroups?: Set<PatchPermissionGroups>) {
-    const setOfGroups = visuallySelectedGroups || new Set();
-    
-    for (const group of selectedGroups) {
-        setOfGroups.add(group);
-        resolvePermissionGroups(PermissionGroupMetadata[group]?.forces || [], setOfGroups)
-    }
-
-    return setOfGroups
 }
 
 export enum DefaultRoleIds {

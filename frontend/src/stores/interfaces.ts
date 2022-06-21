@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, NotificationPayload, NotificationType, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, PatchUIEventPacket, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -74,11 +74,13 @@ export interface INotificationStore extends IBaseStore {
     teardown(): void;
     askForPermission(): Promise<boolean> 
     updatePushToken(): Promise<void>;
-    onNotification<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, notification: Notification) => void): [T, string];
-    offNotification<T extends NotificationType>(params: [T,string]);
-    onNotificationResponse<T extends NotificationType>(type: T, cb: (data: NotificationPayload<T>, res: NotificationResponse) => void): [T, string];
-    offNotificationResponse<T extends NotificationType>(params: [T, string]);
+    // onNotification<T extends PatchEventType>(type: T, cb: (data: PatchEventPacket, notification: Notification) => void): [T, string];
+    // offNotification<T extends PatchEventType>(params: [T,string]);
+    // onNotificationResponse<T extends PatchEventType>(type: T, cb: (data: PatchEventPacket, res: NotificationResponse) => void): [T, string];
+    // offNotificationResponse<T extends PatchEventType>(params: [T, string]);
     handlePermissions(): Promise<void>
+    onEvent(packet: PatchEventPacket) : Promise<void>
+    handleNotification(notification: Notification): Promise<void>
 }
 
 export namespace INotificationStore {
@@ -521,7 +523,7 @@ export namespace IUpdateStore {
 }
 
 export interface IUpdateStore extends IBaseStore {
-    onUIEvent(packet: PatchUIEventPacket) : Promise<void>
+    onEvent(packet: PatchEventPacket) : Promise<void>
 }
 
 export namespace IUpsertRoleStore {

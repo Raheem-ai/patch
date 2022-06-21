@@ -1,16 +1,13 @@
 import { Model, ObjectID } from "@tsed/mongoose";
 import { Property } from "@tsed/schema";
-import { NotificationPayload, NotificationType } from "common/models";
+import { PatchEventPacket, PatchEventType } from "common/models";
 import { ExpoPushSuccessTicket, ExpoPushErrorTicket, ExpoPushErrorReceipt } from 'expo-server-sdk';
 
 @Model({ collection: 'notifications' })
-export class NotificationModel<T extends NotificationType = any> {
+export class NotificationModel<T extends PatchEventType = any> {
 
     @Property()
-    type: T
-
-    @Property()
-    payload: NotificationPayload<T>
+    payload: PatchEventPacket<T>
 
     @Property()
     to: string
