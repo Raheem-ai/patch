@@ -13,6 +13,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
+import { MySocketService } from "../services/socketService";
 
 @Controller(API.namespaces.responder)
 export class ResponderController implements APIController<
@@ -26,6 +27,7 @@ export class ResponderController implements APIController<
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
     @Inject(PubSubService) pubSub: PubSubService;    
+    @Inject(MySocketService) socket: MySocketService;
 
     @Post(API.server.setOnDutyStatus())
     @RequireRoles([UserRole.Responder])
@@ -61,7 +63,7 @@ export class ResponderController implements APIController<
 
         if (userCanJoinRequestPosition(req, positionId, user, orgId)) {
             const res = await this.db.joinRequest(requestId, user.id, positionId);
-        
+
             await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
                 responderId: user.id,
                 requestId,

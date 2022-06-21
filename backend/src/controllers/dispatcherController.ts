@@ -12,6 +12,7 @@ import { Required } from "@tsed/schema";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
+import { MySocketService } from "../services/socketService";
 
 @Controller(API.namespaces.dispatch)
 export class DispatcherController implements APIController<
@@ -26,6 +27,7 @@ export class DispatcherController implements APIController<
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
     @Inject(PubSubService) pubSub: PubSubService;
+    @Inject(MySocketService) socket: MySocketService;
 
     // @Post(API.server.broadcastRequest())
     // @RequireRoles([UserRole.Dispatcher])
@@ -97,6 +99,12 @@ export class DispatcherController implements APIController<
         // await this.notifications.sendBulk(notifications);
 
         const updatedReq = await this.db.notifyRespondersAboutRequest(requestId, user.id, to);
+
+        // await this.socket.handleRespondersNotified({
+        //     requestId,
+        //     notifierId: user.id,
+        //     userIds: to
+        // })
 
         await this.pubSub.sys(PatchEventType.RequestRespondersNotified, {
             requestId,
