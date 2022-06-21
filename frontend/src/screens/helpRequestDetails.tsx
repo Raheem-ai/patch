@@ -4,7 +4,7 @@ import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
 import { NotificationType, PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { alertStore, bottomDrawerStore, BottomDrawerView, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import { dateToTimeString } from "../../../common/utils";
 
@@ -18,6 +18,7 @@ import { visualDelim } from "../constants";
 import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import Tags from "../components/tags";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -76,25 +77,64 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
             <View style={styles.timeAndPlaceSection}>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.locationIcon}
+                        style={styles.detailsIcon}
                         icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.locationText}>{address}</Text>
                 </View>
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.timeIcon}
+                        style={styles.detailsIcon}
                         icon='clock-outline' 
-                        color={styles.timeIcon.color}
-                        size={styles.timeIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.timeText}>{time.toLocaleString()}</Text>
                 </View>
+                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='phone-incoming' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
+                    </View>
+                    : null
+                }
+                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='account' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <View style={styles.contactInfoRow}>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                    </View>
+                    : null
+                }
+                { tags.length != 0
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='tag' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Tags 
+                            centered
+                            tags={tags}/>
+                    </View>
+                    : null
+                }
             </View>
         )
     }
@@ -913,13 +953,16 @@ const styles = StyleSheet.create({
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
-        marginVertical: 8
+        marginVertical: 5
     },
-    locationIcon: { 
+    contactInfoRow: {
+        flexDirection: 'column',
+    },
+    detailsIcon: { 
         width: 14,
         color: '#666',
         alignSelf: 'center',
-        margin: 0
+        marginRight: 5
     },
     assignmentSelectIcon: { 
         width: 30,
@@ -991,12 +1034,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: '#666',
         marginLeft: 2
-    },
-    timeIcon: { 
-        width: 14,
-        color: '#666',
-        alignSelf: 'center',
-        margin: 0
     },
     timeText: {
         fontSize: 14,
