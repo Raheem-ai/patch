@@ -69,39 +69,40 @@ export class DispatcherController implements APIController<
         @Required() @BodyParams('requestId') requestId: string, 
         @Required() @BodyParams('to') to: string[]
     ) {
-        const usersToAssign = await this.db.getUsersByIds(to);
+        // const usersToAssign = await this.db.getUsersByIds(to);
         const request = await this.db.resolveRequest(requestId)
 
-        const notifications: NotificationMetadata<PatchEventType.RequestRespondersNotified>[] = [];
+        // const notifications: NotificationMetadata<PatchEventType.RequestRespondersNotified>[] = [];
 
-        for (const user of usersToAssign) {
+        // for (const user of usersToAssign) {
 
-            if (!user.push_token) {
-                // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
-                continue;
-            }
+        //     if (!user.push_token) {
+        //         // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
+        //         continue;
+        //     }
 
-            notifications.push({
-                // TODO: update to this type to be about Requests needing help
-                to: user.push_token,
-                body: `Help is needed with Request: ${request.displayId}`,
-                payload: {
-                    event: PatchEventType.RequestRespondersNotified,
-                    params: {
-                        requestId
-                    }
-                }
-            });
-        }
+        //     notifications.push({
+        //         // TODO: update to this type to be about Requests needing help
+        //         to: user.push_token,
+        //         body: `Help is needed with Request: ${request.displayId}`,
+        //         payload: {
+        //             event: PatchEventType.RequestRespondersNotified,
+        //             params: {
+        //                 requestId
+        //             }
+        //         }
+        //     });
+        // }
         
-        await this.notifications.sendBulk(notifications);
+        // await this.notifications.sendBulk(notifications);
 
         const updatedReq = await this.db.notifyRespondersAboutRequest(requestId, user.id, to);
 
-        // TODO: update pubsub with this event
-        // await this.pubSub.sys(PatchEventType.RequestRespondersAssigned, {
-        //     requestId
-        // });
+        await this.pubSub.sys(PatchEventType.RequestRespondersNotified, {
+            requestId,
+            notifierId: user.id,
+            userIds: to
+        });
 
         return updatedReq
     }

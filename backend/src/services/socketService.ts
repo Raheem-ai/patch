@@ -122,43 +122,15 @@ export class MySocketService {
             // case PatchEventType.RequestChatNewMessage: 
             // case PatchEventType.RequestRespondersAccepted: 
             case PatchEventType.RequestRespondersJoined: 
-                const payload = params as PatchEventParams[PatchEventType.RequestRespondersJoined]
-                const request = await this.db.resolveRequest(payload.requestId);
-                const org = await this.db.resolveOrganization(payload.orgId);
-                const fullOrg = await this.db.protectedOrganization(org);
-
-                const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-                const usersOnRequest = await this.usersOnRequest(request, fullOrg);
-
-                const responderName = usersOnRequest.has(payload.responderId)
-                    ? usersOnRequest.get(payload.responderId).userName
-                    : await (await this.db.resolveUser(payload.responderId)).name;
-
-                const body = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName);
-                const configs: SendConfig[] = [];
-
-                for (const admin of Array.from(requestAdmins.values())) {
-                    admin.body = body
-                    configs.push(admin as SendConfig)
-                }
-
-                for (const responder of Array.from(usersOnRequest.values())) {
-                    // dedup
-                    if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
-                        continue;
-                    }
-
-                    responder.body = body
-                    configs.push(responder as SendConfig)
-                }
-
-                await this.send(configs, {
-                    event,
-                    params
-                });
-
+                await this.handleResponderJoinedRequest(params as PatchEventParams[PatchEventType.RequestRespondersJoined])
                 break;
             // case PatchEventType.RequestRespondersLeft: 
+            case PatchEventType.RequestRespondersLeft: 
+                await this.handleResponderLeftRequest(params as PatchEventParams[PatchEventType.RequestRespondersLeft])
+                break;
+            case PatchEventType.RequestRespondersNotified: 
+                await this.handleRespondersNotified(params as PatchEventParams[PatchEventType.RequestRespondersNotified])
+                break;
             // case PatchEventType.RequestRespondersRemoved: 
             // case PatchEventType.RequestRespondersDeclined:
             // // case PatchEventType.RequestResponders:
@@ -257,6 +229,83 @@ export class MySocketService {
                 await this.notifications.send(notification)
             }
         }
+    }
+
+    async handleResponderJoinedRequest(payload: PatchEventParams[PatchEventType.RequestRespondersJoined]) {
+        const request = await this.db.resolveRequest(payload.requestId);
+        const org = await this.db.resolveOrganization(payload.orgId);
+        const fullOrg = await this.db.protectedOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const responderName = usersOnRequest.has(payload.responderId)
+            ? usersOnRequest.get(payload.responderId).userName
+            : await (await this.db.resolveUser(payload.responderId)).name;
+
+        const body = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName);
+        const configs: SendConfig[] = [];
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
+        }
+
+        for (const responder of Array.from(usersOnRequest.values())) {
+            // dedup
+            if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
+                continue;
+            }
+
+            responder.body = body
+            configs.push(responder as SendConfig)
+        }
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersJoined,
+            params: payload
+        });
+    }
+
+    async handleRespondersNotified(payload: PatchEventParams[PatchEventType.RequestRespondersNotified]) {
+        
+    }
+
+
+    async handleResponderLeftRequest(payload: PatchEventParams[PatchEventType.RequestRespondersLeft]) {
+        const request = await this.db.resolveRequest(payload.requestId);
+        const org = await this.db.resolveOrganization(payload.orgId);
+        const fullOrg = await this.db.protectedOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const responderName = usersOnRequest.has(payload.responderId)
+            ? usersOnRequest.get(payload.responderId).userName
+            : await (await this.db.resolveUser(payload.responderId)).name;
+
+        const body = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName);
+        const configs: SendConfig[] = [];
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
+        }
+
+        for (const responder of Array.from(usersOnRequest.values())) {
+            // dedup
+            if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
+                continue;
+            }
+
+            responder.body = body
+            configs.push(responder as SendConfig)
+        }
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersLeft,
+            params: payload
+        });
     }
 
     // Do we want to send a notification?
@@ -818,11 +867,23 @@ export class MySocketService {
         const socketAttempts = [];
 
         for (const config of configs) {
+            console.log('Trying to send packet to: ', config.userName, ' : ',  config.userId)
             const sockets = await this.adapter.fetchSockets({
                 rooms: new Set([config.userId])
             })
 
             const socket = sockets[0] as SocketIO.Socket;
+
+            const notification: NotificationMetadata<PatchEventType> = {
+                to: config.pushToken,
+                body: config.body,
+                payload: packet
+            }
+
+            if (!socket) {
+                notifications.push(notification)
+                continue;
+            }
             
             try {
                 await verifyRefreshToken(socket.data?.refreshToken, this.db);
@@ -836,11 +897,7 @@ export class MySocketService {
             }
 
             const socketAttempt = new Promise<void>((resolve, _) => {
-                const notification: NotificationMetadata<PatchEventType> = {
-                    to: config.pushToken,
-                    body: config.body,
-                    payload: packet
-                }
+                
                 try {
                     socket.timeout(3000).emit('message', packet, (err) => {
                         if (err) {
