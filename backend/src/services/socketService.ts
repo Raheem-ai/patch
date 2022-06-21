@@ -97,6 +97,9 @@ export class MySocketService {
             case PatchEventType.UserForceLogout:
                 await this.handleForcedLogout(event, params as any)
                 break;
+            case PatchEventType.RequestChatNewMessage:
+                await this.handleNewRequestChatMessage(params as PatchEventParams[PatchEventType.RequestChatNewMessage])
+                break;
             // send best try socket update 
             // case PatchEventType.UserEdited:
             // case PatchEventType.UserOnDuty:
@@ -234,7 +237,7 @@ export class MySocketService {
     async handleResponderJoinedRequest(payload: PatchEventParams[PatchEventType.RequestRespondersJoined]) {
         const request = await this.db.resolveRequest(payload.requestId);
         const org = await this.db.resolveOrganization(payload.orgId);
-        const fullOrg = await this.db.protectedOrganization(org);
+        const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
         const usersOnRequest = await this.usersOnRequest(request, fullOrg);
@@ -268,14 +271,44 @@ export class MySocketService {
     }
 
     async handleRespondersNotified(payload: PatchEventParams[PatchEventType.RequestRespondersNotified]) {
-        
+        const usersToNotify = await this.db.getUsersByIds(payload.userIds)
+
+        const body = notificationLabel(PatchEventType.RequestRespondersNotified);
+
+        const configs: SendConfig[] = usersToNotify.map(u => {
+            return {
+                userId: u.id,
+                userName: u.name,
+                pushToken: u.push_token,
+                body
+            }
+        })
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersNotified,
+            params: payload
+        })
     }
 
+    async handleNewRequestChatMessage(payload: PatchEventParams[PatchEventType.RequestChatNewMessage]) {
+        const org = await this.db.resolveOrganization(payload.orgId);
+        const fullOrg = await this.db.fullOrganization(org)
+        const users = await this.usersInOrg(fullOrg)
+        const body = ''
+        const configs: SendConfig[] = [];
+
+        for (const user of Array.from(users.values())) {
+            user.body = body
+            configs.push(user as SendConfig)
+        }
+
+        await this.send(configs, { event: PatchEventType.RequestChatNewMessage, params: payload })
+    }
 
     async handleResponderLeftRequest(payload: PatchEventParams[PatchEventType.RequestRespondersLeft]) {
         const request = await this.db.resolveRequest(payload.requestId);
         const org = await this.db.resolveOrganization(payload.orgId);
-        const fullOrg = await this.db.protectedOrganization(org);
+        const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
         const usersOnRequest = await this.usersOnRequest(request, fullOrg);
@@ -814,16 +847,26 @@ export class MySocketService {
     //     return true;
     // }
 
-    async usersInOrg(orgId: string) {
+    async usersInOrg(org: OrganizationDoc) {
+        const users = new Map<string, Partial<SendConfig>>()
 
+        org.members.forEach((member: UserModel) => {
+            users.set(member.id, {
+                userId: member.id,
+                userName: member.name,
+                pushToken: (member as unknown as UserModel).push_token
+            })
+        })
+
+        return users;
     }
 
-    async usersOnRequest(req: HelpRequestDoc, org: Organization) {
+    async usersOnRequest(req: HelpRequestDoc, org: OrganizationDoc) {
         const users = new Map<string, Partial<SendConfig>>()
 
         const userIds = usersAssociatedWithRequest(req);
 
-        org.members.forEach(member => {
+        org.members.forEach((member: UserModel) => {
             if (userIds.includes(member.id)) {
                 users.set(member.id, {
                     userId: member.id,
@@ -836,10 +879,12 @@ export class MySocketService {
         return users;
     }
 
-    async requestAdminsInOrg(org: Organization) {
+    async requestAdminsInOrg(org: OrganizationDoc) {
         const admins = new Map<string, Partial<SendConfig>>()
         
-        org.members.forEach(member => {
+        org.members.forEach((member: UserModel) => {
+            console.log(member)
+
             const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
                 return org.roleDefinitions.find(def => def.id == roleId)
             })
@@ -867,7 +912,6 @@ export class MySocketService {
         const socketAttempts = [];
 
         for (const config of configs) {
-            console.log('Trying to send packet to: ', config.userName, ' : ',  config.userId)
             const sockets = await this.adapter.fetchSockets({
                 rooms: new Set([config.userId])
             })
@@ -918,10 +962,10 @@ export class MySocketService {
         await Promise.all(socketAttempts);
 
         try {
-            await this.notifications.sendBulk(notifications)
+            // Don't fail if some user's haven't accepted notifications
+            await this.notifications.sendBulk(notifications.filter(meta => !!meta.to))
         } catch (e) {
             console.error(`Error sending update over notification: ${e}`)
         }
-
     }
 }

@@ -61,6 +61,7 @@ export default class SocketStore implements ISocketStore {
         })
 
         this.socket.on('message', async (packet: PatchEventPacket, cb?) => {
+            console.log('got mesage from socket: ', packet)
             // ack so the backend knows not to send a fallback notification
             cb?.()
 

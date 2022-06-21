@@ -13,6 +13,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
+import { MySocketService } from "../services/socketService";
 import { UIUpdateService } from "../services/uiUpdateService";
 
 export class ValidatedMinOrg implements MinOrg {
@@ -31,6 +32,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;
     @Inject(PubSubService) pubSub: PubSubService;
+    @Inject(MySocketService) socket: MySocketService;
 
     includeVirtuals(helpRequest: HelpRequestDoc): HelpRequest {
         return helpRequest.toObject({ virtuals: true });

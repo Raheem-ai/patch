@@ -4,8 +4,9 @@ import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
-import { INotificationStore, notificationStore, updateStore, userStore } from "./interfaces";
+import { INotificationStore, notificationStore, requestStore, updateStore, userStore } from "./interfaces";
 import { NotificationEventType, PatchEventPacket, PatchEventType } from "../../../common/models";
+import { notificationLabel } from "../../../common/utils/notificationUtils";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
 import { navigateTo } from "../navigation";
@@ -137,18 +138,35 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async onEvent(packet: PatchEventPacket) {
-        // TODO make sure this goes through the whole flow
-        // 1) Notifications.setNotificationHandler
-        // 2) this.handleNotification
+        let body = '';
 
-        // *** if not, only do this when we want to show a notification
-        // and manually call this.handleNotification internals
-       await Notifications.scheduleNotificationAsync({
-            content: {
-                // TODO
-            },
-            trigger: null
-        })
+        if (packet.event == PatchEventType.RequestRespondersJoined) {
+            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersJoined> = packet as any;
+            const req = requestStore().requests.get(typedPacket.params.requestId);
+            const user = userStore().users.get(typedPacket.params.responderId);
+
+            body = notificationLabel(typedPacket.event, req.displayId, user.name)
+        } else if (packet.event == PatchEventType.RequestRespondersLeft) {
+            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersLeft> = packet as any;
+            const req = requestStore().requests.get(typedPacket.params.requestId);
+            const user = userStore().users.get(typedPacket.params.responderId);
+
+            body = notificationLabel(typedPacket.event, req.displayId, user.name)
+        } else if (packet.event == PatchEventType.RequestRespondersNotified) {
+            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersNotified> = packet as any;
+            body = notificationLabel(typedPacket.event)
+        }
+
+        // if (body) {
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    body: body,
+                    data: packet,
+                    categoryIdentifier: packet.event
+                },
+                trigger: null
+            })
+        // }
     }
 
 
@@ -216,7 +234,7 @@ Notifications.setNotificationHandler({
 
         // TODO: let this decide if it should be shown based on the users relation to the event by either,
         // 1) making this an async function that returns a boolean
-        // 2) sending an optional silent flag on the event sent from the backend
+        // 2) sending an optional silent flag on the event sent from the backend [x]
         if (notificationHandler 
             && !notificationHandler.dontShowNotification
             && !payload.silent

@@ -88,6 +88,14 @@ export class DBManager {
         return jsonOrg;
     }
 
+    // TODO: need special type to see full user models on this that aren't a ref
+    async fullOrganization(orgId: string | OrganizationDoc) {
+        const org = await this.resolveOrganization(orgId);
+        const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+
+        return populatedOrg;
+    }
+
     async createUser(user: Partial<UserModel>): Promise<UserDoc> {
         user.auth_etag = user.auth_etag || uuid.v1();
         user.displayColor = user.displayColor || randomColor({
