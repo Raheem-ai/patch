@@ -630,7 +630,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionId: pos.id
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
 
@@ -640,7 +640,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionName: organizationStore().roles.get(pos.role)?.name
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
 
@@ -650,13 +650,13 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             positionName: organizationStore().roles.get(pos.role)?.name
                         })
 
-                        notifiedUsers.delete(userId);
+                        // notifiedUsers.delete(userId);
                         viewedUsers.delete(userId);
                     })
                 }
 
                 viewedUsers.forEach((_, userId) => {
-                    notifiedUsers.delete(userId)
+                    // notifiedUsers.delete(userId)
                 })
 
                 const notifiedLabel = `${numNotified} PEOPLE NOTIFIED`;

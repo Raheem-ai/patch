@@ -111,3 +111,61 @@ export function userQualifiedForPosition(
 
     return haveAllAttributes && haveRole;
 }
+
+// Can be optimized in the future by putting this on the req object 
+// and just updating it whenever we update the team events on the backend
+// so the ui can just use the latest set associated to this version of the
+// req
+export function usersAssociatedWithRequest(req: HelpRequest) {
+    const users = new Set<string>();
+
+    // add dispatcher id
+    users.add(req.dispatcherId);
+
+    // add ids of users who
+    // 1) were sent a notification 
+    // 2) joined a position
+    // 3) requested to join a position
+    // 4) saw/approved/denied a request to join a position
+    // 5) removed a user from a position
+    req.teamEvents.forEach(event => {
+        const e = event as RequestTeamEvent<PatchEventType.RequestRespondersNotified>;
+
+        if (event.type == PatchEventType.RequestRespondersNotified) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersNotified>;
+
+            users.add(e.by);
+            e.to.forEach(userId =>  users.add(userId))
+        } else if (event.type == PatchEventType.RequestRespondersJoined) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersJoined>;
+
+            users.add(e.user)
+        } else if (event.type == PatchEventType.RequestRespondersRequestToJoin) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoin>;
+
+            users.add(e.requester)
+        } else if (event.type == PatchEventType.RequestRespondersRequestToJoinAck) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRequestToJoinAck>;
+
+            users.add(e.by)
+        } else if (event.type == PatchEventType.RequestRespondersAccepted) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersAccepted>;
+
+            users.add(e.by)
+        } else if (event.type == PatchEventType.RequestRespondersDeclined) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersDeclined>;
+
+            users.add(e.by)
+        } else if (event.type == PatchEventType.RequestRespondersRemoved) {
+            const e = event as RequestTeamEvent<PatchEventType.RequestRespondersRemoved>;
+            users.add(e.by)
+        }
+    })
+
+    // add users that have sent a chat message
+    req.chat?.messages?.forEach(msg => {
+        users.add(msg.userId)
+    })
+
+    return Array.from(users.values())
+}

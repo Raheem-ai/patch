@@ -1,6 +1,6 @@
 import { Inject, registerExceptionType } from "@tsed/common";
 import { IO, Nsp, Socket, SocketService as Service, SocketSession} from "@tsed/socketio";
-import { Organization, PatchEventPacket, PatchEventParams, PatchEventType, UserRole } from "common/models";
+import { Organization, PatchEventPacket, PatchEventParams, PatchEventType, PatchPermissions, UserRole } from "common/models";
 import { notificationLabel } from 'common/utils/notificationUtils'
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
@@ -11,6 +11,9 @@ import { PubSubService } from "./pubSubService";
 import { RedisAdapter } from "@socket.io/redis-adapter";
 import { OrganizationDoc } from "../models/organization";
 import { HelpRequestDoc } from "../models/helpRequest";
+import { usersAssociatedWithRequest } from "common/utils/requestUtils";
+import { user } from "firebase-functions/v1/auth";
+import { resolvePermissionsFromRoles } from "../controllers/utils";
 
 type RaheemSocket = SocketIO.Socket<any, any, any, { refreshToken: string }>;
 type SendConfig = { 
@@ -125,7 +128,7 @@ export class MySocketService {
                 const fullOrg = await this.db.protectedOrganization(org);
 
                 const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-                const usersOnRequest = await this.usersOnRequest(request);
+                const usersOnRequest = await this.usersOnRequest(request, fullOrg);
 
                 const responderName = usersOnRequest.has(payload.responderId)
                     ? usersOnRequest.get(payload.responderId).userName
@@ -136,16 +139,17 @@ export class MySocketService {
 
                 for (const admin of Array.from(requestAdmins.values())) {
                     admin.body = body
-                    configs.push(admin)
+                    configs.push(admin as SendConfig)
                 }
 
                 for (const responder of Array.from(usersOnRequest.values())) {
-                    if (responder.userId == payload.responderId) {
+                    // dedup
+                    if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
                         continue;
                     }
 
                     responder.body = body
-                    configs.push(responder)
+                    configs.push(responder as SendConfig)
                 }
 
                 await this.send(configs, {
@@ -204,33 +208,55 @@ export class MySocketService {
         const user = await this.db.resolveUser(userId)
 
         // drop packet if they aren't connected 
-        const sockets = await this.io.volatile.in(userId).fetchSockets();
+        const sockets = await this.adapter.fetchSockets({
+            rooms: new Set([userId])
+        })
+
+        // const sockets = await this.io.volatile.in(userId).fetchSockets();
+
+        const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
+            event,
+            params
+        }
+
+        // piggyback on background notifications in case their socket isn't connected right now
+        const notification: NotificationMetadata<PatchEventType.UserForceLogout> = {
+            to: user.push_token,
+            body: notificationLabel(event),
+            payload: packet
+        }
 
         if (sockets.length > 1) {
             //THIS SHOULDN'T HAPPEN
             throw `Multiple sockets registered for user: ${userId}`
-        }
-
-        for (const socket of sockets) {
-            // TODO: update notification service to use patch events
-            const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
-                event,
-                params
-            }
-
-            // piggyback on background notifications in case their socket isn't connected right now
-            const notification: NotificationMetadata<PatchEventType.UserForceLogout> = {
-                to: user.push_token,
-                body: notificationLabel(event),
-                payload: packet
-            }
-
-            socket.emit('message', packet)
-            socket.disconnect(true)
-
+        } if (sockets.length < 1) {
+            // socket isn't connected so just send as a notification
             await this.notifications.send(notification)
-        }
+        } else {
+            try {
+                // try to send by socket
+                const socket = sockets[0] as SocketIO.Socket;
 
+                await new Promise<void>((resolve, reject) => {
+                    try {
+                        socket.timeout(3000).emit('message', packet, (err) => {
+                            if (err) {
+                                return reject()
+                            }
+    
+                            socket.disconnect(true)
+                            resolve()
+                        })
+                    } catch (e) {
+                        console.error('Error sending socket attempt')
+                        resolve()
+                    }
+                })
+            } catch (e) {
+                // fallback to using notification
+                await this.notifications.send(notification)
+            }
+        }
     }
 
     // Do we want to send a notification?
@@ -743,18 +769,42 @@ export class MySocketService {
 
     }
 
-    async usersOnRequest(req: HelpRequestDoc) {
-        const users = new Map<string, SendConfig>()
+    async usersOnRequest(req: HelpRequestDoc, org: Organization) {
+        const users = new Map<string, Partial<SendConfig>>()
 
-        // TODO: fill this out
+        const userIds = usersAssociatedWithRequest(req);
+
+        org.members.forEach(member => {
+            if (userIds.includes(member.id)) {
+                users.set(member.id, {
+                    userId: member.id,
+                    userName: member.name,
+                    pushToken: (member as unknown as UserModel).push_token
+                })
+            }
+        })
 
         return users;
     }
 
     async requestAdminsInOrg(org: Organization) {
-        const admins = new Map<string, SendConfig>()
+        const admins = new Map<string, Partial<SendConfig>>()
         
-        // TODO: fill this out
+        org.members.forEach(member => {
+            const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
+                return org.roleDefinitions.find(def => def.id == roleId)
+            })
+
+            const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
+
+            if (userIsAdmin) {
+                admins.set(member.id, {
+                    userId: member.id,
+                    userName: member.name,
+                    pushToken: (member as unknown as UserModel).push_token
+                })
+            }
+        })
 
         return admins;
     }

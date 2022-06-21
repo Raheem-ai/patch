@@ -1665,49 +1665,42 @@ export class DBManager {
                 email: 'Nadav@test.com', 
                 password: 'Test',
                 name: 'Nadav Savio',
-                skills: [ RequestSkill.French, RequestSkill.ConflictResolution ]
             });
 
             let user3 = await this.createUser({ 
                 email: 'Cosette@test.com', 
                 password: 'Test',
                 name: 'Cosette Ayele',
-                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
             let user4 = await this.createUser({ 
                 email: 'Tevn@test.com', 
                 password: 'Test',
                 name: `Tev'n Powers`,
-                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
             let userAdmin = await this.createUser({ 
                 email: 'admin@test.com', 
                 password: 'Test',
                 name: 'Admin',
-                skills: []
             });
 
             let userDispatcher = await this.createUser({ 
                 email: 'dispatcher@test.com', 
                 password: 'Test',
                 name: 'Dispatcher',
-                skills: []
             });
 
             let userResponder = await this.createUser({ 
                 email: 'responder@test.com', 
                 password: 'Test',
                 name: 'Responder',
-                skills: []
             });
 
             let user5 = await this.createUser({ 
                 email: 'Tevn2@test.com', 
                 password: 'Test',
                 name: 'Tevy Tev2',
-                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth, RequestSkill.RestorativeJustice, RequestSkill.DomesticViolence ]
             });
 
             [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);

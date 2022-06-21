@@ -13,6 +13,8 @@ export class UIUpdateService {
     async $onInit() {
         this.pubSubService.uiUpdateSub.on('message', async (msg: Message) => {
             msg.ack()
+        
+            console.log('Got PubSub Event:')
 
             const parsedMsg: PatchEventPacket = JSON.parse(msg.data.toString());
 
@@ -22,7 +24,8 @@ export class UIUpdateService {
 
             const { event, params } = parsedMsg;
 
-            console.log('Got PubSub Event: ', event, params)
+            console.log('PubSub Event: ', event)
+            console.log('PubSub Params: ', params)
 
             await this.socketService.handleUIUpdateFromSystemEvent(event, params)
         })

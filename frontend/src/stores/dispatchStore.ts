@@ -70,7 +70,7 @@ export default class DispatchStore implements IDispatchStore {
                 
                 if (metadata) {
                     satisfiesEligibility = Array.from(metadata.positions.values()).some(pos => {
-                        return pos.canJoin
+                        return pos.canJoin && !pos.joinedUsers.has(user.id)
                     })
                 }
             } 
