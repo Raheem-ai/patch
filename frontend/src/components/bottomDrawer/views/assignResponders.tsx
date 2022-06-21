@@ -3,11 +3,12 @@ import React from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
-import { HelpRequest } from "../../../../../common/models"
+import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../common/models"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
 import { Colors } from "../../../types"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
+import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
 import SkillTag from "../../skillTag"
 
@@ -55,35 +56,41 @@ export default class AssignResponders extends React.Component {
     }
     
     header = () => {
-        const displayIdParts = requestStore().currentRequest.displayId.split('-');
 
-        return (
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.headerTitle}>
-                        <Text style={styles.importantText}>Responders for {displayIdParts[0]}</Text>
-                        <Text>-{displayIdParts[1]}</Text>
-                    </Text>
-                </View>
-                <View>
-                    <Text style={styles.headerSubTitle}>
-                        <Text style={styles.importantText}>Need {requestStore().currentRequest.respondersNeeded} people</Text>
-                        <Text> with these skills:</Text>
-                    </Text>
-                </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap'}}>
-                        { 
-                            requestStore().currentRequest.skills.map((s) => {
-                                const fulfilled = dispatchStore().selectedResponders.some(r => r.skills.includes(s));
+        const headerProps: ListHeaderProps = {
+            openHeaderLabel: 'People to notify',
+            // closedHeaderStyles: styles.closedFilterHeader,
+    
+            optionConfigs: [
+                {
+                    chosenOption: dispatchStore().roleOption,
+                    options: dispatchStore().roleOptions,
+                    toHeaderLabel: dispatchStore().roleOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().roleOptionToOptionLabel,
+                    onUpdate: dispatchStore().setRoleOption
+                },
+                {
+                    chosenOption: dispatchStore().statusOption,
+                    options: dispatchStore().statusOptions,
+                    toHeaderLabel: dispatchStore().statusOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().statusOptionToOptionLabel,
+                    onUpdate: dispatchStore().setStatusOption
+                },
+                {
+                    chosenOption: dispatchStore().eligibilityOption,
+                    options: dispatchStore().eligibilityOptions,
+                    toHeaderLabel: dispatchStore().eligibilityOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().eligibilityOptionToOptionLabel,
+                    onUpdate: dispatchStore().setEligibilityOption
+                }
+            ] as [
+                ListHeaderOptionConfig<string>, 
+                ListHeaderOptionConfig<StatusOption>,
+                ListHeaderOptionConfig<EligibilityOption>,
+            ]
+        }
 
-                                return (
-                                    <SkillTag style={{marginTop: 12, marginRight: 6}} skill={s} large type={fulfilled ? 'fulfilled': 'needed'} />
-                                )
-                            })
-                        }
-                </View>
-            </View>
-        )
+        return <ListHeader {...headerProps}/>
     }
 
     responderActions = () => {
@@ -101,13 +108,13 @@ export default class AssignResponders extends React.Component {
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
                     </Pressable>
                 </View>
-                <View style={styles.includeOffDutyRow}>
+                {/* <View style={styles.includeOffDutyRow}>
                     <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
                         <Switch
                             value={dispatchStore().includeOffDuty} 
                             onValueChange={() => dispatchStore().toggleIncludeOffDuty()} 
                             color='#32D74B'/>
-                </View>
+                </View> */}
             </View>
         )
     }

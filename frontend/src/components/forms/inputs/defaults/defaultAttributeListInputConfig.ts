@@ -8,6 +8,7 @@ type DisabledFields = 'type'
 
 type OverrideableConfig = Omit<ScreenFormInputConfig<'CategorizedItemList'>, RequiredFields | DisabledFields | 'props'>;
 type OverrideableProps = ScreenFormInputConfig<'CategorizedItemList'>['props']
+type OverrideableEditConfig = ScreenFormInputConfig<'CategorizedItemList'>['props']['editConfig']
 type DefaultConfig = Pick<ScreenFormInputConfig<'CategorizedItemList'>, DisabledFields>
 
 export type AttributesListInputConfig = AtLeast<ScreenFormInputConfig<'CategorizedItemList'>, RequiredFields>
@@ -25,8 +26,13 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
         headerLabel: () => 'Attributes',
     }
 
-    // default but overrideable 
+    // default but overrideable props
     const overrideableProps: OverrideableProps = {
+        definedCategories: manageAttributesStore().attributeCategories
+    }
+
+    // default but overrideable edit config
+    const overrideableEditConfig: OverrideableEditConfig = {
         editStore: manageAttributesStore().editStore,
         editHeaderLabel: 'Edit attributes',
         addCategoryPlaceholderLabel: 'Add attribute category',
@@ -35,7 +41,9 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
         onSaveToastLabel: 'Successfully updated Attributes' 
     }
 
-    const resolvedProps = Object.assign({}, overrideableProps, config.props || {});
+    const resolvedEditConfig = Object.assign({}, overrideableEditConfig, config.props?.editConfig || {})
+
+    const resolvedProps = Object.assign({}, overrideableProps, config.props || {}, { editConfig: resolvedEditConfig });
 
     return Object.assign(
         {},
