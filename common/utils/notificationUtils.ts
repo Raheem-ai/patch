@@ -9,7 +9,7 @@ export function notificationLabel<T extends NotificationEventType, F extends Any
 const NotificationLabelMap = {
     // Silent
     [PatchEventType.UserForceLogout]: () => '',
-    [PatchEventType.RequestRespondersNotified]: () => '',
+    [PatchEventType.RequestRespondersNotified]: (requestName: string) => `Help needed on request ${requestName}`,
     [PatchEventType.RequestRespondersNotificationAck]: () => '', 
 
     // Noisy

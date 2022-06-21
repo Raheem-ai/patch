@@ -1636,6 +1636,68 @@ export class DBManager {
         return user;
     }
 
+    async createHeartOrg() {
+
+        const partialAdmin: Partial<User> = {
+            email: 'charlie@cambridge-heart.org',
+            password: 'test',
+            name: 'Charlie'
+        }
+
+        const users: Partial<User>[] = [
+            {
+                email: 'nadav@cambridge-heart.org',
+                password: 'test',
+                name: 'Nadav'
+            },
+            {
+                email: 'cosette@cambridge-heart.org',
+                password: 'test',
+                name: 'Cosette'
+            },
+
+            {
+                email: 'corinne@cambridge-heart.org',
+                password: 'test',
+                name: 'Corinne'
+            },
+            {
+                email: 'parkerlouise@earthlink.net',
+                password: 'test',
+                name: 'Parker'
+            },
+            {
+                email: 'stephanie.guirand@gmail.com',
+                password: 'test',
+                name: 'Stephanie G'
+            },
+            {
+                email: 'stephanie@cambridge-heart.org',
+                password: 'test',
+                name: 'Stephanie'
+            },
+            {
+                email: 'virginia@cambridge-heart.org',
+                password: 'test',
+                name: 'Virginia'
+            }
+        ]
+
+        let admin = await this.createUser(partialAdmin)
+
+        let [ heartOrg, admin1 ] = await this.createOrganization({
+            name: 'HEART'
+        }, admin.id);
+
+        admin1 = await this.addUserRoles(heartOrg.id, admin1, [ UserRole.Dispatcher, UserRole.Responder ]);
+
+        for (const user of users) {
+            let newUser = await this.createUser(user);
+            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], [])
+            newUser = await this.addRolesToUser(heartOrg.id, newUser, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+        }
+    }
+
     // @Every('5 minutes', { name: `Repopulating` })
     async rePopulateDb() {
         try {
@@ -1653,6 +1715,9 @@ export class DBManager {
             await this.bulkDelete(this.orgs, oldOrgs);
 
             console.log('creating users/org')
+
+            await this.createHeartOrg();
+
             let user1 = await this.createUser({ 
                 email: 'Charlie@test.com', 
                 password: 'Test', 
