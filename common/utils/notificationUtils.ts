@@ -17,6 +17,12 @@ const NotificationLabelMap = {
     [PatchEventType.UserAddedToOrg]: () => '',
     [PatchEventType.RequestCreated]: () => '',
     [PatchEventType.RequestEdited]: () => '',
+    [PatchEventType.OrganizationEdited]: () => '',
+    [PatchEventType.OrganizationTagsUpdated]: () => '',
+    [PatchEventType.OrganizationAttributesUpdated]: () => '',
+    [PatchEventType.OrganizationRoleCreated]: () => '',
+    [PatchEventType.OrganizationRoleEdited]: () => '',
+    [PatchEventType.OrganizationRoleDeleted]: () => '',
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string) => {

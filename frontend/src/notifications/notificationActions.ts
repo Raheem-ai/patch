@@ -82,6 +82,30 @@ export class RequestEditedHandler extends SilentNotificationHandlerDefinition<Pa
 
 }
 
+export class OrganizationEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationEdited> {
+
+}
+
+export class OrganizationTagsUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationTagsUpdated> {
+
+}
+
+export class OrganizationAttributesUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationAttributesUpdated> {
+
+}
+
+export class OrganizationRoleCreatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleCreated> {
+
+}
+
+export class OrganizationRoleEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleEdited> {
+
+}
+
+export class OrganizationRoleDeletedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleDeleted> {
+
+}
+
 ////////////////////////////////////////////////////////////
 // Show notification with no actions but route to a view  //
 // when user interacts with it                            //
@@ -219,5 +243,10 @@ export const NotificationHandlers: { [type in NotificationEventType]: Notificati
     [PatchEventType.UserAddedToOrg]: new UserAddedToOrgHandler(),    
     [PatchEventType.RequestCreated]: new RequestCreatedHandler(),    
     [PatchEventType.RequestEdited]: new RequestEditedHandler(),    
-    
+    [PatchEventType.OrganizationEdited]: new OrganizationEditedHandler(),
+    [PatchEventType.OrganizationTagsUpdated]: new OrganizationTagsUpdatedHandler(),
+    [PatchEventType.OrganizationAttributesUpdated]: new OrganizationAttributesUpdatedHandler(),
+    [PatchEventType.OrganizationRoleCreated]: new OrganizationRoleCreatedHandler(),
+    [PatchEventType.OrganizationRoleEdited]: new OrganizationRoleEditedHandler(),
+    [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler(),
 }

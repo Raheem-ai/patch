@@ -1277,6 +1277,12 @@ export type SilentNotificationEventType = PatchEventType.UserForceLogout
     | PatchEventType.UserAddedToOrg
     | PatchEventType.RequestCreated
     | PatchEventType.RequestEdited
+    | PatchEventType.OrganizationEdited
+    | PatchEventType.OrganizationTagsUpdated
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationRoleCreated
+    | PatchEventType.OrganizationRoleEdited
+    | PatchEventType.OrganizationRoleDeleted
 
 // PatchEventType Convenience Type
 export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
@@ -1351,15 +1357,18 @@ export type PatchEventParams = {
     },
     [PatchEventType.RequestRespondersRequestToJoinAck]: {
         orgId: string,
-        responderId: string,
         requestId: string,
-        positionId: string
+        joinRequests: {
+            positionId: string
+            userId: string,
+        }[]
     },
     [PatchEventType.RequestRespondersAccepted]: {
         orgId: string,
         responderId: string,
         requestId: string,
-        positionId: string
+        positionId: string,
+        accepterId: string
     }, 
     [PatchEventType.RequestRespondersJoined]: {
         orgId: string,
@@ -1371,7 +1380,8 @@ export type PatchEventParams = {
         orgId: string,
         responderId: string,
         requestId: string,
-        positionId: string
+        positionId: string,
+        declinerId: string
     }, 
     [PatchEventType.RequestRespondersLeft]: {
         orgId: string,
@@ -1383,7 +1393,8 @@ export type PatchEventParams = {
         orgId: string,
         responderId: string,
         requestId: string,
-        positionId: string
+        positionId: string,
+        removerId: string
     }, 
     [PatchEventType.RequestChatNewMessage]: {
         orgId: string,
