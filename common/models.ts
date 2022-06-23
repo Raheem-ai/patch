@@ -1269,8 +1269,14 @@ export type NotificationEventType = SilentNotificationEventType | NoisyNotificat
 
 // PatchEventType Convenience Type
 export type SilentNotificationEventType = PatchEventType.UserForceLogout
-    | PatchEventType.RequestRespondersNotified
     | PatchEventType.RequestRespondersNotificationAck
+    | PatchEventType.UserEdited
+    | PatchEventType.UserOnDuty
+    | PatchEventType.UserOffDuty
+    | PatchEventType.UserChangedRolesInOrg
+    | PatchEventType.UserAddedToOrg
+    | PatchEventType.RequestCreated
+    | PatchEventType.RequestEdited
 
 // PatchEventType Convenience Type
 export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
@@ -1279,6 +1285,8 @@ export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
     | PatchEventType.RequestRespondersDeclined
     | PatchEventType.RequestRespondersRemoved
     | PatchEventType.RequestRespondersRequestToJoin
+    | PatchEventType.RequestRespondersNotified
+    | PatchEventType.RequestChatNewMessage
 
 export type PatchEventParams = {
     [PatchEventType.UserForceLogout]: {
@@ -1289,7 +1297,8 @@ export type PatchEventParams = {
         userId: string
     }
     [PatchEventType.UserEdited]: {
-        userId: string
+        userId: string, 
+        orgId: string
     },
     [PatchEventType.UserDeleted]: {
         userId: string
@@ -1307,18 +1316,23 @@ export type PatchEventParams = {
         orgId: string
     }, 
     [PatchEventType.UserOnDuty]: {
-        userId: string
+        userId: string,
+        orgId: string
     }, 
     [PatchEventType.UserOffDuty]: {
-        userId: string
+        userId: string,
+        orgId: string
     }, 
     [PatchEventType.RequestCreated]: {
+        orgId:string,
         requestId: string
     }, 
     [PatchEventType.RequestEdited]: {
+        orgId:string,
         requestId: string
     }, 
     [PatchEventType.RequestDeleted]: {
+        orgId:string,
         requestId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {

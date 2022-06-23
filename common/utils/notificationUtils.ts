@@ -9,10 +9,22 @@ export function notificationLabel<T extends NotificationEventType, F extends Any
 const NotificationLabelMap = {
     // Silent
     [PatchEventType.UserForceLogout]: () => '',
-    [PatchEventType.RequestRespondersNotified]: (requestName: string) => `Help needed on request ${requestName}`,
     [PatchEventType.RequestRespondersNotificationAck]: () => '', 
+    [PatchEventType.UserEdited]: () => '',
+    [PatchEventType.UserOnDuty]: () => '',
+    [PatchEventType.UserOffDuty]: () => '',
+    [PatchEventType.UserChangedRolesInOrg]: () => '',
+    [PatchEventType.UserAddedToOrg]: () => '',
+    [PatchEventType.RequestCreated]: () => '',
+    [PatchEventType.RequestEdited]: () => '',
 
     // Noisy
+    [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string) => {
+        return `Request ${requestName} has a new message from ${senderName}`
+    },
+    [PatchEventType.RequestRespondersNotified]: (requestName: string) => {
+        return `Help needed on request ${requestName}`
+    },
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string) => {
         return `${responderName} has joined request ${requestName}`
     }, 

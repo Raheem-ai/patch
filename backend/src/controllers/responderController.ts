@@ -44,7 +44,8 @@ export class ResponderController implements APIController<
         const updatedUser = await user.save();
 
         await this.pubSub.sys(onDuty ? PatchEventType.UserOnDuty : PatchEventType.UserOffDuty, {
-            userId: user.id
+            userId: user.id,
+            orgId
         })
 
         return this.db.me(updatedUser);
