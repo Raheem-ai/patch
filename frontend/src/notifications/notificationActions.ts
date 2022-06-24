@@ -38,7 +38,6 @@ export abstract class SilentNotificationHandlerDefinition<T extends SilentNotifi
 ////////////////////////////////////////////////////////////
 
 export class ForcedLogoutHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserForceLogout> {
-    dontShowNotification = true
     dontForwardUpdates = true
 
     onNotificationRecieved = async (payload: PatchEventPacket<PatchEventType.UserForceLogout>) => {
@@ -51,18 +50,75 @@ export class ForcedLogoutHandler extends SilentNotificationHandlerDefinition<Pat
     }
 }
 
-export class RequestRespondersNotifiedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotified> {
-    dontShowNotification = true
+export class RequestRespondersNotificationAckHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotificationAck> {
+
 }
 
-export class RequestRespondersNotificationAckHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotificationAck> {
-    dontShowNotification = true
+export class UserEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserEdited> {
+
+}
+
+export class UserOnDutyHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserOnDuty> {
+
+}
+
+export class UserOffDutyHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserOffDuty> {
+
+}
+
+export class UserChangedRolesInOrgHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserChangedRolesInOrg> {
+
+}
+
+export class UserAddedToOrgHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserAddedToOrg> {
+
+}
+
+export class RequestCreatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestCreated> {
+
+}
+
+export class RequestEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestEdited> {
+
+}
+
+export class OrganizationEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationEdited> {
+
+}
+
+export class OrganizationTagsUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationTagsUpdated> {
+
+}
+
+export class OrganizationAttributesUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationAttributesUpdated> {
+
+}
+
+export class OrganizationRoleCreatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleCreated> {
+
+}
+
+export class OrganizationRoleEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleEdited> {
+
+}
+
+export class OrganizationRoleDeletedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleDeleted> {
+
 }
 
 ////////////////////////////////////////////////////////////
 // Show notification with no actions but route to a view  //
 // when user interacts with it                            //
 ////////////////////////////////////////////////////////////
+
+// TODO: make sure help request details handles being routed to from all of these
+export class RequestChatNewMessageHandler extends NotificationHandler<PatchEventType.RequestChatNewMessage> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
+
+export class RequestRespondersNotifiedHandler extends NotificationHandler<PatchEventType.RequestRespondersNotified> {
+    defaultRouteTo = routerNames.helpRequestDetails
+}
 
 export class RequestRespondersJoinedHandler extends NotificationHandler<PatchEventType.RequestRespondersJoined> {
     defaultRouteTo = routerNames.helpRequestDetails
@@ -83,6 +139,7 @@ export class RequestRespondersDeclinedHandler extends NotificationHandler<PatchE
 export class RequestRespondersRemovedHandler extends NotificationHandler<PatchEventType.RequestRespondersRemoved> {
     defaultRouteTo = routerNames.helpRequestDetails
 }
+
 
 ////////////////////////////////////////////////////////////
 // Show notification with actions and a defeult route to  //
@@ -178,4 +235,18 @@ export const NotificationHandlers: { [type in NotificationEventType]: Notificati
     [PatchEventType.RequestRespondersDeclined]: new RequestRespondersDeclinedHandler(), 
     [PatchEventType.RequestRespondersRemoved]: new RequestRespondersRemovedHandler(), 
     [PatchEventType.RequestRespondersRequestToJoin]: new RequestRespondersRequestToJoinHandler(), 
+    [PatchEventType.RequestChatNewMessage]: new RequestChatNewMessageHandler(),
+    [PatchEventType.UserEdited]: new UserEditedHandler(),
+    [PatchEventType.UserOnDuty]: new UserOnDutyHandler(),    
+    [PatchEventType.UserOffDuty]: new UserOffDutyHandler(),    
+    [PatchEventType.UserChangedRolesInOrg]: new UserChangedRolesInOrgHandler(),    
+    [PatchEventType.UserAddedToOrg]: new UserAddedToOrgHandler(),    
+    [PatchEventType.RequestCreated]: new RequestCreatedHandler(),    
+    [PatchEventType.RequestEdited]: new RequestEditedHandler(),    
+    [PatchEventType.OrganizationEdited]: new OrganizationEditedHandler(),
+    [PatchEventType.OrganizationTagsUpdated]: new OrganizationTagsUpdatedHandler(),
+    [PatchEventType.OrganizationAttributesUpdated]: new OrganizationAttributesUpdatedHandler(),
+    [PatchEventType.OrganizationRoleCreated]: new OrganizationRoleCreatedHandler(),
+    [PatchEventType.OrganizationRoleEdited]: new OrganizationRoleEditedHandler(),
+    [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler(),
 }

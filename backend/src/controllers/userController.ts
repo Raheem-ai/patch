@@ -299,6 +299,7 @@ export class UsersController implements APIController<
 
         await this.pubSub.sys(PatchEventType.UserEdited, { 
             userId: user.id,
+            orgId
         })
 
         return res;
@@ -324,6 +325,7 @@ export class UsersController implements APIController<
 
         await this.pubSub.sys(PatchEventType.UserEdited, { 
             userId,
+            orgId
         })
 
         return res;
