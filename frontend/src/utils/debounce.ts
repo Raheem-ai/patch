@@ -14,12 +14,12 @@ export interface StatefullMemoDebouncedFunction<F extends AnyFunction, S extends
 export type Config<F extends AnyFunction, S = {}> = DebounceSettings & {
     minWait: number,
     
-    initialState?: S | (() => S),
+    initialState?: (() => S),
     paramsToMemoCacheKey?: (...args: Parameters<F>) => string | Symbol,
-    beforeCall?: (state: S, ...args: Parameters<F>) => void;
-    afterCall?: (state: S, ...args: Parameters<F>) => void;    
-    beforeCancel?: (state: S, ...args: Parameters<F>) => void;    
-    afterCancel?: (state: S, ...args: Parameters<F>) => void;    
+    beforeCall?: (state: () => S, ...args: Parameters<F>) => void;
+    afterCall?: (state: () => S, ...args: Parameters<F>) => void;    
+    beforeCancel?: (state: () => S, ...args: Parameters<F>) => void;    
+    afterCancel?: (state: () => S, ...args: Parameters<F>) => void;    
 }
 
 export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
@@ -41,9 +41,9 @@ export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
         config.paramsToMemoCacheKey
     );
 
-    const state: S = config.initialState
-        ? unwrap(config.initialState as any)
-        : {} as S;
+    const state = config.initialState
+        ? config.initialState
+        : () => { return {} as S };
 
     function wrappedFunction(
         this: StatefullMemoDebouncedFunction<F>,

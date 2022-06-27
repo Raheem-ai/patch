@@ -213,6 +213,7 @@ export interface IRequestStore extends IBaseStore {
     filter: HelpRequestFilter
     sortBy: HelpRequestSortBy
 
+    loadUntil(predicate: () => Promise<any>): Promise<void>
     setSortBy(sortBy: HelpRequestSortBy): void
     setFilter(filter: HelpRequestFilter): Promise<void>
     getRequests(requestIds?: string[]): Promise<void>

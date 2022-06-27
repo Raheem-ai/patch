@@ -57,17 +57,15 @@ export default class UpdateStore implements IUpdateStore {
     }
 
     pendingRequestUpdate = async (packet: PatchEventPacket<RequestEventType>): Promise<void> => {
-        console.log('Starting pendingRequestUpdate')
         const reqId = packet.params.requestId;
 
         if (!this.reqState.specificIds.has(reqId)) {
             console.log('No pending request for: ', reqId)
-            this.updateRequests(reqId, packet.event)
+            await this.updateRequests(reqId, packet.event)
         }
 
         console.log('waiting for pending request update')
         await when(() => !this.reqState.specificIds.size)
-        console.log('pending req finished')
     }
 
     updateRequests = stateFullMemoDebounce(async (
@@ -79,7 +77,7 @@ export default class UpdateStore implements IUpdateStore {
         minWait: this.minWait,
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_REQ,
-        initialState: this.reqState,
+        initialState: () => this.reqState,
         beforeCall: (state, requestId, event) => {
             if (event == PatchEventType.RequestDeleted) {
                 // deleted
@@ -87,11 +85,11 @@ export default class UpdateStore implements IUpdateStore {
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state.specificIds.add(requestId)
+                state().specificIds.add(requestId)
             }
         },
         afterCall: (state, requestId, event) => {
-            state.specificIds.clear()
+            state().specificIds.clear()
         }
     })
 
@@ -104,7 +102,7 @@ export default class UpdateStore implements IUpdateStore {
         minWait: this.minWait,
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_USER,
-        initialState: this.userState,
+        initialState: () => this.userState,
         beforeCall: (state, userId, event) => {
             if (event == PatchEventType.UserDeleted) {
                 // deleted
@@ -112,11 +110,11 @@ export default class UpdateStore implements IUpdateStore {
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state.specificIds.add(userId)
+                state().specificIds.add(userId)
             }
         },
         afterCall: (state, userId, event) => {
-            state.specificIds.clear()
+            state().specificIds.clear()
         }
     })
 
@@ -129,12 +127,12 @@ export default class UpdateStore implements IUpdateStore {
         minWait: this.minWait,
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_ORG,
-        initialState: this.orgState,
+        initialState: () => this.orgState,
         beforeCall: (state, orgId, event) => {
-            state.specificId = orgId;
+            state().specificId = orgId;
         },
         afterCall: (state, orgId, event) => {
-            state.specificId = null;
+            state().specificId = null;
         }
     })
 

@@ -453,40 +453,13 @@ export default class RequestStore implements IRequestStore {
      * a notification
      */
     async pushRequest(requestId: string): Promise<void> {
-        try {
-            this.loading = true;
+        this.currentRequestIdStack.push(requestId);
+    }
 
-            const req = await api().getRequest(this.orgContext(), requestId);
-
-            const userIdSet = new Set<string>();
-
-            const allAssignedUserIds = req.assignments.reduce<string[]>((arr, r) => { 
-                arr.push(...r.responderIds);
-                return arr;
-            }, []);
-
-            [ req.dispatcherId, ...req.assignedResponderIds, ...req.declinedResponderIds, ...allAssignedUserIds ].forEach(id => userIdSet.add(id));
-
-            // TODO: might be worth having a common response type that returns 
-            // related objects to save us a round trip call for this and other tings
-            await userStore().updateOrgUsers(Array.from(userIdSet.values()));
-
-            // let idx = this.requestsArray.findIndex((r => r.id == req.id));
-
-            runInAction(() => {                
-                this.updateOrAddReq(req);
-                
-                this.currentRequestIdStack.push(req.id);
-
-                this.loading = false
-            })
-        } catch (e) {
-            runInAction(() => {
-                this.loading = false;
-            })
-
-            console.error(e);
-        }
+    async loadUntil(predicate: () => Promise<any>) {
+        this.loading = true
+        await predicate()
+        runInAction(() => this.loading = false)
     }
     
     async getRequests(requestIds?: string[], skipUpdatingUsers?: boolean): Promise<void> {
