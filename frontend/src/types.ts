@@ -2,13 +2,9 @@ import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes } from "../../common/models";
 
 export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
-    notification?: PatchEventTypes<T>
+    // notification?: PatchEventTypes<T>
+    notification?: PatchEventPacket<T>
 } & P;
-
-type PatchEventTypes<T extends PatchEventType> = T extends any 
-    ? { type: T, payload: PatchEventPacket } 
-    : never;
-
 
 // TODO: update these types as well
 export type RootStackParamList = {

@@ -1,6 +1,6 @@
 import { Inject, registerExceptionType } from "@tsed/common";
 import { IO, Nsp, Socket, SocketService as Service, SocketSession} from "@tsed/socketio";
-import { Organization, PatchEventPacket, PatchEventParams, PatchEventType, PatchPermissions, UserRole } from "common/models";
+import { Organization, PatchEventPacket, PatchEventParams, PatchEventType, PatchNotification, PatchPermissions, UserRole } from "common/models";
 import { notificationLabel } from 'common/utils/notificationUtils'
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
@@ -174,8 +174,6 @@ export class MySocketService {
             rooms: new Set([userId])
         })
 
-        // const sockets = await this.io.volatile.in(userId).fetchSockets();
-
         const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
             event,
             params
@@ -193,7 +191,9 @@ export class MySocketService {
             throw `Multiple sockets registered for user: ${userId}`
         } if (sockets.length < 1) {
             // socket isn't connected so just send as a notification
-            await this.notifications.send(notification)
+            if (notification.to) {
+                await this.notifications.send(notification)
+            }
         } else {
             try {
                 // try to send by socket
@@ -216,7 +216,9 @@ export class MySocketService {
                 })
             } catch (e) {
                 // fallback to using notification
-                await this.notifications.send(notification)
+                if (notification.to) {
+                    await this.notifications.send(notification)
+                }
             }
         }
     }
@@ -646,10 +648,14 @@ export class MySocketService {
 
             const socket = sockets[0] as SocketIO.Socket;
 
-            const notification: NotificationMetadata<PatchEventType> = {
-                to: config.pushToken,
+            const patchNotification: PatchNotification = {
                 body: config.body,
                 payload: packet
+            }
+
+            const notification: NotificationMetadata<PatchEventType> = {
+                to: config.pushToken,
+                ...patchNotification
             }
 
             if (!socket) {
@@ -671,7 +677,7 @@ export class MySocketService {
             const socketAttempt = new Promise<void>((resolve, _) => {
                 
                 try {
-                    socket.timeout(3000).emit('message', packet, (err) => {
+                    socket.timeout(3000).emit('message', patchNotification, (err) => {
                         if (err) {
                             notifications.push(notification)
                         }

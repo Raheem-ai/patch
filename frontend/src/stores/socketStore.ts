@@ -5,7 +5,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../api';
 import { api } from '../services/interfaces';
-import { PatchEventPacket } from '../../../common/models';
+import { PatchEventPacket, PatchNotification } from '../../../common/models';
 import { NotificationHandlers } from '../notifications/notificationActions';
 
 @Store(ISocketStore)
@@ -60,19 +60,19 @@ export default class SocketStore implements ISocketStore {
             console.log('disconnect', args)
         })
 
-        this.socket.on('message', async (packet: PatchEventPacket, cb?) => {
-            console.log('got mesage from socket: ', packet)
+        this.socket.on('message', async (patchNotification: PatchNotification, cb?) => {
+            console.log('got mesage from socket: ', patchNotification)
             // ack so the backend knows not to send a fallback notification
             cb?.()
 
-            const notificationHandler = NotificationHandlers[packet.event];
+            const notificationHandler = NotificationHandlers[patchNotification.payload.event];
 
             // if there is a notification handler for this event type 
             // let the notificationStore worry about passing it to the updateStore
             if (notificationHandler) {
-                await notificationStore().onEvent(packet)
+                await notificationStore().onEvent(patchNotification)
             } else {
-                await updateStore().onEvent(packet);
+                await updateStore().onEvent(patchNotification.payload);
             }
         })
 

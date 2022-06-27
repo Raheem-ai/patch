@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -74,12 +74,8 @@ export interface INotificationStore extends IBaseStore {
     teardown(): void;
     askForPermission(): Promise<boolean> 
     updatePushToken(): Promise<void>;
-    // onNotification<T extends PatchEventType>(type: T, cb: (data: PatchEventPacket, notification: Notification) => void): [T, string];
-    // offNotification<T extends PatchEventType>(params: [T,string]);
-    // onNotificationResponse<T extends PatchEventType>(type: T, cb: (data: PatchEventPacket, res: NotificationResponse) => void): [T, string];
-    // offNotificationResponse<T extends PatchEventType>(params: [T, string]);
     handlePermissions(): Promise<void>
-    onEvent(packet: PatchEventPacket) : Promise<void>
+    onEvent(patchNotification: PatchNotification) : Promise<void>
     handleNotification(notification: Notification): Promise<void>
 }
 
@@ -496,6 +492,7 @@ export type PromptConfig = {
 export type ToastConfig = {
     message: string,
     dismissable?: boolean,
+    unauthenticated?: boolean, // outlet to allow callers to force the toast to show even if the user isnt signed in
     type: 'success' | 'error'
 }
 
@@ -503,8 +500,8 @@ export interface IAlertStore extends IBaseStore {
     toast?: ToastConfig
     prompt?: PromptConfig
     
-    toastSuccess(message: string, dismissable?: boolean): void;
-    toastError(message: string, dismissable?: boolean): void;
+    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
+    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
 
     showPrompt(config: PromptConfig): void
     hidePrompt(): void
@@ -523,7 +520,8 @@ export namespace IUpdateStore {
 }
 
 export interface IUpdateStore extends IBaseStore {
-    onEvent(packet: PatchEventPacket) : Promise<void>
+    pendingRequestUpdate(packet: PatchEventPacket<RequestEventType>): Promise<void>
+    onEvent(packet: PatchEventPacket): Promise<void>
 }
 
 export namespace IUpsertRoleStore {
