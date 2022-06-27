@@ -13,10 +13,11 @@ export default class AlertStore implements IAlertStore {
         makeAutoObservable(this)
     }
 
-    toastSuccess(message: string, dismissable?: boolean) {
+    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean) {
         this.toast = {
             message,
             dismissable,
+            unauthenticated,
             type: 'success'
         }
 
@@ -28,10 +29,11 @@ export default class AlertStore implements IAlertStore {
         }, this.defaultToastTime)
     }
 
-    toastError(message: string, dismissable?: boolean) {
+    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean) {
         this.toast = {
             message,
             dismissable,
+            unauthenticated,
             type: 'success'
         }
 

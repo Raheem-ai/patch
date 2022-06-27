@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
 import { PatchEventType, PatchEventPacket, RequestEventType, UserEventType, OrgEventType } from '../../../common/models';
@@ -31,6 +31,12 @@ export default class UpdateStore implements IUpdateStore {
         makeAutoObservable(this)
     }
 
+    async init() {
+        await userStore().init()
+        await organizationStore().init()
+        await requestStore().init()
+    }
+
     onEvent = async <T extends PatchEventType>(packet: PatchEventPacket<T>) => {
         console.log('UI onEvent(): ', packet.event, packet.params)
         try {
@@ -48,6 +54,20 @@ export default class UpdateStore implements IUpdateStore {
         } catch (e) {
 
         }
+    }
+
+    pendingRequestUpdate = async (packet: PatchEventPacket<RequestEventType>): Promise<void> => {
+        console.log('Starting pendingRequestUpdate')
+        const reqId = packet.params.requestId;
+
+        if (!this.reqState.specificIds.has(reqId)) {
+            console.log('No pending request for: ', reqId)
+            this.updateRequests(reqId, packet.event)
+        }
+
+        console.log('waiting for pending request update')
+        await when(() => !this.reqState.specificIds.size)
+        console.log('pending req finished')
     }
 
     updateRequests = stateFullMemoDebounce(async (

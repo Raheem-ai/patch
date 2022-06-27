@@ -1435,6 +1435,11 @@ export type PatchEventPacket<T extends PatchEventType = PatchEventType> = {
     silent?: boolean
 }
 
+export type PatchNotification<T extends PatchEventType = PatchEventType> = {
+    body: string,
+    payload: PatchEventPacket<T>
+}
+
 export type DateTimeRange = {
     startDate: Date
     endDate: Date

@@ -5,7 +5,7 @@ import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
 import { INotificationStore, notificationStore, requestStore, updateStore, userStore } from "./interfaces";
-import { NotificationEventType, PatchEventPacket, PatchEventType } from "../../../common/models";
+import { NotificationEventType, PatchEventPacket, PatchEventType, PatchNotification } from "../../../common/models";
 import { notificationLabel } from "../../../common/utils/notificationUtils";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';
@@ -137,36 +137,15 @@ export default class NotificationStore implements INotificationStore {
         // Notifications.removeNotificationSubscription(this.notificationResponseSub)
     }
 
-    async onEvent(packet: PatchEventPacket) {
-        let body = '';
-
-        if (packet.event == PatchEventType.RequestRespondersJoined) {
-            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersJoined> = packet as any;
-            const req = requestStore().requests.get(typedPacket.params.requestId);
-            const user = userStore().users.get(typedPacket.params.responderId);
-
-            body = notificationLabel(typedPacket.event, req.displayId, user.name)
-        } else if (packet.event == PatchEventType.RequestRespondersLeft) {
-            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersLeft> = packet as any;
-            const req = requestStore().requests.get(typedPacket.params.requestId);
-            const user = userStore().users.get(typedPacket.params.responderId);
-
-            body = notificationLabel(typedPacket.event, req.displayId, user.name)
-        } else if (packet.event == PatchEventType.RequestRespondersNotified) {
-            const typedPacket: PatchEventPacket<PatchEventType.RequestRespondersNotified> = packet as any;
-            body = notificationLabel(typedPacket.event)
-        }
-
-        // if (body) {
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    body: body,
-                    data: packet,
-                    categoryIdentifier: packet.event
-                },
-                trigger: null
-            })
-        // }
+    async onEvent(patchNotification: PatchNotification) {
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                body: patchNotification.body,
+                data: patchNotification.payload,
+                categoryIdentifier: patchNotification.payload.event
+            },
+            trigger: null
+        })
     }
 
 
@@ -195,10 +174,7 @@ export default class NotificationStore implements INotificationStore {
         if (res.actionIdentifier == 'expo.modules.notifications.actions.DEFAULT') {
             if (notificationHandler.defaultRouteTo) {
                 navigateTo(notificationHandler.defaultRouteTo, {
-                    notification: {
-                        type: type as any,
-                        payload: payload
-                    }
+                    notification: payload as any // we take in general type here but the notification params in the RootStackParamList are more specific 
                 })
             }
 
@@ -214,10 +190,7 @@ export default class NotificationStore implements INotificationStore {
             const route = handler.options.routeTo;
     
             navigateTo(route, {
-                notification: {
-                    type: type as any,
-                    payload: payload
-                }
+                notification: payload as any
             })
         } else if (handler.options.opensAppToForeground == false) { //explicitely checking for false for typing
             await handler.options.handler(payload);
@@ -232,9 +205,6 @@ Notifications.setNotificationHandler({
 
         const notificationHandler = NotificationHandlers[type];
 
-        // TODO: let this decide if it should be shown based on the users relation to the event by either,
-        // 1) making this an async function that returns a boolean
-        // 2) sending an optional silent flag on the event sent from the backend [x]
         if (notificationHandler 
             && !notificationHandler.dontShowNotification
             && !payload.silent

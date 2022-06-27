@@ -49,7 +49,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
 
         const res = this.includeVirtuals(createdReq);
 
-        await this.pubSub.sys(PatchEventType.RequestCreated, { requestId: res.id });
+        await this.pubSub.sys(PatchEventType.RequestCreated, { 
+            requestId: res.id,
+            orgId 
+        });
 
         return res;
     }
@@ -92,7 +95,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     ) {
         const res = this.includeVirtuals((await this.db.editRequest(helpRequest, requestUpdates)))
 
-        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
 
         return res;
     }
@@ -162,7 +168,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
 
         const res = await helpRequest.save();
 
-        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
 
         return res
     }
@@ -177,7 +186,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
         const res = await helpRequest.save();
 
-        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
 
         return res
     }
@@ -201,7 +213,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
 
         const res = await helpRequest.save();
 
-        await this.pubSub.sys(PatchEventType.RequestEdited, { requestId: res.id });
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
 
         return res
     }

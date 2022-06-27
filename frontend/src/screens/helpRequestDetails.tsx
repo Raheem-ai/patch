@@ -4,7 +4,7 @@ import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
 import { PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
 import { dateToTimeString } from "../../../common/utils";
 
@@ -27,7 +27,6 @@ type Props = ScreenProps<'HelpRequestDetails'>;
 const dimensions = Dimensions.get('screen');
 
 const HelpRequestDetails = observer(({ navigation, route }: Props) => {
-    const [notification, setNotification] = useState<Props['route']['params']['notification']>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const request = requestStore().currentRequest;
@@ -38,19 +37,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             const params = route.params;
 
             if (params && params.notification) {
-                switch (params.notification.type) {
-                    // case PatchEventType.AssignedIncident:
-                    //     // ui specific to assignment
-                    //     break;
-                    // case PatchEventType.BroadCastedIncident:
-                    //     // ui specific to broadcasting
-                    //     break;
-                }
-
+                // TODO: do we need this if the notification itself is also forwarding the update to the update store?
                 // call store method to get helprequest from api (so we have latest value)
-                // and update it's state while this shows loading ui
-                await requestStore().pushRequest(params.notification.payload.id);
-                setNotification(params.notification);
+                // ...yes because we currently have no way to sync with the update store's updates
+                // await requestStore().pushRequest(params.notification.params.requestId);
+                // setNotification(params.notification);
+
+                // TODO: test this
+                await updateStore().pendingRequestUpdate(params.notification)
                 setIsLoading(false);
             } else {
                 // got here through normal navigation...caller should worry about having up to date copy
