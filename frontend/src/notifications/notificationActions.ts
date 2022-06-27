@@ -1,7 +1,7 @@
 import { NoisyNotificationEventType, NotificationEventType, PatchEventPacket, PatchEventType, SilentNotificationEventType } from "../../../common/models";
 import { Notification, NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
-import { requestStore, updateStore, userStore } from "../stores/interfaces";
+import { navigationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { api } from "../services/interfaces";
 
 export interface NotificationHandlerDefinition<T extends PatchEventType = PatchEventType> {
@@ -10,7 +10,10 @@ export interface NotificationHandlerDefinition<T extends PatchEventType = PatchE
 
     dontForwardUpdates: boolean
     dontShowNotification: boolean
-    defaultRouteTo: keyof RootStackParamList
+    /**
+     * NOTE: any stores used in this function need to be init()'d in the NotificationStore
+     */
+    defaultRouteTo: (packet: PatchEventPacket<T>) => keyof RootStackParamList
 }
 
 export abstract class NotificationHandler<T extends NoisyNotificationEventType> implements NotificationHandlerDefinition<T> {
@@ -19,7 +22,9 @@ export abstract class NotificationHandler<T extends NoisyNotificationEventType> 
 
     dontForwardUpdates = false
     dontShowNotification = false
-    defaultRouteTo: keyof RootStackParamList = null
+    defaultRouteTo(packet: PatchEventPacket<T>): keyof RootStackParamList { 
+        return null
+    }
 }
 
 export abstract class SilentNotificationHandlerDefinition<T extends SilentNotificationEventType> implements NotificationHandlerDefinition<T> {
@@ -28,7 +33,7 @@ export abstract class SilentNotificationHandlerDefinition<T extends SilentNotifi
 
     dontForwardUpdates = false
     dontShowNotification = true
-    defaultRouteTo: keyof RootStackParamList = null
+    defaultRouteTo = () => null
 }
 
 ////////////////////////////////////////////////////////////
@@ -111,33 +116,41 @@ export class OrganizationRoleDeletedHandler extends SilentNotificationHandlerDef
 // when user interacts with it                            //
 ////////////////////////////////////////////////////////////
 
+export class RequestDetailsNotificationHandler<T extends NoisyNotificationEventType> extends NotificationHandler<T> {
+    defaultRouteTo(packet: PatchEventPacket<T>): keyof RootStackParamList {
+        return navigationStore().currentRoute == routerNames.helpRequestDetails && packet.params.requestId == requestStore().currentRequestId
+            ? null
+            : routerNames.helpRequestDetails
+    }
+}
+
 // TODO: make sure help request details handles being routed to from all of these
-export class RequestChatNewMessageHandler extends NotificationHandler<PatchEventType.RequestChatNewMessage> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestChatNewMessageHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestChatNewMessage> {
+
 }
 
-export class RequestRespondersNotifiedHandler extends NotificationHandler<PatchEventType.RequestRespondersNotified> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersNotifiedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersNotified> {
+
 }
 
-export class RequestRespondersJoinedHandler extends NotificationHandler<PatchEventType.RequestRespondersJoined> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersJoinedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersJoined> {
+
 }
 
-export class RequestRespondersLeftHandler extends NotificationHandler<PatchEventType.RequestRespondersLeft> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersLeftHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersLeft> {
+
 }
 
-export class RequestRespondersAcceptedHandler extends NotificationHandler<PatchEventType.RequestRespondersAccepted> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersAcceptedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersAccepted> {
+
 }
 
-export class RequestRespondersDeclinedHandler extends NotificationHandler<PatchEventType.RequestRespondersDeclined> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersDeclinedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersDeclined> {
+
 }
 
-export class RequestRespondersRemovedHandler extends NotificationHandler<PatchEventType.RequestRespondersRemoved> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersRemovedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersRemoved> {
+
 }
 
 
@@ -146,8 +159,7 @@ export class RequestRespondersRemovedHandler extends NotificationHandler<PatchEv
 // a view when user interacts with it                     //
 ////////////////////////////////////////////////////////////
 
-export class RequestRespondersRequestToJoinHandler extends NotificationHandler<PatchEventType.RequestRespondersRequestToJoin> {
-    defaultRouteTo = routerNames.helpRequestDetails
+export class RequestRespondersRequestToJoinHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersRequestToJoin> {
 
     actions = (): NotificationResponseDefinition<PatchEventType.RequestRespondersRequestToJoin>[] => {
         return [

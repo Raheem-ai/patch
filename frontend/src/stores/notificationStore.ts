@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
-import { INotificationStore, notificationStore, requestStore, updateStore, userStore } from "./interfaces";
+import { INotificationStore, navigationStore, notificationStore, requestStore, updateStore, userStore } from "./interfaces";
 import { NotificationEventType, PatchEventPacket, PatchEventType, PatchNotification } from "../../../common/models";
 import { notificationLabel } from "../../../common/utils/notificationUtils";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
@@ -25,6 +25,7 @@ export default class NotificationStore implements INotificationStore {
 
     // in case we want to stop listening at some point
     private notificationsSub = null;
+    private notificationResponseSub = null;
 
     // keep copy in secure store and never delete it so we'll know when it needs to be updated
     // ie. reinstalls
@@ -51,6 +52,8 @@ export default class NotificationStore implements INotificationStore {
     async init() {
         await userStore().init()
         await updateStore().init()
+        await navigationStore().init()
+        await requestStore().init()
 
         if (userStore().signedIn) {
             await this.handlePermissionsAfterSignin()
@@ -118,8 +121,7 @@ export default class NotificationStore implements INotificationStore {
 
     setup() {
         this.notificationsSub = Notifications.addNotificationReceivedListener(this.handleNotification);
-        
-        // this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(this.handleNotificationResponse);
+        this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(this.handleNotificationResponse);
 
         if (Platform.OS === 'android') {
             // TODO: lookup what this is doing and test on android
@@ -134,7 +136,7 @@ export default class NotificationStore implements INotificationStore {
 
     teardown() {
         Notifications.removeNotificationSubscription(this.notificationsSub)
-        // Notifications.removeNotificationSubscription(this.notificationResponseSub)
+        Notifications.removeNotificationSubscription(this.notificationResponseSub)
     }
 
     async onEvent(patchNotification: PatchNotification) {
@@ -153,6 +155,8 @@ export default class NotificationStore implements INotificationStore {
         const payload = notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
 
+        console.log('handleNotificatoin: ', type)
+
         const notificationHandler = NotificationHandlers[type];
         
         if (notificationHandler && notificationHandler.onNotificationRecieved) {
@@ -165,15 +169,17 @@ export default class NotificationStore implements INotificationStore {
     }
 
     handleNotificationResponse = async <T extends NotificationEventType>(res: NotificationResponse) => {
-        const payload = res.notification.request.content.data as PatchEventPacket;
+        const payload = res.notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
         const actionId = res.actionIdentifier;
 
         const notificationHandler = NotificationHandlers[type];
         
         if (res.actionIdentifier == 'expo.modules.notifications.actions.DEFAULT') {
-            if (notificationHandler.defaultRouteTo) {
-                navigateTo(notificationHandler.defaultRouteTo, {
+            const newRoute = notificationHandler.defaultRouteTo(payload);
+
+            if (newRoute) {
+                navigateTo(newRoute, {
                     notification: payload as any // we take in general type here but the notification params in the RootStackParamList are more specific 
                 })
             }
@@ -209,12 +215,14 @@ Notifications.setNotificationHandler({
             && !notificationHandler.dontShowNotification
             && !payload.silent
         ) {
+            console.log('SHOULD SHOW: ', type)
             return {
                 shouldShowAlert: true,
                 shouldPlaySound: true,
                 shouldSetBadge: true,
             }
         } else {
+            console.log('SHOULD NOT SHOW: ', type)
             return {
                 shouldShowAlert: false,
                 shouldPlaySound: false,

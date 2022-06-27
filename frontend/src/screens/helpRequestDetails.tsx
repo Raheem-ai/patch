@@ -19,6 +19,7 @@ import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
+import Loader from "../components/loader";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -37,14 +38,13 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             const params = route.params;
 
             if (params && params.notification) {
-                // TODO: do we need this if the notification itself is also forwarding the update to the update store?
-                // call store method to get helprequest from api (so we have latest value)
-                // ...yes because we currently have no way to sync with the update store's updates
-                // await requestStore().pushRequest(params.notification.params.requestId);
-                // setNotification(params.notification);
+                // Need to mark the request store as loading so the header config knows not to use a stale
+                // req displayId while we are transitioning
+                await requestStore().loadUntil(async () => {
+                    await updateStore().pendingRequestUpdate(params.notification)
+                    await requestStore().pushRequest(params.notification.params.requestId)
+                })
 
-                // TODO: test this
-                await updateStore().pendingRequestUpdate(params.notification)
                 setIsLoading(false);
             } else {
                 // got here through normal navigation...caller should worry about having up to date copy
@@ -526,7 +526,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     if (isLoading || !request) {
-        return null
+        return <Loader/>
     }
 
     const overview = () => {
