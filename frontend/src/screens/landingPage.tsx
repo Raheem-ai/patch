@@ -20,13 +20,10 @@ const LandingPage = observer(({ navigation }: Props) => {
     return (
         <View style={styles.pageContainer}>
             <View style={styles.logoContainer}>
-                <Image source={logo} style={{ width: 100, height: 100 }} /> 
+                <Image source={logo} style={{ width: 232, height: 73 }} /> 
             </View>
-            <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>PATCH</Text>
-            </View>
-            <View style={[styles.captionContainer, {marginBottom: 100}]}>
-                <Text style={styles.captionText}>The life-affirming dispatch system for community responders</Text>
+            <View style={[styles.captionContainer, {marginBottom: 200}]}>
+                <Text style={styles.captionText}>The dispatch system for community crisis care</Text>
             </View>
             <Pressable onPress={() => navigateTo(routerNames.signIn)}>
                 <View style={styles.captionContainer}>
@@ -47,31 +44,22 @@ export default LandingPage;
 const styles = StyleSheet.create({
     pageContainer: {
         padding: 24,
-        backgroundColor: '#42384F',
+        backgroundColor: '#53317C',
         height: '100%'
     },
     logoContainer: {
-        marginTop: 100,
+        marginTop: 150,
         height: 100,
-        width: 100,
+        width: 232,
         alignContent: 'center',
         justifyContent: 'center',
         borderRadius: 100,
         alignSelf: 'center'
     },
-    titleContainer: {
-        alignSelf: 'center',
-        paddingTop: 24
-    },
-    titleText: {
-        fontSize: 48,
-        fontWeight: '400',
-        color: '#8B5BC7'
-    },
     captionContainer: {
         alignSelf: 'center',
         width: 325,
-        marginVertical: 32
+        marginVertical: 24
     },
     captionText: {
         fontSize: 18,
@@ -80,15 +68,17 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     signInText: {
-        fontSize: 16,
+        fontSize: 18,
+        letterSpacing: 0.8,
         fontWeight: '700',
-        color: '#8B5BC7',
+        color: '#F7F3FB',
         textAlign: 'center'
     },
     invitationCodeText: {
-        fontSize: 16,
+        fontSize: 18,
+        letterSpacing: 0.8,
         fontWeight: '400',
-        color: '#8B5BC7',
+        color: '#F7F3FB',
         textAlign: 'center'
     },
 })

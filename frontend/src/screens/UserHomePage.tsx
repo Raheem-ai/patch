@@ -86,7 +86,7 @@ export default function UserHomePage({ navigation, route }: Props) {
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
 
-    const welcomeText = 'Welcome to PATCH--dispatch and response for a world without police.'
+    const welcomeText = 'Welcome to Patch, the dispatching system for community crisis care.'
 
     const menuInstructions = 'Use the menu above to get around:'
 
