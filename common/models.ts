@@ -339,6 +339,12 @@ export enum RequestPriority {
     High
 }
 
+export const RequestPriorityToLabelMap: { [key in RequestPriority]: string } = {
+    [RequestPriority.High]: 'Critical',
+    [RequestPriority.Medium]: 'Urgent',
+    [RequestPriority.Low]: 'Non-Urgent',
+}
+
 export enum HelpRequestFilter {
     Active = 'ac',
     Finished = 'fi',

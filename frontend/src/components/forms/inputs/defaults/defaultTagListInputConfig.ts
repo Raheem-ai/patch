@@ -27,11 +27,14 @@ export const TagsListInput = (config: TagsListInputConfig) => {
 
     // default but overrideable props
     const overrideableProps: OverrideableProps = {
-        definedCategories: manageTagsStore().tagCategories
+        definedCategories: () => manageTagsStore().tagCategories
     }
 
     // default but overrideable edit config
     const overrideableEditConfig: OverrideableEditConfig = {
+        filterRemovedItems: (items) => {
+            return items.filter(item => !!manageTagsStore().getTag(item.categoryId, item.itemId));
+        },
         editStore: manageTagsStore().editStore,
         editHeaderLabel: 'Edit tags',
         addCategoryPlaceholderLabel: 'Add tag category',
