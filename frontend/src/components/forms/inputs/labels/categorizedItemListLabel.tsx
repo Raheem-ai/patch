@@ -39,7 +39,12 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
         <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
             {
                 Array.from(tagMap.entries()).map(([categoryId, itemIds], idx, arr) => {
-                    const category = config.props.definedCategories.get(categoryId)
+                    const category = config.props.definedCategories().get(categoryId)
+
+                    if (!category) {
+                        return null;
+                    }
+
                     const categoryName = category.name;
                     const isLast = (idx == arr.length - 1);
 
