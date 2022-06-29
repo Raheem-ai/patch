@@ -2,7 +2,7 @@ import { AxiosError } from "axios";
 
 export function resolveErrorMessage(e: AxiosError): string {
     if (!e.isAxiosError) {
-        console.log('NOT AXIOS ERROR')
+        console.log('NOT AXIOS ERROR:', e.message)
         return e.message
     }
 

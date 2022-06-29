@@ -43,7 +43,7 @@ export default class ManageAttributesStore implements IManageAttributesStore {
 
     getAttribute(categoryId: string, attributeId: string): Attribute {
         const category = this.attributeCategories.get(categoryId);
-        return category.items.find(item => item.id == attributeId);
+        return category?.items.find(item => item.id == attributeId);
     }
 
     onSave = async (updates: CategorizedItemUpdates) => {

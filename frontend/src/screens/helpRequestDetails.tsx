@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
-import { PatchPermissions, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -32,6 +32,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const request = requestStore().currentRequest;
     const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
+
+    const userOnRequest = request.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
     useEffect(() => {
         (async () => {
@@ -67,7 +71,32 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const timeAndPlace = () => {
+    const prioritySection = () => {
+        const priority = requestStore().currentRequest.priority;
+        const priorityLabel = RequestPriorityToLabelMap[priority];
+        
+        const priorityColor = priority == RequestPriority.High
+            ? Colors.bad
+            : priority == RequestPriority.Medium
+                ? Colors.okay
+                : priority == RequestPriority.Low
+                    ? '#999799'
+                    : null
+        
+        if (!priorityColor) {
+            return null
+        }
+        
+        return (
+            <View style={styles.priorityOutterSection}>
+                <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
+                    <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                </View>
+            </View>
+        )
+    }
+
+    const detailsSection = () => {
         const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -467,14 +496,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     // }
 
     const statusPicker = () => {
-        if (!currentRequestIsOpen()) {
-            return null;
-        }
-
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#FFFFFF'
+                backgroundColor: '#FFFFFF',
+                marginBottom: 12
             }}>
                 <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
             </View>
@@ -482,31 +508,25 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const toggleRequestButton = () => {
-        const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
-        const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
-        const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
-        if (userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission)) {
-            const currentRequestOpen = currentRequestIsOpen();
+        const currentRequestOpen = currentRequestIsOpen();
 
-            return (
-                <View style={{ 
-                    height: 65, 
-                    backgroundColor: '#FFFFFF',
-                    marginTop: 12
-                }}>
-                    <Button
-                        uppercase={false}
-                        color={currentRequestOpen ? '#fff' : '#76599A'}
-                        style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
-                        onPress={currentRequestOpen ? closeRequest() : reopenRequest()}
-                        >
-                            {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
-                    </Button>
-                </View>
-            )
-        }
-
-        return null;
+        return (
+            <View style={{ 
+                width: '100%',
+                padding: 20,
+                paddingTop: currentRequestOpen ? 0 : 20,
+                backgroundColor: '#FFFFFF',
+            }}>
+                <Button
+                    uppercase={false}
+                    color={currentRequestOpen ? '#fff' : '#76599A'}
+                    style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
+                    onPress={currentRequestOpen ? closeRequest() : reopenRequest()}
+                    >
+                        {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                </Button>
+            </View>
+        )
     }
 
     const closeRequest = () => async () => {
@@ -530,18 +550,31 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const overview = () => {
+        const showCloseOpenReqButton = userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission)
+
         return (
+        <>
             <WrappedScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
+                    { prioritySection() }
                     { mapPreview() }
-                    { timeAndPlace() }
+                    { detailsSection() }
                 </View>
-                { statusPicker() }
-                { toggleRequestButton() }
                 {/* { teamSection() } */}
-            </WrappedScrollView> 
+            </WrappedScrollView>
+            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                { currentRequestIsOpen()
+                    ? statusPicker() 
+                    : null 
+                }
+                { showCloseOpenReqButton
+                    ? toggleRequestButton()
+                    : null 
+                }
+            </View>
+        </>
         )
     }
 
@@ -940,6 +973,16 @@ const styles = StyleSheet.create({
     notesSection: {
         marginBottom: 16
     },
+    priorityOutterSection: {
+        marginBottom: 16,
+        // makes the inner section hug the text vs trying to dill the space of its container
+        flexDirection: 'row' 
+    },
+    priorityInnerSection: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4
+    },
     timeAndPlaceSection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -1227,8 +1270,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         alignSelf: 'center',
         borderRadius: 24,
-        marginVertical: 24,
-        width: 328,
+        // margin: 20,
+        width: '100%',
         height: 44
     },
     mapView: {

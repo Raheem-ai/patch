@@ -3,7 +3,7 @@ import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from ".
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
+import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
@@ -167,7 +167,7 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'type',
                         required: true,
                         props: {
-                            definedCategories: RequestTypeCategories,
+                            definedCategories: () => RequestTypeCategories,
                             dark: true
                         }
                     },
@@ -175,7 +175,7 @@ class EditHelpRequest extends React.Component<Props> {
                     {
                         onSave: (priorities) => editRequestStore().priority = priorities[0],
                         val: () => {
-                            return editRequestStore().priority 
+                            return typeof editRequestStore().priority == 'number'
                                 ? [editRequestStore().priority]
                                 : []
                         },
@@ -183,13 +183,13 @@ class EditHelpRequest extends React.Component<Props> {
                             return !!editRequestStore().priority 
                         },
                         name: 'priority',
-                        previewLabel: () => editRequestStore().priority as unknown as string,
+                        previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
                         headerLabel: () => 'Priority',
                         placeholderLabel: () => 'Priority',
                         type: 'List',
                         props: {
                             options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => opt
+                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
                         },
                     },
                 ],

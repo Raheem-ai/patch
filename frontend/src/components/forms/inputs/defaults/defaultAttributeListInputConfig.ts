@@ -28,11 +28,14 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
 
     // default but overrideable props
     const overrideableProps: OverrideableProps = {
-        definedCategories: manageAttributesStore().attributeCategories
+        definedCategories: () => manageAttributesStore().attributeCategories
     }
 
     // default but overrideable edit config
     const overrideableEditConfig: OverrideableEditConfig = {
+        filterRemovedItems: (items) => {
+            return items.filter(item => !!manageAttributesStore().getAttribute(item.categoryId, item.itemId));
+        },
         editStore: manageAttributesStore().editStore,
         editHeaderLabel: 'Edit attributes',
         addCategoryPlaceholderLabel: 'Add attribute category',

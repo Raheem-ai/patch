@@ -1,9 +1,9 @@
 import React from "react";
-import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore, manageTagsStore } from "../../../stores/interfaces";
 import { IObservableValue, observable, reaction, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
+import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
 import Form, { FormProps } from "../../forms/form";
 import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -212,7 +212,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'type',
                         required: true,
                         props: {
-                            definedCategories: RequestTypeCategories,
+                            definedCategories: () => RequestTypeCategories,
                             dark: true
                         }
                     },
@@ -220,7 +220,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     {
                         onSave: (priorities) => createRequestStore().priority = priorities[0],
                         val: () => {
-                            return createRequestStore().priority 
+                            return typeof createRequestStore().priority == 'number'
                                 ? [createRequestStore().priority]
                                 : []
                         },
@@ -228,13 +228,13 @@ class CreateHelpRequest extends React.Component<Props> {
                             return !!createRequestStore().priority 
                         },
                         name: 'priority',
-                        previewLabel: () => createRequestStore().priority as unknown as string,
+                        previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
                         headerLabel: () => 'Priority',
                         placeholderLabel: () => 'Priority',
                         type: 'List',
                         props: {
                             options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => opt
+                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
                         },
                     },
                 ],

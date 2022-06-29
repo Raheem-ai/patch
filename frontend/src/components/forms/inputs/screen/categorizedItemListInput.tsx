@@ -56,7 +56,11 @@ const CategorizedItemListInput = ({
         const headerProps: BackButtonHeaderProps = {
             save: {
                 handler: () => {
-                    config.onSave(selectedItems);
+                    const items = config.props?.editConfig?.filterRemovedItems
+                        ? config.props.editConfig.filterRemovedItems(selectedItems)
+                        : selectedItems;
+
+                    config.onSave(items);
                     back();
                 },
                 outline: true
@@ -89,8 +93,8 @@ const CategorizedItemListInput = ({
         }
 
         const itemInfo = selectedItems.map((targetItem, idx) => {
-            const category = config.props.definedCategories.get(targetItem.categoryId)
-            const name = category.items.find(item => item.id == targetItem.itemId)?.name;
+            const category = config.props.definedCategories().get(targetItem.categoryId)
+            const name = category?.items.find(item => item.id == targetItem.itemId)?.name;
         
             if (name) {
                 return [name, idx] as [string, number]
@@ -119,7 +123,7 @@ const CategorizedItemListInput = ({
             const fontSize = 16;
             const searchResults: [string, CategorizedItem][] = [];
 
-            Array.from(config.props.definedCategories.entries()).forEach(([categoryId, category]) => {
+            Array.from(config.props.definedCategories().entries()).forEach(([categoryId, category]) => {
                 category.items.forEach(item => {
                     if (item.name.startsWith(searchText) 
                         // only show unselected results
@@ -158,7 +162,7 @@ const CategorizedItemListInput = ({
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ }}>
                     {
-                        Array.from(config.props.definedCategories.entries()).reverse().map(([categoryId, category]) => {
+                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {

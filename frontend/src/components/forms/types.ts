@@ -87,8 +87,11 @@ export type ScreenFormInputOptions = {
     },
     'CategorizedItemList': {
         props: {
-            definedCategories: Map<string, Category>,
+            // needs to be a function so consumers update correctly
+            definedCategories: () => Map<string, Category>,
             editConfig?: {
+                // we have to filter here as CategorizedItem definitions can be deleted before they are unselected from the list
+                filterRemovedItems: (items: CategorizedItem[]) => CategorizedItem[]
                 editHeaderLabel: string,
                 addCategoryPlaceholderLabel: string,
                 addItemPlaceholderLabel: string,

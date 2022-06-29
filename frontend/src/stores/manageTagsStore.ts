@@ -43,7 +43,7 @@ export default class ManageTagsStore implements IManageTagsStore {
 
     getTag(categoryId: string, tagId: string): Tag {
         const category = this.tagCategories.get(categoryId);
-        return category.items.find(item => item.id == tagId);
+        return category?.items.find(item => item.id == tagId);
     }
 
     onSave = async (updates: CategorizedItemUpdates) => {
