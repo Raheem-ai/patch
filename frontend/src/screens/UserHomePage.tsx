@@ -88,11 +88,13 @@ export default function UserHomePage({ navigation, route }: Props) {
 
     const welcomeText = 'Welcome to Patch, the dispatching system for community crisis care.'
 
-    const menuInstructions = 'Use the menu above to get around:'
+    const menuInstructions = 'Use the ☰ menu above to get around:'
 
-    const requestDetails = 'create calls for help and add responders'
+    const requestDetails = 'document and dispatch calls'
 
-    const teamDetails = 'add new team members'
+    const teamDetails = 'manage team members'
+
+    const channelDetails = 'communicate securely'
 
     const comingSoon = 'coming soon'
 
@@ -115,25 +117,25 @@ export default function UserHomePage({ navigation, route }: Props) {
         //     </View>
         // </Provider>
         <View style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: '900', marginVertical: 20 }}>{`Hi ${firstName}`}</Text>
-            <Text style={{ fontSize: 16, marginTop: 4, marginBottom: 20 }}>{welcomeText}</Text>
-            <Text style={{ fontSize: 16, marginVertical: 4 }}>{menuInstructions}</Text>
-            <Text style={{ fontSize: 16, marginVertical: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: '900', marginTop: 24 }}>{`Hi ${firstName}`}</Text>
+            <Text style={{ fontSize: 16, marginTop: 24 }}>{welcomeText}</Text>
+            <Text style={{ fontSize: 16, marginTop: 24 }}>{menuInstructions}</Text>
+            <Text style={{ fontSize: 16, marginTop: 24 }}>
                 <Text style={{ fontWeight: '900'}}>Requests: </Text>
                 <Text>{requestDetails}</Text>
             </Text>
 
-            <Text style={{ fontSize: 16, marginVertical: 4 }}>
+            <Text style={{ fontSize: 16, marginTop: 24 }}>
                 <Text style={{ fontWeight: '900'}}>Team: </Text>
                 <Text>{teamDetails}</Text>
             </Text>
 
-            <Text style={{ fontSize: 16, marginVertical: 4, color: '#aaa' }}>
-                <Text style={{ fontWeight: '900'}}>Resources: </Text>
-                <Text>{comingSoon}</Text>
+            <Text style={{ fontSize: 16, marginTop: 24 }}>
+                <Text style={{ fontWeight: '900'}}>Channels: </Text>
+                <Text>{channelDetails}</Text>
             </Text>
 
-            <Text style={{ fontSize: 16, marginVertical: 4, color: '#aaa' }}>
+            <Text style={{ fontSize: 16, marginTop: 24, color: '#aaa' }}>
                 <Text style={{ fontWeight: '900'}}>Schedule: </Text>
                 <Text>{comingSoon}</Text>
             </Text>
@@ -142,13 +144,13 @@ export default function UserHomePage({ navigation, route }: Props) {
                 <Button 
                     uppercase={false}
                     onPress={() => { navigateTo(routerNames.helpRequestMap) }}
-                    color={'#fff'}
+                    color={Colors.text.buttonLabelPrimary}
                     style={{
                         height: 44,
                         borderRadius: 24,
                         backgroundColor: Colors.primary.alpha,
                         justifyContent: 'center',
-                        marginTop: 20
+                        marginTop: 24
                     }}>{'Requests'}</Button>
 
                 <Button 
@@ -169,14 +171,14 @@ export default function UserHomePage({ navigation, route }: Props) {
                         userStore().pushCurrentUser(userStore().user);
                         navigateTo(routerNames.userDetails);
                     }}
-                    color={'#fff'}
+                    color={Colors.text.buttonLabelPrimary}
                     style={{
                         height: 44,
                         borderRadius: 24,
                         backgroundColor: Colors.primary.alpha,
                         justifyContent: 'center',
-                        marginTop: 20
-                    }}>{'Profile'}</Button>
+                        marginTop: 24
+                    }}>{'View profile'}</Button>
                 </View>
         </View>
     );
