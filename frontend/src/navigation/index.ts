@@ -76,6 +76,13 @@ export type SubMenuOption = ({
 
 export const SubMenuOptions: SubMenuOption[] = [
   {
+    name: 'Profile',
+    onPress: () => {
+      userStore().pushCurrentUser(userStore().user);
+      navigateTo(routerNames.userDetails);
+    }
+  }, 
+  {
     name: 'Settings',
     routeTo: 'settings',
   }, 

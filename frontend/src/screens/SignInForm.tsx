@@ -1,7 +1,7 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp } from '../types';
+import { labelNames, routerNames, SignInNavigationProp, Colors } from '../types';
 import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
@@ -63,7 +63,7 @@ export default function SignInForm( { navigation } : Props) {
                             onSubmitEditing={signIn}/>
                     </View>
                     <View style={styles.bottomContainer}>
-                        <Button uppercase={false} color={'#fff'} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
+                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
                         <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
                         <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
                     </View>
@@ -75,7 +75,7 @@ export default function SignInForm( { navigation } : Props) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#FAF9FA',
+        backgroundColor: Colors.backgrounds.settings,
         flex: 1
     },
     scrollContainer: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
-        color: '#713EB0'
+        color: Colors.text.settingsTitle
     },
     inputsContainer: {
         alignSelf: 'center',
@@ -101,15 +101,15 @@ const styles = StyleSheet.create({
         width: 296
     },
     input: {
-        backgroundColor: '#FAF9FA'
+        backgroundColor: Colors.backgrounds.settings
     },
     bottomContainer: {
         alignSelf: 'center',
-        marginVertical: 32
+        marginVertical: 48
     },
     signInButton: {
         borderRadius: 24,
-        backgroundColor: '#76599A',
+        backgroundColor: Colors.primary.alpha,
         justifyContent: 'center',
         marginVertical: 24,
         width: 296,
@@ -120,21 +120,21 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 14,
         lineHeight: 24,
-        marginBottom: 30,
+        marginBottom: 24,
         
         /* identical to box height, or 171% */
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',
         
-        /* primary.00 - 66% */
-        color: 'rgba(105, 79, 112, 0.66)',
+        color: Colors.text.buttonLabelSecondary,
     },
     invitationCodeText: {
         fontStyle: 'normal',
         fontWeight: '700',
         fontSize: 14,
         lineHeight: 16,
+        marginTop: 24,
         
         /* identical to box height */
         display: 'flex',
@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         textTransform: 'uppercase',
         
-        /* primary.00 - 33% */
-        color: 'rgba(118, 89, 154, 0.33)',
+        color: Colors.text.buttonLabelSecondary,
     },
 });

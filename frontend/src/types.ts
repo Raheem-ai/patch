@@ -78,17 +78,27 @@ export const labelNames = {
 
 export const Colors = {
     primary: {
-        alpha: '#694F70',
-        beta: '#F9F6FA',
+        alpha: '#76599A',
+        // beta: '#F9F6FA',
         delta: '#E6E1E8'
     },
     secondary: {
         alpha: '#5D8A98', 
         beta: '#CFDCE0',
-        delta: '#A5BAC2'
+        // delta: '#A5BAC2'
     },
     tertiary: {
         alpha: '#D04B00'
+    },
+    backgrounds: {
+        splash: '#53317C',
+        standard: '#FFFFFF',
+        settings: '#FAF9FA'
+    },
+    text: {
+        buttonLabelPrimary: '#FFFFFF',
+        buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',
+        settingsTitle: '#76599A'
     },
     good: '#55BB76',
     okay: '#EBAA02',

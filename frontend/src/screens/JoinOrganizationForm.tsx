@@ -1,7 +1,7 @@
 import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { JoinOrganizationNavigationProp, labelNames, routerNames, ScreenProps } from '../types';
+import { JoinOrganizationNavigationProp, labelNames, routerNames, Colors, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
 
 type Props = {
@@ -28,7 +28,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                 <View style={styles.bottomContainer}>
                     <Button
                         uppercase={false}
-                        color={'#fff'}
+                        color={Colors.text.buttonLabelPrimary}
                         style={styles.invitationCodeButton}
                         // TODO: Enable "Enter invitation Code" after invitation + create account flow is implemented.
                         disabled={true}
@@ -45,7 +45,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
 const styles = StyleSheet.create({
     container: {
         padding: 24,
-        backgroundColor: '#FAF9FA',
+        backgroundColor: Colors.backgrounds.settings,
         height: '100%'
     },
     titleContainer: {
@@ -59,16 +59,15 @@ const styles = StyleSheet.create({
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
-        color: '#713EB0'
+        color: Colors.text.settingsTitle
     },
     inputsContainer: {
         alignSelf: 'center',
-        marginBottom: 48,
         height: 50,
         width: 296
     },
     input: {
-        backgroundColor: '#FAF9FA'
+        backgroundColor: Colors.backgrounds.settings
     },
     bottomContainer: {
         alignSelf: 'center',
@@ -76,7 +75,7 @@ const styles = StyleSheet.create({
     },
     invitationCodeButton: {
         borderRadius: 24,
-        backgroundColor: '#76599A',
+        backgroundColor: Colors.primary.alpha,
         justifyContent: 'center',
         marginVertical: 24,
         width: 296,
@@ -87,14 +86,14 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 14,
         lineHeight: 16,
+        marginTop: 24,
         
         /* identical to box height */
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',
         textTransform: 'uppercase',
-        
-        /* primary.00 - 33% */
-        color: 'rgba(118, 89, 154, 0.33)',
+
+        color: Colors.text.buttonLabelSecondary
     },
 });
