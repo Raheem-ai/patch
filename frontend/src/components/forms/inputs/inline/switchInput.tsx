@@ -9,7 +9,7 @@ import { SectionInlineViewProps } from "../../types";
 const SwitchInput = observer(({ config }: SectionInlineViewProps<'Switch'>) => {
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[styles.label, { flex: 1 }]}>{unwrap(config.props.label)}</Text>
+            <Text style={[config.disabled ? styles.disabled : styles.label, { flex: 1 }]}>{unwrap(config.props.label)}</Text>
             <Switch 
                 style={{ marginHorizontal: 20 }}
                 trackColor={{
@@ -27,7 +27,7 @@ export default SwitchInput;
 
 const styles = StyleSheet.create({
     label: {
-        color: '#000',
+        color: Colors.text.inputDefault,
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,
@@ -41,5 +41,10 @@ const styles = StyleSheet.create({
     },
     disabled: {
         // opacity: .8,
+        color: Colors.text.inputDisabled,
+        maxHeight: 120,
+        paddingVertical: 12,
+        lineHeight: 24,
+        fontSize: 16
     }
 })

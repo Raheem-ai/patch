@@ -10,7 +10,7 @@ import MangeRolesForm from "../components/forms/editRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
 import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
-import { ScreenProps } from "../types";
+import { ScreenProps, Colors } from "../types";
 import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 
@@ -37,6 +37,7 @@ const Settings = ({ navigation, route }: Props) => {
                     label: 'App notifications'
                 }
             },
+            /*
             {
                 name: 'smsNotifications',
                 type: 'Switch',
@@ -47,7 +48,7 @@ const Settings = ({ navigation, route }: Props) => {
                 props: {
                     label: 'SMS notifications'
                 }
-            }
+            }*/
         ] as PersonalSettingsInputs
 
         return inputs
@@ -71,6 +72,7 @@ const Settings = ({ navigation, route }: Props) => {
                 } as InlineFormInputConfig<'TextInput'>
                 : null,
             // TODO: plumb down to organization
+            /*
             canEditOrgSettings
                 ? {
                     name: 'requestPrefix',
@@ -82,6 +84,7 @@ const Settings = ({ navigation, route }: Props) => {
                     placeholderLabel: () => 'Request prefix'
                 } as InlineFormInputConfig<'TextInput'>
                 : null,
+            */
             iHaveAllPermissions([PatchPermissions.RoleAdmin]) 
                 ? {
                     name: 'manageRoles',
@@ -145,6 +148,7 @@ const Settings = ({ navigation, route }: Props) => {
                 } as NavigationFormInputConfig
                 : null,
             // TODO: plumb down to organization
+            /*
             canEditOrgSettings
                 ? {
                     onSave: (text) => {
@@ -163,7 +167,7 @@ const Settings = ({ navigation, route }: Props) => {
                     type: 'TextArea'
                 } as ScreenFormInputConfig<'TextArea'>
                 : null,
-            
+            */
             canEditOrgSettings
                 ? {
                     name: 'createRequestChats',
@@ -173,10 +177,11 @@ const Settings = ({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: true,
                     props: {
-                        label: 'Create chats for Requests'
+                        label: 'Create channels for Requests'
                     }
                 } as InlineFormInputConfig<'Switch'>
                 :  null,
+            /*
             canEditOrgSettings
                 ? {
                     name: 'createShiftChats',
@@ -190,6 +195,7 @@ const Settings = ({ navigation, route }: Props) => {
                     }
                 } as InlineFormInputConfig<'Switch'>
                 : null
+            */
         ].filter(v => !!v)
 
         return inputs;

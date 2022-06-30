@@ -36,13 +36,13 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         ].filter(text => !!text).join(` ${visualDelim} `);
 
         return <View style={styles.headerContainer}>
-            <View style={styles.profilePhotoContainer}>
+            {/* <View style={styles.profilePhotoContainer}>
                 <IconButton
                     style={styles.profilePhotoIcon}
                     icon='camera-plus' 
                     color={styles.profilePhotoIcon.color}
                     size={styles.profilePhotoIcon.width} />
-            </View>
+            </View> */}
             <View style={styles.nameContainer}>
                 <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
             </View>

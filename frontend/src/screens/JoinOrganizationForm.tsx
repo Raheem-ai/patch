@@ -35,7 +35,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                         onPress={() => navigateTo(routerNames.invitationSuccessful)}>{'Enter invitation code'}</Button>
                     <Text
                         style={styles.signInText}
-                        onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
+                        onPress={() => navigateTo(routerNames.signIn)}>Sign in</Text>
                 </View>
             </View>
         </Pressable>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
-        color: Colors.text.settingsTitle
+        color: Colors.text.signInTitle
     },
     inputsContainer: {
         alignSelf: 'center',

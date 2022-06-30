@@ -96,9 +96,11 @@ export const Colors = {
         settings: '#FAF9FA'
     },
     text: {
+        inputDefault: '#111111',
+        inputDisabled: '#999999',
         buttonLabelPrimary: '#FFFFFF',
         buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',
-        settingsTitle: '#76599A'
+        signInTitle: '#76599A',
     },
     good: '#55BB76',
     okay: '#EBAA02',

@@ -27,12 +27,12 @@ const LandingPage = observer(({ navigation }: Props) => {
             </View>
             <Pressable onPress={() => navigateTo(routerNames.signIn)}>
                 <View style={styles.captionContainer}>
-                    <Text style={styles.signInText}>SIGN IN</Text>
+                    <Text style={styles.signInText}>Sign in</Text>
                 </View>
             </Pressable>
             <Pressable onPress={() => navigateTo(routerNames.joinOrganization)}>
                 <View style={styles.captionContainer}>
-                    <Text style={styles.invitationCodeText}>ENTER INVITATION CODE</Text>
+                    <Text style={styles.invitationCodeText}>Enter invitation code</Text>
                 </View>
             </Pressable>
         </View>
@@ -72,13 +72,15 @@ const styles = StyleSheet.create({
         letterSpacing: 0.8,
         fontWeight: '700',
         color: '#F7F3FB',
-        textAlign: 'center'
+        textAlign: 'center',
+        textTransform: 'uppercase'
     },
     invitationCodeText: {
         fontSize: 18,
         letterSpacing: 0.8,
         fontWeight: '400',
         color: '#F7F3FB',
-        textAlign: 'center'
+        textAlign: 'center',
+        textTransform: 'uppercase'
     },
 })

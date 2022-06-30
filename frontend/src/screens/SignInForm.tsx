@@ -6,6 +6,7 @@ import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
+import { block } from 'react-native-reanimated';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -65,7 +66,7 @@ export default function SignInForm( { navigation } : Props) {
                     <View style={styles.bottomContainer}>
                         <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
                         <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                        <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>ENTER INVITATION CODE</Text>
+                        <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
                     </View>
                 </ScrollView>
             </Pressable>
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     titleContainer: {
         alignSelf: 'center',
         paddingTop: 200,
-        paddingBottom: 100
+        paddingBottom: 100,
     },
     titleText: {
         fontStyle: 'normal',
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
-        color: Colors.text.settingsTitle
+        color: Colors.text.signInTitle
     },
     inputsContainer: {
         alignSelf: 'center',
@@ -120,28 +121,26 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         fontSize: 14,
         lineHeight: 24,
+        color: Colors.text.buttonLabelSecondary,
         marginBottom: 24,
         
         /* identical to box height, or 171% */
         display: 'flex',
         alignItems: 'center',
-        textAlign: 'center',
-        
-        color: Colors.text.buttonLabelSecondary,
+        textAlign: 'center'     
     },
     invitationCodeText: {
         fontStyle: 'normal',
         fontWeight: '700',
         fontSize: 14,
         lineHeight: 16,
+        color: Colors.text.buttonLabelSecondary,
         marginTop: 24,
         
         /* identical to box height */
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',
-        textTransform: 'uppercase',
-        
-        color: Colors.text.buttonLabelSecondary,
+        textTransform: 'uppercase'
     },
 });
