@@ -72,7 +72,6 @@ const Settings = ({ navigation, route }: Props) => {
                 } as InlineFormInputConfig<'TextInput'>
                 : null,
             // TODO: plumb down to organization
-            /*
             canEditOrgSettings
                 ? {
                     name: 'requestPrefix',
@@ -84,7 +83,6 @@ const Settings = ({ navigation, route }: Props) => {
                     placeholderLabel: () => 'Request prefix'
                 } as InlineFormInputConfig<'TextInput'>
                 : null,
-            */
             iHaveAllPermissions([PatchPermissions.RoleAdmin]) 
                 ? {
                     name: 'manageRoles',
@@ -216,10 +214,10 @@ const Settings = ({ navigation, route }: Props) => {
                         <View style={styles.headerContainer}>
                             <IconButton
                                 icon={'account'} 
-                                color='#666'
+                                color={Colors.icons.dark}
                                 size={20} 
                                 style={styles.headerIcon} />
-                            <Text style={styles.headerText}>{'PERSONAL'}</Text>
+                            <Text style={styles.headerText}>{'Personal'}</Text>
                         </View>
                         <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
@@ -229,10 +227,10 @@ const Settings = ({ navigation, route }: Props) => {
                                 <View style={styles.headerContainer}>
                                     <IconButton
                                         icon={'domain'} 
-                                        color='#666'
+                                        color={Colors.icons.dark}
                                         size={20} 
                                         style={styles.headerIcon} />
-                                    <Text style={styles.headerText}>{'ORGANIZATION'}</Text>
+                                    <Text style={styles.headerText}>{'Organization'}</Text>
                                 </View>
                                 <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
                                     { params.renderInputs([orgSettings])}
@@ -264,7 +262,8 @@ const styles = StyleSheet.create({
     },
     headerText: { 
         color: '#666', 
-        fontSize: 16 
+        fontSize: 16,
+        textTransform: 'uppercase'
     },
     headerIcon: { 
         margin: 0, 

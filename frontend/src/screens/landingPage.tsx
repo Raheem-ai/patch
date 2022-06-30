@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-import { LandingPageNavigationProp, routerNames, ScreenProps } from "../types";
+import { LandingPageNavigationProp, routerNames, ScreenProps, Colors } from "../types";
 import logo from '../../assets/logo.png';
 import { navigateTo } from "../navigation";
 
@@ -44,7 +44,7 @@ export default LandingPage;
 const styles = StyleSheet.create({
     pageContainer: {
         padding: 24,
-        backgroundColor: '#53317C',
+        backgroundColor: Colors.backgrounds.splash,
         height: '100%'
     },
     logoContainer: {
@@ -64,14 +64,14 @@ const styles = StyleSheet.create({
     captionText: {
         fontSize: 18,
         fontWeight: '400',
-        color: '#FFFFFF80',
+        color: Colors.text.landingCaption,
         textAlign: 'center'
     },
     signInText: {
         fontSize: 18,
         letterSpacing: 0.8,
         fontWeight: '700',
-        color: '#F7F3FB',
+        color: Colors.text.landingLinks,
         textAlign: 'center',
         textTransform: 'uppercase'
     },
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         letterSpacing: 0.8,
         fontWeight: '400',
-        color: '#F7F3FB',
+        color: Colors.text.landingLinks,
         textAlign: 'center',
         textTransform: 'uppercase'
     },

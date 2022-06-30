@@ -98,9 +98,17 @@ export const Colors = {
     text: {
         inputDefault: '#111111',
         inputDisabled: '#999999',
+        navigationLabel: '#000000',
+        navigationDescription: '#999999',
         buttonLabelPrimary: '#FFFFFF',
         buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',
         signInTitle: '#76599A',
+        landingCaption: '#FFFFFF80',
+        landingLinks: '#F7F3FB',
+    },
+    icons: {
+        light: '#999',
+        dark: '#666'
     },
     good: '#55BB76',
     okay: '#EBAA02',
