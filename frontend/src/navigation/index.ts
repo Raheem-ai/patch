@@ -3,6 +3,7 @@ import React from 'react';
 import { IUserStore, userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
 import { runningOnProd } from '../utils';
+import * as Linking from 'expo-linking';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
@@ -88,8 +89,9 @@ export const SubMenuOptions: SubMenuOption[] = [
   }, 
   {
     name: 'Help',
-    routeTo: 'userHomePage',
-    disabled: true
+    onPress: () => {
+      Linking.openURL('https://raheemsupport.zendesk.com/hc/en-us');
+    }
   }, 
   {
     name: 'Log out',
