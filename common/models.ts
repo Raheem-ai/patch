@@ -347,7 +347,6 @@ export const RequestPriorityToLabelMap: { [key in RequestPriority]: string } = {
 
 export enum HelpRequestFilter {
     Active = 'ac',
-    Finished = 'fi',
     Closed = 'cl',
     All = 'al'
 };
