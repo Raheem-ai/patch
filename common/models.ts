@@ -369,8 +369,7 @@ export enum TeamFilter {
 
 export enum TeamSortBy {
     ByLastName = 'bln',
-    ByFirstName = 'bfn',
-    BySkill = 'bs'
+    ByFirstName = 'bfn'
 };
 
 export type Chat = {

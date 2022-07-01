@@ -5,6 +5,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
 import { HeaderHeight } from "../header/header";
+import { Colors } from "../../types";
 
 
 
@@ -58,7 +59,7 @@ export const Alerts = observer(() => {
         return !!alertStore().toast
             ? <View style={[styles.toastContainer, { width, top, left }]}>
                 <ScrollView>
-                    <Text style={{ color: '#fff' }}>{alertStore().toast.message}</Text>
+                    <Text style={{ color: Colors.text.defaultReversed }}>{alertStore().toast.message}</Text>
                 </ScrollView>
             </View>
             : null
@@ -125,17 +126,17 @@ const styles = StyleSheet.create({
     },
     promptTitleLabel: {
         fontSize: 14,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontWeight: '800'
     },
     promptMessageLabel: {
         fontSize: 14,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontWeight: '400'
     },
     promptActionLabel: {
         fontSize: 14,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontWeight: '400', 
         alignSelf: 'center'
     },

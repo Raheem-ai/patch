@@ -1,17 +1,20 @@
 import * as React from 'react';
-import { Animated, Dimensions, View } from 'react-native';
+import { Animated, Dimensions, View, Image } from 'react-native';
 import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
 import { useState } from 'react';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
-import { RootStackParamList, routerNames } from '../../types';
+import { RootStackParamList, routerNames, Colors } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { headerStore, IHeaderStore, IUserStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
+import statusAvailable from '../../../assets/statusAvailable.png';
+import statusUnavailable from '../../../assets/statusUnavailable.png';
+import statusOnshift from '../../../assets/statusOnshift.png';
 
 type Props = StackHeaderProps & {};
 
@@ -59,7 +62,7 @@ const Header = observer((props: Props) => {
                     {   leftActions.length 
                         ? <View style={styles.leftIconContainer}>
                             {
-                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                             }
                         </View>
                         : null
@@ -69,14 +72,12 @@ const Header = observer((props: Props) => {
                     </View>
                     { 
                         <View style={styles.onDutyStatusContainer}>
-                            <View style={[styles.onDutyStatusOutline, { borderColor: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>
-                                <Text style={[styles.onDutyStatusText, { color: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>{userStore().isOnDuty ? 'READY': 'OFF-DUTY'}</Text>
-                            </View>
+                            <Image source={ userStore().isOnDuty ? statusAvailable : statusUnavailable } style={{ width: 24, height: 24 }} /> 
                         </View>
                     }
                     <View style={styles.rightIconContainer}>
                         {
-                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={iconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                         }
                     </View>
                 </View>
@@ -137,15 +138,19 @@ const Header = observer((props: Props) => {
         <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
-                    <IconButton icon='close' size={iconSize} color='#fff' onPress={closeHeader}/>
+                    <IconButton icon='close' size={iconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
-                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Ready to go' : 'Off duty'}</Text>
+                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
                     <Switch
                         value={userStore().isOnDuty} 
                         disabled={!userStore().isResponder}
                         onValueChange={() => userStore().toggleOnDuty()} 
-                        color='#32D74B'/>
+                        color={Colors.good}
+                        thumbColor={userStore().isOnDuty ? Colors.uiControls.foregroundReversed : Colors.uiControls.foregroundDisabledReversed}
+                        trackColor={{ false: Colors.uiControls.backgroundDisabledReversed, true: Colors.good }}
+                        ios_backgroundColor={Colors.uiControls.backgroundDisabledReversed}
+                    />
                 </View>
             </View>
             <View style={styles.fullScreenContent}>
@@ -173,7 +178,7 @@ const styles = StyleSheet.create({
     // CLOSED
     container: {
         height: HeaderHeight,
-        backgroundColor: '#000',
+        backgroundColor: Colors.backgrounds.menu,
         flexDirection: 'row',
         alignItems: 'flex-end',
     },
@@ -188,7 +193,7 @@ const styles = StyleSheet.create({
         height: InteractiveHeaderHeight
     },
     title: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontSize: 20
     },
     onDutyStatusContainer: {
@@ -209,10 +214,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold' 
     },
     onDuty: {
-        color: '#17BA45',
+        color: Colors.good,
     },
     offDuty: {
-        color: '#999',
+        color: Colors.icons.darkReversed,
     },
     rightIconContainer: {
         // width: iconContainerSize,
@@ -229,7 +234,7 @@ const styles = StyleSheet.create({
 
     // OPEN
     fullScreenContainer: {
-        backgroundColor: `#000`,
+        backgroundColor: Colors.backgrounds.menu,
     },
     fullScreenHeaderContainer: {
         height: HeaderHeight,
@@ -244,13 +249,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     onDutyText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontSize: 18,
         marginRight: 12,
-        fontWeight: 'bold'
+        fontWeight: 'normal'
     },
     offDutyText: {
-        color: '#ccc',
+        color: Colors.text.secondaryReversed,
         fontWeight: 'normal'
     },
     fullScreenContent: {
@@ -265,31 +270,31 @@ const styles = StyleSheet.create({
     },
     dynamicContent: {
         flex: 1,
-        borderTopColor: '#666',
+        borderTopColor: Colors.borders.menu,
         borderWidth: 1,
         marginVertical: 10
     },
     subMenuOptions: {
-        borderTopColor: '#666',
+        borderTopColor: Colors.borders.menu,
         borderTopWidth: 1,
         paddingTop: 10,
         paddingBottom: 26
     },
     mainMenuText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         marginVertical: 10,
         fontSize: 24, 
         fontWeight: 'bold'
     },
     disabledMainMenuText: {
-        color: '#aaa'
+        color: Colors.text.disabledReversed
     },
     subMenuText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         marginVertical: 10,
         fontSize: 18
     },
     disabledSubMenuText: {
-        color: '#aaa'
+        color: Colors.text.disabledReversed
     }
 });

@@ -3,6 +3,7 @@ import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewSty
 import { Text } from "react-native-paper";
 import { InteractiveHeaderHeight } from "./header/header";
 import { VisualArea } from "./helpers/visualArea";
+import { Colors } from "../types";
 
 type TabConfig = {
     label : string,
@@ -114,17 +115,17 @@ const styles = StyleSheet.create({
         height: InteractiveHeaderHeight - 12,
         width: Dimensions.get('screen').width,
         paddingTop: 16,
-        backgroundColor: '#000'
+        backgroundColor: Colors.backgrounds.tabs,
     },
     body: {
         flex: 1,
     }, 
     headerLabel: {
         fontSize: 16,
-        color: '#999'
+        color: Colors.text.tertiaryReversed,
     },
     selectedHeaderLabel: {
-        color: '#fff'
+        color: Colors.text.defaultReversed
     },
     headerSection: {
         paddingHorizontal: 4,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
         marginRight: 16,
     },
     selectedSection: {
-        borderBottomColor: '#fff',
+        borderBottomColor: Colors.backgrounds.standard,
         borderBottomWidth: 3
     }
 

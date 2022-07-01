@@ -129,7 +129,7 @@ const PositionDetailsCard = observer(({
     const innerStatusOffset = (outerStatusSize-innerStatusSize)/2;
 
     return (
-        <View style={{ paddingLeft: 60, position: 'relative',  borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+        <View style={{ paddingLeft: 60, position: 'relative',  borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }}>
             <View style={{ width: outerStatusSize, height: outerStatusSize, backgroundColor: statusColor, position: 'absolute', left: outterStatusOffset, top: outterStatusOffset, borderRadius: outerStatusSize }}>
                 <View style={{ width: innerStatusSize, height: innerStatusSize, backgroundColor: '#fff', position: 'relative', left: innerStatusOffset, top: innerStatusOffset, borderRadius: innerStatusSize }}>
                 </View>
@@ -145,7 +145,7 @@ const PositionDetailsCard = observer(({
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>
             </View>
             { userDetails.length 
-                ? <View style={{ borderTopColor: '#E0E0E0', borderTopWidth: 1, marginBottom: 20,}}>
+                ? <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1, marginBottom: 20,}}>
                     {
                         userDetails.map(details => {
                             return (
@@ -155,7 +155,7 @@ const PositionDetailsCard = observer(({
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
                                         <View style={{ flexDirection: 'row' }}>
                                             {
-                                                details.attributes.map(attr => <Text key={attr} style={{ color: '#666666', marginRight: 6 }}>{attr}</Text>)
+                                                details.attributes.map(attr => <Text key={attr} style={{ color: Colors.text.tertiary, marginRight: 6 }}>{attr}</Text>)
                                             }
                                         </View>
                                     </View>

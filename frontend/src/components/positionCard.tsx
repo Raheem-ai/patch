@@ -7,6 +7,7 @@ import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../..
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";
+import { Colors } from "../types";
 
 type PositionCardProps = { 
     pos: Position,
@@ -56,13 +57,13 @@ const PositionCard = observer(({
     const hasPermissions = iHaveAllPermissions(edit?.permissions || []);
 
     return (
-        <Pressable onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }, containerStyle]}>
+        <Pressable onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
             <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
                 <View style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}>
                     { 
                         attrNames.map(attr => {
-                            return <Text key={attr} style={{ marginRight: 12, fontSize: 14, color: '#666666' }}>{attr}</Text>
+                            return <Text key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</Text>
                         }) 
                     }
                 </View>
@@ -72,7 +73,7 @@ const PositionCard = observer(({
                         pos.max == -1
                             ? <IconButton
                                 icon={'plus'} 
-                                color='#999999'
+                                color={Colors.icons.light}
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }} />
                             : null
@@ -83,7 +84,7 @@ const PositionCard = observer(({
                 ? <View style={{ alignItems: 'center', marginRight: 20, marginLeft: 20 }}>
                     <IconButton
                         icon={'pencil'} 
-                        color='#999999'
+                        color={Colors.icons.light}
                         size={20} 
                         style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
                 </View>

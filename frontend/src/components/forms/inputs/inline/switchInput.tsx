@@ -27,7 +27,7 @@ export default SwitchInput;
 
 const styles = StyleSheet.create({
     label: {
-        color: Colors.text.inputDefault,
+        color: Colors.text.default,
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     },
     disabled: {
         // opacity: .8,
-        color: Colors.text.inputDisabled,
+        color: Colors.text.disabled,
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,

@@ -209,7 +209,7 @@ const Settings = ({ navigation, route }: Props) => {
 
         return (
             <VisualArea>
-                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }, styles.pageContainer}>
                     <Pressable onPress={params.onContainerPress} style={{ flex: 1 }}>
                         <View style={styles.headerContainer}>
                             <IconButton
@@ -219,7 +219,7 @@ const Settings = ({ navigation, route }: Props) => {
                                 style={styles.headerIcon} />
                             <Text style={styles.headerText}>{'Personal'}</Text>
                         </View>
-                        <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
+                        <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
                         </View>
                         { shouldShowOrgSettings
@@ -232,7 +232,7 @@ const Settings = ({ navigation, route }: Props) => {
                                         style={styles.headerIcon} />
                                     <Text style={styles.headerText}>{'Organization'}</Text>
                                 </View>
-                                <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
+                                <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                                     { params.renderInputs([orgSettings])}
                                 </View>
                             </>
@@ -254,6 +254,10 @@ const Settings = ({ navigation, route }: Props) => {
 export default Settings;
 
 const styles = StyleSheet.create({
+    pageContainer: {
+        backgroundColor: Colors.backgrounds.settings,
+        height: '100%'
+    },
     headerContainer: {
         marginTop: 40, 
         marginBottom: 20, 
@@ -261,7 +265,7 @@ const styles = StyleSheet.create({
         alignItems: 'center' 
     },
     headerText: { 
-        color: '#666', 
+        color: Colors.text.forms.sectionHeader, 
         fontSize: 16,
         textTransform: 'uppercase'
     },

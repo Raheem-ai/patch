@@ -55,6 +55,7 @@ export default function SignInForm( { navigation } : Props) {
                                     setSecureTextEntry(!secureTextEntry);
                                     return false;
                                 }}
+                                color={Colors.icons.dark}
                                 />
                             }
                             style={styles.input}
@@ -76,7 +77,7 @@ export default function SignInForm( { navigation } : Props) {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: Colors.backgrounds.settings,
+        backgroundColor: Colors.backgrounds.signIn,
         flex: 1
     },
     scrollContainer: {
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
         width: 296
     },
     input: {
-        backgroundColor: Colors.backgrounds.settings
+        backgroundColor: Colors.backgrounds.signIn,
     },
     bottomContainer: {
         alignSelf: 'center',

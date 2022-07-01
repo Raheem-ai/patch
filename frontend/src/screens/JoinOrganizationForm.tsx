@@ -45,7 +45,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
 const styles = StyleSheet.create({
     container: {
         padding: 24,
-        backgroundColor: Colors.backgrounds.settings,
+        backgroundColor: Colors.backgrounds.signIn,
         height: '100%'
     },
     titleContainer: {
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
         width: 296
     },
     input: {
-        backgroundColor: Colors.backgrounds.settings
+        backgroundColor: Colors.backgrounds.signIn
     },
     bottomContainer: {
         alignSelf: 'center',

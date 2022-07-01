@@ -21,8 +21,8 @@ const DescriptiveNavigationLabel = ({
         : 14;
 
     const text = () => {
-        const labelText = <Text style={{ color: Colors.text.navigationLabel , fontSize: 16 }}>{name}</Text>;
-        const descriptionText = <Text style={{ color: Colors.text.navigationDescription , fontSize: descriptionFontSize }}>{description}</Text>;
+        const labelText = <Text style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}>{name}</Text>;
+        const descriptionText = <Text style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}>{description}</Text>;
 
         if (!description) {
             return labelText
