@@ -52,7 +52,7 @@ export const routerNames: TypedRouterNames = {
     componentLib: "ComponentLib",
     teamList: "TeamList",
     settings: "Settings",
-    chats: "Chats"
+    chats: "Channels"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>

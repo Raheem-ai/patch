@@ -99,7 +99,7 @@ const HeaderConfig: {
     [routerNames.helpRequestChat]: {
         title: () => {
             const req = requestStore().currentRequest;
-            return `Chat for Request ${req.displayId}`
+            return `Channel for ${req.displayId}`
         },
         leftActions: [{
             icon: 'chevron-left',
@@ -173,7 +173,7 @@ const HeaderConfig: {
         title: 'Settings'
     },
     [routerNames.chats]: {
-        title: 'Chats'
+        title: 'Channels'
     }
 }
 

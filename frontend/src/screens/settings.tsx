@@ -189,7 +189,7 @@ const Settings = ({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: false,
                     props: {
-                        label: 'Create chats for Shifts'
+                        label: 'Create channels for Shifts'
                     }
                 } as InlineFormInputConfig<'Switch'>
                 : null
