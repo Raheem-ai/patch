@@ -4,7 +4,6 @@ import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { HelpRequest, ProtectedUser, UserRole } from "../../../common/models";
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
-import SkillTag from "./skillTag";  // <-- is this vestigial?
 import UserIcon from "./userIcon";
 import { Colors } from "../types";
 
