@@ -10,7 +10,6 @@ import { Colors } from "../../../types"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
-import SkillTag from "../../skillTag" // <-- is this vestigial?
 
 const dimensions = Dimensions.get('screen');
 
