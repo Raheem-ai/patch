@@ -2,13 +2,14 @@ import {Context, EndpointInfo, Inject, Middleware, PlatformContext, Req, UseBefo
 import { StoreSet, useDecorators } from "@tsed/core";
 import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
-import { UserRole } from "common/models";
+import { PatchPermissions, UserRole } from "common/models";
 import API from "common/api";
 import { DBManager } from "../services/dbManager";
-import { MongooseDocument } from "@tsed/mongoose";
-import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
+import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
+import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
+import { userOnRequest } from "common/utils/requestUtils";
 
 const HelpRequestContextKey = 'helpRequest';
 
@@ -21,6 +22,14 @@ export class RequestAccessMiddleware {
       @Context() context: PlatformContext,
       @User() user: UserDoc
   ) {
+
+    const endpoint = context.endpoint;
+
+    const { requiredPermissions, requireBeingOnRequest }: { 
+        requiredPermissions: PatchPermissions[],
+        requireBeingOnRequest: boolean
+    } = endpoint.get(RequestAccessMiddleware);
+
     const orgId = req.header(API.orgIdHeader);
     const requestId = req.header(API.requestIdHeader);
 
@@ -38,25 +47,28 @@ export class RequestAccessMiddleware {
       throw new Forbidden(`You do not have access to the supplied org scope`);
     }
 
-    const orgRoles = orgConfig.roles;
     const request = await this.db.resolveRequest(requestId);
+    const org = await this.db.resolveOrganization(orgId);
 
-    if (orgRoles.includes(UserRole.Dispatcher)) {
+    const userRoles = orgConfig.roleIds
+        .map(roleId => org.roleDefinitions.find(def => def.id == roleId))
+        .filter(x => !!x)
+
+    const userPermissions = resolvePermissionsFromRoles(userRoles)
+
+    if (userPermissions.has(PatchPermissions.RequestAdmin)) {
         context.set(HelpRequestContextKey, request);
-        return; // dispatchers of an org have access to all apis on all requests
-    } else if (orgRoles.includes(UserRole.Responder)) {
-        const hasAccess = request.assignedResponderIds.includes(user.id);
-
-        if (!hasAccess) {
-          throw new Forbidden(`You do not have access to the this request`);
-        } else {
-          context.set(HelpRequestContextKey, request);
-          return
+        return; // request admins of an org have access to all apis on all requests
+    } else if (requiredPermissions.every(perm => userPermissions.has(perm))) {
+        if (requireBeingOnRequest && !userOnRequest(user.id, request)) {
+          throw new Forbidden('You must be on a request to do this action')
         }
+
+        context.set(HelpRequestContextKey, request);
+        return;
     }
 
-    throw new Forbidden(`Must be a Dispatcher or a Responder assigned to the target request request to call this api`);
-    
+    throw new Forbidden(`You do not have the required permissions.`);
   }
 }
 
@@ -64,8 +76,22 @@ type RequestScopedMethod = TypedPropertyDescriptor<(orgId: string, user: UserDoc
 
 type RequestScopedAuthMethodDecorator = (target: Object, propertyKey: string | symbol, descriptor: RequestScopedMethod) => RequestScopedMethod
 
-export function RequestAccess(): RequestScopedAuthMethodDecorator {
+export function RequestAdminOrOnRequestWithPermissions(requiredPermissions: PatchPermissions[]): RequestScopedAuthMethodDecorator {
   return useDecorators(
+    StoreSet(RequestAccessMiddleware, {
+      requiredPermissions,
+      requireBeingOnRequest: true
+    }),
+    UseBefore(RequestAccessMiddleware),
+    Authenticate()
+  );
+}
+
+export function RequestAdminOrWithPermissions(requiredPermissions: PatchPermissions[]): RequestScopedAuthMethodDecorator {
+  return useDecorators(
+    StoreSet(RequestAccessMiddleware, {
+      requiredPermissions
+    }),
     UseBefore(RequestAccessMiddleware),
     Authenticate()
   );

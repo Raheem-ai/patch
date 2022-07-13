@@ -29,7 +29,6 @@ export type EditableMe = Omit<Me, 'organizations' | 'skills'>
 export type AdminEditableUser = Pick<UserOrgConfig, 'roleIds' | 'attributes'>
 
 export type UserOrgConfig = {
-    roles: UserRole[],
     roleIds: string[],
     attributes: CategorizedItem[],
     onDuty: boolean
@@ -55,9 +54,10 @@ export type BasicCredentials = {
 export interface Organization {
     name: string;
     id: string;
+    requestPrefix: string,
     members: ProtectedUser[];
     lastRequestId: number;
-    lastDayTimestamp: string;
+    // lastDayTimestamp: string;
     pendingUsers: PendingUser[]
     removedMembers: ProtectedUser[]
     roleDefinitions: Role[]
@@ -65,7 +65,7 @@ export interface Organization {
     tagCategories: TagCategory[]
 }
 
-export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>;
+export type OrganizationMetadata = Pick<Organization, 'id' | 'name' | 'requestPrefix' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>;
 export type MinOrg = AtLeast<Organization, 'name'>;
 
 export type Role = {
@@ -178,27 +178,21 @@ export type HelpRequestAssignment = {
 }
 
 export type HelpRequest = {
+    // virtual fields proviced by db
+    createdAt: string
+    updatedAt: string
     id: string
+
+    // PATCH defined fields
     displayId: string
     orgId: string
     location: AddressableLocation
     type: RequestType[]
     // TODO: change to descriptiom
     notes: string
-    // skills: RequestSkill[]
-    // tags: TagsMap
-    // otherRequirements?: any //TODO: nix these until later on
-    // respondersNeeded: number
     chat?: Chat
     dispatcherId: string
     status: RequestStatus
-    createdAt: string
-    updatedAt: string
-
-    assignments: HelpRequestAssignment[]
-    assignedResponderIds: string[]
-    declinedResponderIds: string[]
-    // removedResponderIds: string[]
 
     callerName: string,
     callerContactInfo: string,
@@ -415,8 +409,7 @@ export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: 
 export type ResponderRequestStatuses = 
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
-    | RequestStatus.Done
-    | RequestStatus.Closed;
+    | RequestStatus.Done;
 
 export enum RequestSkillCategory {
     Medical = 'me',

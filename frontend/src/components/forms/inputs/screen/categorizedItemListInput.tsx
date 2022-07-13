@@ -66,7 +66,10 @@ const CategorizedItemListInput = ({
                 outline: true
             },
             cancel: {
-                handler: () => back()
+                handler: () => {
+                    config.onCancel?.()
+                    back()
+                }
             },
             label: unwrap(config.headerLabel),
             labelDecoration: iCanEdit 

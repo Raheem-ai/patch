@@ -30,12 +30,17 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             }
         }
         const attributes = (userStore().currentUser.organizations[userStore().currentOrgId]?.attributes || []).map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId));
-        const roles = userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r]);
+        // const roles = userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r]);
 
         const detailsText = [
             userStore().currentUser.pronouns,
             // TODO: add location here?
+            ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${visualDelim} `);
+
+        const userAttributes = userStore().user.organizations[userStore().currentOrgId].attributes.map(attr => {
+            return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
+        }).filter(x => !!x)
 
         return <View style={styles.headerContainer}>
             {/* <View style={styles.profilePhotoContainer}>
@@ -54,19 +59,13 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             <View style={userStore().currentUser.bio ? styles.bioContainer : styles.hideContainer}>
                 <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
             </View>
-            <View style={styles.skillsContainer}>
-            <Tags 
-                centered
-                    tags={roles} 
-                    verticalMargin={12} 
-                    tagTextStyle={{ color: styles.roleTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.roleTag.backgroundColor }}/>
+            <View style={styles.attributesContainer}>
                 <Tags 
-                centered
-                    tags={attributes.map(attr => attr.name)} 
+                    centered
+                    tags={userAttributes.map(attr => attr.name)}  
                     verticalMargin={12} 
-                    tagTextStyle={{ color: styles.skillTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.skillTag.backgroundColor }}/>
+                    tagTextStyle={{ color: styles.attributeTag.color }}
+                    tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
             </View>
             {/* TODO: only show contact buttons if we have contact information */}
             <View style={styles.contactIconsContainer}>
@@ -186,11 +185,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginVertical: 12
     },
-    skillsContainer: {
+    attributesContainer: {
         alignSelf: 'center',
         marginTop: 12,
     }, 
-    roleTag: {
+    attributeTag: {
         color: Colors.backgrounds.tags.primaryForeground,
         backgroundColor: Colors.backgrounds.tags.primaryBackground,
     },

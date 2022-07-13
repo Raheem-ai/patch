@@ -144,7 +144,6 @@ const Header = observer((props: Props) => {
                     <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
                     <Switch
                         value={userStore().isOnDuty} 
-                        disabled={!userStore().isResponder}
                         onValueChange={() => userStore().toggleOnDuty()} 
                         color={Colors.good}
                         thumbColor={userStore().isOnDuty ? Colors.uiControls.foregroundReversed : Colors.uiControls.foregroundDisabledReversed}

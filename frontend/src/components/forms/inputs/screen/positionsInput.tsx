@@ -6,7 +6,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
 import { unwrap } from "../../../../../../common/utils"
-import { Position } from "../../../../../../common/models"
+import { DefaultRoleIds, Position } from "../../../../../../common/models"
 import { organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
@@ -20,7 +20,7 @@ const PositionsInput = observer(({
     paramsFromLabel
 }: PositionsInputProps) => {
     const [ position ] = useState(observable.box((paramsFromLabel || {
-        role: null,
+        role: DefaultRoleIds.Anyone,
         attributes: [],
         joinedUsers: [],
         min: 0,
@@ -58,7 +58,10 @@ const PositionsInput = observer(({
             placeholderLabel: 'Role',
             previewLabel: () => organizationStore().roles.get(position.get().role)?.name,
             name: 'role',
-            type: 'RoleList'
+            type: 'RoleList',
+            props: {
+                onlyAddative: true
+            }
         },
         AttributesListInput({
             val: () => position.get().attributes,
@@ -108,7 +111,10 @@ const PositionsInput = observer(({
                     outline: true
                 },
                 cancel: {
-                    handler: () => back()
+                    handler: () => {
+                        config.onCancel?.()
+                        back()
+                    }
                 },
                 label: unwrap(config.headerLabel),
                 bottomBorder: true

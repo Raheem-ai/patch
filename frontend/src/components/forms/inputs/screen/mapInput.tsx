@@ -131,6 +131,11 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         }
     }
 
+    const cancel = () => {
+        config.onCancel?.()
+        back()
+    }
+
     return (
         <View style={{ flex: 1, position: 'relative'}}>
             <MapView 
@@ -169,7 +174,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             style={{ alignSelf: 'center', margin: 0 , width: 35}}
                             icon='chevron-left' 
                             color='#000'
-                            onPress={() => back()}
+                            onPress={cancel}
                             size={35} />
                         <RNTextInput 
                             onChangeText={onTextUpdated}

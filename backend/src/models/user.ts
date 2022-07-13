@@ -27,7 +27,6 @@ export class UserModel implements User {
 
     @Property()
     organizations: { [key: string]:  {
-            roles: UserRole[],
             roleIds: string[],
             attributes: CategorizedItem[],
             onDuty: boolean

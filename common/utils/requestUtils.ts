@@ -1,6 +1,6 @@
 import { CategorizedItem, DefaultRoleIds, HelpRequest, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 
-export function resolveRequestStatus(request: HelpRequest): RequestStatus {
+export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
         || request.status == RequestStatus.PartiallyAssigned
         || request.status == RequestStatus.Ready;
@@ -12,7 +12,7 @@ export function resolveRequestStatus(request: HelpRequest): RequestStatus {
     }
 }
 
-export function assignedResponderBasedRequestStatus(request: HelpRequest): RequestStatus {
+export function assignedResponderBasedRequestStatus(request: Pick<HelpRequest, 'positions'>): RequestStatus {
     const stats = positionStats(request.positions);
     
     return !stats.totalMinFilled 
@@ -22,7 +22,7 @@ export function assignedResponderBasedRequestStatus(request: HelpRequest): Reque
             : RequestStatus.Ready;
 }
 
-export function getPreviousOpenStatus(request: HelpRequest): RequestStatus {
+export function getPreviousOpenStatus(request: Pick<HelpRequest, 'statusEvents'>): RequestStatus {
     const statusEvents = request.statusEvents.slice().reverse();
     for (const event of statusEvents) {
         if (event.status != RequestStatus.Closed) {
@@ -81,7 +81,7 @@ export function userCurrentlyKickedFromRequestPosition(teamEvents: RequestTeamEv
 }
 
 export function userCanJoinRequestPosition(
-    request: HelpRequest, 
+    request: Pick<HelpRequest, 'positions' | 'teamEvents'>, 
     positionId: string,
     user: ProtectedUser,
     orgId: string
@@ -116,7 +116,7 @@ export function userQualifiedForPosition(
 // and just updating it whenever we update the team events on the backend
 // so the ui can just use the latest set associated to this version of the
 // req
-export function usersAssociatedWithRequest(req: HelpRequest) {
+export function usersAssociatedWithRequest(req: Pick<HelpRequest, 'dispatcherId' | 'teamEvents' | 'chat'>) {
     const users = new Set<string>();
 
     // add dispatcher id
@@ -168,4 +168,8 @@ export function usersAssociatedWithRequest(req: HelpRequest) {
     })
 
     return Array.from(users.values())
+}
+
+export function userOnRequest(userId: string, req: Pick<HelpRequest, 'positions'>) {
+    return req.positions.some(pos => pos.joinedUsers.includes(userId))
 }

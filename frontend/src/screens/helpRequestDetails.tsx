@@ -20,6 +20,7 @@ import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
+import { userOnRequest } from "../../../common/utils/requestUtils";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -33,7 +34,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const request = requestStore().currentRequest;
     const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
-    const userOnRequest = request.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
+    const userIsOnRequest = userOnRequest(userStore().user.id, request);
     const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
     const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
@@ -97,21 +98,25 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const detailsSection = () => {
-        const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
+        const address = requestStore().currentRequest.location?.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
             <View style={styles.timeAndPlaceSection}>
-                <View style={styles.timeAndPlaceRow}>
-                    <IconButton
-                        style={styles.detailsIcon}
-                        icon='map-marker' 
-                        color={styles.detailsIcon.color}
-                        size={styles.detailsIcon.width} />
-                    <Text style={styles.locationText}>{address}</Text>
-                </View>
+                {
+                    address
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='map-marker' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Text style={styles.locationText}>{address}</Text>
+                        </View>
+                        : null
+                }
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
                         style={styles.detailsIcon}
@@ -187,6 +192,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const mapPreview = () => {
+        if (!requestStore().currentRequest.location) {
+            return null;
+        }
+
         const initialRegion =  {
             latitude: requestStore().currentRequest.location.latitude,
             longitude: requestStore().currentRequest.location.longitude,
@@ -200,6 +209,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 pointerEvents="none"
                 showsUserLocation={true}
                 initialRegion={initialRegion}
+                // zoomEnabled={false}
+                // rotateEnabled={false}
+                // scrollEnabled={false}
+                // zoomTapEnabled={false}
                 style={styles.mapView}>
                     <Marker
                         coordinate={{ 
@@ -210,292 +223,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         );
     }
 
-    // const teamSection = () => {
-    //     const responderIds = request?.assignedResponderIds || [];
-    //     const canJoin = userStore().isResponder && !request.assignedResponderIds.includes(userStore().user.id)
-    //     const canLeave = userStore().isResponder && request.assignedResponderIds.includes(userStore().user.id)
-
-    //     const addResponders = () => {
-    //         bottomDrawerStore().show(BottomDrawerView.assignResponders, true);
-    //     }
-
-    //     // TODO: this should be a reaction on activeRequest changing between
-    //     // existing/ not existing
-
-    //     const joinRequest = async () => {
-    //         await requestStore().joinRequest(request.id);
-    //     }
-
-    //     const leaveRequest = async () => {
-    //         await requestStore().leaveRequest(request.id);
-    //     }
-
-    //     const removeResponder = (responderId: string) => () => {
-    //         requestStore().removeUserFromRequest(responderId, request.id)
-    //     }
-
-    //     const teamHeader = () => {
-    //         return (
-    //             <View style={styles.teamHeader}>
-    //                 <View style={styles.teamLabelContainer}>
-    //                     <IconButton
-    //                         style={styles.teamIcon}
-    //                         icon='account-multiple'
-    //                         color={styles.teamIcon.color}
-    //                         size={styles.teamIcon.width} />
-    //                     <Text style={styles.teamLabel}>TEAM</Text>
-    //                 </View>
-    //                 <View>
-    //                     { userStore().isDispatcher
-    //                         ? <IconButton 
-    //                             onPress={addResponders}
-    //                             style={styles.addResponderIcon}
-    //                             icon='account-plus'
-    //                             color={styles.addResponderIcon.color}
-    //                             size={styles.addResponderIcon.width} />
-    //                         : canJoin
-    //                             ? <View style={styles.teamLabelContainer}>
-    //                                 <IconButton 
-    //                                     onPress={joinRequest}
-    //                                     style={styles.addResponderIcon}
-    //                                     icon='account-check'
-    //                                     color={styles.addResponderIcon.color}
-    //                                     size={styles.addResponderIcon.width} />
-    //                                 <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>JOIN</Text>    
-    //                             </View>
-    //                             : canLeave
-    //                                 ? <View style={styles.teamLabelContainer}>
-    //                                     <IconButton 
-    //                                         onPress={leaveRequest}
-    //                                         style={styles.addResponderIcon}
-    //                                         icon='account-minus'
-    //                                         color={styles.addResponderIcon.color}
-    //                                         size={styles.addResponderIcon.width} />
-    //                                     <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>LEAVE</Text>    
-    //                                 </View>
-    //                                 : null
-    //                     }
-    //                 </View>
-    //             </View>
-    //         )
-    //     }
-
-    //     const responders = () => {
-    //         if (!responderIds.length) {
-    //             return null;
-    //         }
-
-    //         return (
-    //             <View style={styles.respondersContainer}>
-    //                 {
-    //                     responderIds.map((id) => {
-    //                         const responder = userStore().users.get(id);
-
-    //                         const goToResponder = () => {
-    //                             const org = responder.organizations[userStore().currentOrgId];
-    //                             if (org) {
-    //                                 userStore().pushCurrentUser(responder);
-    //                                 navigateTo(routerNames.userDetails);
-    //                             }
-    //                         }
-                            
-    //                         return (
-    //                             <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-    //                                 <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore().currentOrgId}/>
-    //                                 {
-    //                                     userStore().isDispatcher
-    //                                         ? <IconButton
-    //                                             onPress={removeResponder(id)}
-    //                                             style={styles.responderRowActionIcon}    
-    //                                             icon='close' 
-    //                                             color={styles.responderRowActionIcon.color}
-    //                                             size={styles.responderRowActionIcon.width} />
-    //                                         : null
-    //                                 }
-    //                             </View>
-    //                         )
-    //                     })
-    //                 }
-    //             </View>
-    //         )   
-    //     }
-
-    //     const assignments = () => {
-    //         if (!request?.assignments?.length) {
-    //             return null
-    //         }
-
-    //         const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
-    //             const [isOpen, setIsOpen] = useState(false);
-    //             const numResponders = assignment.responderIds.length;
-    //             const me = useRef<View>();
-    //             const scrollIntoView = useScrollIntoView();
-
-    //             const toggleOpen = () => {
-    //                 setIsOpen(!isOpen);
-
-    //                 // runs before the state updates
-    //                 if (!isOpen) {
-    //                     setTimeout(() => {
-    //                         scrollIntoView(me.current)
-    //                     })
-    //                 }
-    //             }
-
-    //             // should be for each sorting each responderId into pending, assigned, declined
-    //             const assignedResponderIds = [];
-    //             const pendingResponderIds = [];
-    //             const declinedResponderIds = [];
-
-    //             assignment.responderIds.forEach(responderId => {
-    //                 const accepted = request.assignedResponderIds.includes(responderId);
-    //                 const declined = request.declinedResponderIds.includes(responderId);
-
-    //                 if (accepted) {
-    //                     assignedResponderIds.push(responderId)
-    //                 } else if (declined) {
-    //                     declinedResponderIds.push(responderId)
-    //                 } else {
-    //                     pendingResponderIds.push(responderId)
-    //                 }
-    //             })
-
-    //             const sendReminders = async (event: GestureResponderEvent) => {
-    //                 event.stopPropagation();
-
-    //                 await dispatchStore().assignRequest(request.id, pendingResponderIds);
-    //                 setIsOpen(false)
-    //             }
-
-    //             return (
-    //                 <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
-    //                     <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
-    //                         <Text>
-    //                             <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
-    //                             <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTimeString(assignment.timestamp)}`}</Text>
-    //                         </Text>
-    //                         <IconButton
-    //                             style={styles.assignmentSelectIcon}
-    //                             icon={isOpen ? 'chevron-up' : 'chevron-down'}
-    //                             color={styles.assignmentSelectIcon.color}
-    //                             size={styles.assignmentSelectIcon.width}/>
-    //                     </Pressable>
-    //                     { isOpen
-    //                         ? <View>
-    //                             {
-    //                                 assignedResponderIds.map((id) => {
-    //                                     const user = userStore().users.get(id);
-
-    //                                     return (
-    //                                         <View style={styles.assignmentRow}>
-    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
-    //                                             <IconButton
-    //                                                 style={styles.assignmentAcceptedIcon}
-    //                                                 icon={'check'}
-    //                                                 color={styles.assignmentAcceptedIcon.color}
-    //                                                 size={styles.assignmentAcceptedIcon.width}/>
-    //                                         </View>
-    //                                     )
-    //                                 })
-    //                             }
-    //                             {
-    //                                 declinedResponderIds.map((id) => {
-    //                                     const user = userStore().users.get(id);
-
-    //                                     return (
-    //                                         <View style={styles.assignmentRow}>
-    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
-    //                                             <IconButton
-    //                                                 style={styles.assignmentDeclinedIcon}
-    //                                                 icon={'close'}
-    //                                                 color={styles.assignmentDeclinedIcon.color}
-    //                                                 size={styles.assignmentDeclinedIcon.width}/>
-    //                                         </View>
-    //                                     )
-    //                                 })    
-    //                             }
-    //                             {
-    //                                 pendingResponderIds.map((id) => {
-    //                                     const user = userStore().users.get(id);
-
-    //                                     return (
-    //                                         <View style={styles.assignmentRow}>
-    //                                             <Text style={styles.assignmentRowText}>{user.name}</Text>
-    //                                             <IconButton
-    //                                                 style={styles.assignmentPendingIcon}
-    //                                                 icon={'clock-outline'}
-    //                                                 color={styles.assignmentPendingIcon.color}
-    //                                                 size={styles.assignmentPendingIcon.width}/>
-    //                                         </View>
-    //                                     )
-    //                                 })
-    //                             }
-    //                             {
-    //                                 pendingResponderIds.length
-    //                                     ? <View style={{ flexDirection: 'row'}}>
-    //                                         <Text style={styles.assignmentReminderButton} onPress={sendReminders}>{`SEND ${pendingResponderIds.length} REMINDER${pendingResponderIds.length > 1 ? 'S' : ''}`}</Text>
-    //                                     </View>
-    //                                     : null
-    //                             }
-    //                         </View>
-    //                         : null
-    //                     }
-    //                 </View>
-    //             )
-    //         }
-
-    //         return (
-    //             <View>
-    //                 {
-    //                     request.assignments.map((assignment, i) => {
-    //                         return (
-    //                             <Assignment 
-    //                                 key={i} 
-    //                                 assignment={assignment}
-    //                                 style={[i > 0 ? { marginTop: 16 } : null]}/>
-    //                         )
-    //                     })
-    //                 }
-    //             </View>
-    //         )
-    //     }
-
-    //     return (
-    //         <View style={styles.teamSection}>
-    //             { teamHeader() }
-    //             { responders() }
-    //             { assignments() }
-    //             { userStore().isDispatcher
-    //                 ? <Button 
-    //                     uppercase={false}
-    //                     onPress={addResponders}
-    //                     color={styles.addResponderButton.color}
-    //                     icon='account-plus' 
-    //                     style={styles.addResponderButton}>Add responders</Button>
-    //                 : null
-    //             } 
-    //             { canJoin
-    //                 ? <Button 
-    //                     uppercase={false}
-    //                     onPress={joinRequest}
-    //                     color={styles.addResponderButton.color}
-    //                     icon='account-check' 
-    //                     style={styles.addResponderButton}>Join request</Button>
-    //                 : null
-    //             }
-    //             { canLeave
-    //                 ? <Button 
-    //                     uppercase={false}
-    //                     onPress={leaveRequest}
-    //                     color={styles.addResponderButton.color}
-    //                     icon='account-minus' 
-    //                     style={styles.addResponderButton}>Leave request</Button>
-    //                 : null
-    //             }
-    //         </View>
-    //     )
-    // }
-
     const statusPicker = () => {
         return (
             <View style={{ 
@@ -503,7 +230,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 backgroundColor: '#FFFFFF',
                 marginBottom: 12
             }}>
-                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large requestId={request.id} />
             </View>
         )
     }
@@ -531,7 +258,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const closeRequest = () => async () => {
-        await requestStore().setRequestStatus(requestStore().currentRequest.id, RequestStatus.Closed);
+        await requestStore().closeRequest(requestStore().currentRequest.id);
         setRequestIsOpen(false);
     }
 
@@ -551,7 +278,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const overview = () => {
-        const showCloseOpenReqButton = userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission)
+        const showCloseOpenReqButton = userIsRequestAdmin || (userIsOnRequest && userHasCloseRequestPermission)
 
         return (
         <>
@@ -591,7 +318,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const isRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin]);
 
         const notifyAction = () => {
-            if (!isRequestAdmin) {
+            if (!isRequestAdmin || !currentRequestIsOpen()) {
                 return null
             } else {
                 const startNotifyFlow = () => {
@@ -729,13 +456,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 const requestSection = () => {
 
-                    const deniedLabel = () => {
+                    const responseLabel = (text: string) => () => {
                         return <View style={{ flexGrow: 1 }}>
-                            <Text style={{ textAlign: 'right' }}>{'Denied'}</Text>
+                            <Text style={{ textAlign: 'right' }}>{text}</Text>
                         </View>
                     }
 
                     const requestToJoinActions = (userId: string, positionId: string) => () => {
+                        if(!currentRequestIsOpen()) {
+                            return responseLabel('Unanswered')()
+                        }
+
                         const deny = async () => {
                             try {
                                 await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
@@ -789,7 +520,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     return positionScopedRow({
                                         userId, 
                                         positionName,
-                                        rightElem: deniedLabel
+                                        rightElem: responseLabel('Denied')
                                     })
                                 })
                             }
@@ -919,9 +650,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     })
 
     const tabs = []
-    // TODO: Should request admin see all chats as well?
-    const userIsOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
-    const userHasPermissionToSeeChat = iHaveAnyPermissions([PatchPermissions.ChatAdmin, PatchPermissions.SeeRequestChats])
+    const userHasPermissionToSeeChat = iHaveAnyPermissions([PatchPermissions.ChatAdmin, PatchPermissions.SeeRequestChats, PatchPermissions.RequestAdmin])
+
     tabs.push(
         {
             label: Tabs.Overview,

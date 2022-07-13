@@ -6,7 +6,7 @@ import { CollectionOf, Enum, Format, Optional, Property, Required } from "@tsed/
 import API from 'common/api';
 import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, PatchPermissions, ProtectedUser, RequestSkill, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
-import { RequireRoles } from "../middlewares/userRoleMiddleware";
+import { RequireAllPermissions, RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
@@ -96,8 +96,6 @@ export class ValidatedMe implements Partial<EditableMe> {
     @Property()
     bio: string
 }
-
-const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
 
 @Controller(API.namespaces.users)
 export class UsersController implements APIController<
@@ -306,7 +304,7 @@ export class UsersController implements APIController<
     }
 
     @Post(API.server.editUser())
-    @RequireRoles([UserRole.Admin])
+    @RequireSomePermissions([PatchPermissions.AssignAttributes, PatchPermissions.AssignRoles])
     async editUser(
         @OrgId() orgId: string,
         @User() user: UserDoc,
