@@ -52,7 +52,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
                 chosenOption: teamStore().sortBy,
                 options: allSortBys,
                 toHeaderLabel: (sortBy: TeamSortBy) => {
-                    return TeamSortByToLabelMap[sortBy].toLowerCase()
+                    return TeamSortByToLabelMap[sortBy]?.toLowerCase()
                 },
                 toOptionLabel: (sortBy: TeamSortBy) => TeamSortByToLabelMap[sortBy],
                 onUpdate: teamStore().setSortBy,

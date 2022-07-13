@@ -41,6 +41,7 @@ class CreateHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
+            // TODO: figure out how to let this use this.formInstance
             return !!createRequestStore().type.length
         },
         action: async () => {
@@ -178,7 +179,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
                     type: 'Map',
-                    required: true
+                    // required: true
                 },
                 [
                     // Description

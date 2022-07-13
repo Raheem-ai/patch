@@ -74,6 +74,7 @@ type GroupPosition = 'start' | 'middle' | 'end';
 @observer
 export default class Form extends React.Component<FormProps> {
     private homeScreenId = '__formHome';
+    private requiredSuffix = ' (Required)';
 
     // used to flatten the (visually grouped) inputs into an interable list of all
     // standalone inputs so they can be processed easily
@@ -239,6 +240,22 @@ export default class Form extends React.Component<FormProps> {
 
                 if (!viewConfig) {
                     throw `View config for input type: ${inputConfig.type} hasn't been set up`
+                }
+
+                // add required suffix to placholder labels by replacing the string or function in the config
+                if (inputConfig.required) {
+                    const placeholder = unwrap(inputConfig.placeholderLabel);
+
+                    if (!placeholder.endsWith(this.requiredSuffix)) {
+
+                        if (typeof inputConfig.placeholderLabel == 'function'){
+                            const original = inputConfig.placeholderLabel;
+
+                            inputConfig.placeholderLabel = () => original() + this.requiredSuffix
+                        } else {
+                            inputConfig.placeholderLabel += this.requiredSuffix
+                        }  
+                    }
                 }
 
                 // make sure any inline store updates are being run in an action 
