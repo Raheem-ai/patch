@@ -275,6 +275,9 @@ type ApiRoutes = {
         reopenRequest: () => {
             return '/reopenRequest'
         },
+        closeRequest: () => {
+            return '/closeRequest'
+        },
         setOnDutyStatus: () => {
             return '/setOnDutyStatus'
         }, 
