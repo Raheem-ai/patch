@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable } from "react-native";
 import { Text } from "react-native-paper";
 import { SectionNavigationLabelViewProps } from "../types";
+import { Colors } from "../../../types";
 
 type DescriptiveNavigationLabelProps = SectionNavigationLabelViewProps & { 
     name: string, 
@@ -20,8 +21,8 @@ const DescriptiveNavigationLabel = ({
         : 14;
 
     const text = () => {
-        const labelText = <Text style={{ fontSize: 16 }}>{name}</Text>;
-        const descriptionText = <Text style={{ color: '#666', fontSize: descriptionFontSize }}>{description}</Text>;
+        const labelText = <Text style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}>{name}</Text>;
+        const descriptionText = <Text style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}>{description}</Text>;
 
         if (!description) {
             return labelText

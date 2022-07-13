@@ -45,7 +45,8 @@ const UserIcon = ({
     let initials = last
         ? `${first[0]}${last[0]}`.toUpperCase()
         : `${first[0].toUpperCase()}${(first[1] || '').toLowerCase()}`
-    
+
+    // TO DO: differentiate available from unavailable with icon color
     return (
         <View
             style={[
@@ -65,7 +66,7 @@ const UserIcon = ({
 
 const styles = StyleSheet.create({
     userIcon: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         width: 28,
         height: 28,
         borderRadius: 20,

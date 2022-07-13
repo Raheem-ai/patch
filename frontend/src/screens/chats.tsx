@@ -5,7 +5,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { PatchPermissions } from "../../../common/models";
 import HelpRequestChatPreview from "../components/chats/helpRequestChatPreview";
 import { requestStore } from "../stores/interfaces";
-import { ScreenProps } from "../types";
+import { ScreenProps, Colors } from "../types";
 import { iHaveAnyPermissions } from "../utils";
 
 type Props = ScreenProps<'Chats'>;
@@ -50,10 +50,11 @@ export default Chats;
 
 const styles = StyleSheet.create({
     scrollView: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgrounds.standard,
         height: '100%'
     },
     requestSection: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgrounds.standard,
+        marginTop: 24,
     }
 })

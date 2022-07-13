@@ -341,7 +341,6 @@ export const RequestPriorityToLabelMap: { [key in RequestPriority]: string } = {
 
 export enum HelpRequestFilter {
     Active = 'ac',
-    Finished = 'fi',
     Closed = 'cl',
     All = 'al'
 };
@@ -363,8 +362,7 @@ export enum TeamFilter {
 
 export enum TeamSortBy {
     ByLastName = 'bln',
-    ByFirstName = 'bfn',
-    BySkill = 'bs'
+    ByFirstName = 'bfn'
 };
 
 export type Chat = {

@@ -40,8 +40,6 @@ export default class TeamStore implements ITeamStore {
                         return this.sortByFirstName(a, b)
                     case TeamSortBy.ByLastName:
                         return this.sortByLastName(a, b)
-                    case TeamSortBy.BySkill:
-                        return this.sortBySkill(a, b)
                 }
             })
     }

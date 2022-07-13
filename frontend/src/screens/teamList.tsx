@@ -22,7 +22,6 @@ const TeamFilterToLabelMap: { [key in TeamFilter] : string } = {
 const TeamSortByToLabelMap: { [key in TeamSortBy] : string } = {
     [TeamSortBy.ByFirstName]: 'By first name',
     [TeamSortBy.ByLastName]: 'By last name',
-    [TeamSortBy.BySkill]: 'By skill',
 }
 
 const TeamList = observer(({ navigation, route }: Props) => {

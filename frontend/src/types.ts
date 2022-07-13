@@ -52,7 +52,7 @@ export const routerNames: TypedRouterNames = {
     componentLib: "ComponentLib",
     teamList: "TeamList",
     settings: "Settings",
-    chats: "Chats"
+    chats: "Channels"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
@@ -79,7 +79,7 @@ export const labelNames = {
 export const Colors = {
     primary: {
         alpha: '#76599A',
-        // beta: '#F9F6FA',
+        beta: '#F9F6FA',
         delta: '#E6E1E8'
     },
     secondary: {
@@ -92,13 +92,60 @@ export const Colors = {
     },
     backgrounds: {
         splash: '#53317C',
-        standard: '#FFFFFF',
-        settings: '#FAF9FA'
+        standard: '#FFF',
+        settings: '#F0EDF0',
+        secondary: '#F6F4F6',
+        signIn: '#F0EDF0',
+        filter: '#F0F0F0',
+        filterSelectedItem: '#999',
+        menu: '#111',
+        tabs: '#111',
+        tags: {
+            primaryForeground: '#FFF',
+            primaryBackground: '#5D8A98',
+            secondaryForeground: '#F0F0F0',
+            secondaryBackground: '#111',
+            tertiaryForeground: '#666',
+            tertiaryBackground: '#E0E0E0',
+        },
+    },
+    uiControls: {
+        foregroundReversed: '#FFF',
+        backgroundReversed: '#666',
+        foregroundDisabledReversed: '#999',
+        backgroundDisabledReversed: '#333',
     },
     text: {
-        buttonLabelPrimary: '#FFFFFF',
+        default: '#111',
+        secondary: '#333',
+        tertiary: '#999',
+        disabled: '#999',
+        defaultReversed: '#EEE',
+        secondaryReversed: '#aaa',
+        tertiaryReversed: '#999',
+        disabledReversed: '#999',
+        forms: {
+            sectionHeader: '#999',
+            fieldLabel: '#333',
+            fieldDescription: '#999',
+            placeholder: '#ccc'
+        },
+        buttonLabelPrimary: '#FFF',
         buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',
-        settingsTitle: '#76599A'
+        signInTitle: '#76599A',
+        landingCaption: '#FFFFFF80',
+        landingLinks: '#F7F3FB',
+    },
+    icons: {
+        light: '#999',
+        dark: '#666',
+        lightReversed: '#f0f0f0',
+        darkReversed: '#999',
+    },
+    borders: {
+        formFields: '#E0E0E0',
+        filter: '#E0E0E0',
+        menu: '#666',
     },
     good: '#55BB76',
     okay: '#EBAA02',

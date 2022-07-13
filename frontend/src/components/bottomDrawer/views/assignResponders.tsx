@@ -10,7 +10,6 @@ import { Colors } from "../../../types"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
-import SkillTag from "../../skillTag"
 
 const dimensions = Dimensions.get('screen');
 
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     selectAllIcon: {
-        color: '#838383',
+        color: Colors.icons.light,
         width: 20,
         height: 20,
     },
@@ -210,7 +209,7 @@ const styles = StyleSheet.create({
     selectAllText: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#666'
+        color: Colors.icons.dark
     },
     includeOffDutyRow: {
         flexDirection: 'row',
@@ -237,20 +236,20 @@ const styles = StyleSheet.create({
         height: 32,
         width: 32,
         borderRadius: 32,
-        borderColor: '#E0DEE0',
+        borderColor: Colors.borders.formFields,
         borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         marginLeft: 12
     },
     selectResponderIcon: {
-        color: '#E0DEE0',
+        color: Colors.borders.formFields,
         width: 20,
         margin: 0,
     },
     chosenSelectResponderIcon: {
         backgroundColor: Colors.primary.alpha,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         borderColor: Colors.primary.alpha,
         borderWidth: 1,
     }

@@ -9,8 +9,8 @@ import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNa
 import MangeRolesForm from "../components/forms/editRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
+import { ScreenProps, Colors } from "../types";
 import { alertStore, manageAttributesStore, manageTagsStore, organizationSettingsStore, organizationStore } from "../stores/interfaces";
-import { ScreenProps } from "../types";
 import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 import { RequestPrefixCharMax } from '../../../common/constants'
@@ -176,6 +176,7 @@ const Settings = ({ navigation, route }: Props) => {
                 } as NavigationFormInputConfig
                 : null,
             // TODO: plumb down to organization
+            /*
             canEditOrgSettings
                 ? {
                     onSave: (text) => {
@@ -194,7 +195,7 @@ const Settings = ({ navigation, route }: Props) => {
                     type: 'TextArea'
                 } as ScreenFormInputConfig<'TextArea'>
                 : null,
-            
+            */
             canEditOrgSettings
                 ? {
                     name: 'createRequestChats',
@@ -204,10 +205,11 @@ const Settings = ({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: true,
                     props: {
-                        label: 'Create chats for Requests'
+                        label: 'Create channels for Requests'
                     }
                 } as InlineFormInputConfig<'Switch'>
                 :  null,
+            /*
             canEditOrgSettings
                 ? {
                     name: 'createShiftChats',
@@ -217,10 +219,11 @@ const Settings = ({ navigation, route }: Props) => {
                     onChange: (val) => {},
                     disabled: false,
                     props: {
-                        label: 'Create chats for Shifts'
+                        label: 'Create channels for Shifts'
                     }
                 } as InlineFormInputConfig<'Switch'>
                 : null
+            */
         ].filter(v => !!v)
 
         return inputs;
@@ -236,30 +239,30 @@ const Settings = ({ navigation, route }: Props) => {
 
         return (
             <VisualArea>
-                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                <ScrollView showsVerticalScrollIndicator={false} style={[{ flex: 1 }, styles.pageContainer]}>
                     <Pressable onPress={params.onContainerPress} style={{ flex: 1 }}>
-                        <View style={styles.headerContainer}>
+                        {/* <View style={styles.headerContainer}>
                             <IconButton
                                 icon={'account'} 
-                                color='#666'
+                                color={Colors.icons.dark}
                                 size={20} 
                                 style={styles.headerIcon} />
-                            <Text style={styles.headerText}>{'PERSONAL'}</Text>
+                            <Text style={styles.headerText}>{'Personal'}</Text>
                         </View>
-                        <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
+                        <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
-                        </View>
+                        </View> */}
                         { shouldShowOrgSettings
                             ? <>
                                 <View style={styles.headerContainer}>
                                     <IconButton
                                         icon={'domain'} 
-                                        color='#666'
+                                        color={Colors.icons.dark}
                                         size={20} 
                                         style={styles.headerIcon} />
-                                    <Text style={styles.headerText}>{'ORGANIZATION'}</Text>
+                                    <Text style={styles.headerText}>{'Organization'}</Text>
                                 </View>
-                                <View style={{ borderTopColor: '#ccc', borderTopWidth: 1 }}>
+                                <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                                     { params.renderInputs([orgSettings])}
                                 </View>
                             </>
@@ -281,6 +284,10 @@ const Settings = ({ navigation, route }: Props) => {
 export default Settings;
 
 const styles = StyleSheet.create({
+    pageContainer: {
+        backgroundColor: Colors.backgrounds.settings,
+        height: '100%'
+    },
     headerContainer: {
         marginTop: 40, 
         marginBottom: 20, 
@@ -288,8 +295,9 @@ const styles = StyleSheet.create({
         alignItems: 'center' 
     },
     headerText: { 
-        color: '#666', 
-        fontSize: 16 
+        color: Colors.text.forms.sectionHeader, 
+        fontSize: 16,
+        textTransform: 'uppercase'
     },
     headerIcon: { 
         margin: 0, 

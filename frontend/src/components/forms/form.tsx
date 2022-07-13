@@ -346,7 +346,7 @@ export default class Form extends React.Component<FormProps> {
                             ? <View style={{
                                 paddingLeft: 20,
                                 borderStyle: 'solid',
-                                borderBottomColor: '#ccc',
+                                borderBottomColor: Colors.borders.formFields,
                                 borderBottomWidth: 1,
                                 minHeight: 60,
                                 justifyContent: 'center',
@@ -432,7 +432,7 @@ export default class Form extends React.Component<FormProps> {
     render() {
         return (
             <NavigationContainer independent onStateChange={this.saveRoute}>
-                <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#fff' }}}  initialRouteName={this.homeScreenId}>
+                <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: Colors.backgrounds.standard }}}  initialRouteName={this.homeScreenId}>
                     {/* setup form home screen */}
                     <Stack.Screen name={this.homeScreenId} component={this.listView} />
                     {   // setup navigation input screen components
@@ -522,7 +522,7 @@ const DefaultSection = observer((props: {
                         ? <View style={styles.iconContainer}>
                             <IconButton
                                 icon={props.inputConfig.icon} 
-                                color='#666'
+                                color={Colors.icons.dark}
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }}
                                 />
@@ -552,7 +552,7 @@ const DefaultSection = observer((props: {
                         ? <View style={styles.iconContainer}>
                             <IconButton
                                 icon={props.inputConfig.icon} 
-                                color='#666'
+                                color={Colors.icons.dark}
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }}
                                 />
@@ -603,7 +603,7 @@ function InlineSection(props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#666'
+                            color={Colors.icons.dark}
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -671,7 +671,7 @@ const LabelSection = observer((props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#666'
+                            color={Colors.icons.dark}
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -749,7 +749,7 @@ const NavigationSection = observer((props: {
                     ? <View style={styles.iconContainer}>
                         <IconButton
                             icon={props.inputConfig.icon} 
-                            color='#666'
+                            color={Colors.icons.dark}
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
                             />
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     section: {
       minHeight: 60,
       borderStyle: 'solid',
-      borderBottomColor: '#ccc',
+      borderBottomColor: Colors.borders.formFields,
       borderBottomWidth: 1,
       alignItems: 'center',
       flexDirection: 'row',
@@ -821,7 +821,7 @@ const styles = StyleSheet.create({
         // backgroundColor: '#E0DEE0'
     },
     placeholder: {
-        color: '#aaa'
+        color: Colors.text.forms.placeholder
     },
     label: {
         color: '#000',

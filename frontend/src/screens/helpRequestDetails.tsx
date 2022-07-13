@@ -206,6 +206,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <MapView 
                 provider={PROVIDER_GOOGLE} 
+                pointerEvents="none"
                 showsUserLocation={true}
                 initialRegion={initialRegion}
                 // zoomEnabled={false}

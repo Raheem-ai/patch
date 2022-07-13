@@ -154,7 +154,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     requestIsActive(request: HelpRequest) {
-        return request.status != RequestStatus.Done && request.status != RequestStatus.Closed;
+        return request.status != RequestStatus.Closed;
     }
 
     getRequestMetadata(userId: string, requestId: string): RequestMetadata {
@@ -392,8 +392,6 @@ export default class RequestStore implements IRequestStore {
                 // e.g. is there a filter that shows "Finished" and "Closed"?
                 case HelpRequestFilter.Active:
                     return this.requestIsActive(r);
-                case HelpRequestFilter.Finished:
-                    return r.status == RequestStatus.Done;
                 case HelpRequestFilter.Closed:
                     return r.status == RequestStatus.Closed;
                 case HelpRequestFilter.All:

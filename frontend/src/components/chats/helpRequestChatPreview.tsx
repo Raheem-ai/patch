@@ -5,7 +5,7 @@ import { Text } from "react-native-paper";
 import { HelpRequest } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames } from "../../types";
+import { Colors, routerNames } from "../../types";
 
 type Props = {
     request: HelpRequest,
@@ -41,12 +41,12 @@ const HelpRequestChatPreview = observer(({
 
     const details = () => {
         const preview = (request.chat && request.chat.messages.length)
-                        ? request.chat.messages[request.chat.messages.length - 1].message
-                        : 'No messages';
+                        ? userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': ' + request.chat.messages[request.chat.messages.length - 1].message
+                        : '…';
 
         return (
             <View style={styles.detailsRow}>
-                <Text numberOfLines={3}>
+                <Text style={styles.detailText} numberOfLines={3}>
                     {preview}
                 </Text>
             </View>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
         marginRight: 20,
-        marginBottom: 20
+        marginVertical: 16
     },
     headerRow: {
         height: 22,
@@ -85,9 +85,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     detailsRow: {
-        marginTop: 12,
+        marginTop: 4,
         marginLeft: 60,
-        flexDirection: 'row'
+        flexDirection: 'row',
+    },
+    detailText: {
+        color: Colors.text.tertiary
     },
     unreadMessagesIndicator: {
         height: 12,

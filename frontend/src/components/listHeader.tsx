@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
 import { visualDelim } from "../constants";
+import { Colors } from "../types";
 
 export type ListHeaderOptionConfig<T = any> = {
     chosenOption: T,
@@ -39,7 +40,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     <IconButton 
                         style={styles.toggleHeaderButton}
                         size={36}
-                        color={'#999'}
+                        color={Colors.icons.light}
                         icon={isOpen ? 'chevron-up' : 'chevron-down'}/>
                 </View>
             </Pressable>
@@ -82,13 +83,13 @@ export default ListHeader
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#F0F0F0'
+        backgroundColor: Colors.backgrounds.filter
     },
     headerContainer: {
         height: 46,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: Colors.borders.filter,
         borderBottomWidth: 1,
         borderStyle: "solid"
     },
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     optionRowContainer: {
         height: 48,
         flexDirection: 'row',
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: Colors.borders.filter,
         borderBottomWidth: 1,
         borderStyle: "solid",
         marginHorizontal: 12
@@ -107,10 +108,10 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginHorizontal: 12,
         fontSize: 14,
-        color: '#333'
+        color: Colors.text.default
     },
     openHeaderLabel: {
-        color: '#111',
+        color: Colors.text.default,
         fontWeight: 'bold'
     },
     optionContainer: {
@@ -120,15 +121,15 @@ const styles = StyleSheet.create({
     },
     chosenOptionContainer: {
         paddingHorizontal: 6,
-        backgroundColor: '#999',
+        backgroundColor: Colors.backgrounds.filterSelectedItem,
         borderRadius: 14
     },
     option: {
         fontSize: 14,
-        color: '#333'
+        color: Colors.text.secondary
     }, 
     chosenOption: {
         fontWeight: 'bold',
-        color: '#fff',
+        color: Colors.text.defaultReversed,
     }
 })
