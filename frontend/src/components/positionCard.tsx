@@ -67,9 +67,10 @@ const PositionCard = observer(({
                         }) 
                     }
                 </View>
+                { userIcons.length > 0 ? 
                 <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    { userIcons }
-                    {
+                    {userIcons}
+                    {/* removed plus for positions without a maximum since it seems unnecessary and looks like something to press
                         pos.max == -1
                             ? <IconButton
                                 icon={'plus'} 
@@ -77,8 +78,9 @@ const PositionCard = observer(({
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }} />
                             : null
-                    }
+                */}
                 </View>
+                : null }
             </View>
             { !!edit && hasPermissions
                 ? <View style={{ alignItems: 'center', marginRight: 20, marginLeft: 20 }}>

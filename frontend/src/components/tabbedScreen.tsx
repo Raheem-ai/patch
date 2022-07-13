@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     headerLabel: {
         fontSize: 16,
         color: Colors.text.tertiaryReversed,
+        textTransform: "uppercase",
     },
     selectedHeaderLabel: {
         color: Colors.text.defaultReversed

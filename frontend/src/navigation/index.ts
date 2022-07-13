@@ -90,7 +90,7 @@ export const SubMenuOptions: SubMenuOption[] = [
   {
     name: 'Help',
     onPress: () => {
-      Linking.openURL('https://raheemsupport.zendesk.com/hc/en-us');
+      Linking.openURL('https://help.getpatch.org/');
     }
   }, 
   {
