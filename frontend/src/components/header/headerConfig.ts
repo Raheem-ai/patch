@@ -1,8 +1,8 @@
 import { PatchPermissions, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
-import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, requestStore, userStore } from "../../stores/interfaces"
+import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import { RootStackParamList, routerNames } from "../../types"
-import { iHaveAnyPermissions } from "../../utils"
+import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
 
 export type IHeaderAction = {
     icon: string,
@@ -113,9 +113,8 @@ const HeaderConfig: {
             }
         }]
     },
-    [routerNames.teamList]: () => {
-        
-        const rightActions = userStore().isAdmin
+    [routerNames.teamList]: () => {        
+        const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
                     icon: 'plus',
@@ -136,7 +135,7 @@ const HeaderConfig: {
         const canEditProfile = onMyProfile || iHaveAnyPermissions([PatchPermissions.AssignAttributes, PatchPermissions.AssignRoles]);
 
         // I'm looking at myself
-        const rightActions = canEditProfile && !userStore().loadingCurrentUser && (onMyProfile || userStore().isAdmin)
+        const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
                     icon: 'pencil',

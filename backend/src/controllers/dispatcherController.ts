@@ -1,8 +1,8 @@
 import { BodyParams, Controller, HeaderParams, Inject, Post, Req } from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import API from 'common/api';
-import { PatchEventType, UserRole } from "common/models";
-import { RequireRoles } from "../middlewares/userRoleMiddleware";
+import { PatchEventType, PatchPermissions, UserRole } from "common/models";
+import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import { ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from "expo-server-sdk";
 import { expo } from "../expo";
@@ -30,7 +30,7 @@ export class DispatcherController implements APIController<
     @Inject(MySocketService) socket: MySocketService;
 
     @Post(API.server.notifyRespondersAboutRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async notifyRespondersAboutRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -45,11 +45,11 @@ export class DispatcherController implements APIController<
             userIds: to
         });
 
-        return updatedReq
+        return this.db.fullHelpRequest(updatedReq)
     }
 
     @Post(API.server.confirmRequestToJoinRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async confirmRequestToJoinRequest(
         @OrgId() orgId: string,
         @User() user: UserDoc,
@@ -67,11 +67,11 @@ export class DispatcherController implements APIController<
             orgId
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.declineRequestToJoinRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async declineRequestToJoinRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -89,11 +89,11 @@ export class DispatcherController implements APIController<
             orgId
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.removeUserFromRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async removeUserFromRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -111,11 +111,11 @@ export class DispatcherController implements APIController<
             orgId
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.ackRequestsToJoinNotification())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async ackRequestsToJoinNotification(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -130,6 +130,6 @@ export class DispatcherController implements APIController<
             joinRequests
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 }

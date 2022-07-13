@@ -12,8 +12,7 @@ import { RedisAdapter } from "@socket.io/redis-adapter";
 import { OrganizationDoc } from "../models/organization";
 import { HelpRequestDoc } from "../models/helpRequest";
 import { usersAssociatedWithRequest } from "common/utils/requestUtils";
-import { user } from "firebase-functions/v1/auth";
-import { resolvePermissionsFromRoles } from "../controllers/utils";
+import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
 
 type RaheemSocket = SocketIO.Socket<any, any, any, { refreshToken: string }>;
 type SendConfig = { 

@@ -93,33 +93,6 @@ export default class UserStore implements IUserStore {
         return !!this.user;
     }
 
-    get isResponder(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Responder);
-    }
-
-    get isDispatcher(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Dispatcher);
-    }
-
-    get isAdmin(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Admin);
-    }
-
     async afterSignIn(authTokens: AuthTokens) {
         const token = authTokens.accessToken;
 

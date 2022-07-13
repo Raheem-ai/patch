@@ -27,6 +27,14 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
 
     const selectedRoles = config.val().map(roleId => organizationStore().roles.get(roleId)?.name).filter(name => !!name);
 
+    const onRoleRemoved = (idx: number, tag: string) => {
+        const lastAndNecessary = (config.props.onlyAddative && (config.val().length == 1))
+            
+        if (!lastAndNecessary) {
+            config.props?.onItemDeleted(idx, tag);
+        }
+    }
+
     return (
         <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
             {
@@ -37,7 +45,8 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
                         horizontalTagMargin={6}
                         tags={selectedRoles}
                         dark={true}
-                        onTagDeleted={config.props?.onItemDeleted ? config.props.onItemDeleted : null}/>
+                        // only pass callback if we got one so the "x" isn't shown if you can't delete
+                        onTagDeleted={config.props?.onItemDeleted ? onRoleRemoved : null}/>
                 </View>
             }
         </Pressable>

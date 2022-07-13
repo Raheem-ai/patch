@@ -96,6 +96,10 @@ export class DBManager {
         return populatedOrg;
     }
 
+    fullHelpRequest(helpRequest: HelpRequestDoc): HelpRequest {
+        return helpRequest.toObject({ virtuals: true }) as any as HelpRequest;
+    }
+
     async createUser(user: Partial<UserModel>): Promise<UserDoc> {
         user.auth_etag = user.auth_etag || uuid.v1();
         user.displayColor = user.displayColor || randomColor({
@@ -134,13 +138,35 @@ export class DBManager {
         }
     }
 
+    orgRequestPrefixFromName(name: string) {
+        const parts = name.split(' ');
+
+        let slug = ''
+
+        if (parts.length == 1) {
+            const fullName = parts[0];
+
+            slug = fullName.length <= 6 
+                ? fullName
+                : fullName.slice(0, 4);
+        } else if (parts.length == 2) {
+            slug = `${parts[0].slice(0,2)}${parts[1].slice(0,2)}`
+        } else {
+            slug = parts.map(word => word[0]).join()
+        }
+
+        return slug.toUpperCase()
+    }
+
     async createOrganization(minOrg: Partial<OrganizationModel>, adminId: string) {
         return this.transaction(async (session) => {
             const newOrg: Partial<OrganizationModel> = { ...minOrg, 
                 lastRequestId: 0, 
-                lastDayTimestamp: new Date().toISOString(),
+                // lastDayTimestamp: new Date().toISOString(),
                 roleDefinitions: DefaultRoles
             }
+
+            newOrg.requestPrefix ||= this.orgRequestPrefixFromName(minOrg.name);
 
             const org = await (new this.orgs(newOrg)).save({ session })
 
@@ -178,22 +204,6 @@ export class DBManager {
 
     async getOrganizations(query: Partial<OrganizationModel>): Promise<OrganizationDoc[]> {
         return await this.orgs.find(query).populate('members')
-    }
-
-    async getOrgResponders(orgId: string): Promise<ProtectedUser[]> {
-        const org = await this.resolveOrganization(orgId);
-        const responders: ProtectedUser[] = []
-
-        for (const possibleMember of org.members as Ref<UserDoc>[]) {
-            const member = await this.resolveUser(possibleMember);
-            const roles = member.organizations[orgId].roles;
-
-            if (!!roles && roles.includes(UserRole.Responder)) {
-                responders.push(this.protectedUserFromDoc(member));
-            }
-        }
-
-        return responders;
     }
 
     async updateHelpRequestChat(helpReq: string | HelpRequestDoc, cb: (chat?: Chat) => Chat) {
@@ -295,42 +305,7 @@ export class DBManager {
         })
     }
 
-    // TODO: deprecate
-    async addUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
-        const user = await this.resolveUser(userId);
 
-        if (!user.organizations || !user.organizations[orgId]){
-            throw `User not in organization`
-        } else {
-            await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-                const rollSet = new Set(orgConfig.roles);
-
-                roles.forEach(r => rollSet.add(r));
-
-                return Object.assign({}, orgConfig, { roles: Array.from(rollSet.values()) });
-            })
-
-            return await user.save();
-        }
-    }
-
-    async removeUserRoles(orgId: string, userId: string | UserDoc, roles: UserRole[]) {
-        const user = await this.resolveUser(userId);
-
-        if (!user.organizations || !user.organizations[orgId]){
-            throw `User not in organization`
-        } else {
-            await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
-                const rollSet = new Set(orgConfig.roles);
-
-                roles.forEach(r => rollSet.delete(r));
-
-                return Object.assign({}, orgConfig, { roles: Array.from(rollSet.values()) });
-            })
-        
-            return await user.save();
-        }
-    }
 
     async addPendingUserToOrg(orgId: string | OrganizationDoc, pendingUser: PendingUser) {
         const org = await this.resolveOrganization(orgId);
@@ -343,7 +318,7 @@ export class DBManager {
         await org.save()
     }
 
-    async editOrgMetadata(orgId: string, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationDoc> {
+    async editOrgMetadata(orgId: string, orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
 
         for (const prop in orgUpdates) {
@@ -1224,7 +1199,6 @@ export class DBManager {
         
         req.orgId = orgId;
         req.dispatcherId = dispatcherId;
-        req.assignedResponderIds ||= [];
 
         // no special lofic as creating a request always comes before notifying about it
         // ...which could change the status once people join etc.
@@ -1232,30 +1206,10 @@ export class DBManager {
 
         const org = await this.resolveOrganization(orgId)
 
-        const timezone = timespace.getFuzzyLocalTimeFromPoint(Date.now(), [ req.location.longitude, req.location.latitude ])
-
-        const reqTime = timezone
-            .hours(12)
-            .minutes(1)
-            .seconds(1)
-            .milliseconds(1);
-
-        const lastReqTime = moment(org.lastDayTimestamp)
-            .hours(12)
-            .minutes(1)
-            .seconds(1)
-            .milliseconds(1);
-
-        const firstReqForToday = reqTime > lastReqTime;
-
         return this.transaction(async (session) => {
             org.lastRequestId++;
 
-            if (firstReqForToday) {
-                org.lastDayTimestamp = reqTime.toISOString()
-            }
-
-            const displayId = `${org.lastRequestId}-${reqTime.format('MMDD')}`
+            const displayId = `${org.requestPrefix}-${org.lastRequestId}`
             req.displayId = displayId;
 
             await org.save({ session });
@@ -1689,12 +1643,10 @@ export class DBManager {
             name: 'HEART'
         }, admin.id);
 
-        admin1 = await this.addUserRoles(heartOrg.id, admin1, [ UserRole.Dispatcher, UserRole.Responder ]);
 
         for (const user of users) {
             let newUser = await this.createUser(user);
-            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], [])
-            newUser = await this.addRolesToUser(heartOrg.id, newUser, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
+            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [], [DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder], [])
         }
     }
 
@@ -1732,7 +1684,6 @@ export class DBManager {
                 name: 'Community Response Program'
             }, user1.id);
 
-            admin1 = await this.addUserRoles(org.id, admin1, [ UserRole.Dispatcher, UserRole.Responder ]);
 
             let user2 = await this.createUser({ 
                 email: 'Nadav@test.com', 

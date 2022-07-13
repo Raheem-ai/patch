@@ -37,7 +37,10 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
 
     const headerProps: BackButtonHeaderProps = {
         cancel: {
-            handler: () => back()
+            handler: () => {
+                config.onCancel?.()
+                back()
+            }
         },
         save: {
             handler: save,

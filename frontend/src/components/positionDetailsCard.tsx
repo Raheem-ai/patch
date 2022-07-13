@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/models";
+import { DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
 import { resolveErrorMessage } from "../errors";
 import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors } from "../types";
@@ -27,6 +27,8 @@ const PositionDetailsCard = observer(({
     pos,
     edit
 }: PositionDetailsCardProps) => {
+    const request = requestStore().requests.get(requestId);
+    const requestIsClosed = request.status == RequestStatus.Closed
 
     const positionMetadata = requestStore().getPositionScopedMetadata(userStore().user.id, requestId, pos.id);
     const joinedUsers = Array.from(positionMetadata.joinedUsers.values());
@@ -74,6 +76,10 @@ const PositionDetailsCard = observer(({
     }).filter(x => !!x); 
 
     const actions = () => {
+        if (requestIsClosed) {
+            return null
+        }
+
         const join = async () => {
             try {
                 await requestStore().joinRequest(requestId, pos.id)

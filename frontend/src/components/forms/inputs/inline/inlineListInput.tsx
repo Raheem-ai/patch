@@ -17,7 +17,11 @@ const InlineListInput = observer(({ config }: InlineListInputProps) => {
         const cpy = new Set(vals)
         
         if (cpy.has(val)) {
-            cpy.delete(val);
+            const lastAndNecessary = (config.props.onlyAddative && (cpy.size == 1))
+            
+            if (!lastAndNecessary) {
+                cpy.delete(val);
+            }
         } else {
             if (!multiSelect) {
                 cpy.clear()

@@ -40,7 +40,7 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
     lastRequestId: number;
 
     @Property()
-    lastDayTimestamp: string;
+    requestPrefix: string;
 
     @Ref(UserModel) 
     members: Ref<UserModel>[];

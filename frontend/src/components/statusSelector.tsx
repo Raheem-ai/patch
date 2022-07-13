@@ -1,9 +1,10 @@
+import { observer } from "mobx-react";
 import React from "react";
 import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
-import { IRequestStore } from "../stores/interfaces";
+import { requestStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
@@ -88,8 +89,8 @@ export const StatusIcon = ({
 }
 
 type StatusSelectorProps = { 
-    request: HelpRequest, 
-    requestStore: IRequestStore, 
+    requestId: string, 
+    // requestStore(): IRequestStore(), 
     style?: StyleProp<ViewStyle>,
     onStatusUpdated?: () => void,
     large?: boolean,
@@ -97,15 +98,17 @@ type StatusSelectorProps = {
     withLabels?: boolean
 }
 
-export const StatusSelector = ({ 
-    request, 
-    requestStore, 
+export const StatusSelector = observer(({ 
+    requestId, 
+    // requestStore(), 
     onStatusUpdated,
     large,
     style, 
     dark,
     withLabels
 } : StatusSelectorProps) => {
+    const request = requestStore().requests.get(requestId)
+    
     const firstStatus = assignedResponderBasedRequestStatus(request);
 
     const dimensions = Dimensions.get('screen');
@@ -120,10 +123,10 @@ export const StatusSelector = ({
                 case RequestStatus.OnTheWay:
                 case RequestStatus.OnSite:
                 case RequestStatus.Done:
-                    await requestStore.setRequestStatus(request.id, status);
+                    await requestStore().setRequestStatus(request.id, status);
                     break;
                 default:
-                    await requestStore.resetRequestStatus(request.id);
+                    await requestStore().resetRequestStatus(request.id);
                     break;
             }
         }
@@ -253,7 +256,7 @@ export const StatusSelector = ({
             }
         </View>
     )
-}
+})
 
 const styles = StyleSheet.create({ 
     statusIcon: {
