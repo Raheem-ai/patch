@@ -833,13 +833,13 @@ const styles = StyleSheet.create({
     submitButton: {
         height: 44,
         borderRadius: 24,
-        color: '#fff',
+        color: Colors.text.buttonLabelPrimary,
         backgroundColor: Colors.primary.alpha,
         justifyContent: 'center',
         margin: 20
     },
     disabledSubmitButton: {
-        color: '#fff',
+        color: Colors.text.buttonLabelPrimary,
         backgroundColor: Colors.primary.delta,
     }
 })
