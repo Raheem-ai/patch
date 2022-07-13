@@ -2,11 +2,11 @@ import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
-import { HelpRequest, MinHelpRequest, MinOrg, PatchEventType, ResponderRequestStatuses, UserRole } from "common/models";
+import { HelpRequest, MinHelpRequest, MinOrg, PatchEventType, PatchPermissions, RequestStatus, ResponderRequestStatuses, UserRole } from "common/models";
 import { assignedResponderBasedRequestStatus, getPreviousOpenStatus as getPreviousOpenStatus } from "common/utils/requestUtils";
 import { APIController, OrgId, RequestId } from ".";
-import { HelpReq, RequestAccess } from "../middlewares/requestAccessMiddleware";
-import { RequireRoles } from "../middlewares/userRoleMiddleware";
+import { HelpReq, RequestAdminOrOnRequestWithPermissions, RequestAdminOrWithPermissions } from "../middlewares/requestAccessMiddleware";
+import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
@@ -23,7 +23,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.request)
-export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'unAssignRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
+export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
     @Inject(DBManager) db: DBManager;
 
     // TODO: find a better place to inject this so it is instantiated
@@ -34,12 +34,8 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     @Inject(PubSubService) pubSub: PubSubService;
     @Inject(MySocketService) socket: MySocketService;
 
-    includeVirtuals(helpRequest: HelpRequestDoc): HelpRequest {
-        return helpRequest.toObject({ virtuals: true });
-    }
-
     @Post(API.server.createNewRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async createNewRequest(
         @OrgId() orgId: string,
         @User() user: UserDoc,
@@ -47,7 +43,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     ) {
         const createdReq = await this.db.createRequest(request, orgId, user.id);
 
-        const res = this.includeVirtuals(createdReq);
+        const res = this.db.fullHelpRequest(createdReq);
 
         await this.pubSub.sys(PatchEventType.RequestCreated, { 
             requestId: res.id,
@@ -58,7 +54,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     }
 
     @Get(API.server.getRequest())
-    @RequireRoles([UserRole.Dispatcher, UserRole.Responder, UserRole.Admin])
+    @RequireAllPermissions([])
     async getRequest(
         @OrgId() orgId: string,
         @User() user: UserDoc,
@@ -66,34 +62,34 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         // path params
         @RequestId() requestId: string
     ) {
-        const res = this.includeVirtuals((await this.db.resolveRequest(requestId)))
+        const res = this.db.fullHelpRequest((await this.db.resolveRequest(requestId)))
 
         return res;
     }
 
     @Post(API.server.getRequests())
-    @RequireRoles([UserRole.Dispatcher, UserRole.Responder, UserRole.Admin])
+    @RequireAllPermissions([])
     async getRequests(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @BodyParams('requestIds') requestIds?: string[]
     ) {
         if (requestIds && requestIds.length) {
-            return (await this.db.getSpecificRequests(orgId, requestIds)).map(this.includeVirtuals)
+            return (await this.db.getSpecificRequests(orgId, requestIds)).map(this.db.fullHelpRequest)
         } else {
-            return (await this.db.getAllRequests(orgId)).map(this.includeVirtuals)
+            return (await this.db.getAllRequests(orgId)).map(this.db.fullHelpRequest)
         }
     }
 
     @Post(API.server.editRequest())
-    @RequestAccess()
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async editRequest(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
         @BodyParams('requestUpdates') requestUpdates: AtLeast<HelpRequest, 'id'>,
     ) {
-        const res = this.includeVirtuals((await this.db.editRequest(helpRequest, requestUpdates)))
+        const res = this.db.fullHelpRequest((await this.db.editRequest(helpRequest, requestUpdates)))
 
         await this.pubSub.sys(PatchEventType.RequestEdited, { 
             requestId: res.id,
@@ -103,31 +99,15 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         return res;
     }
 
-    @Post(API.server.unAssignRequest())
-    @RequestAccess()
-    async unAssignRequest(
-        @OrgId() orgId: string,
-        @User() user: UserDoc,
-        @HelpReq() helpRequest: HelpRequestDoc,
-        @Required() @BodyParams('userId') userId: string,
-    ) {
-        const idx = helpRequest.assignedResponderIds.findIndex(id => id === userId);
-
-        if (idx != -1) {
-            helpRequest.assignedResponderIds.splice(idx, 1);
-            await helpRequest.save();
-        }
-    }
-
     @Post(API.server.sendChatMessage())
-    @RequestAccess()
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async sendChatMessage(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('message') message: string,
     ) {
-        const res =  this.includeVirtuals(await this.db.sendMessageToReq(user, helpRequest, message));
+        const res =  this.db.fullHelpRequest(await this.db.sendMessageToReq(user, helpRequest, message));
 
         await this.pubSub.sys(PatchEventType.RequestChatNewMessage, { 
             orgId,
@@ -139,23 +119,89 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
     }
 
     @Post(API.server.updateRequestChatReceipt())
-    @RequestAccess()
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async updateRequestChatReceipt(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('lastMessageId') lastMessageId: number,
     ) {
-        return this.includeVirtuals(await this.db.updateRequestChatRecepit(helpRequest, user.id, lastMessageId));
+        return this.db.fullHelpRequest(await this.db.updateRequestChatRecepit(helpRequest, user.id, lastMessageId));
     }
     
     @Post(API.server.setRequestStatus())
-    @RequestAccess()
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async setRequestStatus(
         @OrgId() orgId: string,
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
         @Required() @BodyParams('status') status: ResponderRequestStatuses,
+    ) {
+        return await this._setRequestStatus(orgId, user, helpRequest, status)
+    }
+
+    @Post(API.server.closeRequest())
+    @RequestAdminOrOnRequestWithPermissions([PatchPermissions.CloseRequests])
+    async closeRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+    ) {
+        return await this._setRequestStatus(orgId, user, helpRequest, RequestStatus.Closed)
+    }
+
+    @Post(API.server.resetRequestStatus())
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
+    async resetRequestStatus(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+    ) {
+        helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
+        
+        const res = await helpRequest.save();
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
+
+        return this.db.fullHelpRequest(res)
+    }
+
+
+    @Post(API.server.reopenRequest())
+    @RequestAdminOrOnRequestWithPermissions([PatchPermissions.CloseRequests])
+    async reopenRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+    ) {
+        helpRequest.status = getPreviousOpenStatus(helpRequest);
+        
+        helpRequest.statusEvents.push({
+            status: helpRequest.status,
+            setBy: user.id,
+            setAt: new Date().toISOString()
+        });
+
+        helpRequest.markModified('statusEvents');
+
+        const res = await helpRequest.save();
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
+
+        return this.db.fullHelpRequest(res)
+    }
+
+    async _setRequestStatus(
+        orgId: string,
+        user: UserDoc,
+        helpRequest: HelpRequestDoc,
+        status: RequestStatus,
     ) {
         helpRequest.status = status;
         helpRequest.statusEvents.push({
@@ -173,51 +219,6 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
             orgId 
         });
 
-        return res
-    }
-
-    @Post(API.server.resetRequestStatus())
-    @RequestAccess()
-    async resetRequestStatus(
-        @OrgId() orgId: string,
-        @User() user: UserDoc,
-        @HelpReq() helpRequest: HelpRequestDoc,
-    ) {
-        helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
-        const res = await helpRequest.save();
-
-        await this.pubSub.sys(PatchEventType.RequestEdited, { 
-            requestId: res.id,
-            orgId 
-        });
-
-        return res
-    }
-
-
-    @Post(API.server.reopenRequest())
-    @RequestAccess()
-    async reopenRequest(
-        @OrgId() orgId: string,
-        @User() user: UserDoc,
-        @HelpReq() helpRequest: HelpRequestDoc,
-    ) {
-        helpRequest.status = getPreviousOpenStatus(helpRequest);
-        helpRequest.statusEvents.push({
-            status: helpRequest.status,
-            setBy: user.id,
-            setAt: new Date().toISOString()
-        });
-
-        helpRequest.markModified('statusEvents');
-
-        const res = await helpRequest.save();
-
-        await this.pubSub.sys(PatchEventType.RequestEdited, { 
-            requestId: res.id,
-            orgId 
-        });
-
-        return res
+        return this.db.fullHelpRequest(res)
     }
 }

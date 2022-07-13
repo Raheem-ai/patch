@@ -3,11 +3,11 @@ import { Unauthorized } from "@tsed/exceptions";
 import { MongooseModel } from "@tsed/mongoose";
 import { Required } from "@tsed/schema";
 import API from 'common/api';
-import { PatchEventType, UserOrgConfig, UserRole } from "common/models";
+import { PatchEventType, PatchPermissions, UserOrgConfig, UserRole } from "common/models";
 import { userCanJoinRequestPosition } from "common/utils/requestUtils";
 import { request } from "express";
 import { APIController, OrgId } from ".";
-import { RequireRoles } from "../middlewares/userRoleMiddleware";
+import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
@@ -30,7 +30,7 @@ export class ResponderController implements APIController<
     @Inject(MySocketService) socket: MySocketService;
 
     @Post(API.server.setOnDutyStatus())
-    @RequireRoles([UserRole.Responder])
+    @RequireAllPermissions([])
     async setOnDutyStatus(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -52,7 +52,8 @@ export class ResponderController implements APIController<
     }
 
     @Post(API.server.joinRequest())
-    @RequireRoles([UserRole.Responder])
+    // okay to not check for admin perms as currently they force these
+    @RequireAllPermissions([PatchPermissions.EditRequestData]) 
     async joinRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -72,14 +73,15 @@ export class ResponderController implements APIController<
                 orgId
             })
     
-            return res;
+            return this.db.fullHelpRequest(res);
         } else {
             throw new Unauthorized('You do not have the required attributes and/or role to join this poition.')
         }
     }
 
     @Post(API.server.leaveRequest())
-    @RequireRoles([UserRole.Responder])
+    // okay to not check for admin perms as currently they force these
+    @RequireAllPermissions([PatchPermissions.EditRequestData]) 
     async leaveRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -95,11 +97,12 @@ export class ResponderController implements APIController<
             orgId
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.requestToJoinRequest())
-    @RequireRoles([UserRole.Responder])
+    // okay to not check for admin perms as currently they force these
+    @RequireAllPermissions([PatchPermissions.EditRequestData]) 
     async requestToJoinRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
@@ -109,32 +112,31 @@ export class ResponderController implements APIController<
         // const res = await this.db.confirmRequestAssignment(requestId, user.id)
         const res = await this.db.requestToJoinRequest(requestId, user.id, positionId)
 
-        // 
-        // await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
-        //     responderId: user.id,
-        //     requestId
-        // })
+        await this.pubSub.sys(PatchEventType.RequestRespondersRequestToJoin, {
+            responderId: user.id,
+            requestId, 
+            orgId,
+            positionId
+        })
 
-        return res
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.ackRequestNotification())
-    @RequireRoles([UserRole.Responder])
+    // in case someone was notified who doesn't have permissions
+    @RequireAllPermissions([])
     async ackRequestNotification(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string,
     ) {
-        // const res = await this.db.confirmRequestAssignment(requestId, user.id)
         const res = await this.db.ackRequestNotification(requestId, user.id)
 
-        // 
-        // await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
-        //     responderId: user.id,
-        //     requestId
-        // })
+        await this.pubSub.sys(PatchEventType.RequestRespondersNotificationAck, {
+            requestId, 
+        })
 
-        return res
+        return this.db.fullHelpRequest(res);
     }
     
 }

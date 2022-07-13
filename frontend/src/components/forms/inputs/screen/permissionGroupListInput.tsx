@@ -102,7 +102,10 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
     render(): React.ReactNode {
         const headerProps: BackButtonHeaderProps = {
             cancel: {
-                handler: () => this.props.back()
+                handler: () => {
+                    this.props.config.onCancel?.()
+                    this.props.back()
+                }
             },
             save: {
                 handler: this.save,

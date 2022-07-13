@@ -1,29 +1,35 @@
-import {EndpointInfo, Middleware, Req, UseBefore} from "@tsed/common";
+import {Context, EndpointInfo, Inject, Middleware, Req, UseBefore} from "@tsed/common";
 import { StoreSet, useDecorators } from "@tsed/core";
 import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
-import { UserRole } from "common/models";
+import { PatchPermissions, UserRole } from "common/models";
 import API from "common/api";
-import { MongooseDocument } from "@tsed/mongoose";
-import { UserDoc, UserModel } from "../models/user";
+import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
+import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
+import { DBManager } from "../services/dbManager";
 
 @Middleware()
-export class RequireRoleMiddleware {
-  use(
+export class RequirePermissionsMiddleware {
+  @Inject(DBManager) db: DBManager;
+
+  async use(
     @Req() req: Req, 
-    @EndpointInfo() endpoint: EndpointInfo,
+    @Context() ctx: Context,
     @User() user: UserDoc
   ) {
-    const { roles }: { roles: UserRole[] } =  endpoint.get(RequireRoleMiddleware);
+    const endpoint = ctx.endpoint;
+    const { requiredPermissions, allRequired }: { 
+        requiredPermissions: PatchPermissions[],
+        allRequired: boolean
+    } = endpoint.get(RequirePermissionsMiddleware);
 
     if (!user) {
       throw new Unauthorized('You must be signed in to call this api');
-    } else if ((!roles) || (!roles.length)) {
-      // api not restriced to allow access
+    } else if ((!requiredPermissions) || (!requiredPermissions.length)) {
+      // api not restriced so allow access
       return;
     } else {
-      const unmetRoles = [];
       const orgId = req.header(API.orgIdHeader);
 
       if (!orgId) {
@@ -36,16 +42,28 @@ export class RequireRoleMiddleware {
         throw new Forbidden(`You do not have access to the supplied org scope`);
       }
 
-      const orgRoles = orgConfig.roles;
+      // TODO: create @Org decorator to pass the resolved org through
+      const org = await this.db.resolveOrganization(orgId);
 
-      for (const role of roles) {
-        if (orgRoles.includes(role)) {
-          // one of the required roles met
-          return;
-        }
+      const userRoles = orgConfig.roleIds
+        .map(roleId => org.roleDefinitions.find(def => def.id == roleId))
+        .filter(x => !!x)
+
+      const userPermissions = resolvePermissionsFromRoles(userRoles)
+
+      const satisfiesPermissions = allRequired
+          ? requiredPermissions.every(perm => userPermissions.has(perm))
+          : requiredPermissions.some(perm => userPermissions.has(perm))
+
+      if (satisfiesPermissions) {
+        return;
       }
 
-      throw new Forbidden(`Roles [${roles.map(r => UserRole[r])}] are required to call this api`);      
+      const errorMessage = allRequired
+          ? `Permissions [${requiredPermissions.map(p => PatchPermissions[p])}] are required to call this api`
+          : `At least one of the following permissions are required to call thos api [${requiredPermissions.map(p => PatchPermissions[p])}]`
+
+      throw new Forbidden(errorMessage);      
     }
   }
 }
@@ -54,12 +72,23 @@ type OrgScopedMethod = TypedPropertyDescriptor<(orgId: string, user: UserDoc, ..
 
 type OrgScopedAuthMethodDecorator = (target: Object, propertyKey: string | symbol, descriptor: OrgScopedMethod) => OrgScopedMethod | void
 
-export function RequireRoles(roles: UserRole[]): OrgScopedAuthMethodDecorator {
+export function RequireAllPermissions(requiredPermissions: PatchPermissions[]): OrgScopedAuthMethodDecorator {
   return useDecorators(
-    StoreSet(RequireRoleMiddleware, {
-      roles
+    StoreSet(RequirePermissionsMiddleware, {
+      requiredPermissions,
+      allRequired: true
     }),
-    UseBefore(RequireRoleMiddleware),
+    UseBefore(RequirePermissionsMiddleware),
+    Authenticate()
+  );
+}
+
+export function RequireSomePermissions(requiredPermissions: PatchPermissions[]): OrgScopedAuthMethodDecorator {
+  return useDecorators(
+    StoreSet(RequirePermissionsMiddleware, {
+      requiredPermissions
+    }),
+    UseBefore(RequirePermissionsMiddleware),
     Authenticate()
   );
 }

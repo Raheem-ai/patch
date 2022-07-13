@@ -8,7 +8,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
 import { navigationRef } from "../navigation";
-import { linkingStore, requestStore, userStore } from "../stores/interfaces";
+import { linkingStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
 
 type Props = ScreenProps<'UserDetails'>;
@@ -32,8 +32,12 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         const detailsText = [
             userStore().currentUser.pronouns,
             // TODO: add location here?
-            ...userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r])
+            ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${visualDelim} `);
+
+        const userAttributes = userStore().user.organizations[userStore().currentOrgId].attributes.map(attr => {
+            return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
+        }).filter(x => !!x)
 
         return <View style={styles.headerContainer}>
             <View style={styles.profilePhotoContainer}>
@@ -49,13 +53,13 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.detailsContainer}>
                 <Text style={styles.detailsText}>{detailsText}</Text>
             </View>
-            <View style={styles.skillsContainer}>
+            <View style={styles.attributesContainer}>
                 <Tags 
                 centered
-                    tags={userStore().currentUser.skills.map(skill => RequestSkillToLabelMap[skill])} 
+                    tags={userAttributes.map(attr => attr.name)} 
                     verticalMargin={12} 
-                    tagTextStyle={{ color: styles.skillTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.skillTag.backgroundColor }}/>
+                    tagTextStyle={{ color: styles.attributeTag.color }}
+                    tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
             </View>
             <View style={styles.bioContainer}>
                 <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
@@ -163,10 +167,10 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginVertical: 12
     },
-    skillsContainer: {
+    attributesContainer: {
         alignSelf: 'center',
     }, 
-    skillTag: {
+    attributeTag: {
         color: '#fff',
         backgroundColor: Colors.secondary.alpha
     },

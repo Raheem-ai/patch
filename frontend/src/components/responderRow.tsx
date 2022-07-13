@@ -17,7 +17,6 @@ type Props = {
 }
 
 const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
-    const isDispatcher = (responder.organizations[orgId]?.roles || []).includes(UserRole.Dispatcher);
     const attributes = (responder.organizations[userStore().currentOrgId]?.attributes || []).map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId));
 
     return (
@@ -29,22 +28,6 @@ const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }:
                 <View>
                     <View style={styles.responderHeader}>
                         <Text style={styles.responderLabel}>{responder.name}</Text>
-                        {
-                            isDispatcher 
-                                ? <View style={styles.dispatcherContainer}>
-                                    <View>
-                                        <IconButton
-                                            style={styles.dispatchIcon}
-                                            icon='lightning-bolt'
-                                            color={styles.dispatchIcon.color}
-                                            size={styles.dispatchIcon.width} />
-                                    </View>
-                                    <View style={styles.dispatcherLabelContainer}>
-                                        <Text style={styles.dispatcherLabel} >DISPATCHER</Text>
-                                    </View>
-                                </View>
-                                : null
-                        }
                     </View>
                 </View>
                 <View style={styles.skillTagsContainer}>

@@ -51,19 +51,23 @@ const HelpRequestCard = observer(({
 
     const header = () => {
         const id = request.displayId;
-        const address = request.location.address.split(',').slice(0, 2).join()
+        const address = request.location?.address.split(',').slice(0, 2).join()
 
         return (
             <View style={styles.headerRow}>
                 <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
-                <View style={styles.locationContainer}>
-                    <IconButton
-                        style={styles.locationIcon}
-                        icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
-                    <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
-                </View>
+                {
+                    address
+                        ? <View style={styles.locationContainer}>
+                            <IconButton
+                                style={styles.locationIcon}
+                                icon='map-marker' 
+                                color={styles.locationIcon.color}
+                                size={styles.locationIcon.width} />
+                            <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
+                        </View>
+                        : null
+                }
             </View>
         )
     }
@@ -83,7 +87,21 @@ const HelpRequestCard = observer(({
     }
 
     const status = () => {
-        const respondersToAssign = request.respondersNeeded - request.assignedResponderIds.length;
+        const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
+
+        let respondersNeeded = 0;
+        
+        const joinedResponders = new Set<string>();
+
+        request.positions.forEach(pos => {
+            respondersNeeded += pos.min
+        })
+        
+        requestMetadata.positions.forEach(pos => {
+            pos.joinedUsers.forEach(userId => joinedResponders.add(userId))
+        })
+
+        const respondersToAssign = respondersNeeded - joinedResponders.size;
 
         const unAssignedResponders = [];
         const assignedResponders = [];
@@ -94,10 +112,10 @@ const HelpRequestCard = observer(({
                 emptyIconColor={styles.unAssignedResponderIcon.color}/>)
         }
 
-        for (let i = 0; i < request.assignedResponderIds.length; i++) {
-            const responder = userStore().users.get(request.assignedResponderIds[i]); 
+        joinedResponders.forEach(userId => {
+            const responder = userStore().users.get(userId); 
             assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
-        }
+        })
 
         const potentialLabel = RequestStatusToLabelMap[request.status];
         
@@ -137,17 +155,10 @@ const HelpRequestCard = observer(({
                     </>
                     { assignedResponders }
                     { unAssignedResponders }
-                    {/* <Button 
-                        contentStyle={styles.broadcastContent}
-                        style={styles.broadcastButton}
-                        labelStyle={styles.broadcastButtonLabel} 
-                        mode='text'
-                        color={styles.broadcastButtonLabel.color} 
-                        icon='bullhorn'>Broadcast</Button> */}
                 </View>
                 {
                     statusOpen
-                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} request={request} onStatusUpdated={closeStatusSelector} requestStore={requestStore()}/>
+                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} requestId={request.id} onStatusUpdated={closeStatusSelector} />
                         : <View style={styles.statusContainer}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {

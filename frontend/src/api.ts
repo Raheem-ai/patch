@@ -280,7 +280,7 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<OrganizationMetadata>): Promise<OrganizationMetadata> {
+    async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>): Promise<OrganizationMetadata> {
         const url = `${apiHost}${API.client.editOrgMetadata()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
@@ -324,137 +324,11 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async createNewAttributeCategory(ctx: OrgContext, category: MinAttributeCategory): Promise<AttributeCategory> {
-        const url = `${apiHost}${API.client.createNewAttributeCategory()}`;
-
-        return (await this.tryPost<AttributeCategory>(url, {
-            category
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async editAttributeCategory(ctx: OrgContext, categoryUpdates: AttributeCategoryUpdates): Promise<AttributeCategory> {
-        const url = `${apiHost}${API.client.editAttributeCategory()}`;
-
-        return (await this.tryPost<AttributeCategory>(url, {
-            categoryUpdates
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async deleteAttributeCategory(ctx: OrgContext, categoryId: string): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.deleteAttributeCategory()}`;
-
-        return (await this.tryPost<OrganizationMetadata>(url, { 
-            categoryId
-        } , {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async createNewAttribute(ctx: OrgContext, categoryId: string, attribute: MinAttribute): Promise<Attribute> {
-        const url = `${apiHost}${API.client.createNewAttribute()}`;
-
-        return (await this.tryPost<Attribute>(url, {
-            categoryId,
-            attribute
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-    
-    async editAttribute(ctx: OrgContext, categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>): Promise<Attribute> {
-        const url = `${apiHost}${API.client.editAttribute()}`;
-
-        return (await this.tryPost<Attribute>(url, {
-            categoryId,
-            attributeUpdates
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async deleteAttribute(ctx: OrgContext, categoryId: string, attributeId: string): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.deleteAttribute()}`;
-
-        return (await this.tryPost<OrganizationMetadata>(url, {
-            categoryId,
-            attributeId
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
     async updateTags(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
         const url = `${apiHost}${API.client.updateTags()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, {
             updates
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async createNewTagCategory(ctx: OrgContext, category: MinTagCategory): Promise<TagCategory> {
-        const url = `${apiHost}${API.client.createNewTagCategory()}`;
-
-        return (await this.tryPost<TagCategory>(url, {
-            category
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async editTagCategory(ctx: OrgContext, categoryUpdates: TagCategoryUpdates): Promise<TagCategory> {
-        const url = `${apiHost}${API.client.editTagCategory()}`;
-
-        return (await this.tryPost<TagCategory>(url, {
-            categoryUpdates
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async deleteTagCategory(ctx: OrgContext, categoryId: string): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.deleteTagCategory()}`;
-
-        return (await this.tryPost<OrganizationMetadata>(url, { 
-            categoryId
-        } , {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async createNewTag(ctx: OrgContext, categoryId: string, tag: MinTag): Promise<Tag> {
-        const url = `${apiHost}${API.client.createNewTag()}`;
-
-        return (await this.tryPost<Tag>(url, {
-            categoryId,
-            tag
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async editTag(ctx: OrgContext, categoryId: string, tagUpdates: AtLeast<Tag, 'id'>): Promise<Tag> {
-        const url = `${apiHost}${API.client.editTag()}`;
-
-        return (await this.tryPost<Tag>(url, {
-            categoryId,
-            tagUpdates
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
-    async deleteTag(ctx: OrgContext, categoryId: string, tagId: string): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.deleteTag()}`;
-
-        return (await this.tryPost<OrganizationMetadata>(url, {
-            categoryId,
-            tagId
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
@@ -630,17 +504,6 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async removeUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
-        const url = `${apiHost}${API.client.removeUserRoles()}`;
-
-        return (await this.tryPost<User>(url, {
-            userId,
-            roles
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
     async addUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserRoles()}`;
 
@@ -674,13 +537,7 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async getRespondersOnDuty(ctx: OrgContext): Promise<ProtectedUser[]> {
-        const url = `${apiHost}${API.client.getRespondersOnDuty()}`;
 
-        return (await this.tryGet<ProtectedUser[]>(url, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
 
     async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.createNewRequest()}`;
@@ -718,16 +575,6 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async unAssignRequest(ctx: RequestContext, userId: string): Promise<void> {
-        const url = `${apiHost}${API.client.unAssignRequest()}`;
-
-        await this.tryPost<void>(url, {
-            userId
-        }, {
-            headers: this.requestScopeAuthHeaders(ctx)
-        })
-    }
-
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
@@ -758,6 +605,14 @@ export class APIClient implements IAPIService {
 
     async reopenRequest(ctx: RequestContext): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.reopenRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {}, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async closeRequest(ctx: RequestContext): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.closeRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {}, {
             headers: this.requestScopeAuthHeaders(ctx)

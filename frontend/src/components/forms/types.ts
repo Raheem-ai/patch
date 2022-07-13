@@ -37,7 +37,9 @@ export type SectionNavigationScreenViewProps = {
 
 export type ScreenFormInputOptions = { 
     'TextArea': {
-        props: {},
+        props: {
+            maxChar?: number
+        },
         type: string
     },
     'Map': {
@@ -106,6 +108,7 @@ export type ScreenFormInputOptions = {
     }, 
     'RoleList': {
         props: {
+            onlyAddative?: boolean,
             multiSelect?: boolean
             onItemDeleted?: (idx: number, val: any) => void
         },
@@ -139,7 +142,8 @@ export type InlineFormInputOptions = {
             options: any[]
             optionToPreviewLabel: (opt) => string
             optionToListLabel?: (opt) => string
-            multiSelect?: boolean
+            multiSelect?: boolean,
+            onlyAddative?: boolean
         },
         type: any[]
     },
@@ -203,7 +207,11 @@ export type ScreenFormInputConfig<Type extends ScreenFormInputType = ScreenFormI
      *  for screen fields that hold their own temp internal state until you save 
      * */
     onSave(val: Val): void
+    onCancel?(): void
     val(): Val
+
+    // TODO: this should be isValid(currentVal: Val): boolean as the val()
+    // passed in is only relevent for intial state
     isValid(): boolean
     headerLabel: string | (() => string)
     // defines what component it will get mapped to

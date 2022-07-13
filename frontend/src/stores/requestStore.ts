@@ -3,11 +3,11 @@ import { Store } from './meta';
 import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
-import { api, IAPIService } from '../services/interfaces';
+import { api } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
-import { iHaveAllPermissions, userHasAllPermissions } from '../utils';
-import { ContainerModule } from 'inversify';
+import { userHasAllPermissions } from '../utils';
 import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
+import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -242,6 +242,9 @@ export default class RequestStore implements IRequestStore {
         const haveRole =  (position.role == DefaultRoleIds.Anyone)
             || !!targetUserRoles.find(role => role.id == position.role);
 
+        const userPermissions = resolvePermissionsFromRoles(targetUserRoles)
+        const canEditRequests = userPermissions.has(PatchPermissions.EditRequestData)
+
         let haveBeenKicked = false;
         let waitingOnRequestResults = false; 
         let requestDenied = false;
@@ -336,9 +339,9 @@ export default class RequestStore implements IRequestStore {
             } 
         })
 
-        const canLeave = joinedUsers.has(targetUserId);
-        const canJoin = haveAllAttributes && haveRole && !haveBeenKicked;
-        const canRequestToJoin = !waitingOnRequestResults && !requestDenied;
+        const canLeave = joinedUsers.has(targetUserId) && canEditRequests;
+        const canJoin = haveAllAttributes && haveRole && !haveBeenKicked && canEditRequests;
+        const canRequestToJoin = !waitingOnRequestResults && !requestDenied && canEditRequests;
 
         return {
             canJoin, 
@@ -527,6 +530,11 @@ export default class RequestStore implements IRequestStore {
 
     async resetRequestStatus(requestId: string): Promise<void> {
         const req = await api().resetRequestStatus(this.requestContext(requestId));
+        this.updateOrAddReq(req);
+    }
+
+    async closeRequest(requestId: string): Promise<void> {
+        const req = await api().closeRequest(this.requestContext(requestId));
         this.updateOrAddReq(req);
     }
 

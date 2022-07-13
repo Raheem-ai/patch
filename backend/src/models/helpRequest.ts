@@ -15,12 +15,6 @@ class ChatMessageSchema  implements ChatMessage {
     @Required() timestamp: number
 }
 
-@Schema()
-class HelpRequestAssignmentSchema implements HelpRequestAssignment {
-    @Required() timestamp: number
-    @Required() responderIds: string[]
-}
-
 // TODO: this should probably be in a common schema file
 @Schema()
 class CategorizedItemSchema implements CategorizedItem {
@@ -46,18 +40,16 @@ class RequestStatusEventSchema implements RequestStatusEvent {
     @Required() setAt: string
 }
 
+// timestamps are handled by db
 @Model({ 
     collection: 'help_requests',
     schemaOptions: {
         timestamps: true
     }
 })
-export class HelpRequestModel implements HelpRequest {
-
+export class HelpRequestModel implements Omit<HelpRequest, 'createdAt' | 'updatedAt'> {
     // handled by mongo but here for types
     id: string; 
-    createdAt: string;
-    updatedAt: string;
 
     @ObjectID('id')
     _id: string;
@@ -87,15 +79,6 @@ export class HelpRequestModel implements HelpRequest {
 
     @Property()
     dispatcherId: string
-
-    @CollectionOf(String)
-    assignedResponderIds: string[]
-
-    @CollectionOf(String)
-    declinedResponderIds: string[]
-    
-    @CollectionOf(HelpRequestAssignmentSchema)
-    assignments: HelpRequestAssignment[]
 
     @Enum(RequestStatus) 
     status: RequestStatus

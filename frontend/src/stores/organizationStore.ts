@@ -13,7 +13,8 @@ export default class OrganizationStore implements IOrganizationStore {
         name: '',
         roleDefinitions: [],
         attributeCategories: [],
-        tagCategories: []
+        tagCategories: [],
+        requestPrefix: ''
     };
 
     get isReady() {
@@ -59,10 +60,6 @@ export default class OrganizationStore implements IOrganizationStore {
         return mapping
     }
 
-    get requestPrefix() {
-        return this.metadata.name.slice(0, 3).toUpperCase()
-    }
-
     constructor() {
         makeAutoObservable(this)
     }
@@ -103,14 +100,15 @@ export default class OrganizationStore implements IOrganizationStore {
         }
     }
 
-    updateOrgData = (updatedOrg: OrganizationMetadata): void => {
+    updateOrgData = (updatedOrg: Partial<OrganizationMetadata>): void => {
         runInAction(() => {
             this.metadata = {
-                id: updatedOrg.id,
-                name: updatedOrg.name,
-                roleDefinitions: updatedOrg.roleDefinitions,
-                attributeCategories: updatedOrg.attributeCategories,
-                tagCategories: updatedOrg.tagCategories
+                id: updatedOrg.id || this.metadata.id,
+                name: updatedOrg.name || this.metadata.name,
+                roleDefinitions: updatedOrg.roleDefinitions || this.metadata.roleDefinitions,
+                attributeCategories: updatedOrg.attributeCategories || this.metadata.attributeCategories,
+                tagCategories: updatedOrg.tagCategories || this.metadata.tagCategories,
+                requestPrefix: updatedOrg.requestPrefix || this.metadata.requestPrefix
             }
         });
     }

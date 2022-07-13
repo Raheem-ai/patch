@@ -9,10 +9,12 @@ import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNa
 import MangeRolesForm from "../components/forms/editRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
-import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
+import { alertStore, manageAttributesStore, manageTagsStore, organizationSettingsStore, organizationStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
 import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
+import { RequestPrefixCharMax } from '../../../common/constants'
+import { resolveErrorMessage } from "../errors";
 
 type Props = ScreenProps<'Settings'>;
 
@@ -58,29 +60,58 @@ const Settings = ({ navigation, route }: Props) => {
         const canEditOrgSettings = iHaveAllPermissions([PatchPermissions.EditOrgSettings])
 
         const inputs = [
-            // TODO: plumb down to organization
             canEditOrgSettings
                 ? {
                     name: 'orgName',
-                    type: 'TextInput',
+                    type: 'TextArea',
                     val: () => organizationStore().metadata.name,
                     isValid: () => true,
-                    onChange: (val) => {},
-                    disabled: true,
-                    placeholderLabel: () => 'Organization name'
-                } as InlineFormInputConfig<'TextInput'>
+                    // todo: onCancel
+                    onCancel: async () => {
+                        // organizationSettingsStore().clear()
+                    },
+                    onSave: async (val) => { 
+                        try {
+                            await organizationSettingsStore().saveName(val) 
+                            organizationSettingsStore().clear()
+                        } catch(e) {
+                            alertStore().toastError(resolveErrorMessage(e))
+                            return
+                        }
+                    },
+                    previewLabel: () => organizationStore().metadata.name,
+                    placeholderLabel: () => 'Organization name',
+                    headerLabel: () => 'Organization name',
+                    props: {
+
+                    }
+                } as ScreenFormInputConfig<'TextArea'>
                 : null,
-            // TODO: plumb down to organization
             canEditOrgSettings
                 ? {
                     name: 'requestPrefix',
-                    type: 'TextInput',
-                    val: () => organizationStore().requestPrefix,
+                    type: 'TextArea',
+                    val: () => organizationStore().metadata.requestPrefix,
                     isValid: () => true,
-                    onChange: (val) => {},
-                    disabled: true,
-                    placeholderLabel: () => 'Request prefix'
-                } as InlineFormInputConfig<'TextInput'>
+                    onCancel: async () => {
+                        // organizationSettingsStore().clear()
+                    },
+                    onSave: async (val) => { 
+                        try {
+                            await organizationSettingsStore().saveRequestPrefix(val) 
+                            organizationSettingsStore().clear()
+                        } catch(e) {
+                            alertStore().toastError(resolveErrorMessage(e))
+                            return
+                        }
+                    },
+                    previewLabel: () => organizationStore().metadata.requestPrefix,
+                    placeholderLabel: () => 'Request prefix',
+                    headerLabel: () => 'Request prefix',
+                    props: {
+                        maxChar: RequestPrefixCharMax
+                    }
+                } as ScreenFormInputConfig<'TextArea'>
                 : null,
             iHaveAllPermissions([PatchPermissions.RoleAdmin]) 
                 ? {

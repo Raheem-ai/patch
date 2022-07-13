@@ -112,7 +112,7 @@ export interface IApiClient {
 
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
-    editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<OrganizationMetadata>) => Promise<OrganizationMetadata>>
+    editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>) => Promise<OrganizationMetadata>>
     editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
     deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
@@ -121,24 +121,10 @@ export interface IApiClient {
     updateAttributes: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
     updateTags: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
     
-    // TODO: these update peacemeal where the ui has a single "save" operation...should be safe to delete
-    // createNewAttributeCategory: AuthenticatedWithOrg<(category: MinAttributeCategory) => Promise<AttributeCategory>>
-    // editAttributeCategory: AuthenticatedWithOrg<(categoryUpdates: AttributeCategoryUpdates) => Promise<AttributeCategory>>
-    // deleteAttributeCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    // createNewAttribute: AuthenticatedWithOrg<(categoryId: string, attribute: MinAttribute) => Promise<Attribute>>
-    // editAttribute: AuthenticatedWithOrg<(categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>) => Promise<Attribute>>
-    // deleteAttribute: AuthenticatedWithOrg<(categoryId: string, attributeId: string) => Promise<OrganizationMetadata>>
-    // createNewTagCategory: AuthenticatedWithOrg<(category: MinTagCategory) => Promise<TagCategory>>
-    // editTagCategory: AuthenticatedWithOrg<(categoryUpdates: TagCategoryUpdates) => Promise<TagCategory>>
-    // deleteTagCategory: AuthenticatedWithOrg<(categoryId: string) => Promise<OrganizationMetadata>>
-    // createNewTag: AuthenticatedWithOrg<(categoryId: string, tag: MinTag) => Promise<Tag>>
-    // editTag: AuthenticatedWithOrg<(categoryId: string, tagUpdates: AtLeast<Tag, 'id'>) => Promise<Tag>>
-    // deleteTag: AuthenticatedWithOrg<(categoryId: string, tagId: string) => Promise<OrganizationMetadata>>
 
     broadcastRequest: AuthenticatedWithOrg<(requestId: string, to: string[]) => Promise<void>>
     addUserToOrg: AuthenticatedWithOrg<(userId: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[]) => Promise<{ user: ProtectedUser, org: Organization }>>
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
-    removeUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
     inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
@@ -146,7 +132,6 @@ export interface IApiClient {
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
-    getRespondersOnDuty: AuthenticatedWithOrg<() => Promise<ProtectedUser[]>>
     getRequests: AuthenticatedWithOrg<(requestIds?: string[]) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
@@ -165,15 +150,12 @@ export interface IApiClient {
     removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string, positionId: string) => Promise<HelpRequest>>
     
     editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
-    unAssignRequest: AuthenticatedWithRequest<(userId: string) => Promise<void>>
     sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
+    closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
-
-    
-
     // getResources: () => string
 }
 
@@ -263,17 +245,11 @@ type ApiRoutes = {
         removeUserFromOrg: () => {
             return '/removeUserFromOrg'
         },
-        removeUserRoles: () => {
-            return '/removeUserRole'
-        },
         addUserRoles: () => {
             return '/addUserRole'
         },
         createNewRequest: () => {
             return '/createNewRequest'
-        },
-        getRespondersOnDuty: () => {
-            return '/getRespondersOnDuty'
         },
         getRequests: () => {
             return '/getRequests'
@@ -286,9 +262,6 @@ type ApiRoutes = {
         },
         getTeamMembers: () => {
             return '/getTeamMembers'
-        },
-        unAssignRequest: () => {
-            return '/unAssignRequest'
         },
         sendChatMessage: () => {
             return '/sendChatMessage'
@@ -335,42 +308,6 @@ type ApiRoutes = {
         editUser: () => {
             return '/editUser'
         },
-        // createNewAttributeCategory: () => {
-        //     return '/createNewAttributeCategory'
-        // },
-        // editAttributeCategory: () => {
-        //     return '/editAttributeCategory'
-        // },
-        // deleteAttributeCategory: () => {
-        //     return '/deleteAttributeCategory'
-        // },
-        // createNewAttribute: () => {
-        //     return '/createNewAttribute'
-        // },
-        // editAttribute: () => {
-        //     return '/editAttribute'
-        // },
-        // deleteAttribute: () => {
-        //     return '/deleteAttribute'
-        // },
-        // createNewTagCategory: () => {
-        //     return '/createNewTagCategory'
-        // },
-        // editTagCategory: () => {
-        //     return '/editTagCategory'
-        // },
-        // deleteTagCategory: () => {
-        //     return '/deleteTagCategory'
-        // },
-        // createNewTag: () => {
-        //     return '/createNewTag'
-        // },
-        // editTag: () => {
-        //     return '/editTag'
-        // },
-        // deleteTag: () => {
-        //     return '/deleteTag'
-        // },
         updateAttributes: () => {
             return '/updateAttributes'
         },
@@ -483,57 +420,15 @@ type ApiRoutes = {
         removeUserFromOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.removeUserFromOrg()}`
         },
-        removeUserRoles: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.removeUserRoles()}`
-        },
         addUserRoles: () => {
             return `${this.base}${this.namespaces.organization}${this.server.addUserRoles()}`
         },
         getTeamMembers: () => {
             return `${this.base}${this.namespaces.organization}${this.server.getTeamMembers()}`
         },
-        getRespondersOnDuty: () => {
-            return `${this.base}${this.namespaces.organization}${this.server.getRespondersOnDuty()}`
-        },
         inviteUserToOrg: () => {
             return `${this.base}${this.namespaces.organization}${this.server.inviteUserToOrg()}`
         },
-        // createNewAttributeCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.createNewAttributeCategory()}`
-        // },
-        // editAttributeCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.editAttributeCategory()}`
-        // },
-        // deleteAttributeCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.deleteAttributeCategory()}`
-        // },
-        // createNewAttribute: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.createNewAttribute()}`
-        // },
-        // editAttribute: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.editAttribute()}`
-        // },
-        // deleteAttribute: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.deleteAttribute()}`
-        // },
-        // createNewTagCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.createNewTagCategory()}`
-        // },
-        // editTagCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.editTagCategory()}`
-        // },
-        // deleteTagCategory: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.deleteTagCategory()}`
-        // },
-        // createNewTag: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.createNewTag()}`
-        // },
-        // editTag: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.editTag()}`
-        // },
-        // deleteTag: () => {
-        //     return `${this.base}${this.namespaces.organization}${this.server.deleteTag()}`
-        // },
 
         updateAttributes: () => {
             return `${this.base}${this.namespaces.organization}${this.server.updateAttributes()}`
@@ -555,9 +450,6 @@ type ApiRoutes = {
         editRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.editRequest()}`
         },
-        unAssignRequest: () => {
-            return `${this.base}${this.namespaces.request}${this.server.unAssignRequest()}`
-        },
         sendChatMessage: () => {
             return `${this.base}${this.namespaces.request}${this.server.sendChatMessage()}`
         },
@@ -569,6 +461,9 @@ type ApiRoutes = {
         },
         reopenRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.reopenRequest()}`
+        },
+        closeRequest: () => {
+            return `${this.base}${this.namespaces.request}${this.server.closeRequest()}`
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`

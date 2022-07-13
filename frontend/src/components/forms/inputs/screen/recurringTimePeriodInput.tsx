@@ -377,7 +377,10 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
     const headerProps: BackButtonHeaderProps = {
         cancel: {
-            handler: () => back()
+            handler: () => {
+                config.onCancel?.()
+                back()
+            }
         },
         save: {
             handler: save,

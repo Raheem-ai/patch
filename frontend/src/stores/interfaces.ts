@@ -16,9 +16,6 @@ export interface IUserStore extends IBaseStore {
     user: ClientSideFormat<Me>;
     signedIn: boolean;
     authToken: string;
-    isResponder: boolean;
-    isDispatcher: boolean;
-    isAdmin: boolean;
     isOnDuty: boolean;
     currentOrgId: string;
     users: Map<string, ClientSideFormat<ProtectedUser>>
@@ -223,6 +220,7 @@ export interface IRequestStore extends IBaseStore {
     setCurrentRequest(request: HelpRequest): void;
     setRequestStatus(requestId: string, status: ResponderRequestStatuses): Promise<void>
     resetRequestStatus(requestId: string): Promise<void>
+    closeRequest(requestId: string): Promise<void>
     reopenRequest(requestId: string): Promise<void>
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
@@ -249,57 +247,12 @@ export interface ITempOrganizationStore extends EditOrganizationData {
     clear(prop?: keyof EditOrganizationData): void
 }
 
-export namespace IEditOrganizationStore {
-    export const id = Symbol('IEditOrganizationStore');
-}
-
-export interface IEditOrganizationStore extends ITempOrganizationStore {
-    // Organization Metadata
-    name: string
-    roleDefinitions: Role[]
-    attributeCategories: AttributeCategory[]
-    tagCategories: TagCategory[]
-
-    // Edit Attribute Category
-    currentAttributeCategoryName: string
-    currentAttributeCategoryAttributes: Attribute[]
-
-    // Edit Attribute
-    currentAttributeName: string
-
-    // Edit Tag Category
-    currentTagCategoryName: string
-    currentTagCategoryTags: Tag[]
-
-    // Edit Tag
-    currentTagName: string
-
-    editOrganization(orgId: string): Promise<OrganizationMetadata>
-
-    createNewAttributeCategory(): Promise<AttributeCategory>
-    editAttributeCategory(categoryId: string): Promise<AttributeCategory>
-    deleteAttributeCategory(categoryId: string): Promise<OrganizationMetadata>
-
-    createNewAttribute(categoryId: string): Promise<Attribute>
-    editAttribute(categoryId: string, attributeId: string): Promise<Attribute>
-    deleteAttribute(categoryId: string, attributeId: string): Promise<OrganizationMetadata>
-
-    createNewTagCategory(): Promise<TagCategory>
-    editTagCategory(categoryId: string): Promise<TagCategory>
-    deleteTagCategory(categoryId: string): Promise<OrganizationMetadata>
-
-    createNewTag(categoryId: string): Promise<Tag>
-    editTag(categoryId: string, tagId: string): Promise<Tag>
-    deleteTag(categoryId: string, tagId: string): Promise<OrganizationMetadata>
-}
-
 export namespace IOrganizationStore {
     export const id = Symbol('IOrganizationStore');
 }
 
 export interface IOrganizationStore extends IBaseStore {
     metadata: OrganizationMetadata
-    requestPrefix: string
     roles: Map<string, Role> 
     userRoles: Map<string, Role[]>
     userPermissions: Map<string, Set<PatchPermissions>>
@@ -312,6 +265,15 @@ export interface IOrganizationStore extends IBaseStore {
     updateOrAddAttribute(categoryId: string, updatedAttribute: Attribute): void
     updateOrAddTagCategory(updatedCategory: TagCategory): void
     updateOrAddTag(categoryId: string, updatedTag: Tag): void
+}
+
+export namespace IOrganizationSettingsStore {
+    export const id = Symbol('IOrganizationSettingsStore');
+}
+
+export interface IOrganizationSettingsStore extends IBaseStore {
+    saveName(updatedName: string): Promise<void>
+    saveRequestPrefix(updatedPrefix: string): Promise<void>
 }
 
 export namespace ITeamStore {
@@ -606,7 +568,6 @@ export const dispatchStore = () => getStore<IDispatchStore>(IDispatchStore);
 export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateRequestStore);
 export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
 export const requestStore = () => getStore<IRequestStore>(IRequestStore);
-export const editOrganizationStore = () => getStore<IEditOrganizationStore>(IEditOrganizationStore);
 export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 export const teamStore = () => getStore<ITeamStore>(ITeamStore);
 export const secretStore = () => getStore<ISecretStore>(ISecretStore);
@@ -623,6 +584,9 @@ export const upsertRoleStore = () => getStore<IUpsertRoleStore>(IUpsertRoleStore
 export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore);
 export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
 export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
+export const organizationSettingsStore = () => getStore<IOrganizationSettingsStore>(IOrganizationSettingsStore);
+
+
 
 export const AllStores = [
     IUserStore,
@@ -644,9 +608,9 @@ export const AllStores = [
     ISocketStore,
     IUpdateStore,
     IOrganizationStore,
-    IEditOrganizationStore,
     IUpsertRoleStore,
     IManageAttributesStore,
     IManageTagsStore,
-    INavigationStore
+    INavigationStore,
+    IOrganizationSettingsStore
 ]
