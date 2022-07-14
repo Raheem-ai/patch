@@ -363,14 +363,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     userId: string, 
                     positionName: string
                 }[] = []
-                
-                let numPendingPositionRequests = 0;
 
                 for (const pos of request.positions) {
                     const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
                     
                     posMeta.pendingJoinRequests.forEach(userId => {
-                        numPendingPositionRequests += 1
                         pendingRequests.push({
                             userId, 
                             positionName: organizationStore().roles.get(pos.role)?.name,
@@ -409,8 +406,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 const peeps = numNotified === 1 ? `person` : `people`;
                 const notifiedLabel = `${numNotified} ${peeps} notified`;
 
-                const newLabel = numPendingPositionRequests
-                    ? ` ${visualDelim} ${numPendingPositionRequests} open request` + (numPendingPositionRequests > 1 ? `s` : ``)
+                const newLabel = pendingRequests.length
+                    ? ` ${visualDelim} ${pendingRequests.length} open request` + (pendingRequests.length > 1 ? `s` : ``)
                     : null;
 
                 const positionScopedRow = ({ 
@@ -424,7 +421,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
-                                    <Text>{`${userName} · `}</Text>
+                                    <Text>{`${userName} ${visualDelim} `}</Text>
                                     <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
                                 </Text>
                             </View>
