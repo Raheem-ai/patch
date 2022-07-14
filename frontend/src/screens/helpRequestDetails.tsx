@@ -249,7 +249,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     uppercase={false}
                     color={currentRequestOpen ? '#fff' : '#76599A'}
                     style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
-                    onPress={currentRequestOpen ? closeRequest() : reopenRequest()}
+                    onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
                     >
                         {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
                 </Button>
@@ -257,9 +257,39 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const closeRequest = () => async () => {
-        await requestStore().closeRequest(requestStore().currentRequest.id);
-        setRequestIsOpen(false);
+    const closeRequest = async () => {
+        try {
+            await requestStore().closeRequest(requestStore().currentRequest.id);
+            setRequestIsOpen(false);
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        }
+    }
+
+    const closeRequestOrPrompt = () => async () => {
+        if (!requestStore().currentRequest.type.length) {
+            alertStore().showPrompt({
+                title: 'Hmmm...',
+                message: `Are you sure you want to close this request without specifying its type?`,
+                actions: [
+                    {
+                        label: 'Add now',
+                        onPress: () => {
+                            bottomDrawerStore().show(BottomDrawerView.editRequest, true)
+                        },
+                    },
+                    {   
+                        label: 'Close anyway',
+                        onPress: async () => {
+                            await closeRequest()
+                        },
+                        confirming: true
+                    }
+                ]
+            })
+        } else {
+            await closeRequest()
+        }
     }
 
     const reopenRequest = () => async () => {

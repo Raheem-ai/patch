@@ -23,7 +23,7 @@ class EditHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
-            return !!editRequestStore().type.length
+            return !!editRequestStore().notes.length
         },
         action: async () => {
             try {
@@ -133,7 +133,7 @@ class EditHelpRequest extends React.Component<Props> {
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
                     type: 'Map',
-                    required: true
+                    // required: true
                 },
                 [
                     // Description
@@ -151,6 +151,7 @@ class EditHelpRequest extends React.Component<Props> {
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
                         type: 'TextArea',
+                        required: true
                     },
                     // Type of request
                     {
@@ -165,7 +166,7 @@ class EditHelpRequest extends React.Component<Props> {
                             return editRequestStore().typeValid
                         },
                         name: 'type',
-                        required: true,
+                        // required: true,
                         props: {
                             definedCategories: () => RequestTypeCategories,
                             dark: true
