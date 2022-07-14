@@ -198,6 +198,7 @@ export interface IRequestStore extends IBaseStore {
     requests: Map<string, HelpRequest>
     requestsArray: HelpRequest[]
     filteredSortedRequests: HelpRequest[]
+    filteredSortedRequestsWithLocation: HelpRequest[]
     currentRequest: HelpRequest
     currentRequestId: string
     activeRequest: HelpRequest

@@ -411,6 +411,10 @@ export default class RequestStore implements IRequestStore {
         })
     }
 
+    get filteredSortedRequestsWithLocation(): HelpRequest[] {
+        return this.filteredSortedRequests.filter(req => !!req.location);
+    }
+
     sortByTime = (a: HelpRequest, b: HelpRequest): number => {
         return a.createdAt == b.createdAt
             ? 0
