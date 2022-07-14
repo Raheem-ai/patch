@@ -437,7 +437,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 const notifiedLabel = `${numNotified} ${peeps} notified`;
 
                 const newLabel = pendingRequests.length
-                    ? ` ${visualDelim} ${pendingRequests.length} open request` + (pendingRequests.length > 1 ? `s` : ``)
+                    ? ` ${visualDelim} ${pendingRequests.length} asking`
                     : null;
 
                 const positionScopedRow = ({ 
@@ -525,7 +525,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Requested to join'}</Text>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
                                     return positionScopedRow({
