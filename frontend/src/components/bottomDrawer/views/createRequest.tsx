@@ -41,7 +41,9 @@ class CreateHelpRequest extends React.Component<Props> {
 
     static submit = {
         isValid: () => {
-            return !!createRequestStore().type.length
+            // TODO: figure out how to let this use this.formInstance
+            // return !!createRequestStore().type.length
+            return !!createRequestStore().notes.length
         },
         action: async () => {
             let createdReq: HelpRequest;
@@ -178,7 +180,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
                     type: 'Map',
-                    required: true
+                    // required: true
                 },
                 [
                     // Description
@@ -196,6 +198,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
                         type: 'TextArea',
+                        required: true
                     },
                     // Type of request
                     {
@@ -210,7 +213,7 @@ class CreateHelpRequest extends React.Component<Props> {
                             return createRequestStore().typeValid
                         },
                         name: 'type',
-                        required: true,
+                        // required: true,
                         props: {
                             definedCategories: () => RequestTypeCategories,
                             dark: true

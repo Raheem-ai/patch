@@ -29,16 +29,13 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 await linkingStore().mailTo(userStore().currentUser.email)
             }
         }
-        const attributes = (userStore().currentUser.organizations[userStore().currentOrgId]?.attributes || []).map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId));
-        // const roles = userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r]);
 
         const detailsText = [
             userStore().currentUser.pronouns,
-            // TODO: add location here?
             ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${visualDelim} `);
 
-        const userAttributes = userStore().user.organizations[userStore().currentOrgId].attributes.map(attr => {
+        const userAttributes = userStore().currentUser.organizations[userStore().currentOrgId].attributes.map(attr => {
             return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
         }).filter(x => !!x)
 
