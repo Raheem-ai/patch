@@ -1,9 +1,8 @@
 import { Store } from './meta';
 import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
-import { Animated, Dimensions } from 'react-native';
+import { Animated, Dimensions, Keyboard } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
-import RequestChat from '../components/bottomDrawer/views/requestChat';
 import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
 import AssignResponders from '../components/bottomDrawer/views/assignResponders';
 import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
@@ -49,9 +48,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     disposeOfAnimationReactions: () => void = null;
 
-    // private requestStore = getStore<IRequestStore>(IRequestStore);
-    // private nativeEventStore = getStore<INativeEventStore>(INativeEventStore);
-
 
     constructor() {
         makeAutoObservable(this)
@@ -86,9 +82,11 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 fireImmediately: true
             }),      
             // animate to correct new height as activeRequest might have toggled existing
-            reaction(() => { requestStore().activeRequest }, (_) => {
+            reaction(() => { return requestStore().activeRequest }, (_) => {
                 if (this.showing && !this.expanded) {
-                    this.minimize()
+                    // don't effect keyboard as you can be taken off a request in the background while
+                    // editing something unrelated
+                    this._minimize() 
                 }
             })
         ]
@@ -248,11 +246,13 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         this.headerShowing = true;
     }
 
-    hide = () => {
+    hide = async () => {
+        await nativeEventStore().hideKeyboard()
+
         if (this.viewIdStack.length > 1) {
             const oldView = this.viewIdStack.pop();
 
-            this.minimize(() => {
+            this._minimize(() => {
                 runInAction(() => {
                     Config[oldView].onHide?.()
                 })
@@ -301,7 +301,15 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     minimize = (cb?: () => void) => {
+        this._minimize(cb, true)
+    }
+
+    _minimize = (cb?: () => void, handleKeyboard?: boolean) => {
         const onRequestMap = navigationRef.current?.getCurrentRoute().name == routerNames.helpRequestMap;
+
+        if (handleKeyboard) {
+            Keyboard.dismiss()
+        }
 
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: dimensions.height 
