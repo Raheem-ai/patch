@@ -355,7 +355,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     bottomDrawerStore().show(BottomDrawerView.assignResponders, true)
                 }
 
-                return <View style={{ padding: 20 }}>
+                return <View style={{ padding: 20, paddingBottom: 0 }}>
                     <Button
                         uppercase={false} 
                         color={Colors.primary.alpha}
@@ -393,20 +393,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     userId: string, 
                     positionName: string
                 }[] = []
-                
-                let numUnseenPositionRequests = 0;
 
                 for (const pos of request.positions) {
                     const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
-                    
-                    posMeta.unseenJoinRequests.forEach(requesterId => {
-                        const haveNotSeenThisSession = requestStore().joinRequestIsUnseen(requesterId, request.id, pos.id);
-                    
-                        // let us mark seen events during a session even if an api call fails
-                        if (haveNotSeenThisSession) {
-                            numUnseenPositionRequests += 1
-                        }
-                    })
                     
                     posMeta.pendingJoinRequests.forEach(userId => {
                         pendingRequests.push({
@@ -444,10 +433,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-                const notifiedLabel = `${numNotified} PEOPLE NOTIFIED`;
+                const peeps = numNotified === 1 ? `person` : `people`;
+                const notifiedLabel = `${numNotified} ${peeps} notified`;
 
-                const newLabel = numUnseenPositionRequests
-                    ? ` ${visualDelim} ${numUnseenPositionRequests} new requests`
+                const newLabel = pendingRequests.length
+                    ? ` ${visualDelim} ${pendingRequests.length} asking`
                     : null;
 
                 const positionScopedRow = ({ 
@@ -458,10 +448,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     const userName = userStore().users.get(userId)?.name;
 
                     return (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
-                                    <Text>{`${userName} - `}</Text>
+                                    <Text>{`${userName} ${visualDelim} `}</Text>
                                     <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
                                 </Text>
                             </View>
@@ -534,8 +524,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
 
                     return (
-                        <View style={{ padding: 20, borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold' }}>{'Asked to join'}</Text>
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
                                     return positionScopedRow({
@@ -573,8 +563,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
 
                     return (
-                        <View style={{ padding: 20 }}>
-                            <Text style={{ fontWeight: 'bold' }}>{'Joined'}</Text>
+                        joinedUsers.length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Joined'}</Text>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
                                     return positionScopedRow({
@@ -585,28 +577,38 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 })
                             }
                         </View>
+                        :
+                       null
                     )
                 }
 
                 const viewedSection = () => {
                     return (
-                        <View style={{ paddingHorizontal: 20 }}>
-                            <Text style={{ fontWeight: 'bold' }}>{'Viewed request'}</Text>
+                        Array.from(viewedUsers.entries()).length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Viewed request'}</Text>
                             { 
                                 Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
                             }
                         </View>
+                        : null
                     )
                 }
 
                 const notificationsSection = () => {
                     return (
-                        <View style={{ padding: 20 }}>
-                            <Text style={{ fontWeight: 'bold' }}>{'Notification sent'}</Text>
+                        Array.from(notifiedUsers.entries()).length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Sent notification'}</Text>
                             { 
+                            
                                 Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
                             }
                         </View>
+                        :
+                        null
                     )
                 }
 
@@ -630,7 +632,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             onPress={toggleTeamDetails}
                         >
                             <View>
-                                <Text style={{ fontWeight: 'bold' }}>{notifiedLabel}</Text>
+                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
                             </View>
                             { newLabel
                                 ? <View style={{ flex: 1 }}>
@@ -718,9 +720,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 export default HelpRequestDetails;
 
 enum Tabs {
-    Overview = 'OVERVIEW', 
-    Channel = 'CHANNEL',
-    Team = 'TEAM'
+    Overview = 'Overview', 
+    Channel = 'Channel',
+    Team = 'Team'
 }
 
 const styles = StyleSheet.create({
