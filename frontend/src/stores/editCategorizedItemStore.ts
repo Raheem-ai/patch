@@ -21,6 +21,9 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
     private newItems: Map<string, {
         [itemId: string]: string
     }> = new Map()
+
+    // categoryId -> pending item name
+    pendingItems: Map<string, string> = new Map();
     
     constructor(
         private baseCategories: () => Map<string, Category>,
@@ -249,10 +252,22 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
         }
     }
 
+    updatePendingItem = (categoryId: string, itemId: string) => {
+        this.pendingItems.set(categoryId, itemId)
+    }
+
     save = async () => {
         // use this.categories to send an update to the db...if another user edits the tags/attributes you are editing in real time, this 
         // should absorb most of those changes without having to do anything...direct conflicts might be an issue
         // TODO: test editing these in real time with someone else
+        
+        // add/reset all the pending items before saving
+        Array.from(this.pendingItems.entries()).forEach(([categoryId, itemId]) => {
+            if (itemId) {
+                this.addItemToCategory(categoryId, itemId)
+                this.updatePendingItem(categoryId, '')
+            }
+        })
 
         const newItems: CategorizedItemUpdates['newItems'] = {};
 
@@ -291,5 +306,6 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
 
         this.newCategories = {}
         this.newItems.clear()
+        this.pendingItems.clear()
     }
 }

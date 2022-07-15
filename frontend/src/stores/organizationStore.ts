@@ -206,6 +206,13 @@ export default class OrganizationStore implements IOrganizationStore {
     }
 
     clear() {
-        this.metadata = null;
+        this.metadata = {
+            id: '',
+            name: '',
+            roleDefinitions: [],
+            attributeCategories: [],
+            tagCategories: [],
+            requestPrefix: ''
+        };
     }
 }

@@ -163,7 +163,7 @@ export const EditCategorizedItemForm = observer(({
                                     // on an initial render
                                     noItems={isFirstRender ? false : !category.items.length}
                                     categoryId={categoryId} 
-                                    addItemToCategory={store.addItemToCategory}
+                                    store={store}
                                     addItemPlaceholderLabel={addItemPlaceholderLabel}/>
                             )
                         }
@@ -187,17 +187,16 @@ export const EditCategorizedItemForm = observer(({
 })
 
 const AddItemFooter = ({
-    categoryId, 
-    addItemToCategory,
+    categoryId,
+    store, 
     addItemPlaceholderLabel,
     noItems
 }: { 
+    store: IEditCategorizedItemStore
     categoryId: string, 
-    addItemToCategory: IEditCategorizedItemStore['addItemToCategory'],
     addItemPlaceholderLabel: string,
     noItems: boolean
 }) => {
-    const [newItemText, setNewItemText] = useState('');
     const me = useRef<View>();
     const itemInputRef = useRef<RNTextInput>();
     const scrollIntoView = useScrollIntoView();
@@ -213,9 +212,9 @@ const AddItemFooter = ({
     }
     
     const addItemInputConfig: InlineFormInputConfig<'TextInput'> = {
-        val: () =>  newItemText,
-        onChange: (val) => setNewItemText(val),
-        isValid: () => !!newItemText,
+        val: () =>  store.pendingItems.get(categoryId) || '',
+        onChange: (val) => store.updatePendingItem(categoryId, val),
+        isValid: () => !!store.pendingItems.get(categoryId),
         placeholderLabel: addItemPlaceholderLabel,
         type: 'TextInput',
         name: `${categoryId}-newItem`
@@ -223,10 +222,10 @@ const AddItemFooter = ({
 
     const addItem = () => {
         if (addItemInputConfig.isValid()) {
-            addItemToCategory(categoryId, newItemText)
+            store.addItemToCategory(categoryId, store.pendingItems.get(categoryId))
             
             setTimeout(() => {
-                setNewItemText('');
+                store.updatePendingItem(categoryId, '');
                 scrollIntoView(me.current)
             })
         }

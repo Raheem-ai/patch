@@ -357,6 +357,8 @@ export const BottomDrawerHandleHeight = 64;
 export interface INativeEventStore extends IBaseStore {
     readonly keyboardHeight: number;
     keyboardOpen: boolean;
+
+    hideKeyboard(): Promise<void>
 }
 
 export namespace INativeEventStore {
@@ -506,6 +508,7 @@ export namespace IEditCategorizedItemStore {
 
 export interface IEditCategorizedItemStore extends IBaseStore {
     categories: Map<string, Category>
+    pendingItems: Map<string, string>
 
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void
@@ -514,6 +517,8 @@ export interface IEditCategorizedItemStore extends IBaseStore {
     addItemToCategory: (categoryId: string, itemName: string) => void
     editItem: (categoryId: string, itemId: string, itemName: string) => void
     removeItemFromCategory: (categoryId: string, itemId: string) => void
+
+    updatePendingItem: (categoryId: string, itemId: string) => void
 
     save: () => Promise<void>
 }
