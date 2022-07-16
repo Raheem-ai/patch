@@ -126,9 +126,12 @@ const CategorizedItemListInput = ({
             const fontSize = 16;
             const searchResults: [string, CategorizedItem][] = [];
 
+            let re = new RegExp(`${searchText}`, 'gi');
+
             Array.from(config.props.definedCategories().entries()).forEach(([categoryId, category]) => {
                 category.items.forEach(item => {
-                    if (item.name.startsWith(searchText) 
+                    // TO DO: replace match with bold and/or black text
+                    if (item.name.search(re) > -1 
                         // only show unselected results
                         && (selectedItems.findIndex(i => i.categoryId == categoryId && i.itemId == item.id)) == -1) 
                     {
