@@ -128,7 +128,7 @@ export const Colors = {
             sectionHeader: '#999',
             fieldLabel: '#333',
             fieldDescription: '#999',
-            placeholder: '#ccc'
+            placeholder: '#999'
         },
         buttonLabelPrimary: '#FFF',
         buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',

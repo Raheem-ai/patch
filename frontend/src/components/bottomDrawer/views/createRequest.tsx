@@ -105,6 +105,66 @@ class CreateHelpRequest extends React.Component<Props> {
                 bottomDrawerStore().showHeader();
             },
             inputs: [
+                
+                [
+                    // Description
+                    {
+                        onSave: (notes) => createRequestStore().notes = notes,
+                        val: () => {
+                            return createRequestStore().notes
+                        },
+                        isValid: () => {
+                            return !!createRequestStore().notes
+                        },
+                        name: 'description',
+                        icon: 'note-text',
+                        previewLabel: () => createRequestStore().notes,
+                        headerLabel: () => 'Description',
+                        placeholderLabel: () => 'Description',
+                        type: 'TextArea',
+                        required: true
+                    },
+                    // Type of request
+                    {
+                        type: 'CategorizedItemList',
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        onSave: (type) => createRequestStore().type = categorizedItemsToRequestType(type),
+                        val: () => {
+                            return requestTypesToCategorizedItems(createRequestStore().type)
+                        },
+                        isValid: () => {
+                            return createRequestStore().typeValid
+                        },
+                        name: 'type',
+                        // required: true,
+                        props: {
+                            definedCategories: () => RequestTypeCategories,
+                            dark: true
+                        }
+                    },
+                    // Priority
+                    {
+                        onSave: (priorities) => createRequestStore().priority = priorities[0],
+                        val: () => {
+                            return typeof createRequestStore().priority == 'number'
+                                ? [createRequestStore().priority]
+                                : []
+                        },
+                        isValid: () => {
+                            return !!createRequestStore().priority 
+                        },
+                        name: 'priority',
+                        previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
+                        headerLabel: () => 'Priority',
+                        placeholderLabel: () => 'Priority',
+                        type: 'List',
+                        props: {
+                            options: allEnumValues(RequestPriority),
+                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
+                        },
+                    },
+                ],
                 [
                     // Call Start
                     {
@@ -182,65 +242,6 @@ class CreateHelpRequest extends React.Component<Props> {
                     type: 'Map',
                     // required: true
                 },
-                [
-                    // Description
-                    {
-                        onSave: (notes) => createRequestStore().notes = notes,
-                        val: () => {
-                            return createRequestStore().notes
-                        },
-                        isValid: () => {
-                            return !!createRequestStore().notes
-                        },
-                        name: 'description',
-                        icon: 'note-text',
-                        previewLabel: () => createRequestStore().notes,
-                        headerLabel: () => 'Description',
-                        placeholderLabel: () => 'Description',
-                        type: 'TextArea',
-                        required: true
-                    },
-                    // Type of request
-                    {
-                        type: 'CategorizedItemList',
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
-                        onSave: (type) => createRequestStore().type = categorizedItemsToRequestType(type),
-                        val: () => {
-                            return requestTypesToCategorizedItems(createRequestStore().type)
-                        },
-                        isValid: () => {
-                            return createRequestStore().typeValid
-                        },
-                        name: 'type',
-                        // required: true,
-                        props: {
-                            definedCategories: () => RequestTypeCategories,
-                            dark: true
-                        }
-                    },
-                    // Priority
-                    {
-                        onSave: (priorities) => createRequestStore().priority = priorities[0],
-                        val: () => {
-                            return typeof createRequestStore().priority == 'number'
-                                ? [createRequestStore().priority]
-                                : []
-                        },
-                        isValid: () => {
-                            return !!createRequestStore().priority 
-                        },
-                        name: 'priority',
-                        previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
-                        headerLabel: () => 'Priority',
-                        placeholderLabel: () => 'Priority',
-                        type: 'List',
-                        props: {
-                            options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
-                        },
-                    },
-                ],
                 // Positions
                 {
                     onSave: (data) => {
@@ -275,6 +276,11 @@ class CreateHelpRequest extends React.Component<Props> {
                 })
             ] as [
                 [
+                    ScreenFormInputConfig<'TextArea'>,
+                    ScreenFormInputConfig<'CategorizedItemList'>,
+                    ScreenFormInputConfig<'List'>
+                ],
+                [
                     InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>
                 ],
@@ -283,11 +289,6 @@ class CreateHelpRequest extends React.Component<Props> {
                     InlineFormInputConfig<'TextInput'>
                 ],
                 ScreenFormInputConfig<'Map'>, 
-                [
-                    ScreenFormInputConfig<'TextArea'>,
-                    ScreenFormInputConfig<'CategorizedItemList'>,
-                    ScreenFormInputConfig<'List'>
-                ],
                 ScreenFormInputConfig<'Positions'>,
                 ScreenFormInputConfig<'CategorizedItemList'>
             ]
