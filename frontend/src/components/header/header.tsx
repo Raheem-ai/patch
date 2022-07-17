@@ -8,7 +8,7 @@ import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOpti
 import { RootStackParamList, routerNames, Colors } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, userStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
@@ -54,6 +54,10 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
+        userStore().pushCurrentUser(userStore().user);
+        const statusIcon = requestStore().currentUserActiveRequests.length
+            ? statusOnshift
+            : userStore().isOnDuty ? statusAvailable : statusUnavailable;
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -72,7 +76,7 @@ const Header = observer((props: Props) => {
                     </View>
                     { 
                         <View style={styles.onDutyStatusContainer}>
-                            <Image source={ userStore().isOnDuty ? statusAvailable : statusUnavailable } style={{ width: 24, height: 24 }} /> 
+                            <Image source={ statusIcon } style={{ width: 24, height: 24 }} /> 
                         </View>
                     }
                     <View style={styles.rightIconContainer}>
