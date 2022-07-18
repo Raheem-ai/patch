@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { headerStore, IHeaderStore, IUserStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
 import statusAvailable from '../../../assets/statusAvailable.png';
 import statusUnavailable from '../../../assets/statusUnavailable.png';
@@ -62,7 +62,7 @@ const Header = observer((props: Props) => {
                     {   leftActions.length 
                         ? <View style={styles.leftIconContainer}>
                             {
-                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
+                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                             }
                         </View>
                         : null
@@ -77,7 +77,7 @@ const Header = observer((props: Props) => {
                     }
                     <View style={styles.rightIconContainer}>
                         {
-                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={iconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
+                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                         }
                     </View>
                 </View>
@@ -138,7 +138,7 @@ const Header = observer((props: Props) => {
         <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
-                    <IconButton icon='close' size={iconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
+                    <IconButton icon='close' size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
                     <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
@@ -166,12 +166,7 @@ const Header = observer((props: Props) => {
 export default Header;
 
 // const windowDimensions = Dimensions.get("screen"); // this should probably be more dynamic  
-const iconSize = 30;
-const iconPadding = 12;
-const iconContainerSize = (2 * iconPadding) + iconSize;
-export const InteractiveHeaderHeight = iconContainerSize;
 
-export const HeaderHeight = InteractiveHeaderHeight + Constants.statusBarHeight;
 
 const styles = StyleSheet.create({
     // CLOSED
@@ -182,7 +177,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     leftIconContainer: {
-        width: iconContainerSize,
+        width: headerIconContainerSize,
         height: InteractiveHeaderHeight
     },
     titleContainer: {
@@ -226,8 +221,8 @@ const styles = StyleSheet.create({
     icon: {
         margin: 0,
         marginRight: 12,
-        width: iconSize,
-        height: iconSize,
+        width: headerIconSize,
+        height: headerIconSize,
         alignSelf: 'center'
     },
 
@@ -259,7 +254,7 @@ const styles = StyleSheet.create({
     },
     fullScreenContent: {
         flex: 1,
-        marginLeft: iconContainerSize,
+        marginLeft: headerIconContainerSize,
     }, 
     mainMenuOptions: {
 

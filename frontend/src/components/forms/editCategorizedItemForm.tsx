@@ -5,7 +5,7 @@ import { IconButton } from "react-native-paper";
 import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view";
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
-import { alertStore, IEditCategorizedItemStore } from "../../stores/interfaces";
+import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
 import CategoryRow from "./common/categoryRow";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader";
 import TextInput from "./inputs/inline/textInput";
@@ -40,6 +40,7 @@ export const EditCategorizedItemForm = observer(({
                 try {
                     await store.save()
                     alertStore().toastSuccess(onSaveToastLabel)
+                    await nativeEventStore().hideKeyboard()
                     back()
                 } catch (e) {
                     alertStore().toastError(resolveErrorMessage(e))
@@ -48,7 +49,8 @@ export const EditCategorizedItemForm = observer(({
             label: 'Save'
         },
         cancel: {
-            handler: () => {
+            handler: async () => {
+                await nativeEventStore().hideKeyboard()
                 back()
                 store.clear()
             }

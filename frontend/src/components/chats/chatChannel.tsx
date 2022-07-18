@@ -3,34 +3,28 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
+import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
 import { useKeyboard } from "../../hooks/useKeyboard";
-import { BottomDrawerHandleHeight, requestStore, userStore } from "../../stores/interfaces";
+import { BottomDrawerHandleHeight, nativeEventStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
-import { HeaderHeight } from "../header/header";
 import UserIcon from "../userIcon";
 
 type Props =  {
-    screenView: boolean
+    inTabbedScreen?: boolean
 }
 
-const ChatChannel = observer(({ screenView }: Props) => {
+const ChatChannel = observer(({ inTabbedScreen }: Props) => {
     const request = requestStore().currentRequest;
     const chat = request.chat;
 
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const [requestIsOpen, setRequestIsOpen] = useState(requestStore().currentRequest?.status != RequestStatus.Closed);
 
     const scrollRef = useRef<ScrollView>();
 
     const dimensions = Dimensions.get('screen');
-    const keyboardHeight = useKeyboard()
 
-    // TODO: The non-screenView calculation has a couple of "magic" numbers.
-    // Figure out more descriptive/meaningful variable names.
-    const targetHeight = screenView
-                            ? dimensions.height - HeaderHeight - keyboardHeight
-                            : dimensions.height - styles.disabledChatContainer.height + (styles.inputContainer.padding * 2) - BottomDrawerHandleHeight - keyboardHeight - 20;
+
 
     useEffect(() => {
         Keyboard.addListener('keyboardDidShow', () => {
@@ -42,13 +36,13 @@ const ChatChannel = observer(({ screenView }: Props) => {
         })()
     }, [])
 
-    const messages = () => {
+    const messages = (bottomPadding?: number) => {
         if (!chat || !chat?.messages?.length) {
             return null
         }
 
         return (
-            <ScrollView ref={scrollRef}>
+            <ScrollView ref={scrollRef} style={{height: '100%', paddingBottom: bottomPadding}}>
                 {
                     chat.messages.map((message) => {
                         const user = userStore().users.get(message.userId); 
@@ -85,11 +79,16 @@ const ChatChannel = observer(({ screenView }: Props) => {
     }
 
     const enabledChat = () => {
+        const verticalOffset = HeaderHeight + (inTabbedScreen
+            ? TabbedScreenHeaderHeight
+            : 0);
+
         return (
             <KeyboardAvoidingView
+                keyboardVerticalOffset={verticalOffset}
                 behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
                 style={styles.chatContainer}>
-                <View style={{ height: targetHeight }}>
+                <View style={{ height: '100%' }}>
                     <View style={styles.messagesContainer}>
                         { messages() }
                     </View>
@@ -120,24 +119,23 @@ const ChatChannel = observer(({ screenView }: Props) => {
 
     const reopenRequest = () => async () => {
         await requestStore().reopenRequest(requestStore().currentRequest.id);
-        setRequestIsOpen(true);
     }
 
     const disabledChat = () => {
-        Keyboard.dismiss();
+        // Keyboard.dismiss();
 
         const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
         const userOnRequest = requestStore().currentRequest.positions.some(pos => pos.joinedUsers.includes(userStore().user.id));
         const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
         const userCanReopenRequest = userIsRequestAdmin || (userOnRequest && userHasCloseRequestPermission);
 
+        const disabledActionAreaHeight = styles.openRequestButton.height + (2 * styles.inputContainer.padding)
+
         return (
-            <View style={styles.chatContainer}>
-                <View style={{ height: targetHeight }}>
-                    <View style={styles.messagesContainer}>
-                        { messages() }
-                    </View>
-                        <View style={[styles.inputContainer, styles.disabledChatContainer]}>
+            <View style={{}}>
+                { messages(disabledActionAreaHeight) }
+                <View style={{ position: "absolute", left: 0, bottom: 0, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                    <View style={[styles.inputContainer, styles.disabledChatContainer, {flex: 0}]}>
                             {userCanReopenRequest ?
                                 <Button
                                     uppercase={false}
@@ -149,14 +147,14 @@ const ChatChannel = observer(({ screenView }: Props) => {
                                 :
                                 <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
                             }
-                        </View>
+                    </View>
                 </View>
             </View>
         )
     }
 
     return (
-        <View>
+        <View style={{ height: '100%' }}>
             { request.status == RequestStatus.Closed
               ? disabledChat()
               : enabledChat()
@@ -196,7 +194,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flexDirection: 'row',
-        padding: 12,
+        padding: 20,
     }, 
     inputAction: {
         alignSelf: 'flex-end',
@@ -232,11 +230,7 @@ const styles = StyleSheet.create({
     },
     disabledChatContainer: {
         justifyContent: 'center',
-        height: 80, // TODO: not sure why this is 80...should probably explicity specify input text/container height for this
         backgroundColor: '#fff',
-        borderColor: '#666',
-        borderStyle: 'solid',
-        borderTopWidth: 1,
         width: '100%'
     },
     disabledChatMessage: {
@@ -255,8 +249,7 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
         borderWidth: 1,
         borderRadius: 24,
-        marginVertical: 24,
-        width: 328,
+        width: '100%',
         height: 44,
     }
 })
