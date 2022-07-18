@@ -171,7 +171,7 @@ const HelpRequestCard = observer(({
         )
     }
     
-    let priorityColor = 'grey';
+    let priorityColor;
     switch(request.priority) {
         case 1:
             priorityColor = Colors.okay;
@@ -179,8 +179,11 @@ const HelpRequestCard = observer(({
         case 2:
             priorityColor = Colors.bad;
             break;
-        default:
+        case 0:
             priorityColor = Colors.neutral;
+            break;
+        default:
+            priorityColor = 'white';
     }
 
     return (
