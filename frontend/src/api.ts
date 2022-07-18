@@ -1,10 +1,10 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill, OrganizationMetadata, Role, MinRole, Attribute, MinAttribute, AttributeCategory, MinAttributeCategory, TagCategory, MinTag, MinTagCategory, Tag, AttributeCategoryUpdates, TagCategoryUpdates, CategorizedItemUpdates, AdminEditableUser, AttributesMap, CategorizedItem } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
 import { securelyPersistent } from './meta';
-import { IUserStore, userStore } from './stores/interfaces';
+import { userStore } from './stores/interfaces';
 import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
@@ -456,7 +456,7 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
@@ -466,7 +466,6 @@ export class APIClient implements IAPIService {
             roleIds,
             attributes,
             baseUrl,
-            skills
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data

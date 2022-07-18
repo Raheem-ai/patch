@@ -11,7 +11,7 @@ import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig
 import { VisualArea } from "../components/helpers/visualArea";
 import { ScreenProps, Colors } from "../types";
 import { alertStore, manageAttributesStore, manageTagsStore, organizationSettingsStore, organizationStore } from "../stores/interfaces";
-import { iHaveAnyPermissions, iHaveAllPermissions } from "../utils";
+import { iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 import { RequestPrefixCharMax } from '../../../common/constants'
 import { resolveErrorMessage } from "../errors";

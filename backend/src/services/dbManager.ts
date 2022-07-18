@@ -1,6 +1,6 @@
 import { Inject, Service } from "@tsed/di";
 import { Ref } from "@tsed/mongoose";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestSkill, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -123,7 +123,7 @@ export class DBManager {
                 {}, 
                 user, 
                 { 
-                    skills: pendingUser.skills, 
+                    // skills: pendingUser.skills, 
                     email: pendingUser.email, 
                     phone: pendingUser.phone 
                 }
@@ -1677,7 +1677,7 @@ export class DBManager {
                 name: "Charlie Lipford",
                 race: "nunya",
                 phone: "8045166822",
-                skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
+                // skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
             });
 
             let [ org, admin1 ] = await this.createOrganization({

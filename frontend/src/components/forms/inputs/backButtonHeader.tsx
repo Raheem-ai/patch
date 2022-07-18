@@ -37,7 +37,7 @@ const BackButtonHeader = observer(({
     
     return <View style={[styles.backButtonHeader, bottomBorder ? styles.bottomBorder : null ]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ fontSize: 18 }} onPress={cancel?.handler}>{headerLabel}</Text>
+            <Text style={{ fontSize: 18 }} >{headerLabel}</Text>
             {
                 labelDecoration 
                 ? <IconButton

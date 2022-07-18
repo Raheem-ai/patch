@@ -17,7 +17,6 @@ export default class NewUserStore implements INewUserStore {
     @persistent() displayColor = ''
     @persistent() race? = ''
     @persistent() bio? = ''
-    @persistent() skills = []
     @persistent() roles = []
     @persistent() roleIds = []
     @persistent() attributes = []
@@ -36,7 +35,6 @@ export default class NewUserStore implements INewUserStore {
         this.displayColor = ''
         this.race = ''
         this.bio = ''
-        this.skills = []
         this.roles = []
         this.roleIds = []
         this.attributes = []
@@ -46,7 +44,6 @@ export default class NewUserStore implements INewUserStore {
     get isValid() {
         return this.phoneValid &&
             this.emailValid &&
-            this.skillsValid &&
             this.rolesValid
     }
 
@@ -56,11 +53,6 @@ export default class NewUserStore implements INewUserStore {
 
     get emailValid(){
         return this.email.includes('@')
-    }
-
-    get skillsValid(){
-        return true
-        // return !!this.skills.length
     }
 
     get rolesValid(){
@@ -79,7 +71,6 @@ export default class NewUserStore implements INewUserStore {
             this.roles,
             this.roleIds,
             this.attributes,
-            this.skills,
             linkingStore().baseUrl
         );
     }

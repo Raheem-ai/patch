@@ -1,12 +1,11 @@
 import { Store } from './meta';
 import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions, Keyboard } from 'react-native';
-import { HeaderHeight, InteractiveHeaderHeight } from '../components/header/header';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
 import AssignResponders from '../components/bottomDrawer/views/assignResponders';
 import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
-import { ActiveRequestTabHeight, isAndroid } from '../constants';
+import { ActiveRequestTabHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import Constants from 'expo-constants';
@@ -120,7 +119,12 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         const bottomUIOffset = activeRequestOffset + minimizedHandleOffset + (isAndroid ? BOTTOM_BAR_HEIGHT : 0);
 
-        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset - nativeEventStore().keyboardHeight;
+        // The height regular content (between the header, bottom drawer handle, and active request tab) can take up
+        // if the keyboard is open, the height ignores the bottom drawer handle and active request tab
+        const contentHeight = nativeEventStore().keyboardHeight 
+            ? dimensions.height - HeaderHeight - bottomUIOffset //- nativeEventStore().keyboardHeight 
+                + activeRequestOffset + minimizedHandleOffset // add back space below the keyboard
+            : dimensions.height - HeaderHeight - bottomUIOffset;
 
         const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - nativeEventStore().keyboardHeight
 

@@ -6,12 +6,11 @@ import React, {ComponentClass} from "react";
 import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
 import { unwrap } from "../../../../common/utils";
-import { isAndroid } from "../../constants";
+import { HeaderHeight, InteractiveHeaderHeight, isAndroid } from "../../constants";
 import { navigateTo, navigationRef } from "../../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
 import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
-import { HeaderHeight, InteractiveHeaderHeight } from "../header/header";
 import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
 

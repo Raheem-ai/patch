@@ -1,14 +1,11 @@
 import { observer } from "mobx-react";
-import React, { useEffect, useState,  } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { PendingUser, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
+import React from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigateTo } from "../../../navigation";
-import { alertStore, bottomDrawerStore, IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore, newUserStore } from "../../../stores/interfaces";
-import { routerNames, ScreenProps } from "../../../types";
+import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
@@ -101,35 +98,10 @@ export default class AddUser extends React.Component {
                         },
                     },
                     required: true
-                },
-                {
-                    onSave: (skills) => newUserStore().skills = skills,
-                    val: () => {
-                        return newUserStore().skills
-                    },
-                    isValid: () => {
-                        return newUserStore().skillsValid
-                    },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills',
-                    placeholderLabel: () => 'Skills',
-                    type: 'TagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            newUserStore().skills.splice(idx, 1)
-                        },
-                        dark: true
-                    },
                 }
-                
             ] as [
                 InlineFormInputConfig<'TextInput'>, 
                 InlineFormInputConfig<'TextInput'>, 
-                ScreenFormInputConfig<'TagList'>,
                 ScreenFormInputConfig<'TagList'>,
             ]
         }

@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
 import { CollectionOf, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, RequestSkill, User, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem } from "common/models";
+import { Organization, PendingUser, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
@@ -12,7 +12,6 @@ class PendingUserSchema  implements PendingUser {
     @Required() roles: UserRole[]
     @Required() roleIds: string[]
     @Required() attributes: CategorizedItem[]
-    @Required() skills: RequestSkill[]
     @Required() pendingId: string
 }
 

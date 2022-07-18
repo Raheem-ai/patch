@@ -15,7 +15,7 @@ import SignInForm from './src/screens/SignInForm';
 import WelcomePage from './src/screens/WelcomePage';
 import SignUpForm from './src/screens/SignUpForm';
 import UserHomePage from './src/screens/UserHomePage';
-import Header, { HeaderHeight } from './src/components/header/header';
+import Header from './src/components/header/header';
 
 import HelpRequestMap from './src/screens/helpRequestMap';
 import HelpRequestList from './src/screens/helpRequestList';

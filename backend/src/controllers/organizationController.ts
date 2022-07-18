@@ -1,13 +1,12 @@
-import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
-import { MongooseDocument } from "@tsed/mongoose";
+import { BodyParams, Controller, Get, Inject, Post } from "@tsed/common";
+import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
-import { CollectionOf, Enum, Format, Minimum, Patch, Pattern, Required } from "@tsed/schema";
+import { Format, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, Organization, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, RequestSkill, Role, UserRole, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, AttributesMap, AttributeCategoryUpdates, TagCategoryUpdates, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, Role, UserRole, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
-import { UserDoc, UserModel } from "../models/user";
+import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
@@ -18,8 +17,6 @@ import config from '../config';
 import { PubSubService } from "../services/pubSubService";
 import { OrganizationDoc } from "../models/organization";
 import { AtLeast } from "common";
-import { request } from "express";
-import { userHasPermissions } from "./utils";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -164,7 +161,6 @@ export class OrganizationController implements APIController<
         @Required() @BodyParams('roles') roles: UserRole[], 
         @Required() @BodyParams('roleIds') roleIds: string[], 
         @Required() @BodyParams('attributes') attributes: CategorizedItem[], 
-        @Required() @BodyParams('skills') skills: RequestSkill[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
 
@@ -182,7 +178,6 @@ export class OrganizationController implements APIController<
             roles,
             roleIds,
             attributes,
-            skills,
             pendingId: uuid.v1()
         };
 
@@ -207,7 +202,6 @@ export class OrganizationController implements APIController<
                 orgId,
                 email,
                 roles,
-                skills,
                 pendingId: pendingUser.pendingId
             });
 

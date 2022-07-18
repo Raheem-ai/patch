@@ -17,15 +17,14 @@ export interface User {
     password: string;
     organizations: { [key: string]: UserOrgConfig }
     displayColor: string
-    skills: RequestSkill[]
     race?: string
     pronouns?: string
     bio?: string
     // location?
 }
 
-export type EditableUser = Pick<ProtectedUser, 'organizations' | 'skills' >
-export type EditableMe = Omit<Me, 'organizations' | 'skills'>
+export type EditableUser = Pick<ProtectedUser, 'organizations'>
+export type EditableMe = Omit<Me, 'organizations'>
 export type AdminEditableUser = Pick<UserOrgConfig, 'roleIds' | 'attributes'>
 
 export type UserOrgConfig = {
@@ -144,7 +143,7 @@ export type PendingUser = {
     roles: UserRole[]
     roleIds: string[]
     attributes: CategorizedItem[]
-    skills: RequestSkill[]
+    // skills: RequestSkill[]
     pendingId: string
 }
 
@@ -410,88 +409,6 @@ export type ResponderRequestStatuses =
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
     | RequestStatus.Done;
-
-export enum RequestSkillCategory {
-    Medical = 'me',
-    CounselingAndMediation = 'cm',
-    Languages = 'la'
-}
-
-export enum RequestSkill {
-    // medical
-    CPR = RequestSkillCategory.Medical + ':cp',
-    FirstAid = RequestSkillCategory.Medical + ':fa',
-    MentalHealth = RequestSkillCategory.Medical + ':mh',
-    SubstanceUseTreatment = RequestSkillCategory.Medical + ':su',
-
-    // counseling + mediation
-    ConflictResolution = RequestSkillCategory.CounselingAndMediation + ':cr',
-    DomesticViolence = RequestSkillCategory.CounselingAndMediation + ':dv',
-    RestorativeJustice = RequestSkillCategory.CounselingAndMediation + ':rj',
-    TraumaCounseling = RequestSkillCategory.CounselingAndMediation + ':tc',
-    
-    // langs
-    // ISO 639-3 Language Codes: https://iso639-3.sil.org/code_tables/639/data
-    Amharic = RequestSkillCategory.Languages + ':amh',
-    Arabic = RequestSkillCategory.Languages + ':ara',
-    Bengali = RequestSkillCategory.Languages + ':ben',
-    Cantonese = RequestSkillCategory.Languages + ':yue',
-    French = RequestSkillCategory.Languages + ':fra',
-    Hindi = RequestSkillCategory.Languages + ':hin',
-    Mandarin = RequestSkillCategory.Languages + ':cmn',
-    Portuguese = RequestSkillCategory.Languages + ':por',
-    Spanish = RequestSkillCategory.Languages + ':spa',
-    Tagalog = RequestSkillCategory.Languages + ':tgl',
-    Vietnamese = RequestSkillCategory.Languages + ':vie'
-}
-
-export function requestSkillToCategory(skill: RequestSkill): RequestSkillCategory {
-    const cat = (skill as any as string).split(':')[0];
-    return cat as RequestSkillCategory
-}
-
-export function requestSkillsFromCategory(cat: RequestSkillCategory): RequestSkill[] {
-    const skills = allEnumValues(RequestSkill);
-
-    return skills.filter((skill: string) => {
-        return skill.split(':')[0] == cat
-    });
-}
-
-export const RequestSkillCategoryMap: {
-    [key in RequestSkillCategory]: Set<RequestSkill>
-} = allEnumValues(RequestSkillCategory).reduce((map, cat) => {
-    map[cat] = new Set(requestSkillsFromCategory(cat));
-    return map;
-}, {})
-
-export const RequestSkillToLabelMap: { [key in RequestSkill]: string } = {
-    [RequestSkill.CPR]: 'CPR',
-    [RequestSkill.FirstAid]: 'First Aid',
-    [RequestSkill.MentalHealth]: 'Mental Health',
-    [RequestSkill.SubstanceUseTreatment]: 'Substance Use Treatment',
-    [RequestSkill.ConflictResolution]: 'Conflict Resolution',
-    [RequestSkill.DomesticViolence]: 'Domestic Violence',
-    [RequestSkill.RestorativeJustice]: 'Restorative Justice',
-    [RequestSkill.TraumaCounseling]: 'Trauma Counseling',
-    [RequestSkill.Amharic]: 'Amharic',
-    [RequestSkill.Arabic]: 'Arabic',
-    [RequestSkill.Bengali]: 'Bengali',
-    [RequestSkill.Cantonese]: 'Cantonese',
-    [RequestSkill.French]: 'French',
-    [RequestSkill.Hindi]: 'Hindi',
-    [RequestSkill.Mandarin]: 'Mandarin',
-    [RequestSkill.Portuguese]: 'Portuguese',
-    [RequestSkill.Spanish]: 'Spanish',
-    [RequestSkill.Tagalog]: 'Tagalog',
-    [RequestSkill.Vietnamese]: 'Vietnamese'
-}
-
-export const RequestSkillCategoryToLabelMap: { [key in RequestSkillCategory]: string } = {
-    [RequestSkillCategory.Medical]: 'Medical',
-    [RequestSkillCategory.CounselingAndMediation]: 'Counseling & Mediation',
-    [RequestSkillCategory.Languages]: 'Languages',
-}
 
 export enum Delimiters {
     Enum = ':'
@@ -1079,7 +996,6 @@ export type LinkParams = {
         orgId: string,
         email: string,
         roles: UserRole[],
-        skills: RequestSkill[],
         pendingId: string
     },
     [LinkExperience.JoinOrganization]: {
