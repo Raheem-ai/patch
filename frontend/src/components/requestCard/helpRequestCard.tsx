@@ -5,7 +5,7 @@ import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames } from "../../types";
+import { routerNames, Colors } from "../../types";
 import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight, visualDelim } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
@@ -18,8 +18,6 @@ type Props = {
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
-
-
 const HelpRequestCard = observer(({ 
     request, 
     style,
@@ -27,6 +25,7 @@ const HelpRequestCard = observer(({
     minimal,
     onPress
 } : Props) => {
+
     const [statusOpen, setStatusOpen] = useState(false);
 
     const openStatusSelector = (event: GestureResponderEvent) => {
@@ -52,8 +51,8 @@ const HelpRequestCard = observer(({
     const header = () => {
         const id = request.displayId;
         const address = request.location?.address.split(',').slice(0, 2).join()
-
         return (
+
             <View style={styles.headerRow}>
                 <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
                 {
@@ -171,6 +170,18 @@ const HelpRequestCard = observer(({
             </View>
         )
     }
+    
+    let priorityColor = 'grey';
+    switch(request.priority) {
+        case 1:
+            priorityColor = Colors.okay;
+            break;
+        case 2:
+            priorityColor = Colors.bad;
+            break;
+        default:
+            priorityColor = Colors.neutral;
+    }
 
     return (
         <Pressable 
@@ -179,7 +190,8 @@ const HelpRequestCard = observer(({
                 styles.container, 
                 dark ? styles.darkContainer: null, 
                 minimal ? styles.minimalContainer: null, 
-                style
+                style,
+                {borderTopColor: priorityColor}, 
             ]}>
                 {header()}
                 { minimal 
@@ -197,7 +209,8 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
         borderBottomColor: '#e0e0e0',
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        borderTopWidth: 6
     },
     darkContainer: {
         backgroundColor: '#444144',

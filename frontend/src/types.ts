@@ -149,5 +149,6 @@ export const Colors = {
     },
     good: '#55BB76',
     okay: '#EBAA02',
-    bad: '#D03200'
+    bad: '#D03200',
+    neutral: '#CCCCCC'
 }
