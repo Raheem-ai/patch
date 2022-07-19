@@ -5,7 +5,7 @@ import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames } from "../../types";
+import { routerNames, Colors } from "../../types";
 import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight, visualDelim } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
@@ -18,8 +18,6 @@ type Props = {
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
-
-
 const HelpRequestCard = observer(({ 
     request, 
     style,
@@ -27,6 +25,7 @@ const HelpRequestCard = observer(({
     minimal,
     onPress
 } : Props) => {
+
     const [statusOpen, setStatusOpen] = useState(false);
 
     const openStatusSelector = (event: GestureResponderEvent) => {
@@ -52,8 +51,8 @@ const HelpRequestCard = observer(({
     const header = () => {
         const id = request.displayId;
         const address = request.location?.address.split(',').slice(0, 2).join()
-
         return (
+
             <View style={styles.headerRow}>
                 <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
                 {
@@ -108,7 +107,7 @@ const HelpRequestCard = observer(({
 
         for (let i = 0; i < respondersToAssign; i++) {
             unAssignedResponders.push(<UserIcon 
-                style={{ backgroundColor: styles.unAssignedResponderIcon.backgroundColor }}
+                style={{ backgroundColor: dark ? styles.unAssignedResponderIconDark.backgroundColor : styles.unAssignedResponderIcon.backgroundColor }}
                 emptyIconColor={styles.unAssignedResponderIcon.color}/>)
         }
 
@@ -171,6 +170,21 @@ const HelpRequestCard = observer(({
             </View>
         )
     }
+    
+    let priorityColor;
+    switch(request.priority) {
+        case 1:
+            priorityColor = Colors.okay;
+            break;
+        case 2:
+            priorityColor = Colors.bad;
+            break;
+        case 0:
+            priorityColor = Colors.nocolor; // low-priority == priority not set
+            break;
+        default:
+            priorityColor = Colors.nocolor; // if not using priorities, no need for any colors
+    }
 
     return (
         <Pressable 
@@ -179,7 +193,8 @@ const HelpRequestCard = observer(({
                 styles.container, 
                 dark ? styles.darkContainer: null, 
                 minimal ? styles.minimalContainer: null, 
-                style
+                style,
+                {borderTopColor: priorityColor}, 
             ]}>
                 {header()}
                 { minimal 
@@ -197,23 +212,23 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
         borderBottomColor: '#e0e0e0',
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        borderTopWidth: 4
     },
     darkContainer: {
-        backgroundColor: '#444144',
+        backgroundColor: '#3F3C3F',
     },
     minimalContainer: {
-        height: ActiveRequestTabHeight,
-        borderBottomWidth: 0,
-        justifyContent: 'space-between'
+        height: ActiveRequestTabHeight + 12,
+        paddingBottom: 12,
+        justifyContent: 'space-between',
     },
     darkText: {
-        color: '#A9A7A9'
+        color: '#E0DEE0'
     },
     headerRow: {
-        height: 22,
         margin: 12,
-        marginBottom: 0,
+//        marginBottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
@@ -236,6 +251,7 @@ const styles = StyleSheet.create({
     },
     detailsRow: {
         margin: 12,
+        marginTop: 0,
         flexDirection: 'row'
     },
     darkDetailsText: {
@@ -247,8 +263,8 @@ const styles = StyleSheet.create({
     statusRow: {
         margin: 12,
         marginTop: 0,
-        height: 28,
-        flexDirection: 'row'
+//        height: 28, // <-- why is this set explicitly?
+        flexDirection: 'row',
     }, 
     responderActions: {
         flexDirection: 'row',
@@ -284,12 +300,17 @@ const styles = StyleSheet.create({
         borderColor: '#444144',
     },
     unAssignedResponderIcon: {
-        color: '#fff',
-        backgroundColor: '#DB0000',
-        borderColor:'#DB0000',
+        color: '#666',
+        backgroundColor: '#F3F1F3',
+        borderColor:'#F3F1F3',
         borderStyle: 'solid',
         borderWidth: 1
     }, 
+    unAssignedResponderIconDark: {
+        color: '#444144',
+        backgroundColor: '#CCCACC',
+        borderColor:'#CCCACC'
+    },
     assignedResponderIcon: {
         marginRight: 4,
     }, 
@@ -318,7 +339,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     }, 
     darkStatusText: {
-        color: '#A9A7A9'
+        color: '#E0DEE0'
     },
     statusSelector: {
         position: 'absolute',

@@ -19,7 +19,7 @@ const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
 const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
     [HelpRequestSortBy.ByTime]: 'By time',
     [HelpRequestSortBy.ByStatus]: 'By status',
-    // [HelpRequestSortBy.BySeverity]: 'By severity',
+    [HelpRequestSortBy.BySeverity]: 'By priority'
     // [HelpRequestSortBy.ByDistance]: 'By distance'
 }
 
