@@ -187,7 +187,7 @@ export class UsersController implements APIController<
     async signIn(
         @Required() @BodyParams('credentials') credentials: ValidatedBasicCredentials,
     ) {
-        const user = await this.users.findOne({ email: credentials.email });
+        const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
 
         if (!user) {
           throw new Unauthorized(`User with email '${credentials.email}' not found`)
