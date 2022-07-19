@@ -59,6 +59,65 @@ class EditHelpRequest extends React.Component<Props> {
             },
             inputs: [
                 [
+                    // Description
+                    {
+                        onSave: (notes) => editRequestStore().notes = notes,
+                        val: () => {
+                            return editRequestStore().notes
+                        },
+                        isValid: () => {
+                            return !!editRequestStore().notes
+                        },
+                        name: 'description',
+                        icon: 'note-text',
+                        previewLabel: () => editRequestStore().notes,
+                        headerLabel: () => 'Description',
+                        placeholderLabel: () => 'Description',
+                        type: 'TextArea',
+                        required: true
+                    },
+                    // Type of request
+                    {
+                        type: 'CategorizedItemList',
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
+                        val: () => {
+                            return requestTypesToCategorizedItems(editRequestStore().type)
+                        },
+                        isValid: () => {
+                            return editRequestStore().typeValid
+                        },
+                        name: 'type',
+                        // required: true,
+                        props: {
+                            definedCategories: () => RequestTypeCategories,
+                            dark: true
+                        }
+                    },
+                    // Priority
+                    {
+                        onSave: (priorities) => editRequestStore().priority = priorities[0],
+                        val: () => {
+                            return typeof editRequestStore().priority == 'number'
+                                ? [editRequestStore().priority]
+                                : []
+                        },
+                        isValid: () => {
+                            return !!editRequestStore().priority 
+                        },
+                        name: 'priority',
+                        previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
+                        headerLabel: () => 'Priority',
+                        placeholderLabel: () => 'Priority',
+                        type: 'List',
+                        props: {
+                            options: allEnumValues(RequestPriority),
+                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
+                        },
+                    },
+                ],
+                [
                     // Call Start
                     {
                         onChange: (callStartedAt) => editRequestStore().callStartedAt = callStartedAt,
@@ -135,65 +194,6 @@ class EditHelpRequest extends React.Component<Props> {
                     type: 'Map',
                     // required: true
                 },
-                [
-                    // Description
-                    {
-                        onSave: (notes) => editRequestStore().notes = notes,
-                        val: () => {
-                            return editRequestStore().notes
-                        },
-                        isValid: () => {
-                            return !!editRequestStore().notes
-                        },
-                        name: 'description',
-                        icon: 'note-text',
-                        previewLabel: () => editRequestStore().notes,
-                        headerLabel: () => 'Description',
-                        placeholderLabel: () => 'Description',
-                        type: 'TextArea',
-                        required: true
-                    },
-                    // Type of request
-                    {
-                        type: 'CategorizedItemList',
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
-                        onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
-                        val: () => {
-                            return requestTypesToCategorizedItems(editRequestStore().type)
-                        },
-                        isValid: () => {
-                            return editRequestStore().typeValid
-                        },
-                        name: 'type',
-                        // required: true,
-                        props: {
-                            definedCategories: () => RequestTypeCategories,
-                            dark: true
-                        }
-                    },
-                    // Priority
-                    {
-                        onSave: (priorities) => editRequestStore().priority = priorities[0],
-                        val: () => {
-                            return typeof editRequestStore().priority == 'number'
-                                ? [editRequestStore().priority]
-                                : []
-                        },
-                        isValid: () => {
-                            return !!editRequestStore().priority 
-                        },
-                        name: 'priority',
-                        previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
-                        headerLabel: () => 'Priority',
-                        placeholderLabel: () => 'Priority',
-                        type: 'List',
-                        props: {
-                            options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
-                        },
-                    },
-                ],
                 // Positions
                 {
                     onSave: (data) => {
@@ -228,6 +228,11 @@ class EditHelpRequest extends React.Component<Props> {
                 })
             ] as [
                 [
+                    ScreenFormInputConfig<'TextArea'>,
+                    ScreenFormInputConfig<'CategorizedItemList'>,
+                    ScreenFormInputConfig<'List'>
+                ],
+                [
                     InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>
                 ],
@@ -236,11 +241,6 @@ class EditHelpRequest extends React.Component<Props> {
                     InlineFormInputConfig<'TextInput'>
                 ],
                 ScreenFormInputConfig<'Map'>, 
-                [
-                    ScreenFormInputConfig<'TextArea'>,
-                    ScreenFormInputConfig<'CategorizedItemList'>,
-                    ScreenFormInputConfig<'List'>
-                ],
                 ScreenFormInputConfig<'Positions'>,
                 ScreenFormInputConfig<'CategorizedItemList'>
             ]

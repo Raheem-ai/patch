@@ -54,10 +54,11 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
-        userStore().pushCurrentUser(userStore().user);
-        const statusIcon = requestStore().currentUserActiveRequests.length
+        const statusIcon = requestStore().myActiveRequests.length
             ? statusOnshift
-            : userStore().isOnDuty ? statusAvailable : statusUnavailable;
+            : userStore().isOnDuty
+                ? statusAvailable
+                : statusUnavailable;
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>

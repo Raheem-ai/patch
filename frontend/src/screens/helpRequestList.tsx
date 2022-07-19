@@ -7,7 +7,6 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { requestStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
-import { sortBy } from "lodash";
 
 type Props = ScreenProps<'HelpRequestList'>;
 
