@@ -347,8 +347,8 @@ export enum HelpRequestFilter {
 
 export enum HelpRequestSortBy {
     ByTime = 'bt',
-    ByStatus = 'bs'
-    // BySeverity = 'bs',
+    ByStatus = 'bs',
+    BySeverity = 'bv'
     // ByDistance = 'bd'
 };
 

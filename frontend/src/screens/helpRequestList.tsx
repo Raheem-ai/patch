@@ -7,6 +7,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { requestStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
+import { sortBy } from "lodash";
 
 type Props = ScreenProps<'HelpRequestList'>;
 
@@ -19,7 +20,7 @@ const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
 const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
     [HelpRequestSortBy.ByTime]: 'By time',
     [HelpRequestSortBy.ByStatus]: 'By status',
-    // [HelpRequestSortBy.BySeverity]: 'By severity',
+    [HelpRequestSortBy.BySeverity]: 'By priority'
     // [HelpRequestSortBy.ByDistance]: 'By distance'
 }
 

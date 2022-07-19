@@ -148,7 +148,8 @@ export const Colors = {
         menu: '#666',
     },
     good: '#55BB76',
-    okay: '#EBAA02',
-    bad: '#D03200',
-    neutral: '#CCCCCC'
+    okay: '#F5C037',
+    bad: '#E55300',
+    neutral: '#CCCCCC',
+    nocolor: 'rgba(255, 255, 255, 0)'
 }

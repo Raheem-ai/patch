@@ -31,7 +31,7 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
     },
     {
       name: 'Requests',
-      routeTo: 'helpRequestMap'
+      routeTo: 'helpRequestList'
     },
     {
       name: 'Channels',
