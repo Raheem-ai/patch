@@ -168,25 +168,31 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const header = () => {
-        const tags = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
+        const types = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
         const edit = () => {
             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
         }
 
+        const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{tags.join(` ${visualDelim} `)}</Text>
+                    <Text style={styles.typeLabel}>{types.join(` ${visualDelim} `)}</Text>
                 </View>
-                <View>
-                    <IconButton
-                        onPress={edit}
-                        style={styles.editIcon}
-                        icon='pencil' 
-                        color={styles.editIcon.color}
-                        size={styles.editIcon.width} />
-                </View>
+                {
+                    canEdit
+                        ? <View>
+                            <IconButton
+                                onPress={edit}
+                                style={styles.editIcon}
+                                icon='pencil' 
+                                color={styles.editIcon.color}
+                                size={styles.editIcon.width} />
+                        </View>
+                        : null
+                }
             </View>
         )
     }
@@ -339,7 +345,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const channel = () => {
         return (
             <View>
-                <ChatChannel screenView={false}/>
+                <ChatChannel inTabbedScreen={true}/>
             </View>
         )
     }
@@ -708,12 +714,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     );
 
     return (
-        <VisualArea>
+        // <VisualArea>
             <TabbedScreen 
                 bodyStyle={{ backgroundColor: '#ffffff' }}
                 defaultTab={Tabs.Overview} 
                 tabs={tabs}/>
-        </VisualArea>
+        // </VisualArea>
     );
 });
 

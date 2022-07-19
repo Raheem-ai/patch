@@ -8,78 +8,153 @@ import { ClientSideFormat } from '../../../common/api';
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
 
-    @persistent() id = ''
+    // null == unedited state
+    @persistent() _id = null
+    @persistent() _name = null
+    @persistent() _phone = null
+    @persistent() _email = null
+    @persistent() _password = null
+    @persistent() _displayColor = null
+    @persistent() _race = null
+    @persistent() _bio = null
+    @persistent() _roles = null
+    @persistent() _attributes = null
+    @persistent() _pronouns = null
 
-    @persistent() name = ''
-    @persistent() phone = ''
-    @persistent() email = ''
-    @persistent() password = ''
-    @persistent() displayColor = ''
-    @persistent() race = ''
-    @persistent() bio = ''
-    @persistent() skills = []
-    @persistent() roles = []
-    @persistent() attributes = []
-    @persistent() pronouns = ''
+    get id() { 
+        return this._id == null ? '' : this._id;
+    }
 
-    @persistent() oldMe: Me = null;
-    @persistent() oldUser: ClientSideFormat<ProtectedUser> = null;
+    set id(val) {
+        this._id = val
+    }
+
+    get name() { 
+        return this._name == null ? '' : this._name;
+    }
+
+    set name(val) {
+        this._name = val
+    }
+
+    get phone() { 
+        return this._phone == null ? '' : this._phone;
+    }
+
+    set phone(val) {
+        this._phone = val
+    }
+
+    get email() { 
+        return this._email == null ? '' : this._email;
+    }
+
+    set email(val) {
+        this._email = val
+    }
+
+    get password() { 
+        return this._password == null ? '' : this._password;
+    }
+
+    set password(val) {
+        this._password = val
+    }
+
+    get displayColor() { 
+        return this._displayColor == null ? '' : this._displayColor;
+    }
+
+    set displayColor(val) {
+        this._displayColor = val
+    }
+
+    get race() { 
+        return this._race == null ? '' : this._race;
+    }
+
+    set race(val) {
+        this._race = val
+    }
+
+    get bio() { 
+        return this._bio == null ? '' : this._bio;
+    }
+
+    set bio(val) {
+        this._bio = val
+    }
+
+    get roles() { 
+        return this._roles == null ? [] : this._roles;
+    }
+
+    set roles(val) {
+        this._roles = val
+    }
+
+    get attributes() { 
+        return this._attributes == null ? [] : this._attributes;
+    }
+
+    set attributes(val) {
+        this._attributes = val
+    }
+
+    get pronouns() { 
+        return this._pronouns == null ? '' : this._pronouns;
+    }
+
+    set pronouns(val) {
+        this._pronouns = val
+    }
+
 
     constructor() {
         makeAutoObservable(this)
     }
 
     clear = () => {
-        this.id = ''
-        this.name = ''
-        this.phone = ''
-        this.email = ''
-        this.password = ''
-        this.displayColor = ''
-        this.race = ''
-        this.bio = ''
-        this.skills = []
-        this.roles = []
-        this.attributes = []
-        this.pronouns = ''
-        this.oldMe = null
-        this.oldUser = null
+        this._id = null
+        this._name = null
+        this._phone = null
+        this._email = null
+        this._password = null
+        this._displayColor = null
+        this._race = null
+        this._bio = null
+        this._roles = null
+        this._attributes = null
+        this._pronouns = null
     }
 
     loadMe(user: Me) {
         this.id = user.id
-        this.name = user.name || ''
-        this.phone = user.phone || ''
-        this.email = user.email || ''
-        this.displayColor = user.displayColor || ''
-        this.race = user.race || ''
-        this.bio = user.bio || ''
-        this.skills = user.skills || []
-        this.pronouns = user.pronouns || ''
+        this.name = user.name || null
+        this.phone = user.phone || null
+        this.email = user.email || null
+        this.displayColor = user.displayColor || null
+        this.race = user.race || null
+        this.bio = user.bio || null
+        this.pronouns = user.pronouns || null
 
-        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
-        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || []
-
-        this.oldMe = user
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || null
+        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || null
     }
     
     loadUser(user: ClientSideFormat<ProtectedUser>) {
         this.id = user.id
-        this.name = user.name || ''
-        this.phone = user.phone || ''
-        this.email = user.email || ''
-        this.displayColor = user.displayColor || ''
-        this.bio = user.bio || ''
-        this.skills = user.skills || []
-        this.pronouns = user.pronouns || ''
+        this.name = user.name || null
+        this.phone = user.phone || null
+        this.email = user.email || null
+        this.displayColor = user.displayColor || null
+        this.bio = user.bio || null
+        this.pronouns = user.pronouns || null
 
-        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || []
-        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || []
-
-        this.oldUser = user
+        this.roles = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.roleIds || null
+        this.attributes = userStore().users.get(user.id)?.organizations[userStore().currentOrgId]?.attributes || null
     }
 
-    // TODO we need the concept of touched/dirty here
     get myChangesValid() {
         return this.nameValid &&
             this.emailValid &&
@@ -93,58 +168,47 @@ export default class EditUserStore implements IEditUserStore {
     }
 
     get userChangesValid() {
-        return this.skillsValid 
+        return this.attributesValid &&
+            this.rolesValid
     }
 
     get nameValid(){
-        return !!this.name.length
+        return this._name == null || !!this.name.length
     }
 
     get phoneValid(){
-        return this.phone.length == 10
+        return this._phone == null || this.phone.length == 10
     }
 
     get emailValid(){
-        return this.email.includes('@')
+        return this._email == null || this.email.includes('@')
     }
 
     get passwordValid(){
-        // return !!this.password.length
         return true
     }
 
     get displayColorValid(){
-        // return !!this.displayColor.length
         return true
     }
 
     get raceValid(){
-        // return !!this.race.length
         return true
     }
 
     get bioValid(){
-        // return !!this.bio.length
         return true
-    }
-
-    get skillsValid(){
-        return true
-        // return !!this.skills.length
     }
 
     get rolesValid(){
         return true
-        // return !!this.roles.length
     }
 
     get attributesValid(){
         return true
-        // return !!this.attributes.length
     }
 
     get pronounsValid(){
-        // return !!this.pronouns.length
         return true
     }
 
@@ -157,17 +221,17 @@ export default class EditUserStore implements IEditUserStore {
 
     editMe = async () => {
         return await userStore().editMe({
-            name: this.name || undefined,
-            email: this.email || undefined,
-            phone: this.phone || undefined,
-            displayColor: this.displayColor || undefined,
-            race: this.race || undefined,
-            pronouns: this.pronouns || undefined,
-            bio: this.bio || undefined
+            name: this._name == null ? undefined : this.name,
+            email: this._email == null ? undefined : this.email,
+            phone: this._phone == null ? undefined : this.phone,
+            displayColor: this._displayColor == null ? undefined : this.displayColor,
+            race: this._race == null ? undefined : this.race,
+            pronouns: this._pronouns == null ? undefined : this.pronouns,
+            bio: this._bio == null ? undefined : this.bio
         },
         {
-            roleIds: this.roles || undefined,
-            attributes: this.attributes || undefined
+            roleIds: this._roles == null ? undefined : this.roles,
+            attributes: this._attributes == null ? undefined : this.attributes
         })
     }
 }

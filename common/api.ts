@@ -1,6 +1,5 @@
 import { AtLeast } from '.';
 import {
-    User,
     HelpRequest,
     Location,
     Me,
@@ -12,28 +11,12 @@ import {
     MinUser,
     BasicCredentials,
     MinHelpRequest,
-    ChatMessage,
     ResponderRequestStatuses,
-    RequestType,
-    HelpRequestFilter,
     AuthTokens,
     AppSecrets,
     PendingUser,
-    EditableUser,
-    RequestSkill,
     Role,
     MinRole,
-    MinAttributeCategory,
-    AttributeCategory,
-    MinAttribute,
-    Attribute,
-    MinTagCategory,
-    TagCategory,
-    MinTag,
-    Tag,
-    AttributesMap,
-    TagCategoryUpdates,
-    AttributeCategoryUpdates,
     CategorizedItemUpdates,
     AdminEditableUser,
     CategorizedItem
@@ -127,7 +110,7 @@ export interface IApiClient {
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string) => Promise<PendingUser>>
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => Promise<PendingUser>>
 
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;

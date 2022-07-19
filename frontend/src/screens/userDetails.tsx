@@ -2,12 +2,10 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Button, IconButton, Text } from "react-native-paper";
-import { RequestSkillToLabelMap, UserRoleToLabelMap } from "../../../common/models";
+import { IconButton, Text } from "react-native-paper";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
-import { navigationRef } from "../navigation";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
 

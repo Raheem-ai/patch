@@ -2,7 +2,7 @@ import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, RequestSkill, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -30,7 +30,7 @@ export interface IUserStore extends IBaseStore {
 
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
-    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], skills: RequestSkill[], baseUrl: string): Promise<PendingUser>
+    inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
@@ -404,7 +404,6 @@ export interface INewUserStore extends ITempUserStore {
     isValid: boolean
     phoneValid: boolean
     emailValid: boolean
-    skillsValid: boolean
     rolesValid: boolean
     
     inviteNewUser: () => Promise<PendingUser>;
@@ -428,7 +427,6 @@ export interface IEditUserStore extends ITempUserStore {
     displayColorValid: boolean
     raceValid: boolean
     bioValid: boolean
-    skillsValid: boolean
     rolesValid: boolean
     pronounsValid: boolean
 
