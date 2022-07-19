@@ -1,36 +1,16 @@
-import React, { ComponentType, useCallback, useState } from "react";
-import { Button, Text, List, IconButton } from 'react-native-paper';
-import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput as RNTextInput, View } from "react-native";
-import { useRef } from "react";
+import React, { ComponentType } from "react";
+import { Button, Text, IconButton } from 'react-native-paper';
+import { Keyboard, Pressable, StyleSheet, View } from "react-native";
 import { observer } from "mobx-react";
-import { debounce } from "lodash";
-import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-import Tags from "../../components/tags";
-import { computed, configure, observable, runInAction } from "mobx";
-import { AddressableLocation } from "../../../../common/models";
-import { FormInputConfig, FormInputViewMap, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
-import TextAreaInput from "./inputs/screen/textAreaInput";
-import { sleep, unwrap } from "../../../../common/utils";
-import TextInput from "./inputs/inline/textInput";
+import { computed, observable, runInAction } from "mobx";
+import { FormInputConfig, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
+import { unwrap } from "../../../../common/utils";
 import { Colors } from "../../types";
-import ListInput from "./inputs/screen/listInput";
-import TagListLabel from "./inputs/labels/tagListLabel";
-import NestedListInput from "./inputs/screen/nestedListInput";
-import { INativeEventStore, nativeEventStore } from "../../stores/interfaces";
+import { nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
-import Loader from "../loader";
-import MapInput from "./inputs/screen/mapInput";
-import DateTimeRangeInput from "./inputs/inline/dateTimeRangeInput";
-import RecurringTimePeriodInput from "./inputs/screen/recurringTimePeriodInput";
-import RecurringTimePeriodLabel from "./inputs/labels/recurringTimePeriodLabel";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
-import SwitchInput from "./inputs/inline/switchInput";
-import PermissionGroupListLabel from "./inputs/labels/permissionGroupListLabel";
-import PermissionGroupListInput from "./inputs/screen/permissionGroupListInput";
-import CategorizedItemListInput from "./inputs/screen/categorizedItemListInput";
-import CategorizedItemListLabel from "./inputs/labels/categorizedItemListLabel";
 import { FormViewMap } from "./config";
 
 const Stack = createStackNavigator();
@@ -46,16 +26,6 @@ export type FormProps = {
     },
     homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
     adHocScreens?: AdHocScreenConfig[]
-
-    /**
-     * TODO:
-     * 
-     * screens?: {
-     *   name: string,
-     *   screen: ({ back }) => JSX.Element
-     * }[]
-     * 
-     *  */ 
 }
 
 export type CustomFormHomeScreenProps = {

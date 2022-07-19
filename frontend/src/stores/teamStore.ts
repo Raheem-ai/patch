@@ -78,17 +78,6 @@ export default class TeamStore implements ITeamStore {
                 : 1
     }
 
-    sortBySkill = (a: ClientSideFormat<ProtectedUser>, b: ClientSideFormat<ProtectedUser>): number => {
-        const aSkills = a.skills.length;
-        const bSkills = b.skills.length;
-        
-        return aSkills == bSkills
-            ? 0
-            : aSkills > bSkills
-                ? -1
-                : 1
-    }
-
     setSortBy = (sortBy: TeamSortBy) => {
         this.sortBy = sortBy;
     }

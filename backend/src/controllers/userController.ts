@@ -1,20 +1,18 @@
-import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
-import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
+import { BodyParams, Controller, Get, Inject, Post } from "@tsed/common";
+import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { MongooseModel, Schema } from "@tsed/mongoose";
-import { Authenticate, Authorize } from "@tsed/passport";
-import { CollectionOf, Enum, Format, Optional, Property, Required } from "@tsed/schema";
+import { Authenticate } from "@tsed/passport";
+import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, EditableUser, Location, Me, MinUser, PatchEventType, PatchPermissions, ProtectedUser, RequestSkill, UserRole } from "common/models";
-import { createAccessToken, createRefreshToken, JWTMetadata, verifyRefreshToken } from "../auth";
-import { RequireAllPermissions, RequireSomePermissions } from "../middlewares/userRoleMiddleware";
+import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions } from "common/models";
+import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
+import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
-import config from '../config';
 import { PubSubService } from "../services/pubSubService";
-import { OrganizationDoc } from "../models/organization";
 import { userHasPermissions } from "./utils";
 
 export class ValidatedMinUser implements MinUser {
@@ -45,11 +43,6 @@ class CategorizedItemSchema implements CategorizedItem {
 }
 
 export class ValidatedEditableUser implements Partial<AdminEditableUser> {
-    @Optional()
-    @Property()
-    @Enum(RequestSkill)
-    skills: RequestSkill[]
-
     @Optional()
     @CollectionOf(String)
     roleIds: string[]

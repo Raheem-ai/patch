@@ -4,9 +4,8 @@ import { Dimensions, GestureResponderEvent, Pressable, StyleSheet, View } from "
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { IconButton } from "react-native-paper";
 import { HelpRequest } from "../../../common/models";
-import { HeaderHeight } from "../components/header/header";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
-import { ActiveRequestTabHeight } from "../constants";
+import { ActiveRequestTabHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
 import { ScreenProps, routerNames } from "../types";

@@ -1,14 +1,13 @@
 import { observer } from "mobx-react";
-import React, { useEffect, useState,  } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import React from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { PatchPermissions, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
-import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../../components/forms/form";
+import { PatchPermissions } from "../../../../../common/models";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigateTo, navigationRef } from "../../../navigation";
-import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
-import { Colors, RootStackParamList, routerNames, ScreenProps } from "../../../types";
+import { navigationRef } from "../../../navigation";
+import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
+import { Colors } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -56,6 +55,51 @@ export default class EditUser extends React.Component {
         return editUserStore().id == userStore().user.id;
     }
 
+    formHomeScreen = observer(({
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const editingMe = EditUser.onMyProfile();
+
+        const headerLabel = editingMe
+                ? 'Edit my profile'
+                : `Edit ${editUserStore().name}'s profile'`;
+
+        return <>
+            <View style={{
+                paddingLeft: 20,
+                borderStyle: 'solid',
+                borderBottomColor: Colors.borders.formFields,
+                borderBottomWidth: 1,
+                minHeight: 60,
+                justifyContent: 'center',
+                padding: 20
+            }}>
+                <Text style={{
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                }}>{headerLabel}</Text>
+            </View>
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                { renderInputs(inputs()) }
+                { this.canRemoveUser()
+                    ? <View style={styles.actionButtonsContainer}>
+                        <Button 
+                            mode= 'outlined'
+                            uppercase={false}
+                            style={styles.actionButton}
+                            color={styles.actionButton.borderColor}
+                            onPress={this.removeUserFromOrg}
+                            >
+                                {EditUser.onMyProfile() ? 'Leave organization' : 'Remove from organization'}
+                        </Button>
+                    </View>
+                    : null
+                }
+            </ScrollView>
+        </>
+    })
+
     formProps = (): FormProps => {
         const editingMe = EditUser.onMyProfile();
 
@@ -71,7 +115,9 @@ export default class EditUser extends React.Component {
             },
             inputs: editingMe
                 ? this.editMeInputs()
-                : this.editUserInputs()
+                : this.editUserInputs(),
+            homeScreen: this.formHomeScreen
+
         }
     }
 
@@ -143,9 +189,11 @@ export default class EditUser extends React.Component {
 
         return inputs;
     }
+
     editMeInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
         const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+
         const inputs = [
             [{
                 onChange: (name) => editUserStore().name = name,
@@ -234,20 +282,6 @@ export default class EditUser extends React.Component {
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
                     <Form {...this.formProps()}/>
-                    {this.canRemoveUser()
-                    ? <View style={styles.actionButtonsContainer}>
-                        <Button 
-                            mode= 'outlined'
-                            uppercase={false}
-                            style={styles.actionButton}
-                            color={styles.actionButton.borderColor}
-                            onPress={this.removeUserFromOrg}
-                            >
-                                {EditUser.onMyProfile() ? 'Leave organization' : 'Remove from organization'}
-                        </Button>
-                    </View>
-                    : null
-            }
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )

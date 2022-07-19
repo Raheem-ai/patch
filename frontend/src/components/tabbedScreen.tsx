@@ -1,9 +1,9 @@
 import React, { useState } from "react"
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
-import { InteractiveHeaderHeight } from "./header/header";
 import { VisualArea } from "./helpers/visualArea";
 import { Colors } from "../types";
+import { TabbedScreenHeaderHeight } from "../constants";
 
 type TabConfig = {
     label : string,
@@ -112,7 +112,7 @@ export default TabbedScreen;
 
 const styles = StyleSheet.create({
     header: {
-        height: InteractiveHeaderHeight - 12,
+        height: TabbedScreenHeaderHeight,
         width: Dimensions.get('screen').width,
         paddingTop: 16,
         backgroundColor: Colors.backgrounds.tabs,

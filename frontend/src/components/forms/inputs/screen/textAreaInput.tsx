@@ -2,8 +2,8 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
+import { HeaderHeight } from "../../../../constants";
 import { useKeyboard } from "../../../../hooks/useKeyboard";
-import { HeaderHeight } from "../../../header/header";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
