@@ -38,7 +38,7 @@ export default class AssignResponders extends React.Component {
         label: () => {
             const count = dispatchStore().selectedResponderIds.size;
             
-            return `Notify ${count || 'selected'} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s')
+            return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
         }
     }
 
