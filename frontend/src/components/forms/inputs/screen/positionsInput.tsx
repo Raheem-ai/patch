@@ -1,6 +1,7 @@
 import { observer } from "mobx-react"
 import React, { useState } from "react"
-import { StyleSheet } from "react-native"
+import { Pressable, StyleSheet, View } from "react-native";
+import { Button, IconButton, Text } from "react-native-paper";
 import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
@@ -11,6 +12,7 @@ import { organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
 import { observable } from "mobx"
+import { Colors } from "../../../../types";
 
 export type PositionsInputProps = SectionScreenViewProps<'Positions'> 
 
@@ -134,6 +136,16 @@ const PositionsInput = observer(({
     return (
         <VisualArea>
             <Form inputs={inputs} homeScreen={homeScreen} />
+            <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
+                <Button 
+                    uppercase={false}
+                    style={[styles.button, styles.outlineButton]}
+                    color={Colors.primary.alpha}
+                    mode='outlined'
+                    labelStyle={styles.buttonLabel}
+                    onPress={null}>Delete this position{/* @charlie, can you fill in the onPress action to remove the position? */}
+                </Button>
+            </View>
         </VisualArea>
     )
 })
@@ -147,5 +159,25 @@ const styles = StyleSheet.create({
         paddingLeft: 60,
         paddingRight: 20,
         height: 48
+    },
+    button: {
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: Colors.primary.alpha,
+        fontWeight: '900',
+        justifyContent: 'center',
+        marginTop: 24,
+        paddingHorizontal: 8,
+        
+    },
+    buttonLabel: {
+        fontWeight: '700',
+        letterSpacing: 0.8
+    },
+    outlineButton: {
+        borderWidth: 1,
+        borderColor: Colors.primary.alpha,
+        backgroundColor: Colors.nocolor,
+        color: Colors.primary.alpha
     }
 })

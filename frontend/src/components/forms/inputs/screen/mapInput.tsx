@@ -163,7 +163,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                     <View style={{ 
                         backgroundColor: '#fff', 
                         borderRadius: 24, 
-                        height: 44, 
+                        height: 48, 
                         margin: 24, 
                         marginBottom: 0,
                         flexDirection: 'row',
@@ -185,7 +185,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             style={{ 
                                 flex: 1, 
                                 backgroundColor: '#fff', 
-                                height: 44, 
+                                height: 48, 
                                 paddingHorizontal: 0, 
                                 borderBottomWidth: 0,
                                 fontSize: 16
@@ -221,16 +221,17 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                 style={{
                     backgroundColor: '#000', 
                     borderRadius: 24, 
-                    height: 44, 
+                    height: 48, 
                     margin: 24,
                     position: 'absolute',
                     bottom: 0,
                     width: dimensions.width - (2 * 24),
-                    justifyContent: 'center'
+                    justifyContent: 'center',
             }}>
                 <Text style={{ 
                     alignSelf: 'center', 
-                    color: isSaveable ? '#fff' : '#999'
+                    color: isSaveable ? '#fff' : '#999',
+                    fontWeight: '700'
                 }}>Save this location</Text>
             </Pressable>
         </View>

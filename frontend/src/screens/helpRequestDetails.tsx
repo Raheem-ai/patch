@@ -956,7 +956,7 @@ const styles = StyleSheet.create({
         marginBottom: 12
     },
     addResponderButton: {
-        height: 44,
+        height: 48,
         borderRadius: 24,
         color: '#fff',
         backgroundColor: Colors.primary.alpha,
@@ -1041,7 +1041,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         // margin: 20,
         width: '100%',
-        height: 44
+        height: 48
     },
     mapView: {
         height: 120

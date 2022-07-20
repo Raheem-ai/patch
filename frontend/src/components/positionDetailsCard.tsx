@@ -106,6 +106,7 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canLeave) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
                 color={Colors.primary.alpha}
                 mode='contained'
@@ -114,12 +115,14 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
                 color={Colors.primary.alpha}
                 mode='contained'
                 onPress={join}>{'Join'}</Button>
         } else if (positionMetadata.canRequestToJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button, styles.outlineButton]}
                 color={Colors.primary.alpha}
                 mode='outlined'
@@ -181,6 +184,7 @@ export default PositionDetailsCard;
 
 const styles = StyleSheet.create({
     button: {
+        letterSpacing: 0.8,
         borderRadius: 32
     },
     outlineButton: {

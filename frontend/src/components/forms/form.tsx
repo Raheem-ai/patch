@@ -818,7 +818,7 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     submitButton: {
-        height: 44,
+        height: 48,
         borderRadius: 24,
         color: Colors.text.buttonLabelPrimary,
         backgroundColor: Colors.primary.alpha,

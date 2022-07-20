@@ -94,7 +94,7 @@ export const SubMenuOptions: SubMenuOption[] = [
     }
   }, 
   {
-    name: 'Log out',
+    name: 'Sign out',
     onPress: () => {
       userStore().signOut();
     }

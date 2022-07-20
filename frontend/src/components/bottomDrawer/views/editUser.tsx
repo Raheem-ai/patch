@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 24,
-        height: 44,
+        height: 48,
         justifyContent: 'center',
         marginHorizontal: 38
     },
