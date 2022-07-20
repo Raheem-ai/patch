@@ -7,7 +7,6 @@ import { CategorizedItem } from "../../../../../../common/models"
 import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { AdHocScreenConfig, InlineFormInputConfig, SectionScreenViewProps } from "../../types"
-import { VisualArea } from '../../../helpers/visualArea';
 import TextInput from "../inline/textInput"
 import { unwrap } from "../../../../../../common/utils"
 import { iHaveAllPermissions } from "../../../../utils"
@@ -262,9 +261,7 @@ const CategorizedItemListInput = ({
     })
 
     return (
-        <VisualArea>
-            <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
-        </VisualArea>
+        <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
     )
 }
 

@@ -3,9 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
+import { ActiveRequestTabHeight, HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
 import { useKeyboard } from "../../hooks/useKeyboard";
-import { BottomDrawerHandleHeight, nativeEventStore, requestStore, userStore } from "../../stores/interfaces";
+import { BottomDrawerHandleHeight, bottomDrawerStore, nativeEventStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import UserIcon from "../userIcon";
 
@@ -79,9 +79,16 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
     }
 
     const enabledChat = () => {
-        const verticalOffset = HeaderHeight + (inTabbedScreen
-            ? TabbedScreenHeaderHeight
-            : 0);
+        const verticalOffset = HeaderHeight 
+            + (inTabbedScreen
+                ? TabbedScreenHeaderHeight
+                : 0) 
+            + (!nativeEventStore().keyboardHeight && bottomDrawerStore().minimizedHandleShowing
+                ? BottomDrawerHandleHeight
+                : 0)
+            + (bottomDrawerStore().activeRequestShowing
+                ? ActiveRequestTabHeight
+                : 0);
 
         return (
             <KeyboardAvoidingView

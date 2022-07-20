@@ -7,7 +7,7 @@ import AssignResponders from '../components/bottomDrawer/views/assignResponders'
 import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
 import { ActiveRequestTabHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid } from '../constants';
 import { navigationRef } from '../navigation';
-import { routerNames } from '../types';
+import { RootStackParamList, routerNames } from '../types';
 import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
@@ -41,19 +41,37 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     expanded: boolean = false;
     showing: boolean = false;
+    // TODO: remove this!
     headerShowing: boolean = false;
 
     viewIdStack: BottomDrawerView[] = []
 
     disposeOfAnimationReactions: () => void = null;
 
+    get disabledRoutes() {
+        const routes = new Set();
+
+        this.disabledActiveRequestRoutes.forEach(r => routes.add(r))
+        this.disabledDrawerRoutes.forEach(r => routes.add(r))
+
+        return Array.from(routes.values())
+    }
+
+    private disabledActiveRequestRoutes: (keyof RootStackParamList)[] = [
+        routerNames.helpRequestMap,
+        routerNames.helpRequestChat
+    ]
+
+    private disabledDrawerRoutes: (keyof RootStackParamList)[] = [
+        routerNames.helpRequestChat
+    ]
 
     constructor() {
         makeAutoObservable(this)
 
         // Bottom drawer does not have access to navigation props/hooks so handling it here
         reaction(() => navigationStore().currentRoute, (newRoute, prevRoute) => {
-           if ((prevRoute == routerNames.helpRequestMap || newRoute == routerNames.helpRequestMap) && this.showing) {
+           if ((this.disabledRoutes.includes(prevRoute)  || this.disabledRoutes.includes(newRoute) ) && this.showing) {
                 this.minimize()
             }
         })
@@ -173,12 +191,22 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     get activeRequestShowing() {
-        const onRequestMap = navigationStore().currentRoute == routerNames.helpRequestMap;
-        return requestStore().activeRequest && !onRequestMap && !nativeEventStore().keyboardOpen;
+        const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
+
+        return requestStore().activeRequest && !onDisabledRoute && !nativeEventStore().keyboardOpen;
+    }
+
+    get drawerShouldShow() {
+        const onDisabledRoute = this.disabledDrawerRoutes.includes(navigationStore().currentRoute)
+        return !onDisabledRoute
+    }
+
+    get drawerShowing() {
+        return this.showing && this.drawerShouldShow 
     }
 
     get minimizedHandleShowing() {
-        return this.showing && !this.expanded;
+        return this.drawerShowing && !this.expanded;
     }
 
     get expandedHeaderShowing() {
@@ -254,11 +282,13 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         await nativeEventStore().hideKeyboard()
 
         if (this.viewIdStack.length > 1) {
-            const oldView = this.viewIdStack.pop();
+            runInAction(() => {
+                const oldView = this.viewIdStack.pop();
 
-            this._minimize(() => {
-                runInAction(() => {
-                    Config[oldView].onHide?.()
+                this._minimize(() => {
+                    runInAction(() => {
+                        Config[oldView].onHide?.()
+                    })
                 })
             })
 
@@ -309,8 +339,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     _minimize = (cb?: () => void, handleKeyboard?: boolean) => {
-        const onRequestMap = navigationRef.current?.getCurrentRoute().name == routerNames.helpRequestMap;
-
         if (handleKeyboard) {
             Keyboard.dismiss()
         }
@@ -318,7 +346,8 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: dimensions.height 
                 - BottomDrawerHandleHeight 
-                - ((requestStore().activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
+                // - ((requestStore().activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
+                - ((this.activeRequestShowing)  ? ActiveRequestTabHeight : 0)
                 - (isAndroid ? BOTTOM_BAR_HEIGHT : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations

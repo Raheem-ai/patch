@@ -1,3 +1,4 @@
+import { observable, runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
@@ -7,6 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
 import { Colors } from "../../../types"
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
@@ -17,33 +19,41 @@ const dimensions = Dimensions.get('screen');
 export default class AssignResponders extends React.Component {
     static raisedHeader = true;
 
-    static submit = {
-        isValid: () => {
-            return !!dispatchStore().selectedResponderIds.size
-        },
-        action: async () => {
-            const id = requestStore().currentRequest.id;
+    header = () => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    dispatchStore().clear()
+                },
+            },
+            save: {
+                handler: async () => {
+                    const id = requestStore().currentRequest.id;
 
-            try {
-                await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
-            } catch(e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return
-            }
+                    try {
+                        await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    }
 
-            alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responders`)
+                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responders`)
 
-            bottomDrawerStore().hide()
-        },
-        label: () => {
-            const count = dispatchStore().selectedResponderIds.size;
-            
-            return `Notify ${count || 'selected'} responders`
+                    bottomDrawerStore().hide()
+                },
+                label: () => {
+                    const count = dispatchStore().selectedResponderIds.size;
+                    
+                    return `Notify ${count || 'selected'} responders`
+                },
+                validator: () => {
+                    return !!dispatchStore().selectedResponderIds.size
+                }
+            },
+            bottomDrawerView: true,
         }
-    }
 
-    static onHide = () => {
-        dispatchStore().clear()
+        return <BackButtonHeader {...headerConfig}/>
     }
 
     toggleSelectAll = () => {
@@ -54,7 +64,7 @@ export default class AssignResponders extends React.Component {
         dispatchStore().toggleResponder(userId)
     }
     
-    header = () => {
+    listHeader = () => {
 
         const headerProps: ListHeaderProps = {
             openHeaderLabel: 'People to notify',
@@ -157,6 +167,7 @@ export default class AssignResponders extends React.Component {
         return (
             <BottomDrawerViewVisualArea >
                 { this.header() }
+                { this.listHeader() }
                 { this.responderActions() }
                 { this.responders() }
             </BottomDrawerViewVisualArea>

@@ -2,61 +2,85 @@ import React from "react";
 import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import Form, { FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
+import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-import { ResponderCountRange } from "../../../constants";
-import { KeyboardAvoidingView, Platform } from "react-native";
-import { runInAction } from "mobx";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 
 type Props = {}
 
 @observer
 class EditHelpRequest extends React.Component<Props> {
+    formInstance = observable.box<Form>(null);
 
-    static onHide = () => {
-        editRequestStore().clear();
-    }
-
-    static submit = {
-        isValid: () => {
-            return !!editRequestStore().notes.length
-        },
-        action: async () => {
-            try {
-                await editRequestStore().editRequest(requestStore().currentRequest.id)
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return
-            }
-
-            alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
-
-            bottomDrawerStore().hide()
-        },
-        label: 'Save'
-    }
-
-    async componentDidMount() {
+    componentDidMount() {
         editRequestStore().loadRequest(requestStore().currentRequest);
     }
 
     headerLabel = () => {
         return `Edit Request ${requestStore().currentRequest.displayId}`
     }
+
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
+
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    editRequestStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    try {
+                        await editRequestStore().editRequest(requestStore().currentRequest.id)
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    }
+        
+                    alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
+        
+                    bottomDrawerStore().hide()
+                },
+                label: 'Save',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
+        }
+
+        return (
+            <View style={{ flex: 1 }}>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </View>
+        )
+    })
     
     formProps = (): FormProps => {
         return {
             headerLabel: this.headerLabel(), 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+            homeScreen: this.formHomeScreen,
             inputs: [
                 [
                     // Call Start
@@ -252,7 +276,7 @@ class EditHelpRequest extends React.Component<Props> {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
+                    <Form ref={this.setRef} {...this.formProps()}/>
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )

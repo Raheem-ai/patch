@@ -1,53 +1,77 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../forms/form";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import { observable, runInAction } from "mobx";
 
 
 @observer
 export default class AddUser extends React.Component {
-    static submit = {
-        isValid: () => {
-            return newUserStore().isValid
-        },
-        action: async () => {
+    formInstance = observable.box<Form>(null);
 
-            let invitedUser: PendingUser;
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
 
-            try {
-                invitedUser = await newUserStore().inviteNewUser()
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e));
-                return
-            }
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    newUserStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    let invitedUser: PendingUser;
 
-            alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
-            bottomDrawerStore().hide();
-        },
-        label: () => {
-            return `Send Invite`
+                    try {
+                        invitedUser = await newUserStore().inviteNewUser()
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e));
+                        return
+                    }
+
+                    alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+                    bottomDrawerStore().hide();
+                },
+                label: 'Send Invite',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
         }
-    }
 
-    static onHide = () => {
-        newUserStore().clear();
-    }
+        return (
+            <View style={{ flex: 1 }}>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </View>
+        )
+    })
 
     formProps = (): FormProps => {
         return {
             headerLabel: 'Invite a user to join your org by providing their email and phone number!', 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+            homeScreen: this.formHomeScreen,
             inputs: [
                 {
                     onChange: (email) => newUserStore().email = email,
@@ -112,7 +136,7 @@ export default class AddUser extends React.Component {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
+                    <Form ref={this.setRef} {...this.formProps()}/>
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )

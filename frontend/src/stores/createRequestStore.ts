@@ -32,7 +32,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
     }
 
     get locationValid() {
-        return !!this.location && !!this.location.address
+        return !this.location || !!this.location.address
     }
 
     get typeValid() {

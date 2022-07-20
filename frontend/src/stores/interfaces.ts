@@ -308,6 +308,13 @@ export interface IBottomDrawerStore extends IBaseStore {
     showing: boolean
     headerShowing: boolean
     minimizable: boolean
+
+    drawerShouldShow: boolean
+    drawerShowing: boolean
+    activeRequestShowing: boolean
+    minimizedHandleShowing: boolean
+    expandedHeaderShowing: boolean
+
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
 

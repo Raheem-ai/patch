@@ -1,3 +1,4 @@
+import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
@@ -9,78 +10,67 @@ import { navigationRef } from "../../../navigation";
 import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { Colors } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 
-
 @observer
 export default class EditUser extends React.Component {
-    static submit = {
-        isValid: () => {
-            return EditUser.onMyProfile()
-                ? editUserStore().myChangesValid
-                : editUserStore().userChangesValid
-        },
-        action: async () => {
-            const onMyProfile = editUserStore().id == userStore().user.id;
+    formInstance = observable.box<Form>(null);
 
-            try {
-                await (onMyProfile
-                    ? editUserStore().editMe()
-                    : editUserStore().editUser());
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return   
-            }
-
-            const successMsg = onMyProfile
-                ? 'Successfully updated your profile.'
-                : `Successfully updated ${editUserStore().name}'s profile.`
-
-            alertStore().toastSuccess(successMsg)
-
-            bottomDrawerStore().hide();
-        },
-        label: () => {
-            return `Save`
-        }
-    }
-
-    static onHide = () => {
-        editUserStore().clear();
-    }
-
-    static onMyProfile = () => {
+    get onMyProfile() {
         return editUserStore().id == userStore().user.id;
     }
 
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
+
     formHomeScreen = observer(({
+        renderHeader,
         renderInputs,
         inputs
     }: CustomFormHomeScreenProps) => {
-        const editingMe = EditUser.onMyProfile();
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    editUserStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    try {
+                        await (this.onMyProfile
+                            ? editUserStore().editMe()
+                            : editUserStore().editUser());
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return   
+                    }
 
-        const headerLabel = editingMe
-                ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile'`;
+                    const successMsg = this.onMyProfile
+                        ? 'Successfully updated your profile.'
+                        : `Successfully updated ${editUserStore().name}'s profile.`
+
+                    alertStore().toastSuccess(successMsg)
+
+                    bottomDrawerStore().hide();
+                },
+                label: 'Save',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
+        }
 
         return <>
-            <View style={{
-                paddingLeft: 20,
-                borderStyle: 'solid',
-                borderBottomColor: Colors.borders.formFields,
-                borderBottomWidth: 1,
-                minHeight: 60,
-                justifyContent: 'center',
-                padding: 20
-            }}>
-                <Text style={{
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                }}>{headerLabel}</Text>
-            </View>
+            <BackButtonHeader {...headerConfig} />
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                { renderHeader() }
                 { renderInputs(inputs()) }
                 { this.canRemoveUser()
                     ? <View style={styles.actionButtonsContainer}>
@@ -91,7 +81,7 @@ export default class EditUser extends React.Component {
                             color={styles.actionButton.borderColor}
                             onPress={this.removeUserFromOrg}
                             >
-                                {EditUser.onMyProfile() ? 'Leave organization' : 'Remove from organization'}
+                                {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
                         </Button>
                     </View>
                     : null
@@ -101,23 +91,16 @@ export default class EditUser extends React.Component {
     })
 
     formProps = (): FormProps => {
-        const editingMe = EditUser.onMyProfile();
+        const editingMe = this.onMyProfile;
 
         return {
             headerLabel: editingMe
                 ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile'`, 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+                : `Edit ${editUserStore().name}'s profile'`,
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs(),
             homeScreen: this.formHomeScreen
-
         }
     }
 
@@ -131,7 +114,7 @@ export default class EditUser extends React.Component {
 
     removeUserFromOrg = async () => {
         try {
-            if (EditUser.onMyProfile()) {
+            if (this.onMyProfile) {
                 await userStore().removeMyselfFromOrg();
             } else {
                 await userStore().removeCurrentUserFromOrg();
@@ -148,7 +131,7 @@ export default class EditUser extends React.Component {
         }
     }
 
-    canRemoveUser = () => EditUser.onMyProfile() || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
+    canRemoveUser = () => this.onMyProfile || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
 
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
@@ -281,7 +264,7 @@ export default class EditUser extends React.Component {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
+                    <Form ref={this.setRef} {...this.formProps()}/>
                 </BottomDrawerViewVisualArea>
             </KeyboardAvoidingView>
         )
