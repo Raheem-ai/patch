@@ -128,7 +128,7 @@ export const Colors = {
             sectionHeader: '#999',
             fieldLabel: '#333',
             fieldDescription: '#999',
-            placeholder: '#ccc'
+            placeholder: '#999'
         },
         buttonLabelPrimary: '#FFF',
         buttonLabelSecondary: 'rgba(118, 89, 154, 0.66)',
@@ -148,6 +148,8 @@ export const Colors = {
         menu: '#666',
     },
     good: '#55BB76',
-    okay: '#EBAA02',
-    bad: '#D03200'
+    okay: '#F5C037',
+    bad: '#E55300',
+    neutral: '#CCCCCC',
+    nocolor: 'rgba(255, 255, 255, 0)'
 }

@@ -37,14 +37,14 @@ export default class AssignResponders extends React.Component {
                         return
                     }
 
-                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responders`)
+                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
 
                     bottomDrawerStore().hide()
                 },
                 label: () => {
                     const count = dispatchStore().selectedResponderIds.size;
                     
-                    return `Notify ${count || 'selected'} responders`
+                    return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
                 },
                 validator: () => {
                     return !!dispatchStore().selectedResponderIds.size
@@ -107,7 +107,7 @@ export default class AssignResponders extends React.Component {
         return (
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responders`}</Text>
+                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responder` + (dispatchStore().assignableResponders.length == 1 ? '':'s')}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}

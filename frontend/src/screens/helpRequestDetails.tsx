@@ -236,7 +236,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 backgroundColor: '#FFFFFF',
                 marginBottom: 12
             }}>
-                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large requestId={request.id} />
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request.id} />
             </View>
         )
     }
@@ -275,7 +275,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const closeRequestOrPrompt = () => async () => {
         if (!requestStore().currentRequest.type.length) {
             alertStore().showPrompt({
-                title: 'Hmmm...',
+                title: 'Type of request',
                 message: `Are you sure you want to close this request without specifying its type?`,
                 actions: [
                     {

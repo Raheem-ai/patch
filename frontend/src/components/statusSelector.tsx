@@ -12,7 +12,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
         return (
             <PartiallyAssignedIcon 
                 frontColor={dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor} 
-                backColor={dark ? styles.darkStatusIcon.backgroundColor : '#999'} 
+                backColor={dark ? styles.darkStatusIcon.color : styles.statusIcon.color} 
                 innerSize={large ? 28 : 16} 
                 totalSize={large ? 44 : 28}
                 onPress={onPress}
@@ -38,7 +38,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 onPress={onPress}
                 style={[
                     {
-                        marginLeft: large ? 42 : 4,
+                        marginLeft: large ? 42 : 8,
                         borderColor: dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor
                     }, 
                     large 
@@ -278,12 +278,13 @@ const styles = StyleSheet.create({
         marginLeft: 42
     },
     darkStatusIcon: {
-        borderColor:'#333333',
-        color: '#fff',
-        backgroundColor: '#333333',
+        borderColor:'#F3F1F3',
+        color: '#111',
+        backgroundColor: '#F3F1F3',
     },
     darkStatusIconToGo: {
-        color: '#C3C3C3'
+        color: '#999',
+        backgroundColor: '#666' // <-- kinda weird that the background of the dark togo icons follows the darkToGoStatusSelectorDivider, ideally it would be controllable separately
     },
     statusSelector: {
         flexDirection: 'row',
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
         borderStyle: 'dotted', 
     },
     darkToGoStatusSelectorDivider: {
-        borderBottomColor: '#ECEBEC',
+        borderBottomColor: '#666',
         borderBottomWidth: 2,
         borderStyle: 'dotted', 
     },
