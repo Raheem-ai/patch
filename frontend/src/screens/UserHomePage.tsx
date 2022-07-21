@@ -143,7 +143,7 @@ export default function UserHomePage({ navigation, route }: Props) {
             <View>
                 <Button 
                     uppercase={false}
-                    onPress={() => { navigateTo(routerNames.helpRequestMap) }}
+                    onPress={() => { navigateTo(routerNames.helpRequestList) }}
                     color={Colors.text.buttonLabelPrimary}
                     style={styles.button}
                     labelStyle={styles.buttonLabel}>{'Requests'}</Button>

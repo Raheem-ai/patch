@@ -7738,6 +7738,7 @@ __metadata:
     react-native-web: 0.17.1
     react-native-wheel-picker-expo: ^0.4.2
     react-router-dom: ^5.2.0
+    react-string-replace: ^1.1.0
     reflect-metadata: ^0.1.13
     socket.io-client: ^4.4.0
     stream-browserify: ^3.0.0
@@ -14035,6 +14036,13 @@ __metadata:
   peerDependencies:
     react: ">=15"
   checksum: 7daae084bf64531eb619cc5f4cc40ce5ae0a541b64f71d74ec71a38cbf6130ebdbb7cf38f157303fad5846deec259401f96c4d6c7386466dcc989719e01f9aaa
+  languageName: node
+  linkType: hard
+
+"react-string-replace@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "react-string-replace@npm:1.1.0"
+  checksum: 5df67fbdb49cacdc9f4488d4bc3dedef1f85d6156b3626d9b4b6c317ec8cc534494def078ab0b2df7aea8fa3cbcecd8d3f76a161f04bf8b29869daccf33785ec
   languageName: node
   linkType: hard
 

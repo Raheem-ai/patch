@@ -407,6 +407,8 @@ export default class RequestStore implements IRequestStore {
                     return this.sortByTime(a, b)
                 case HelpRequestSortBy.ByStatus:
                     return this.sortByStatus(a, b)
+                case HelpRequestSortBy.BySeverity:
+                    return this.sortBySeverity(a, b)
             }
         })
     }
@@ -427,6 +429,17 @@ export default class RequestStore implements IRequestStore {
         return a.status == b.status
             ? 0
             : a.status < b.status
+                ? -1
+                : 1
+    }
+
+    sortBySeverity = (a: HelpRequest, b: HelpRequest): number => {
+        const aPri = a.priority ? a.priority : 0;
+        const bPri = b.priority ? b.priority : 0;
+
+        return aPri == bPri
+            ? 0
+            : aPri > bPri
                 ? -1
                 : 1
     }

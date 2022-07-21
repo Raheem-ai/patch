@@ -14,6 +14,8 @@ import { iHaveAllPermissions } from "../../../../utils"
 import Tags from "../../../tags"
 import EditCategorizedItemForm from "../../editCategorizedItemForm"
 import CategoryRow from "../../common/categoryRow"
+import reactStringReplace from 'react-string-replace';
+import { Colors } from '../../../../types';
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -126,9 +128,12 @@ const CategorizedItemListInput = ({
             const fontSize = 16;
             const searchResults: [string, CategorizedItem][] = [];
 
+            let re = new RegExp(`(${searchText})`, 'gi');
+
             Array.from(config.props.definedCategories().entries()).forEach(([categoryId, category]) => {
                 category.items.forEach(item => {
-                    if (item.name.startsWith(searchText) 
+                    // TO DO: replace match with bold and/or black text
+                    if (item.name.search(re) > -1 
                         // only show unselected results
                         && (selectedItems.findIndex(i => i.categoryId == categoryId && i.itemId == item.id)) == -1) 
                     {
@@ -150,7 +155,11 @@ const CategorizedItemListInput = ({
                             searchResults.map(([itemName, itemHandle]) => {
                                 return (
                                     <Pressable onPress={onResultPressed(itemHandle)} style={[styles.itemContainer]}> 
-                                        <Text style={{ fontSize, color: '#7F7C7F'}}>{itemName}</Text>
+                                        <Text style={{ fontSize, color: '#7F7C7F'}}>    
+                                            {reactStringReplace(itemName, re, (match, i) => (
+                                                <Text style={{ color: Colors.text.default, fontWeight: '700' }}>{match}</Text>
+                                            ))}
+                                        </Text>
                                     </Pressable>
                                 )
                             })
@@ -223,13 +232,13 @@ const CategorizedItemListInput = ({
 
         const searchPillArea = () => {
             return (
-                <View style={{ paddingHorizontal: 20, paddingVertical: (20 - 6) }}>
+                <ScrollView style={{ flexGrow: 0, paddingHorizontal: 20, paddingVertical: (20 - 6)}} horizontal={true} showsHorizontalScrollIndicator={false}>
                     <Tags 
                         verticalMargin={6} 
                         horizontalTagMargin={6}
                         tags={itemInfo.map(i => i[0])}
                         onTagDeleted={onItemDelted}/>
-                </View>
+                </ScrollView>
             )
         }
 
