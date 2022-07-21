@@ -21,6 +21,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
+import * as Linking from 'expo-linking';
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -209,10 +210,13 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             longitudeDelta: 0.0421,
         }; */
         
+        const locLat = requestStore().currentRequest.location.latitude;
+        const locLong = requestStore().currentRequest.location.longitude;
+
         const initialCamera  = {
             center: {
-                latitude: requestStore().currentRequest.location.latitude,
-                longitude: requestStore().currentRequest.location.longitude,
+                latitude: locLat,
+                longitude: locLong,
             },
             pitch: 0,
             heading: 0,
@@ -224,7 +228,16 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             zoom: 12
         }
 
+        // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+        // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+        const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+
+        const mapClick = () => {
+            Linking.openURL(mapsLink);
+        }
+
         return (
+            <Pressable onPress={mapClick}>
             <MapView 
                 provider={PROVIDER_GOOGLE} 
                 pointerEvents="none"
@@ -238,10 +251,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 style={styles.mapView}>
                     <Marker
                         coordinate={{ 
-                            latitude: requestStore().currentRequest.location.latitude, 
-                            longitude: requestStore().currentRequest.location.longitude
+                            latitude: locLat,
+                            longitude: locLong,
                         }}/>
             </MapView>
+            </Pressable>
         );
     }
 
