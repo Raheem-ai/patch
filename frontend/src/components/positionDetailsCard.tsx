@@ -107,6 +107,8 @@ const PositionDetailsCard = observer(({
         if (positionMetadata.canLeave) {
             return <Button 
                 style={[styles.button]}
+                labelStyle={{letterSpacing: 0.8}}
+                uppercase={false}
                 color={Colors.primary.alpha}
                 mode='contained'
                 onPress={leave}>{'Leave'}</Button>
@@ -114,13 +116,17 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
+                labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='contained'
                 onPress={join}>{'Join'}</Button>
         } else if (positionMetadata.canRequestToJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button, styles.outlineButton]}
+                labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='outlined'
                 onPress={requestToJoin}>{'Request'}</Button>

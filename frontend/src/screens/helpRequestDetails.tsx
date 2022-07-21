@@ -77,11 +77,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const priorityLabel = RequestPriorityToLabelMap[priority];
         
         const priorityColor = priority == RequestPriority.High
-            ? Colors.bad
+            ? Colors.text.bad
             : priority == RequestPriority.Medium
-                ? Colors.okay
+                ? Colors.text.okay
                 : priority == RequestPriority.Low
-                    ? '#999799'
+                    ? Colors.text.tertiary
                     : null
         
         if (!priorityColor) {
@@ -202,19 +202,35 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             return null;
         }
 
-        const initialRegion =  {
+        /* const initialRegion =  {
             latitude: requestStore().currentRequest.location.latitude,
             longitude: requestStore().currentRequest.location.longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
-        };
+        }; */
         
+        const initialCamera  = {
+            center: {
+                latitude: requestStore().currentRequest.location.latitude,
+                longitude: requestStore().currentRequest.location.longitude,
+            },
+            pitch: 0,
+            heading: 0,
+
+            // Only on iOS MapKit, in meters. The property is ignored by Google Maps.
+            altitude: 1000,
+
+            // Only when using Google Maps.
+            zoom: 12
+        }
+
         return (
             <MapView 
                 provider={PROVIDER_GOOGLE} 
                 pointerEvents="none"
                 showsUserLocation={true}
-                initialRegion={initialRegion}
+                // initialRegion={initialRegion}
+                initialCamera={initialCamera}
                 // zoomEnabled={false}
                 // rotateEnabled={false}
                 // scrollEnabled={false}
@@ -245,12 +261,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const currentRequestOpen = currentRequestIsOpen();
 
         return (
-            <View style={{ 
-                width: '100%',
-                padding: 20,
-                paddingTop: currentRequestOpen ? 0 : 20,
-                backgroundColor: '#FFFFFF',
-            }}>
+            <View style={styles.toggleRequestContainer}>
                 <Button
                     uppercase={false}
                     color={currentRequestOpen ? '#fff' : '#76599A'}
@@ -326,15 +337,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { mapPreview() }
                     { detailsSection() }
                 </View>
+                <View style={{height:'200%'}}>
+                    { showCloseOpenReqButton
+                        ? toggleRequestButton()
+                        : null 
+                    }
+                </View>
                 {/* { teamSection() } */}
             </WrappedScrollView>
             <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
                 { currentRequestIsOpen()
                     ? statusPicker() 
-                    : null 
-                }
-                { showCloseOpenReqButton
-                    ? toggleRequestButton()
                     : null 
                 }
             </View>
@@ -439,7 +452,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-                const peeps = numNotified === 1 ? `person` : `people`;
+                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
                 const notifiedLabel = `${numNotified} ${peeps} notified`;
 
                 const newLabel = pendingRequests.length
@@ -530,7 +543,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
 
                     return (
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                        pendingRequests.length + deniedRequests.length > 0
+                        ? <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
@@ -551,6 +565,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 })
                             }
                         </View>
+                        : null
                     )
                 }
 
@@ -626,7 +641,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
                 }
 
-                return (
+                return pendingRequests.length + deniedRequests.length + Array.from(viewedUsers.entries()).length + joinedUsers.length + Array.from(notifiedUsers.entries()).length > 0
+                ? (
                     <View>
                         <Pressable 
                             style={{ 
@@ -667,9 +683,30 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         }
                     </View>
                 )
+                : <View style={{height: 20}}></View>
             }
         }
 
+        const editAction = () => {
+            const edit = () => {
+                bottomDrawerStore().show(BottomDrawerView.editRequest, true)
+            }
+    
+            const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+    
+            return (
+                canEdit
+                    ? <View>
+                        <Button
+                            uppercase={false} 
+                            color={Colors.primary.alpha}
+                            mode={'contained'}
+                            onPress={edit}
+                            style={[styles.button, styles.addPositionsButton]}>{'Add responders'}</Button>
+                    </View>
+                    : null
+            )
+        }
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
                 <View style={{ backgroundColor: '#F6F4F6', borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
@@ -677,14 +714,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { teamEventDetails() }
                 </View>
                 {
-                    request.positions.map(pos => {
+                    request.positions.length > 0 
+                    ? request.positions.map(pos => {
                         return (
                             <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
                         )
                     })
+                    : <View style={{ padding: 20, paddingBottom: 0 }}>
+                            <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>Responders</Text>
+                            <Text style={{lineHeight: 18}}>No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.</Text>
+                            <View style={{ marginTop: 20 }}>{ editAction() }</View>
+                        </View>
                 }
             </WrappedScrollView>
         )
+
     })
 
     const tabs = []
@@ -736,8 +780,17 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
         paddingTop: 30,
-        marginBottom: 4,
+        paddingBottom: 0,
         backgroundColor: '#fff'
+    },
+    toggleRequestContainer: { 
+        width: '100%',
+        height: '100%',
+        padding: 20,
+        paddingTop: 24,
+        backgroundColor: '#f0f0f0',
+        borderTopColor: Colors.borders.formFields,
+        borderTopWidth: 1,
     },
     notesSection: {
         marginBottom: 16
@@ -1027,6 +1080,9 @@ const styles = StyleSheet.create({
     closeRequestButton: {
         backgroundColor: '#76599A',
     },
+    addPositionsButton: {
+        backgroundColor: '#76599A',
+    },
     openRequestButton: {
         borderColor: '#76599A',
         borderWidth: 1,
@@ -1044,6 +1100,6 @@ const styles = StyleSheet.create({
         height: 44
     },
     mapView: {
-        height: 120
+        height: 180
     }
 })
