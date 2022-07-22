@@ -13,6 +13,9 @@ enum Knobs {
     Max
 }
 
+// store outside observer for when you go in and out of editing a position
+let areInverted = null;
+
 @observer
 class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     private knobOffset = (styles.knob.width / 2);
@@ -33,6 +36,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     
     // when knobs cross, their labels and value they give to onChange 
     // need to swap
+    // private knobsInverted = observable.box(areInverted ? areInverted : false);
     private knobsInverted = observable.box(false);
     
     // check if values are the same when we're initialized
@@ -175,6 +179,8 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                 }
 
                 this.knobsInverted.set(this.minKnobLeft.get() > this.maxKnobLeft.get())
+                // keep global in sync
+                areInverted = this.knobsInverted.get();
             })
 
         }
@@ -187,33 +193,41 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                     const step = this.leftXToStep(this.minKnobLeft.get() + delta)
                     const valueToSet = this.stepToValue(step);
                     const stepLeft = this.stepLeft(step);
-                    
                     this.minKnobLeft.set(stepLeft)
 
                     if (valueToSet == this.maxKnobValue) {
                         this.isExact.set(true)
                     }
 
+                     // need to consider inverted
                     this.props.config.onChange({ 
-                        max: this.maxKnobValue > this.maxBeforeOrMore 
+                        max: areInverted
+                        ? valueToSet
+                        : this.maxKnobValue > this.maxBeforeOrMore 
                             ? MORE 
                             : this.maxKnobValue, 
-                        min: valueToSet 
+                        min: areInverted
+                        ? this.maxKnobValue
+                        : valueToSet 
                     })
                 } else {
                     const step = this.leftXToStep(this.maxKnobLeft.get() + delta)
                     const valueToSet = this.stepToValue(step);
                     const stepLeft = this.stepLeft(step);
-
                     this.maxKnobLeft.set(stepLeft)
 
                     if (valueToSet == this.minKnobValue) {
                         this.isExact.set(true)
                     }
 
+                    // need to consider inverted
                     this.props.config.onChange({ 
-                        min: this.minKnobValue, 
-                        max: valueToSet > this.maxBeforeOrMore 
+                        min: areInverted
+                        ? valueToSet
+                        : this.minKnobValue, 
+                        max: areInverted
+                        ? this.minKnobValue
+                        : valueToSet > this.maxBeforeOrMore 
                             ? MORE 
                             : valueToSet 
                     })
@@ -223,6 +237,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
         const inverted = this.knobsInverted.get();
 
+        /* Not sure what the outer ternary is for here
         const minKnobLabel = inverted
             ? `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`
             : `${this.minKnobValue}`;
@@ -230,6 +245,10 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         const maxKnobLabel = inverted
             ? `${this.maxKnobValue}`
             : `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
+        */
+
+        const minKnobLabel = `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`;
+        const maxKnobLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
 
         return this.knobs({
             min: {
@@ -304,15 +323,16 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         const onTouchEnd = (event: GestureResponderEvent) => {
 
         }
+        const exactLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
 
         return this.knobs({
             min: {
-                label: `${this.minKnobValue}`,
+                label: `${exactLabel}`,
                 onTouchMove: onTouchMove,
                 onTouchEnd: onTouchEnd
             },
             max: {
-                label: `${this.maxKnobValue}`,
+                label: `${exactLabel}`,
                 onTouchMove: onTouchMove,
                 onTouchEnd: onTouchEnd
             }
@@ -413,8 +433,9 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             : this.maxKnobValue
 
         return this.isExactValue 
-            ? `Exactly ${leftVal}`
-            : `${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
+            ? leftVal == 0 || leftVal == MORE ? 'Any number' :  `Exactly ${leftVal}`
+            : `inverted: ${inverted} / ${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
+
     }
 
     render() {
