@@ -191,10 +191,13 @@ const HelpRequestCard = observer(({
             onPress={onCardPress} 
             style={[
                 styles.container, 
-                dark ? styles.darkContainer: null, 
-                minimal ? styles.minimalContainer: null, 
-                style,
-                {borderTopColor: priorityColor}, 
+                dark 
+                    ? styles.darkContainer 
+                    : null, 
+                minimal 
+                    ? styles.minimalContainer
+                    : {borderTopColor: priorityColor}, 
+                style, 
             ]}>
                 {header()}
                 { minimal 
@@ -219,16 +222,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#3F3C3F',
     },
     minimalContainer: {
-        height: ActiveRequestTabHeight + 12,
+        height: ActiveRequestTabHeight ,
         paddingBottom: 12,
         justifyContent: 'space-between',
+        borderTopWidth: 0,
+        borderBottomWidth: 0,
+
     },
     darkText: {
         color: '#E0DEE0'
     },
     headerRow: {
         margin: 12,
-//        marginBottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },

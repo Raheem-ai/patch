@@ -6,12 +6,17 @@ import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
 import AssignResponders from '../components/bottomDrawer/views/assignResponders';
 import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
 import { ActiveRequestTabHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid } from '../constants';
-import { navigationRef } from '../navigation';
 import { RootStackParamList, routerNames } from '../types';
 import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
+
+/**
+ * open minimizable view
+ * close it
+ * open non-minimizable view
+ */
 
 const Config: BottomDrawerConfig = {
     [BottomDrawerView.assignResponders]: AssignResponders,
@@ -41,8 +46,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     expanded: boolean = false;
     showing: boolean = false;
-    // TODO: remove this!
-    headerShowing: boolean = false;
+    submitting: boolean = false;
 
     viewIdStack: BottomDrawerView[] = []
 
@@ -88,14 +92,21 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         } else {
             when(() => userStore().signedIn, this.setupAnimationReactions)
         }
-        
+    }
+
+    startSubmitting = () => {
+        this.submitting = true
+    }
+
+    endSubmitting = () => {
+        this.submitting = false
     }
 
     setupAnimationReactions = () => {
         const disposers = [
             // reactively update content height based on bottom drawer + keyboard state
             reaction(this.calculateContentHeight, this.animateContentHeight, {
-                equals: (a, b) => a[0] == b[0] && a[1] == b[1],
+                equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2],
                 fireImmediately: true
             }),      
             // animate to correct new height as activeRequest might have toggled existing
@@ -118,14 +129,14 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         })
     }
 
-    calculateContentHeight = (): [number, number] => {
+    // TODO: this isn't triggering on show edit req
+    calculateContentHeight = (): [number, number, string] => {
+        // so we track when the view changes
+        // this.viewId
+
         const topUIOffset = this.minimizable
             ? HeaderHeight
             : HeaderHeight - InteractiveHeaderHeight;
-
-        const internalHeaderOffset = this.expandedHeaderShowing
-            ? BottomDrawerHandleHeight
-            : 0;
 
         const minimizedHandleOffset = this.minimizedHandleShowing
             ? BottomDrawerHandleHeight
@@ -139,17 +150,22 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         // The height regular content (between the header, bottom drawer handle, and active request tab) can take up
         // if the keyboard is open, the height ignores the bottom drawer handle and active request tab
-        const contentHeight = nativeEventStore().keyboardHeight 
-            ? dimensions.height - HeaderHeight - bottomUIOffset //- nativeEventStore().keyboardHeight 
-                + activeRequestOffset + minimizedHandleOffset // add back space below the keyboard
-            : dimensions.height - HeaderHeight - bottomUIOffset;
+        // const contentHeight = nativeEventStore().keyboardOpen 
+        //     ? dimensions.height - HeaderHeight - bottomUIOffset //- nativeEventStore().keyboardHeight 
+        //         + activeRequestOffset + minimizedHandleOffset // add back space below the keyboard
+        //     : dimensions.height - HeaderHeight - bottomUIOffset;
 
-        const bottomDrawerContentHeight = dimensions.height - topUIOffset - internalHeaderOffset - bottomUIOffset - nativeEventStore().keyboardHeight
+        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset
 
-        return [contentHeight, bottomDrawerContentHeight]
+        const bottomDrawerContentHeight = dimensions.height - topUIOffset - bottomUIOffset //- nativeEventStore().keyboardHeight
+
+        console.log('recalculated content height: ', contentHeight, bottomDrawerContentHeight, this.viewId)
+
+        return [contentHeight, bottomDrawerContentHeight, this.viewId]
     }
 
-    animateContentHeight = ([contentHeight, drawerContentHeight]) => {
+    animateContentHeight = ([contentHeight, drawerContentHeight, viewId]) => {
+        console.log('animateContentHeight', contentHeight, drawerContentHeight)
         Animated.parallel([
             Animated.timing(this.contentHeight, {
                 toValue: contentHeight,
@@ -193,7 +209,8 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     get activeRequestShowing() {
         const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
 
-        return requestStore().activeRequest && !onDisabledRoute && !nativeEventStore().keyboardOpen;
+        // return requestStore().activeRequest && !onDisabledRoute && !nativeEventStore().keyboardOpen;
+        return requestStore().activeRequest && !onDisabledRoute;
     }
 
     get drawerShouldShow() {
@@ -209,20 +226,23 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         return this.drawerShowing && !this.expanded;
     }
 
-    get expandedHeaderShowing() {
-        return this.showing && this.expanded && this.headerShowing;
-    }
+    // get expandedHeaderShowing() {
+    //     return this.showing && this.expanded && this.headerShowing;
+    // }
 
     show = (view: BottomDrawerView, expanded?: boolean) => {
         const currentIsMinimizeable = this.minimizable;
         const newIsMinimizeable = this.isMinimizable(Config[view]);
+
+        console.log('show - currentIsMinimizeable: ', currentIsMinimizeable)
+        console.log('show - newIsMinimizeable: ', newIsMinimizeable)
 
         if (currentIsMinimizeable && newIsMinimizeable){
             if (this.viewId == view) {
                 runInAction(() => {
                     this.showing = true
                     this.expanded = !!expanded
-                    this.headerShowing = true
+                    // this.headerShowing = true
                 })
             } else {
                 // TODO: test this when we have another minimizeable view
@@ -240,7 +260,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                     
                     this.showing = true
                     this.expanded = !!expanded
-                    this.headerShowing = true
+                    // this.headerShowing = true
                 })
             }
         } else if (currentIsMinimizeable) {
@@ -248,16 +268,19 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 this.viewIdStack.push(view);
                 this.showing = true;
                 this.expanded = !!expanded
-                this.headerShowing = true
+                // this.headerShowing = true
             })
         } else if (!this.view) {
+            console.log('hmmmmm?')
             runInAction(() => {
                 this.viewId = view
                 this.showing = true
                 this.expanded = !!expanded
-                this.headerShowing = true
+                // this.headerShowing = true
             })
         }
+
+        console.log(this.viewId, this.showing, this.expanded)
 
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: !!expanded 
@@ -274,19 +297,17 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         this.view.onShow?.()
     }
 
-    showHeader = () => {
-        this.headerShowing = true;
-    }
-
     hide = async () => {
         await nativeEventStore().hideKeyboard()
 
+        console.log(`hide - viewIdStack: ${this.viewIdStack}`)
         if (this.viewIdStack.length > 1) {
             runInAction(() => {
                 const oldView = this.viewIdStack.pop();
 
                 this._minimize(() => {
                     runInAction(() => {
+                        console.log(`hide - oldView: ${oldView}`)
                         Config[oldView].onHide?.()
                     })
                 })
@@ -304,17 +325,16 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
             runInAction(() => {
                 this.viewId = null
+                console.log(`hide - viewId: ${this.viewId}`)
             })
         })
 
         runInAction(() => {
             this.showing = false
             this.expanded = false
-        })
-    }
 
-    hideHeader = () => {
-        this.headerShowing = false;
+            console.log('hide showing/expanded')
+        })
     }
 
     expand = () => {
@@ -362,11 +382,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     isMinimizable = (view: BottomDrawerComponentClass) => {
-        return view.minimizeLabel
-            ? typeof view.minimizeLabel == 'function'
-                ? !!(view.minimizeLabel as () => string)()
-                : !!view.minimizeLabel
-            : false;
+        return !!view.minimizable
     }
     
     clear() {

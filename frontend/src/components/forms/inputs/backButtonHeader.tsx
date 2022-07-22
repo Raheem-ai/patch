@@ -33,13 +33,7 @@ type BottomDrawerConfig = {
 const dimensions = Dimensions.get('screen')
 
 @observer
-class BackButtonHeader extends React.Component<BackButtonHeaderProps> {
-
-    componentDidMount() {
-        if (this.props.bottomDrawerView) {
-            bottomDrawerStore().hideHeader();
-        }
-    }
+export default class BackButtonHeader extends React.Component<BackButtonHeaderProps> {
 
     cancel = async () => {
         // hiding the bottomdrawer hides the keyboard but we can't await on that and the 
@@ -183,55 +177,6 @@ class BackButtonHeader extends React.Component<BackButtonHeaderProps> {
     }
 }
 
-// const BackButtonHeader = observer(({ 
-//     cancel, 
-//     save, 
-//     label,
-//     bottomBorder,
-//     labelDecoration,
-//     bottomDrawerView
-// }: BackButtonHeaderProps) => {
-//     const headerLabel = unwrap(label);
-//     const cancelLabel = unwrap(cancel?.label) || 'Cancel';
-//     const saveLabel = unwrap(save?.label) || 'Done'
-    
-//     return <View style={[styles.backButtonHeader, bottomBorder ? styles.bottomBorder : null ]}>
-//         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-//             <Text style={{ fontSize: 18 }} >{headerLabel}</Text>
-//             {
-//                 labelDecoration 
-//                 ? <IconButton
-//                     onPress={labelDecoration.handler}
-//                     icon={labelDecoration.icon} 
-//                     color={'#666'}
-//                     size={20} 
-//                     style={{ margin: 0, padding: 0, width: 20, marginLeft: 12 }} />
-//                 : null
-//             }
-//         </View>
-//         { cancel && cancel.handler
-//             ? <Button
-//                 uppercase={false} 
-//                 color={Colors.primary.alpha}
-//                 mode='text'
-//                 onPress={cancel?.handler}
-//                 style={styles.headerCancelButton}>{cancelLabel}</Button>
-//             : null
-//         }
-//         { save && save.handler
-//             ? <Button
-//                 uppercase={false} 
-//                 color={Colors.primary.alpha}
-//                 mode={save.outline ? 'outlined' : 'contained'}
-//                 onPress={save?.handler}
-//                 disabled={save.validator && !save.validator()}
-//                 style={[styles.headerDoneButton, save.outline ? styles.outlinedHeaderButton : null]}>{saveLabel}</Button>
-//             : null
-//         }
-//     </View>
-// })
-
-export default BackButtonHeader
 const styles = StyleSheet.create({
     backButtonHeader: {
         // height: 40,

@@ -83,12 +83,12 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
             + (inTabbedScreen
                 ? TabbedScreenHeaderHeight
                 : 0) 
-            + (!nativeEventStore().keyboardHeight && bottomDrawerStore().minimizedHandleShowing
-                ? BottomDrawerHandleHeight
-                : 0)
-            + (bottomDrawerStore().activeRequestShowing
-                ? ActiveRequestTabHeight
-                : 0);
+            // + (!nativeEventStore().keyboardHeight && bottomDrawerStore().minimizedHandleShowing
+            //     ? BottomDrawerHandleHeight
+            //     : 0)
+            // + (bottomDrawerStore().activeRequestShowing
+            //     ? ActiveRequestTabHeight
+            //     : 0);
 
         return (
             <KeyboardAvoidingView

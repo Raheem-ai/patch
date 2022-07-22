@@ -10,6 +10,7 @@ import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { observable, runInAction } from "mobx";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../../constants";
 
 
 @observer
@@ -38,10 +39,13 @@ export default class AddUser extends React.Component {
                     let invitedUser: PendingUser;
 
                     try {
+                        bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e));
                         return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
                     }
 
                     alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
@@ -56,7 +60,11 @@ export default class AddUser extends React.Component {
         }
 
         return (
-            <View style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={InteractiveHeaderHeight}
+            >
                 <BackButtonHeader {...headerConfig} />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
@@ -64,7 +72,7 @@ export default class AddUser extends React.Component {
                         { renderInputs(inputs()) }
                     </View>
                 </ScrollView>
-            </View>
+            </KeyboardAvoidingView>
         )
     })
 
@@ -133,12 +141,12 @@ export default class AddUser extends React.Component {
 
     render() {
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
+            // <KeyboardAvoidingView
+            //     behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+                // {/* <BottomDrawerViewVisualArea> */}
                     <Form ref={this.setRef} {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
+                // {/* </BottomDrawerViewVisualArea> */}
+            // </KeyboardAvoidingView>
         )
     }
                 

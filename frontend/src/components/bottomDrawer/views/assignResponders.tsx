@@ -17,7 +17,6 @@ const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
-    static raisedHeader = true;
 
     header = () => {
         const headerConfig: BackButtonHeaderProps = {
@@ -31,10 +30,13 @@ export default class AssignResponders extends React.Component {
                     const id = requestStore().currentRequest.id;
 
                     try {
+                        bottomDrawerStore().startSubmitting()
                         await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
                     } catch(e) {
                         alertStore().toastError(resolveErrorMessage(e))
                         return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
                     }
 
                     alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
@@ -165,12 +167,12 @@ export default class AssignResponders extends React.Component {
 
     render() {
         return (
-            <BottomDrawerViewVisualArea >
+            <>
                 { this.header() }
                 { this.listHeader() }
                 { this.responderActions() }
                 { this.responders() }
-            </BottomDrawerViewVisualArea>
+            </>
         )
     }
 }

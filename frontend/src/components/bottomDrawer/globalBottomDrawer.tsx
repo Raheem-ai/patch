@@ -1,18 +1,15 @@
-import { Route } from "@react-navigation/routers";
-import { throws } from "assert";
-import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
-import React, {ComponentClass} from "react";
-import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
+import React from "react";
+import { Animated, Dimensions, StyleSheet } from "react-native";
 import { unwrap } from "../../../../common/utils";
 import { HeaderHeight, InteractiveHeaderHeight, isAndroid } from "../../constants";
-import { navigateTo, navigationRef } from "../../navigation";
-import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
+import { navigateTo } from "../../navigation";
+import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
 import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
 import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
+import { BottomDrawerViewVisualArea } from "../helpers/visualArea";
 
 const dimensions = Dimensions.get('screen')
 
@@ -20,55 +17,21 @@ type BottomDrawerProps = { }
 
 @observer
 export default class GlobalBottomDrawer extends React.Component<BottomDrawerProps> {
-    // submitting = observable.box<boolean>(false)
-
-    // toggleExpanded = () => {
-    //     if (bottomDrawerStore().expanded) {
-    //         bottomDrawerStore().minimize()
-    //     } else {
-    //         bottomDrawerStore().expand()
-    //     }
-    // }
-
+    
     drawer() {
-
-        // const submitActionLabel = bottomDrawerStore().view.submit?.label
-        //     ? unwrap(bottomDrawerStore().view.submit.label)
-        //     : null
-
-        const minimizeLabel = bottomDrawerStore().view.minimizeLabel
-            ? unwrap(bottomDrawerStore().view.minimizeLabel)
-            : null;
-
-        // const hasRaisedHeader = bottomDrawerStore().view.raisedHeader
-        //     ? unwrap(bottomDrawerStore().view.raisedHeader)
-        //     : false;
+        const isMinimizable = bottomDrawerStore().minimizable;
 
         const ChildView = bottomDrawerStore().view;
-
-        // const valid = !!bottomDrawerStore().view.submit?.isValid?.()
-
-        // const onSubmit = async () => {
-        //     runInAction(() => {
-        //         this.submitting.set(true)
-        //     })
-
-        //     try {
-        //         await bottomDrawerStore().view.submit.action()
-        //     } finally {
-        //         runInAction(() => {
-        //             this.submitting.set(false)
-        //         })
-        //     }
-        // }
 
         return (
             <Animated.View key='bottomDrawer' style={[
                 styles.container, 
                 { 
                     top: bottomDrawerStore().bottomDrawerTabTop,
+                    // Note: don't use bottomDrawerStore().drawerContentHeight here because we don't want the container 
+                    // resizing as the keyboard opens/closes
                     height: dimensions.height 
-                        - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight) 
+                        - (isMinimizable ? HeaderHeight : InteractiveHeaderHeight) 
                         - (isAndroid ? BOTTOM_BAR_HEIGHT : 0)
                 },
                 bottomDrawerStore().expanded 
@@ -76,10 +39,12 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                     : styles.minimizedHeader
             ]}>
                 {
-                    // this.submitting.get()
-                        // ? <Loader/>
-                        // : <ChildView/>
-                        <ChildView/>
+                    bottomDrawerStore().submitting
+                        ? <Loader/>
+                        : <BottomDrawerViewVisualArea>
+                            <ChildView/>
+                        </BottomDrawerViewVisualArea>
+                            
                 }
             </Animated.View>
         )

@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "re
 import { Button, Text } from "react-native-paper";
 import { PatchPermissions } from "../../../../../common/models";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../../constants";
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
 import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
@@ -43,12 +44,16 @@ export default class EditUser extends React.Component {
             save: {
                 handler: async () => {
                     try {
+                        bottomDrawerStore().startSubmitting()
+
                         await (this.onMyProfile
                             ? editUserStore().editMe()
                             : editUserStore().editUser());
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e))
                         return   
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
                     }
 
                     const successMsg = this.onMyProfile
@@ -67,27 +72,33 @@ export default class EditUser extends React.Component {
             bottomDrawerView: true
         }
 
-        return <>
-            <BackButtonHeader {...headerConfig} />
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                { renderHeader() }
-                { renderInputs(inputs()) }
-                { this.canRemoveUser()
-                    ? <View style={styles.actionButtonsContainer}>
-                        <Button 
-                            mode= 'outlined'
-                            uppercase={false}
-                            style={styles.actionButton}
-                            color={styles.actionButton.borderColor}
-                            onPress={this.removeUserFromOrg}
-                            >
-                                {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
-                        </Button>
-                    </View>
-                    : null
-                }
-            </ScrollView>
-        </>
+        return (
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={InteractiveHeaderHeight}
+            >
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    { renderHeader() }
+                    { renderInputs(inputs()) }
+                    { this.canRemoveUser()
+                        ? <View style={styles.actionButtonsContainer}>
+                            <Button 
+                                mode= 'outlined'
+                                uppercase={false}
+                                style={styles.actionButton}
+                                color={styles.actionButton.borderColor}
+                                onPress={this.removeUserFromOrg}
+                                >
+                                    {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
+                            </Button>
+                        </View>
+                        : null
+                    }
+                </ScrollView>
+            </KeyboardAvoidingView>
+        )
     })
 
     formProps = (): FormProps => {
@@ -261,12 +272,12 @@ export default class EditUser extends React.Component {
 
     render() {
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
+            // <KeyboardAvoidingView
+            //     behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+            //     <BottomDrawerViewVisualArea>
                     <Form ref={this.setRef} {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
+                // {/* </BottomDrawerViewVisualArea>
+            // </KeyboardAvoidingView> */}
         )
     }
 }

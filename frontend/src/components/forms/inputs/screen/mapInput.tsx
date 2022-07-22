@@ -1,15 +1,16 @@
 import { observer } from "mobx-react";
 import React, { useCallback, useRef, useState } from "react";
-import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable, Animated } from "react-native";
+import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable, Animated, KeyboardAvoidingView, Platform } from "react-native";
 import { IconButton, List, Text } from "react-native-paper";
 import { IMapsService } from "../../../../services/interfaces";
 import { getService } from "../../../../services/meta";
-import { locationStore } from "../../../../stores/interfaces";
+import { bottomDrawerStore, locationStore } from "../../../../stores/interfaces";
 import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const mapsService = getService<IMapsService>(IMapsService);
@@ -136,104 +137,118 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         back()
     }
 
+    const isInNonMinimizableBottomDrawerView = bottomDrawerStore().showing
+        && bottomDrawerStore().expanded
+        && !bottomDrawerStore().minimizable;
+
+    const verticleOffset = isInNonMinimizableBottomDrawerView
+        ? InteractiveHeaderHeight
+        : HeaderHeight
+
     return (
-        <View style={{ flex: 1, position: 'relative'}}>
-            <MapView 
-                provider={PROVIDER_GOOGLE} 
-                showsUserLocation={true}
-                initialRegion={initialRegion}
-                onPress={mapPressed}
-                ref={mapInstance}
-                style={{ flex: 1 }}>
-                    { targetCoords 
-                        ? <Marker
-                            coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
-                            title={chosenSuggestion ? chosenSuggestion.structured_formatting.main_text : undefined }
-                            description={chosenSuggestion ?chosenSuggestion.structured_formatting.secondary_text : undefined}
-                            draggable
-                            onDragEnd={(e) => manuallySetLocation(e.nativeEvent.coordinate)}
-                        />
-                        : null }
-            </MapView>
-            <Animated.View style={{ 
-                position: 'absolute',
-                top: 0,
-                width: '100%'
-            }}>
-                    <View style={{ 
-                        backgroundColor: '#fff', 
+        <KeyboardAvoidingView
+            behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={verticleOffset}
+        >
+            <View style={{ flex: 1, position: 'relative'}}>
+                <MapView 
+                    provider={PROVIDER_GOOGLE} 
+                    showsUserLocation={true}
+                    initialRegion={initialRegion}
+                    onPress={mapPressed}
+                    ref={mapInstance}
+                    style={{ flex: 1 }}>
+                        { targetCoords 
+                            ? <Marker
+                                coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
+                                title={chosenSuggestion ? chosenSuggestion.structured_formatting.main_text : undefined }
+                                description={chosenSuggestion ?chosenSuggestion.structured_formatting.secondary_text : undefined}
+                                draggable
+                                onDragEnd={(e) => manuallySetLocation(e.nativeEvent.coordinate)}
+                            />
+                            : null }
+                </MapView>
+                <View style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%'
+                }}>
+                        <View style={{ 
+                            backgroundColor: '#fff', 
+                            borderRadius: 24, 
+                            height: 44, 
+                            margin: 24, 
+                            marginBottom: 0,
+                            flexDirection: 'row',
+                            alignContent: 'center',
+                            flex: 1
+                        }}>
+                            <IconButton
+                                style={{ alignSelf: 'center', margin: 0 , width: 35}}
+                                icon='chevron-left' 
+                                color='#000'
+                                onPress={cancel}
+                                size={35} />
+                            <RNTextInput 
+                                onChangeText={onTextUpdated}
+                                value={searchText}
+                                onFocus={textInputFocused}
+                                onBlur={textInputBlurred}
+                                ref={textInputInstance}
+                                style={{ 
+                                    flex: 1, 
+                                    backgroundColor: '#fff', 
+                                    height: 44, 
+                                    paddingHorizontal: 0, 
+                                    borderBottomWidth: 0,
+                                    fontSize: 16
+                                }}/>
+                            <IconButton
+                                style={{ alignSelf: 'center', margin: 0 , marginRight: 12, width: 25}}
+                                icon='close' 
+                                color={searchText ? '#666' : '#fff'}
+                                onPress={clear}
+                                size={25} />
+                        </View>
+                        { inputActive
+                            ? <View style={{ 
+                                backgroundColor: '#fff', 
+                                borderBottomLeftRadius: 24, 
+                                borderBottomRightRadius: 24, 
+                                marginHorizontal: 24, 
+                                alignContent: 'center', 
+                                paddingTop: suggestions.length ? 22 + 16 : 22,
+                                position: 'relative',
+                                top: -22,
+                                zIndex: -1                                
+                            }}>
+                                {suggestions.map(s => {
+                                    return <Suggestion suggestion={s} onPress={() => chooseSuggestion(s)}/>
+                                })}
+                            </View>
+                            : null }
+                </View>
+
+                <Pressable 
+                    onPress={save}
+                    style={{
+                        backgroundColor: '#000', 
                         borderRadius: 24, 
                         height: 44, 
-                        margin: 24, 
-                        marginBottom: 0,
-                        flexDirection: 'row',
-                        alignContent: 'center',
-                        flex: 1
-                    }}>
-                        <IconButton
-                            style={{ alignSelf: 'center', margin: 0 , width: 35}}
-                            icon='chevron-left' 
-                            color='#000'
-                            onPress={cancel}
-                            size={35} />
-                        <RNTextInput 
-                            onChangeText={onTextUpdated}
-                            value={searchText}
-                            onFocus={textInputFocused}
-                            onBlur={textInputBlurred}
-                            ref={textInputInstance}
-                            style={{ 
-                                flex: 1, 
-                                backgroundColor: '#fff', 
-                                height: 44, 
-                                paddingHorizontal: 0, 
-                                borderBottomWidth: 0,
-                                fontSize: 16
-                            }}/>
-                        <IconButton
-                            style={{ alignSelf: 'center', margin: 0 , marginRight: 12, width: 25}}
-                            icon='close' 
-                            color={searchText ? '#666' : '#fff'}
-                            onPress={clear}
-                            size={25} />
-                    </View>
-                    { inputActive
-                        ? <View style={{ 
-                            backgroundColor: '#fff', 
-                            borderBottomLeftRadius: 24, 
-                            borderBottomRightRadius: 24, 
-                            marginHorizontal: 24, 
-                            alignContent: 'center', 
-                            paddingTop: suggestions.length ? 22 + 16 : 22,
-                            position: 'relative',
-                            top: -22,
-                            zIndex: -1                                
-                        }}>
-                            {suggestions.map(s => {
-                                return <Suggestion suggestion={s} onPress={() => chooseSuggestion(s)}/>
-                            })}
-                        </View>
-                        : null }
-            </Animated.View>
-
-            <Pressable 
-                onPress={save}
-                style={{
-                    backgroundColor: '#000', 
-                    borderRadius: 24, 
-                    height: 44, 
-                    margin: 24,
-                    position: 'absolute',
-                    bottom: 0,
-                    width: dimensions.width - (2 * 24),
-                    justifyContent: 'center'
-            }}>
-                <Text style={{ 
-                    alignSelf: 'center', 
-                    color: isSaveable ? '#fff' : '#999'
-                }}>Save this location</Text>
-            </Pressable>
-        </View>
+                        margin: 24,
+                        position: 'absolute',
+                        bottom: 0,
+                        width: dimensions.width - (2 * 24),
+                        justifyContent: 'center'
+                }}>
+                    <Text style={{ 
+                        alignSelf: 'center', 
+                        color: isSaveable ? '#fff' : '#999'
+                    }}>Save this location</Text>
+                </Pressable>
+            </View>
+        </KeyboardAvoidingView>
     )
 })
 

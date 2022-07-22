@@ -11,6 +11,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../../constants";
 
 type Props = {}
 
@@ -46,10 +47,13 @@ class EditHelpRequest extends React.Component<Props> {
             save: {
                 handler: async () => {
                     try {
+                        bottomDrawerStore().startSubmitting()
                         await editRequestStore().editRequest(requestStore().currentRequest.id)
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e))
                         return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
                     }
         
                     alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
@@ -65,7 +69,11 @@ class EditHelpRequest extends React.Component<Props> {
         }
 
         return (
-            <View style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={InteractiveHeaderHeight}
+            >
                 <BackButtonHeader {...headerConfig} />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
@@ -73,7 +81,7 @@ class EditHelpRequest extends React.Component<Props> {
                         { renderInputs(inputs()) }
                     </View>
                 </ScrollView>
-            </View>
+            </KeyboardAvoidingView>
         )
     })
     
@@ -273,12 +281,12 @@ class EditHelpRequest extends React.Component<Props> {
 
     render() {
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
+            // <KeyboardAvoidingView
+            //     behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+                // {/* <BottomDrawerViewVisualArea> */}
                     <Form ref={this.setRef} {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
+                // {/* </BottomDrawerViewVisualArea> */}
+            // </KeyboardAvoidingView>
         )
     }
 }

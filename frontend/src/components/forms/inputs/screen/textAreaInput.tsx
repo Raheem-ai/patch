@@ -2,8 +2,9 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
-import { HeaderHeight } from "../../../../constants";
+import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
 import { useKeyboard } from "../../../../hooks/useKeyboard";
+import { bottomDrawerStore } from "../../../../stores/interfaces";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
@@ -52,11 +53,23 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
         )
     }
 
+    // TODO: implicitly wrap all screen inputs with this logic so they
+    // can just worry about filling up there container whether or not they trigger the keyboard
+    const isInNonMinimizableBottomDrawerView = bottomDrawerStore().showing
+        && bottomDrawerStore().expanded
+        && !bottomDrawerStore().minimizable;
+
+    const verticleOffset = isInNonMinimizableBottomDrawerView
+        ? InteractiveHeaderHeight
+        : HeaderHeight
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-            style={styles.notesContainer}>
-            <View style={{ height: targetHeight }}>
+            style={styles.notesContainer}
+            keyboardVerticalOffset={verticleOffset}
+        >
+            <View style={{ flex: 1 }}>
                 <BackButtonHeader  {...headerProps} />
                 <View style={styles.notes}>
                     { charLimitIndicator() }

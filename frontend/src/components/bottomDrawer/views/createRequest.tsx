@@ -1,102 +1,30 @@
 import React from "react";
-import { ICreateRequestStore, IRequestStore, IBottomDrawerStore, IAlertStore, createRequestStore, alertStore, bottomDrawerStore, manageTagsStore } from "../../../stores/interfaces";
-import { IObservableValue, observable, reaction, runInAction } from 'mobx';
+import { createRequestStore, alertStore, bottomDrawerStore, BottomDrawerHandleHeight, nativeEventStore } from "../../../stores/interfaces";
+import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeCategories, requestTypesToCategorizedItems, RequestTypeToLabelMap } from "../../../../../common/models";
+import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
-import { allEnumValues, dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
+import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { ResponderCountRange } from "../../../constants";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { ScrollView } from "react-native-gesture-handler";
+import { ActiveRequestTabHeight, HeaderHeight } from "../../../constants";
 
 type Props = {}
 
 @observer
 class CreateHelpRequest extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
-    // headerReactionDisposer = null;
 
-    componentDidMount = () => {
-        // checkStateChange gets called any time the form page, header visibility, or the expanded
-        // state of the bottom drawer is updated. If any of these values have changed since the
-        // last check, checkHeaderShowing is called to make sure the header is being properly
-        // displayed or hidden based on the form page and expanded state.
-        // this.headerReactionDisposer = reaction(this.checkStateChange, this.checkHeaderShowing, {
-        //     equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2],
-        //     fireImmediately: true
-        // });
-    }
-
-    componentWillUnmount(): void {
-        // Dispose of the reaction to prevent memory leaks.
-        // this.headerReactionDisposer();
-    }
-    
-    // static onHide = () => {
-    //     createRequestStore().clear();
-    // }
-
-    // static submit = {
-    //     isValid: () => {
-    //         // TODO: figure out how to let this use this.formInstance
-    //         // return !!createRequestStore().type.length
-    //         return !!createRequestStore().notes.length
-    //     },
-    //     action: async () => {
-    //         let createdReq: HelpRequest;
-
-    //         try {
-    //             createdReq = await createRequestStore().createRequest()
-    //         } catch(e) {
-    //             alertStore().toastError(resolveErrorMessage(e))
-    //             return
-    //         }
-
-    //         alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
-
-    //         bottomDrawerStore().hide()
-    //     },
-    //     label: 'Add'
-    // }
-
-    // TODO: change this to a boolean
-    static minimizeLabel = 'Create Request';
+    static minimizable = true;
 
     headerLabel = () => {
         return 'Create Request'
     }
-
-    // checkStateChange = (): [boolean, boolean, boolean] => {
-    //     // This function returns an array of the following information:
-    //     // 1. Is the current form on its home page (or a sub-page).
-    //     // 2. Is the header showing.
-    //     // 3. Is the bottom drawer expanded.
-    //     return [this.formInstance?.current?.isHome.get(), bottomDrawerStore().headerShowing, bottomDrawerStore().expanded];
-    // }
-
-    // checkHeaderShowing = ([formIsHome, headerShowing, isExpanded]) => {
-    //     if (isExpanded) {
-    //         // The bottom drawer is expanded.
-    //         // We show the header if and only if
-    //         // the form is on its home page.
-    //         if (!formIsHome && headerShowing) {
-    //             bottomDrawerStore().hideHeader();
-    //         } else if (formIsHome && !headerShowing) {
-    //             bottomDrawerStore().showHeader();
-    //         }
-    //     } else if (!isExpanded && !formIsHome && !headerShowing) {
-    //         // If the bottom drawer is minimized, the header should be showing.
-    //         // The header would already be visible if the form is on the home page,
-    //         // so we can add a condition to only consider executing this block if we're
-    //         // not on the home page.
-    //         bottomDrawerStore().showHeader();
-    //     }
-    // }
 
     setRef = (formRef: Form) => {
         runInAction(() => {
@@ -120,10 +48,13 @@ class CreateHelpRequest extends React.Component<Props> {
                     let createdReq: HelpRequest;
         
                     try {
+                        bottomDrawerStore().startSubmitting()
                         createdReq = await createRequestStore().createRequest()
                     } catch(e) {
                         alertStore().toastError(resolveErrorMessage(e))
                         return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
                     }
         
                     alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
@@ -140,16 +71,33 @@ class CreateHelpRequest extends React.Component<Props> {
             },
         }
 
+        // const verticalOffset = HeaderHeight 
+            // + (bottomDrawerStore().minimizedHandleShowing
+            //     ? BottomDrawerHandleHeight
+            //     : 0)
+            // + (bottomDrawerStore().activeRequestShowing
+            //     ? ActiveRequestTabHeight
+            //     : 0);
+
+        // console.log('verticalOffset: ', verticalOffset, HeaderHeight)
+
         return (
-            <View style={{ flex: 1 }}>
-                <BackButtonHeader {...headerConfig} />
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    <View style={{ paddingBottom: 20 }}>
-                        { renderHeader() }
-                        { renderInputs(inputs()) }
-                    </View>
-                </ScrollView>
-            </View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={HeaderHeight}
+            >
+                {/* <View style={{ flex: 1 }}> */}
+                    <BackButtonHeader {...headerConfig} />
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <View style={{ paddingBottom: 20 }}>
+                            { renderHeader() }
+                            { renderInputs(inputs()) }
+                        </View>
+                    </ScrollView>
+                {/* </View> */}
+            </KeyboardAvoidingView>
+            
         )
     })
 
@@ -349,13 +297,25 @@ class CreateHelpRequest extends React.Component<Props> {
     }
 
     render() {
+
+        // const verticalOffset = HeaderHeight 
+        //     + (!nativeEventStore().keyboardOpen && bottomDrawerStore().minimizedHandleShowing
+        //         ? BottomDrawerHandleHeight
+        //         : 0)
+        //     + (bottomDrawerStore().activeRequestShowing
+        //         ? ActiveRequestTabHeight
+        //         : 0);
+
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
+            // <KeyboardAvoidingView
+            //     behavior={Platform.OS === "ios" ? "padding" : "height"} 
+            //     style={{ flex: 1 }}
+            //     keyboardVerticalOffset={verticalOffset}
+            // >
+                // {/* <BottomDrawerViewVisualArea> */}
                     <Form ref={this.setRef} {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
+                // {/* </BottomDrawerViewVisualArea> */}
+            // </KeyboardAvoidingView>
         )
     }
 }

@@ -306,14 +306,13 @@ export interface IBottomDrawerStore extends IBaseStore {
     readonly bottomDrawerTabTop: Animated.Value
     expanded: boolean
     showing: boolean
-    headerShowing: boolean
     minimizable: boolean
+    submitting: boolean
 
     drawerShouldShow: boolean
     drawerShowing: boolean
     activeRequestShowing: boolean
     minimizedHandleShowing: boolean
-    expandedHeaderShowing: boolean
 
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
@@ -322,11 +321,11 @@ export interface IBottomDrawerStore extends IBaseStore {
     contentHeight: Animated.AnimatedInterpolation
 
     show(view: BottomDrawerView, expanded?: boolean): void;
-    showHeader(): void;
     hide(): void// should this take an optional callback?
-    hideHeader(): void;
     expand(): void
     minimize(): void
+    startSubmitting(): void
+    endSubmitting(): void
 }
 
 export namespace IBottomDrawerStore {
@@ -345,7 +344,7 @@ export enum BottomDrawerView {
 export type BottomDrawerComponentClass = React.ComponentClass & {
     onHide?: () => void,
     onShow?: () => void,
-    minimizeLabel?: string | (() => string),
+    minimizable?: boolean,
     submit?: {
         isValid: () => boolean
         label: string | (() => string),
