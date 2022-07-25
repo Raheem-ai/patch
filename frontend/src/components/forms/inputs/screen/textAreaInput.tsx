@@ -2,9 +2,8 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Dimensions, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
-import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
+import { HeaderHeight } from "../../../../constants";
 import { useKeyboard } from "../../../../hooks/useKeyboard";
-import { bottomDrawerStore } from "../../../../stores/interfaces";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
@@ -53,16 +52,6 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
             </View>
         )
     }
-
-    // TODO: implicitly wrap all screen inputs with this logic so they
-    // can just worry about filling up there container whether or not they trigger the keyboard
-    const isInNonMinimizableBottomDrawerView = bottomDrawerStore().showing
-        && bottomDrawerStore().expanded
-        && !bottomDrawerStore().minimizable;
-
-    const verticleOffset = isInNonMinimizableBottomDrawerView
-        ? InteractiveHeaderHeight
-        : HeaderHeight
 
     return (
         <KeyboardAwareArea style={styles.notesContainer}>

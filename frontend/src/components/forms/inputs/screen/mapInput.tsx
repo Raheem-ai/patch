@@ -4,13 +4,12 @@ import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Press
 import { IconButton, Text } from "react-native-paper";
 import { IMapsService } from "../../../../services/interfaces";
 import { getService } from "../../../../services/meta";
-import { bottomDrawerStore, locationStore } from "../../../../stores/interfaces";
+import { locationStore, nativeEventStore } from "../../../../stores/interfaces";
 import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
-import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
@@ -119,8 +118,10 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         setInputActive(false)
     }
 
-    const save = () => {
+    const save = async () => {
         if (isSaveable) {
+            await nativeEventStore().hideKeyboard()
+            
             const loc: AddressableLocation = {
                 latitude: targetCoords.lat,
                 longitude: targetCoords.lng,
@@ -133,18 +134,11 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         }
     }
 
-    const cancel = () => {
+    const cancel = async () => {
+        await nativeEventStore().hideKeyboard()
         config.onCancel?.()
         back()
     }
-
-    const isInNonMinimizableBottomDrawerView = bottomDrawerStore().showing
-        && bottomDrawerStore().expanded
-        && !bottomDrawerStore().minimizable;
-
-    const verticleOffset = isInNonMinimizableBottomDrawerView
-        ? InteractiveHeaderHeight
-        : HeaderHeight
 
     return (
         <KeyboardAwareArea>
