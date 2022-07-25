@@ -1,9 +1,9 @@
 import { computed, observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
-import React, { useState } from "react";
-import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet, Pressable } from "react-native";
+import React from "react";
+import { View, StyleSheet, Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { IconButton, List, Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
 import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
 import { SectionScreenViewProps } from "../../types";

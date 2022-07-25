@@ -1,12 +1,11 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
-import { useKeyboard } from "../../hooks/useKeyboard";
-import { BottomDrawerHandleHeight, nativeEventStore, requestStore, userStore } from "../../stores/interfaces";
+import { requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
+import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
 
 type Props =  {
@@ -79,15 +78,8 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
     }
 
     const enabledChat = () => {
-        const verticalOffset = HeaderHeight + (inTabbedScreen
-            ? TabbedScreenHeaderHeight
-            : 0);
-
         return (
-            <KeyboardAvoidingView
-                keyboardVerticalOffset={verticalOffset}
-                behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-                style={styles.chatContainer}>
+            <KeyboardAwareArea insideTabView={inTabbedScreen} style={styles.chatContainer}>
                 <View style={{ height: '100%' }}>
                     <View style={styles.messagesContainer}>
                         { messages() }
@@ -113,7 +105,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                             style={styles.inputAction}/>
                     </View>
                 </View>
-            </KeyboardAvoidingView>
+            </KeyboardAwareArea>
         )
     }
 

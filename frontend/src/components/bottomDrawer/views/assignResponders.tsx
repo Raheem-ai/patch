@@ -1,3 +1,4 @@
+import { observable, runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
@@ -7,6 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
 import { Colors } from "../../../types"
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
@@ -15,35 +17,45 @@ const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
-    static raisedHeader = true;
 
-    static submit = {
-        isValid: () => {
-            return !!dispatchStore().selectedResponderIds.size
-        },
-        action: async () => {
-            const id = requestStore().currentRequest.id;
+    header = () => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    dispatchStore().clear()
+                },
+            },
+            save: {
+                handler: async () => {
+                    const id = requestStore().currentRequest.id;
 
-            try {
-                await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
-            } catch(e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return
-            }
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
 
-            alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
+                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
 
-            bottomDrawerStore().hide()
-        },
-        label: () => {
-            const count = dispatchStore().selectedResponderIds.size;
-            
-            return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
+                    bottomDrawerStore().hide()
+                },
+                label: () => {
+                    const count = dispatchStore().selectedResponderIds.size;
+                    
+                    return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
+                },
+                validator: () => {
+                    return !!dispatchStore().selectedResponderIds.size
+                }
+            },
+            bottomDrawerView: true,
         }
-    }
 
-    static onHide = () => {
-        dispatchStore().clear()
+        return <BackButtonHeader {...headerConfig}/>
     }
 
     toggleSelectAll = () => {
@@ -54,11 +66,10 @@ export default class AssignResponders extends React.Component {
         dispatchStore().toggleResponder(userId)
     }
     
-    header = () => {
+    listHeader = () => {
 
         const headerProps: ListHeaderProps = {
             openHeaderLabel: 'People to notify',
-            // closedHeaderStyles: styles.closedFilterHeader,
     
             optionConfigs: [
                 {
@@ -155,11 +166,12 @@ export default class AssignResponders extends React.Component {
 
     render() {
         return (
-            <BottomDrawerViewVisualArea >
+            <>
                 { this.header() }
+                { this.listHeader() }
                 { this.responderActions() }
                 { this.responders() }
-            </BottomDrawerViewVisualArea>
+            </>
         )
     }
 }

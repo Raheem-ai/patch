@@ -129,25 +129,21 @@ const PositionsInput = observer(({
             <>
                 { header() }
                 { renderInputs(inputs()) }
+                <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
+                    <Button 
+                        uppercase={false}
+                        style={[styles.button, styles.outlineButton]}
+                        color={Colors.primary.alpha}
+                        mode='outlined'
+                        labelStyle={styles.buttonLabel}
+                        onPress={null}>Delete this position{/* @charlie, can you fill in the onPress action to remove the position? */}
+                    </Button>
+                </View>
             </>
         )
     })
 
-    return (
-        <VisualArea>
-            <Form inputs={inputs} homeScreen={homeScreen} />
-            <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
-                <Button 
-                    uppercase={false}
-                    style={[styles.button, styles.outlineButton]}
-                    color={Colors.primary.alpha}
-                    mode='outlined'
-                    labelStyle={styles.buttonLabel}
-                    onPress={null}>Delete this position{/* @charlie, can you fill in the onPress action to remove the position? */}
-                </Button>
-            </View>
-        </VisualArea>
-    )
+    return <Form inputs={inputs} homeScreen={homeScreen} />
 })
 
 export default PositionsInput;
