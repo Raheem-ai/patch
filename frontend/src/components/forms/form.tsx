@@ -31,6 +31,7 @@ export type FormProps = {
 export type CustomFormHomeScreenProps = {
     onSubmit: () => Promise<void>,
     onContainerPress: () => void,
+    renderHeader: () => JSX.Element,
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
     inputs: () => Grouped<StandAloneFormInputConfig>[],
     isValid: () => boolean,
@@ -307,6 +308,25 @@ export default class Form extends React.Component<FormProps> {
             return inputElements;
         }
 
+        const renderHeader = () => {
+            return this.props.headerLabel
+                ? <View style={{
+                    paddingLeft: 20,
+                    borderStyle: 'solid',
+                    borderBottomColor: Colors.borders.formFields,
+                    borderBottomWidth: 1,
+                    minHeight: 60,
+                    justifyContent: 'center',
+                    padding: 20
+                }}>
+                    <Text style={{
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                    }}>{this.props.headerLabel}</Text>
+                </View>
+                : null
+        }
+
         // lets us customize how the home screen will look by passing the basic internal functions we use to 
         // render inputs on the home screen to a callback ie. if we want to have multiple form sections
         // spaced out with other ui around them but also have the whole page navigate back and forth between
@@ -317,6 +337,7 @@ export default class Form extends React.Component<FormProps> {
             const customProps: CustomFormHomeScreenProps = {
                 onSubmit,
                 onContainerPress: onPress,
+                renderHeader,
                 renderInputs,
                 inputs: () => this.groupedInputs.get(),
                 isValid: () => this.isValid.get(),
@@ -329,23 +350,7 @@ export default class Form extends React.Component<FormProps> {
         return (
                 <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
                     <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
-                        { this.props.headerLabel
-                            ? <View style={{
-                                paddingLeft: 20,
-                                borderStyle: 'solid',
-                                borderBottomColor: Colors.borders.formFields,
-                                borderBottomWidth: 1,
-                                minHeight: 60,
-                                justifyContent: 'center',
-                                padding: 20
-                            }}>
-                                <Text style={{
-                                    fontSize: 24,
-                                    fontWeight: 'bold',
-                                }}>{this.props.headerLabel}</Text>
-                            </View>
-                            : null
-                        }
+                        { renderHeader() }
                         { renderInputs(this.groupedInputs.get()) }
                         {
                             this.props.submit

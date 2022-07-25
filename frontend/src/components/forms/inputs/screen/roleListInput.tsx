@@ -100,9 +100,7 @@ const RoleListInput = ({
     })
 
     return (
-        <VisualArea>
-            <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
-        </VisualArea>
+        <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
     )
 }
 

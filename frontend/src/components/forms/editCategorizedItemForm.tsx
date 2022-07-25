@@ -6,6 +6,7 @@ import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
+import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import CategoryRow from "./common/categoryRow";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader";
 import TextInput from "./inputs/inline/textInput";
@@ -130,7 +131,7 @@ export const EditCategorizedItemForm = observer(({
     }
 
     return (
-        <>
+        <KeyboardAwareArea>
             <BackButtonHeader {...headerProps}/>
             
             {/* add category */}
@@ -184,7 +185,7 @@ export const EditCategorizedItemForm = observer(({
                     })
                 }
             </WrappedScrollView>
-        </>
+        </KeyboardAwareArea>
     )
 })
 
