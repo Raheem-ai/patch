@@ -1637,10 +1637,67 @@ export class DBManager {
             }
         ]
 
+        await this.createOrg(partialAdmin, users, 'HEART');
+    }
+
+    async createMPOPOrg() {
+
+        const partialAdmin: Partial<User> = {
+            email: 'charlie@mpop.com',
+            password: 'test',
+            name: 'Charlie'
+        }
+
+        const users: Partial<User>[] = [
+            {
+                email: 'nadav@mpop.com',
+                password: 'test',
+                name: 'Nadav'
+            },
+            {
+                email: 'cosette@mpop.com',
+                password: 'test',
+                name: 'Cosette'
+            },
+            {
+                email: 'lilian.h.liang@gmail.com',
+                password: 'MPOP',
+                name: 'Lilian'
+            },
+            {
+                email: 'rach.sunnn@gmail.com',
+                password: 'MPOP',
+                name: 'Rach'
+            },
+            {
+                email: 'viviancarolinehua@gmail.com',
+                password: 'MPOP',
+                name: 'Vivian'
+            },
+            {
+                email: 'chuang.alex.t@gmail.com',
+                password: 'MPOP',
+                name: 'Alex'
+            },
+            {
+                email: 'kaeli.flann@gmail.com',
+                password: 'MPOP',
+                name: 'Kaeli'
+            }
+        ]
+
+        await this.createOrg(partialAdmin, users, 'MPOPg');
+    }
+
+    async createOrg(
+        partialAdmin: Partial<User>,
+        users: Partial<User>[],
+        orgName: string
+    ) {
         let admin = await this.createUser(partialAdmin)
 
         let [ heartOrg, admin1 ] = await this.createOrganization({
-            name: 'HEART'
+            name: orgName
         }, admin.id);
 
 
@@ -1669,6 +1726,7 @@ export class DBManager {
             console.log('creating users/org')
 
             await this.createHeartOrg();
+            await this.createMPOPOrg()
 
             let user1 = await this.createUser({ 
                 email: 'Charlie@test.com', 
