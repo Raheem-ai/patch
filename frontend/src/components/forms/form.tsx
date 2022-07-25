@@ -711,11 +711,11 @@ const NavigationSection = observer((props: {
         props.openLink(props.linkTo);
     }
 
-    // only handle expand logic when the input is using a text label 
-    // vs a component that is handling it itself
-    const defaultExpand = () => {
-        if (typeof props.inputConfig.label == 'string') {
-            expand();
+    const resolvedExpand = () => {
+        if (props.inputConfig.expandOverride) {
+            props.inputConfig.expandOverride(expand)
+        } else {
+            expand()
         }
     }
 
@@ -736,7 +736,7 @@ const NavigationSection = observer((props: {
 
     return (
         <>
-            <Pressable style={resolvedStyles} onPress={defaultExpand}>
+            <Pressable style={resolvedStyles} onPress={resolvedExpand}>
                 { props.inputConfig.icon
                     ? <View style={styles.iconContainer}>
                         <IconButton
@@ -751,7 +751,7 @@ const NavigationSection = observer((props: {
                 {
                     typeof props.inputConfig.label == 'function'
                         ? <View style={{ flex: 1 }}>
-                            { props.inputConfig.label({ expand }) }
+                            { props.inputConfig.label({ expand: resolvedExpand }) }
                         </View>
                         : <Text style={[styles.label, { flex: 1 }]}>{props.inputConfig.label}</Text>
                 }
@@ -760,7 +760,7 @@ const NavigationSection = observer((props: {
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon={rightIcon} 
                         color='rgba(60,60,67,.3)'
-                        onPress={expand}
+                        onPress={resolvedExpand}
                         size={30} />
                     : null
                 }

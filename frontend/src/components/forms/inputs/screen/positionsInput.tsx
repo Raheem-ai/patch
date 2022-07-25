@@ -125,20 +125,38 @@ const PositionsInput = observer(({
             return <BackButtonHeader {...headerProps}/>
         }
 
-        return (
-            <>
-                { header() }
-                { renderInputs(inputs()) }
-                <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
+        const renderDeleteButton = () => {
+            const deletePosition = () => {
+                const updatedPositions: Position[] = JSON.parse(JSON.stringify(config.val()));
+
+                const idx = updatedPositions.findIndex(pos => pos.id == position.get().id);
+
+                updatedPositions.splice(idx, 1)
+
+                config.onSave(updatedPositions);
+                
+                back();
+            }
+
+            return position.get().id
+                ? <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
                     <Button 
                         uppercase={false}
                         style={[styles.button, styles.outlineButton]}
                         color={Colors.primary.alpha}
                         mode='outlined'
                         labelStyle={styles.buttonLabel}
-                        onPress={null}>Delete this position{/* @charlie, can you fill in the onPress action to remove the position? */}
-                    </Button>
+                        onPress={deletePosition}
+                    >Delete this position</Button>
                 </View>
+                : null
+        }
+
+        return (
+            <>
+                { header() }
+                { renderInputs(inputs()) }
+                { renderDeleteButton() }
             </>
         )
     })

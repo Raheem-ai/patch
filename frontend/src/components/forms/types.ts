@@ -187,6 +187,7 @@ export type NavigationFormInputConfig = {
     screen: (props: SectionNavigationScreenViewProps) => JSX.Element
 
     labelContainerStyle?: StyleProp<ViewStyle>
+    expandOverride?: (expand: () => void) => void
     expandIcon?: string | (() => string)
     // need 'name' for a screenId and 'disabled' in case the label is a string
     // so the consumer doesn't have control over the disabled lable visual component
