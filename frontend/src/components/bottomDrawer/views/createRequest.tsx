@@ -1,5 +1,5 @@
 import React from "react";
-import { createRequestStore, alertStore, bottomDrawerStore, BottomDrawerHandleHeight, nativeEventStore } from "../../../stores/interfaces";
+import { createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
@@ -7,12 +7,11 @@ import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPr
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
+import { View } from "react-native";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { ScrollView } from "react-native-gesture-handler";
-import { ActiveRequestTabHeight, HeaderHeight } from "../../../constants";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 type Props = {}
 
@@ -71,32 +70,16 @@ class CreateHelpRequest extends React.Component<Props> {
             },
         }
 
-        // const verticalOffset = HeaderHeight 
-            // + (bottomDrawerStore().minimizedHandleShowing
-            //     ? BottomDrawerHandleHeight
-            //     : 0)
-            // + (bottomDrawerStore().activeRequestShowing
-            //     ? ActiveRequestTabHeight
-            //     : 0);
-
-        // console.log('verticalOffset: ', verticalOffset, HeaderHeight)
-
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} 
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={HeaderHeight}
-            >
-                {/* <View style={{ flex: 1 }}> */}
-                    <BackButtonHeader {...headerConfig} />
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        <View style={{ paddingBottom: 20 }}>
-                            { renderHeader() }
-                            { renderInputs(inputs()) }
-                        </View>
-                    </ScrollView>
-                {/* </View> */}
-            </KeyboardAvoidingView>
+            <KeyboardAwareArea>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </KeyboardAwareArea>
             
         )
     })
@@ -297,26 +280,7 @@ class CreateHelpRequest extends React.Component<Props> {
     }
 
     render() {
-
-        // const verticalOffset = HeaderHeight 
-        //     + (!nativeEventStore().keyboardOpen && bottomDrawerStore().minimizedHandleShowing
-        //         ? BottomDrawerHandleHeight
-        //         : 0)
-        //     + (bottomDrawerStore().activeRequestShowing
-        //         ? ActiveRequestTabHeight
-        //         : 0);
-
-        return (
-            // <KeyboardAvoidingView
-            //     behavior={Platform.OS === "ios" ? "padding" : "height"} 
-            //     style={{ flex: 1 }}
-            //     keyboardVerticalOffset={verticalOffset}
-            // >
-                // {/* <BottomDrawerViewVisualArea> */}
-                    <Form ref={this.setRef} {...this.formProps()}/>
-                // {/* </BottomDrawerViewVisualArea> */}
-            // </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
 

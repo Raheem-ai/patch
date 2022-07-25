@@ -15,6 +15,8 @@ import EditCategorizedItemForm from "../../editCategorizedItemForm"
 import CategoryRow from "../../common/categoryRow"
 import reactStringReplace from 'react-string-replace';
 import { Colors } from '../../../../types';
+import { nativeEventStore } from "../../../../stores/interfaces"
+import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -75,7 +77,8 @@ const CategorizedItemListInput = ({
             label: unwrap(config.headerLabel),
             labelDecoration: iCanEdit 
                 ? {
-                    handler: () => {
+                    handler: async () => {
+                        await nativeEventStore().hideKeyboard()
                         navigateToScreen('edit')
                     }, 
                     icon: 'pencil'
@@ -251,7 +254,7 @@ const CategorizedItemListInput = ({
         }
 
         return (
-            <>
+            <KeyboardAwareArea>
                 <BackButtonHeader {...headerProps}/>
                 
                 {/* search area */}
@@ -265,7 +268,7 @@ const CategorizedItemListInput = ({
                         { selectedListArea() }
                     </>
                 }
-            </>
+            </KeyboardAwareArea>
         )
     })
 

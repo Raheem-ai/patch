@@ -1,11 +1,10 @@
 import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Button } from "react-native-paper";
 import { PatchPermissions } from "../../../../../common/models";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
-import { HeaderHeight, InteractiveHeaderHeight } from "../../../constants";
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
 import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
@@ -14,7 +13,7 @@ import { iHaveAllPermissions } from "../../../utils";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 @observer
 export default class EditUser extends React.Component {
@@ -73,11 +72,7 @@ export default class EditUser extends React.Component {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} 
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={InteractiveHeaderHeight}
-            >
+            <KeyboardAwareArea>
                 <BackButtonHeader {...headerConfig} />
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     { renderHeader() }
@@ -97,7 +92,7 @@ export default class EditUser extends React.Component {
                         : null
                     }
                 </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAwareArea>
         )
     })
 
@@ -125,6 +120,9 @@ export default class EditUser extends React.Component {
 
     removeUserFromOrg = async () => {
         try {
+
+            bottomDrawerStore().startSubmitting()
+
             if (this.onMyProfile) {
                 await userStore().removeMyselfFromOrg();
             } else {
@@ -139,6 +137,8 @@ export default class EditUser extends React.Component {
             bottomDrawerStore().hide();
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
+        } finally {
+            bottomDrawerStore().endSubmitting()
         }
     }
 
@@ -271,14 +271,7 @@ export default class EditUser extends React.Component {
     }
 
     render() {
-        return (
-            // <KeyboardAvoidingView
-            //     behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-            //     <BottomDrawerViewVisualArea>
-                    <Form ref={this.setRef} {...this.formProps()}/>
-                // {/* </BottomDrawerViewVisualArea>
-            // </KeyboardAvoidingView> */}
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
 

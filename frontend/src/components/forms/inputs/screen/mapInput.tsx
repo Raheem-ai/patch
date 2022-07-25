@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { useCallback, useRef, useState } from "react";
-import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable, Animated, KeyboardAvoidingView, Platform } from "react-native";
-import { IconButton, List, Text } from "react-native-paper";
+import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable } from "react-native";
+import { IconButton, Text } from "react-native-paper";
 import { IMapsService } from "../../../../services/interfaces";
 import { getService } from "../../../../services/meta";
 import { bottomDrawerStore, locationStore } from "../../../../stores/interfaces";
@@ -11,6 +11,7 @@ import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
 import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
+import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const mapsService = getService<IMapsService>(IMapsService);
@@ -146,11 +147,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         : HeaderHeight
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={verticleOffset}
-        >
+        <KeyboardAwareArea>
             <View style={{ flex: 1, position: 'relative'}}>
                 <MapView 
                     provider={PROVIDER_GOOGLE} 
@@ -248,7 +245,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                     }}>Save this location</Text>
                 </Pressable>
             </View>
-        </KeyboardAvoidingView>
+        </KeyboardAwareArea>
     )
 })
 

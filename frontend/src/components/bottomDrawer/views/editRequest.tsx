@@ -6,12 +6,11 @@ import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
-import { HeaderHeight, InteractiveHeaderHeight } from "../../../constants";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 type Props = {}
 
@@ -69,11 +68,7 @@ class EditHelpRequest extends React.Component<Props> {
         }
 
         return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} 
-                style={{ flex: 1 }}
-                keyboardVerticalOffset={InteractiveHeaderHeight}
-            >
+            <KeyboardAwareArea>
                 <BackButtonHeader {...headerConfig} />
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
@@ -81,7 +76,7 @@ class EditHelpRequest extends React.Component<Props> {
                         { renderInputs(inputs()) }
                     </View>
                 </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAwareArea>
         )
     })
     
@@ -280,14 +275,7 @@ class EditHelpRequest extends React.Component<Props> {
     }
 
     render() {
-        return (
-            // <KeyboardAvoidingView
-            //     behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                // {/* <BottomDrawerViewVisualArea> */}
-                    <Form ref={this.setRef} {...this.formProps()}/>
-                // {/* </BottomDrawerViewVisualArea> */}
-            // </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
 

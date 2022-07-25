@@ -72,13 +72,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     constructor() {
         makeAutoObservable(this)
-
-        // Bottom drawer does not have access to navigation props/hooks so handling it here
-        reaction(() => navigationStore().currentRoute, (newRoute, prevRoute) => {
-           if ((this.disabledRoutes.includes(prevRoute)  || this.disabledRoutes.includes(newRoute) ) && this.showing) {
-                this.minimize()
-            }
-        })
     }
 
     async init() {
@@ -104,13 +97,14 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     setupAnimationReactions = () => {
         const disposers = [
-            // reactively update content height based on bottom drawer + keyboard state
+            // reactively update content height based on bottom drawer + active request state
             reaction(this.calculateContentHeight, this.animateContentHeight, {
                 equals: (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2],
                 fireImmediately: true
             }),      
             // animate to correct new height as activeRequest might have toggled existing
-            reaction(() => { return requestStore().activeRequest }, (_) => {
+            // reaction(() => { return requestStore().activeRequest }, (_) => {
+            reaction(() => { return this.activeRequestShowing }, (_) => {
                 if (this.showing && !this.expanded) {
                     // don't effect keyboard as you can be taken off a request in the background while
                     // editing something unrelated
@@ -129,11 +123,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         })
     }
 
-    // TODO: this isn't triggering on show edit req
     calculateContentHeight = (): [number, number, string] => {
-        // so we track when the view changes
-        // this.viewId
-
         const topUIOffset = this.minimizable
             ? HeaderHeight
             : HeaderHeight - InteractiveHeaderHeight;
@@ -148,24 +138,14 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         const bottomUIOffset = activeRequestOffset + minimizedHandleOffset + (isAndroid ? BOTTOM_BAR_HEIGHT : 0);
 
-        // The height regular content (between the header, bottom drawer handle, and active request tab) can take up
-        // if the keyboard is open, the height ignores the bottom drawer handle and active request tab
-        // const contentHeight = nativeEventStore().keyboardOpen 
-        //     ? dimensions.height - HeaderHeight - bottomUIOffset //- nativeEventStore().keyboardHeight 
-        //         + activeRequestOffset + minimizedHandleOffset // add back space below the keyboard
-        //     : dimensions.height - HeaderHeight - bottomUIOffset;
-
         const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset
 
-        const bottomDrawerContentHeight = dimensions.height - topUIOffset - bottomUIOffset //- nativeEventStore().keyboardHeight
-
-        console.log('recalculated content height: ', contentHeight, bottomDrawerContentHeight, this.viewId)
+        const bottomDrawerContentHeight = dimensions.height - topUIOffset - bottomUIOffset 
 
         return [contentHeight, bottomDrawerContentHeight, this.viewId]
     }
 
     animateContentHeight = ([contentHeight, drawerContentHeight, viewId]) => {
-        console.log('animateContentHeight', contentHeight, drawerContentHeight)
         Animated.parallel([
             Animated.timing(this.contentHeight, {
                 toValue: contentHeight,
@@ -207,10 +187,15 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     }
 
     get activeRequestShowing() {
-        const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
+        return requestStore().activeRequest && this.activeRequestShouldShow;
+    }
 
-        // return requestStore().activeRequest && !onDisabledRoute && !nativeEventStore().keyboardOpen;
-        return requestStore().activeRequest && !onDisabledRoute;
+    get activeRequestShouldShow() {
+        const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
+        const onActiveRequestDetails = navigationStore().currentRoute == routerNames.helpRequestDetails 
+            && requestStore().currentRequest.id == requestStore().activeRequest.id;
+
+        return !onDisabledRoute && !onActiveRequestDetails
     }
 
     get drawerShouldShow() {
@@ -225,10 +210,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     get minimizedHandleShowing() {
         return this.drawerShowing && !this.expanded;
     }
-
-    // get expandedHeaderShowing() {
-    //     return this.showing && this.expanded && this.headerShowing;
-    // }
 
     show = (view: BottomDrawerView, expanded?: boolean) => {
         const currentIsMinimizeable = this.minimizable;
@@ -366,8 +347,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: dimensions.height 
                 - BottomDrawerHandleHeight 
-                // - ((requestStore().activeRequest && !onRequestMap)  ? ActiveRequestTabHeight : 0)
-                - ((this.activeRequestShowing)  ? ActiveRequestTabHeight : 0)
+                - (this.activeRequestShowing  ? ActiveRequestTabHeight : 0)
                 - (isAndroid ? BOTTOM_BAR_HEIGHT : 0),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations

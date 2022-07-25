@@ -1,10 +1,11 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
+import { Dimensions, View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 import { HeaderHeight, InteractiveHeaderHeight } from "../../../../constants";
 import { useKeyboard } from "../../../../hooks/useKeyboard";
 import { bottomDrawerStore } from "../../../../stores/interfaces";
+import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
@@ -64,11 +65,7 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
         : HeaderHeight
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-            style={styles.notesContainer}
-            keyboardVerticalOffset={verticleOffset}
-        >
+        <KeyboardAwareArea style={styles.notesContainer}>
             <View style={{ flex: 1 }}>
                 <BackButtonHeader  {...headerProps} />
                 <View style={styles.notes}>
@@ -82,7 +79,7 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
                         onChangeText={(s: string) => setVal(s)}/>
                 </View>
             </View>
-        </KeyboardAvoidingView>
+        </KeyboardAwareArea>
     )
 })
 

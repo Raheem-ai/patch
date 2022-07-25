@@ -70,7 +70,6 @@ export default class AssignResponders extends React.Component {
 
         const headerProps: ListHeaderProps = {
             openHeaderLabel: 'People to notify',
-            // closedHeaderStyles: styles.closedFilterHeader,
     
             optionConfigs: [
                 {
