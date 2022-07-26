@@ -22,6 +22,7 @@ import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
 import * as Linking from 'expo-linking';
+import { constants } from "buffer";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -108,14 +109,16 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.timeAndPlaceSection}>
                 {
                     address
-                        ? <View style={styles.timeAndPlaceRow}>
-                            <IconButton
-                                style={styles.detailsIcon}
-                                icon='map-marker' 
-                                color={styles.detailsIcon.color}
-                                size={styles.detailsIcon.width} />
-                            <Text style={styles.locationText}>{address}</Text>
-                        </View>
+                        ? <Pressable onPress={mapClick}>
+                            <View style={styles.timeAndPlaceRow}>
+                                <IconButton
+                                    style={styles.detailsIcon}
+                                    icon='map-marker' 
+                                    color={styles.detailsIcon.color}
+                                    size={styles.detailsIcon.width} />
+                                <Text style={styles.metadataText}>{address}</Text>
+                            </View>
+                        </Pressable>
                         : null
                 }
                 <View style={styles.timeAndPlaceRow}>
@@ -124,45 +127,47 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         icon='clock-outline' 
                         color={styles.detailsIcon.color}
                         size={styles.detailsIcon.width} />
-                    <Text style={styles.timeText}>{time.toLocaleString()}</Text>
+                    <Text style={styles.metadataText}>{time.toLocaleString()}</Text>
                 </View>
-                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='phone-incoming' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
-                    </View>
-                    : null
-                }
-                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='account' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <View style={styles.contactInfoRow}>
-                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
-                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                { 
+                    requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='phone-incoming' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Text style={styles.metadataText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
                         </View>
-                    </View>
-                    : null
+                        : null
                 }
-                { tags.length != 0
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='tag' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <Tags 
-                            centered
-                            tags={tags}/>
-                    </View>
-                    : null
+                { 
+                    requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='account' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo ? ' ' + visualDelim: null}</Text>
+                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                        : null
+                }
+                { 
+                    tags.length != 0
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={[styles.detailsIcon, {marginRight: 8}]}
+                                icon='tag' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Tags 
+                                centered
+                                tags={tags}
+                                verticalMargin={4}/>
+                        </View>
+                        : null
                 }
             </View>
         )
@@ -198,6 +203,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
+    // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+    // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+    const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+
+    const mapClick = () => {
+        Linking.openURL(mapsLink);
+    }
+
     const mapPreview = () => {
         if (!requestStore().currentRequest.location) {
             return null;
@@ -226,14 +239,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
             // Only when using Google Maps.
             zoom: 12
-        }
-
-        // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
-        // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
-        const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
-
-        const mapClick = () => {
-            Linking.openURL(mapsLink);
         }
 
         return (
@@ -278,8 +283,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.toggleRequestContainer}>
                 <Button
                     uppercase={false}
-                    color={currentRequestOpen ? '#fff' : '#76599A'}
-                    style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
+                    color={Colors.primary.alpha}
+                    style={[styles.button, styles.closeRequestButton]}
                     onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
                     >
                         {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
@@ -351,7 +356,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { mapPreview() }
                     { detailsSection() }
                 </View>
-                <View style={{height:'200%'}}>
+                <View>
                     { showCloseOpenReqButton
                         ? toggleRequestButton()
                         : null 
@@ -359,7 +364,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 </View>
                 {/* { teamSection() } */}
             </WrappedScrollView>
-            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                 { currentRequestIsOpen()
                     ? statusPicker() 
                     : null 
@@ -558,7 +563,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         pendingRequests.length + deniedRequests.length > 0
-                        ? <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                        ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
@@ -600,7 +605,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         joinedUsers.length > 0
                         ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Joined'}</Text>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
@@ -621,7 +626,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         Array.from(viewedUsers.entries()).length > 0
                         ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Viewed request'}</Text>
                             { 
                                 Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
@@ -635,7 +640,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         Array.from(notifiedUsers.entries()).length > 0
                         ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Sent notification'}</Text>
                             { 
                             
@@ -723,7 +728,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         }
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
-                <View style={{ backgroundColor: '#F6F4F6', borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+                <View style={{ backgroundColor: Colors.backgrounds.secondary, borderBottomColor: Colors.borders.filter, borderBottomWidth: 1 }}>
                     { notifyAction() }
                     { teamEventDetails() }
                 </View>
@@ -774,7 +779,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     return (
         // <VisualArea>
             <TabbedScreen 
-                bodyStyle={{ backgroundColor: '#ffffff' }}
+                bodyStyle={{ backgroundColor: Colors.backgrounds.secondary }}
                 defaultTab={Tabs.Overview} 
                 tabs={tabs}/>
         // </VisualArea>
@@ -795,16 +800,15 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingTop: 30,
         paddingBottom: 0,
-        backgroundColor: '#fff'
+        backgroundColor: Colors.backgrounds.standard
     },
     toggleRequestContainer: { 
         width: '100%',
         height: '100%',
         padding: 20,
         paddingTop: 24,
-        backgroundColor: '#f0f0f0',
         borderTopColor: Colors.borders.formFields,
-        borderTopWidth: 1,
+        borderTopWidth: 1
     },
     notesSection: {
         marginBottom: 16
@@ -822,97 +826,23 @@ const styles = StyleSheet.create({
     timeAndPlaceSection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
-        marginBottom: 16,
+        marginVertical: 16
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
-        marginVertical: 5
-    },
-    contactInfoRow: {
-        flexDirection: 'column',
+        marginVertical: 2
     },
     detailsIcon: { 
         width: 14,
-        color: '#666',
+        color: Colors.icons.dark,
         alignSelf: 'center',
-        marginRight: 5
+        marginRight: 4
     },
-    assignmentSelectIcon: { 
-        width: 30,
-        height: 30,
-        color: '#838383',
-        alignSelf: 'center',
-        margin: 0
-    },
-    assignmentAcceptedIcon: {
-        width: 14,
-        height: 14,
-        backgroundColor: '#55BB76',
-        color: '#fff',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 8
-    },
-    assignmentPendingIcon: {
-        width: 16,
-        height: 16,
-        color: '#666666',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 7
-    },
-    assignmentDeclinedIcon: {
-        width: 14,
-        height: 14,
-        color: '#fff',
-        backgroundColor: '#D04B00',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 8
-    },
-    assignmentReminderButton: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#694F70',
-        margin: 0,
-        padding: 0,
-        marginTop: 16
-    },
-    assignmentRow: {
-        flexDirection: 'row',
-        alignItems: "center",
-        justifyContent: 'space-between',
-        marginTop: 12
-    },
-    assignmentRowText: {
-        fontSize: 14,
-        color: '#666666'
-    },
-    assignmentHeader: {
-        flexDirection: 'row',
-        alignItems: "center",
-        justifyContent: 'space-between'
-    },
-    assignmentHeaderText: {
-        color: '#333333',
-        fontSize: 14,
-        fontWeight: 'bold'
-    },
-    assignmentHeaderSubText: {
-        color: '#666666',
-        fontSize: 14
-    },
-    locationText: {
+    metadataText: {
         fontSize: 14,
         alignSelf: 'center',
-        color: '#666',
-        marginLeft: 2
-    },
-    timeText: {
-        fontSize: 14,
-        alignSelf: 'center',
-        color: '#666',
-        marginLeft: 2
+        color: Colors.text.secondary,
+        marginLeft: 4
     },
     headerContainer: {
         marginBottom: 16,
@@ -1092,16 +1022,13 @@ const styles = StyleSheet.create({
         margin: 0
     },
     closeRequestButton: {
-        backgroundColor: '#76599A',
-    },
-    addPositionsButton: {
-        backgroundColor: '#76599A',
-    },
-    openRequestButton: {
-        borderColor: '#76599A',
+        borderColor: Colors.primary.alpha,
         borderWidth: 1,
         borderStyle: 'solid',
-        backgroundColor: '#ffffff',
+        backgroundColor: Colors.backgrounds.standard
+    },
+    addPositionsButton: {
+        backgroundColor: Colors.primary.alpha,
     },
     button: {
         flexDirection: 'row',
