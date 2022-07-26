@@ -2,60 +2,209 @@ import React from "react";
 import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import Form, { FormProps } from "../../forms/form";
-import { RequestSkill, RequestSkillCategoryMap, RequestSkillCategoryToLabelMap, RequestSkillToLabelMap, RequestType, RequestTypeToLabelMap } from "../../../../../common/models";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
+import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import { FormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-import { ResponderCountRange } from "../../../constants";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
+import { ScrollView, View } from "react-native";
+import { observable, runInAction } from "mobx";
+import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 type Props = {}
 
 @observer
 class EditHelpRequest extends React.Component<Props> {
+    formInstance = observable.box<Form>(null);
 
-    static onHide = () => {
-        editRequestStore().clear();
-    }
-
-    static submit = {
-        isValid: () => {
-            return !!editRequestStore().location && !!editRequestStore().type.length && editRequestStore().respondersNeeded >= 0
-        },
-        action: async () => {
-            try {
-                await editRequestStore().editRequest(requestStore().currentRequest.id)
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return
-            }
-
-            alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
-
-            bottomDrawerStore().hide()
-        },
-        label: 'Save'
-    }
-
-    async componentDidMount() {
+    componentDidMount() {
         editRequestStore().loadRequest(requestStore().currentRequest);
     }
 
     headerLabel = () => {
         return `Edit Request ${requestStore().currentRequest.displayId}`
     }
+
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
+
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    editRequestStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await editRequestStore().editRequest(requestStore().currentRequest.id)
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+        
+                    alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
+        
+                    bottomDrawerStore().hide()
+                },
+                label: 'Save',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
+        }
+
+        return (
+            <KeyboardAwareArea>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </KeyboardAwareArea>
+        )
+    })
     
     formProps = (): FormProps => {
         return {
             headerLabel: this.headerLabel(), 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+            homeScreen: this.formHomeScreen,
             inputs: [
+                [
+                    // Description
+                    {
+                        onSave: (notes) => editRequestStore().notes = notes,
+                        val: () => {
+                            return editRequestStore().notes
+                        },
+                        isValid: () => {
+                            return !!editRequestStore().notes
+                        },
+                        name: 'description',
+                        icon: 'note-text',
+                        previewLabel: () => editRequestStore().notes,
+                        headerLabel: () => 'Description',
+                        placeholderLabel: () => 'Description',
+                        type: 'TextArea',
+                        required: true
+                    },
+                    // Type of request
+                    {
+                        type: 'CategorizedItemList',
+                        headerLabel: () => 'Type of request',
+                        placeholderLabel: () => 'Type of request',
+                        onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
+                        val: () => {
+                            return requestTypesToCategorizedItems(editRequestStore().type)
+                        },
+                        isValid: () => {
+                            return editRequestStore().typeValid
+                        },
+                        name: 'type',
+                        // required: true,
+                        props: {
+                            definedCategories: () => RequestTypeCategories,
+                            dark: true
+                        }
+                    },
+                    // Priority
+                    {
+                        onSave: (priorities) => editRequestStore().priority = priorities[0],
+                        val: () => {
+                            return typeof editRequestStore().priority == 'number'
+                                ? [editRequestStore().priority]
+                                : []
+                        },
+                        isValid: () => {
+                            return !!editRequestStore().priority 
+                        },
+                        name: 'priority',
+                        previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
+                        headerLabel: () => 'Priority',
+                        placeholderLabel: () => 'Priority',
+                        type: 'List',
+                        props: {
+                            options: allEnumValues(RequestPriority),
+                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
+                        },
+                    },
+                ],
+                [
+                    // Call Start
+                    {
+                        onChange: (callStartedAt) => editRequestStore().callStartedAt = callStartedAt,
+                        val: () => {
+                            return editRequestStore().callStartedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callStart',
+                        placeholderLabel: () => 'Call start',
+                        type: 'TextInput',
+                        icon: 'phone-incoming'
+                        // required: true
+                    },
+                    // Call End
+                    {
+                        onChange: (callEndedAt) => editRequestStore().callEndedAt = callEndedAt,
+                        val: () => {
+                            return editRequestStore().callEndedAt
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callEnd',
+                        placeholderLabel: () => 'Call end',
+                        type: 'TextInput',
+                    },
+                ],
+                [
+                    // Caller Name
+                    {
+                        onChange: (callerName) => editRequestStore().callerName = callerName,
+                        val: () => {
+                            return editRequestStore().callerName
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerName',
+                        placeholderLabel: () => 'Caller name',
+                        type: 'TextInput',
+                        icon: 'clipboard-account'
+                        // required: true
+                    },
+                    // Caller Contact Info
+                    {
+                        onChange: (callerContactInfo) => editRequestStore().callerContactInfo = callerContactInfo,
+                        val: () => {
+                            return editRequestStore().callerContactInfo
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        name: 'callerContactInfo',
+                        placeholderLabel: () => 'Caller contact info',
+                        type: 'TextInput',
+                    },
+                ],
+                // Location
                 {
                     onSave: (location) => editRequestStore().location = location,
                     val: () => {
@@ -65,108 +214,68 @@ class EditHelpRequest extends React.Component<Props> {
                         return editRequestStore().locationValid
                     },
                     name: 'location',
+                    icon: 'map-marker',
                     previewLabel: () => editRequestStore().location?.address,
                     headerLabel: () => 'Location',
+                    placeholderLabel: () => 'Location',
                     type: 'Map',
-                    required: true
+                    // required: true
                 },
+                // Positions
                 {
-                    onSave: (type) => editRequestStore().type = type,
+                    onSave: (data) => {
+                        editRequestStore().positions = data
+                    },
                     val: () => {
-                        return editRequestStore().type
+                        return editRequestStore().positions;
                     },
-                    isValid: () => {
-                        return editRequestStore().typeValid
-                    },
-                    name: 'type',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Type of request',
-                    type: 'TagList',
-                    required: true,
+                    isValid: () => true,
+                    headerLabel: () => 'Responders needed',
+                    placeholderLabel: () => 'Responders needed',
+                    icon: 'account-multiple',
                     props: {
-                        options: allEnumValues(RequestType),
-                        optionToPreviewLabel: (opt) => RequestTypeToLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().type.splice(idx, 1)
-                        },
-                        dark: true
-                    }
-                },
-                {
-                    onSave: (notes) => editRequestStore().notes = notes,
-                    val: () => {
-                        return editRequestStore().notes
+                        editPermissions: [PatchPermissions.RequestAdmin]
                     },
-                    isValid: () => {
-                        return !!editRequestStore().notes
-                    },
-                    name: 'notes',
-                    previewLabel: () => editRequestStore().notes,
-                    headerLabel: () => 'Notes',
-                    type: 'TextArea',
+                    name: 'positions',
+                    type: 'Positions'
                 },
-                {
-                    onSave: (skills) => editRequestStore().skills = skills,
+                // Tags
+                TagsListInput({
+                    onSave: (items) => {
+                        editRequestStore().tagHandles = items
+                    },
                     val: () => {
-                        return editRequestStore().skills
+                        return editRequestStore().tagHandles
                     },
                     isValid: () => {
                         return true
                     },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills',
-                    type: 'NestedTagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        categories: Object.keys(RequestSkillCategoryMap), 
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        categoryToLabel: (cat) => RequestSkillCategoryToLabelMap[cat],
-                        optionsFromCategory: (cat) => Array.from(RequestSkillCategoryMap[cat].values()),
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            editRequestStore().skills.splice(idx, 1)
-                        },
-                    },
-                },
-                {
-                    onSave: (responders) => editRequestStore().respondersNeeded = responders.length ? responders[0] : -1,
-                    val: () => {
-                        return [editRequestStore().respondersNeeded]
-                    },
-                    isValid: () => {
-                        return typeof editRequestStore().respondersNeeded == 'number' && editRequestStore().respondersNeeded > -1
-                    },
-                    name: 'responders',
-                    previewLabel: () => `${editRequestStore().respondersNeeded}`,
-                    headerLabel: () => 'Responders needed',
-                    type: 'List',
-                    props: {
-                        options: ResponderCountRange,
-                        optionToPreviewLabel: (opt) => opt
-                    },
-                }
-                
+                    icon: 'label',
+                    name: 'tags'
+                })
             ] as [
-                FormInputConfig<'Map'>, 
-                FormInputConfig<'TagList'>, 
-                FormInputConfig<'TextArea'>,
-                FormInputConfig<'NestedTagList'>,
-                FormInputConfig<'List'>,
+                [
+                    ScreenFormInputConfig<'TextArea'>,
+                    ScreenFormInputConfig<'CategorizedItemList'>,
+                    ScreenFormInputConfig<'List'>
+                ],
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    InlineFormInputConfig<'TextInput'>
+                ],
+                ScreenFormInputConfig<'Map'>, 
+                ScreenFormInputConfig<'Positions'>,
+                ScreenFormInputConfig<'CategorizedItemList'>
             ]
         }
     }
 
     render() {
-        return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
 

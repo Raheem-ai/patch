@@ -1,8 +1,9 @@
 import * as _ from 'lodash';
 import { DebounceSettings } from 'lodash';
+import { runInAction } from 'mobx';
+import { AnyFunction } from '../../../common/models';
 import { unwrap } from '../../../common/utils';
 
-type AnyFunction = (...args: any[]) => any;
 
 export interface StatefullMemoDebouncedFunction<F extends AnyFunction, S extends {} = {}> extends _.DebouncedFunc<F> {
     (...args: Parameters<F>): ReturnType<F> | undefined;
@@ -13,12 +14,12 @@ export interface StatefullMemoDebouncedFunction<F extends AnyFunction, S extends
 export type Config<F extends AnyFunction, S = {}> = DebounceSettings & {
     minWait: number,
     
-    initialState?: S | (() => S),
+    initialState?: (() => S),
     paramsToMemoCacheKey?: (...args: Parameters<F>) => string | Symbol,
-    beforeCall?: (state: S, ...args: Parameters<F>) => void;
-    afterCall?: (state: S, ...args: Parameters<F>) => void;    
-    beforeCancel?: (state: S, ...args: Parameters<F>) => void;    
-    afterCancel?: (state: S, ...args: Parameters<F>) => void;    
+    beforeCall?: (state: () => S, ...args: Parameters<F>) => void;
+    afterCall?: (state: () => S, ...args: Parameters<F>) => void;    
+    beforeCancel?: (state: () => S, ...args: Parameters<F>) => void;    
+    afterCancel?: (state: () => S, ...args: Parameters<F>) => void;    
 }
 
 export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
@@ -28,7 +29,9 @@ export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
     const instrumentedFunc = async (...args: Parameters<F>) => {
         const res = await originalFunc(...args);
 
-        config.afterCall?.(state, ...args);
+        runInAction(() => {
+            config.afterCall?.(state, ...args);
+        })
 
         return res;
     }
@@ -38,16 +41,17 @@ export function stateFullMemoDebounce<F extends AnyFunction, S = {}>(
         config.paramsToMemoCacheKey
     );
 
-    const state: S = config.initialState
-        ? unwrap(config.initialState as any)
-        : {} as S;
+    const state = config.initialState
+        ? config.initialState
+        : () => { return {} as S };
 
     function wrappedFunction(
         this: StatefullMemoDebouncedFunction<F>,
         ...args: Parameters<F>
     ): ReturnType<F> | undefined {
-
-        config.beforeCall?.(state, ...args);
+        runInAction(() => {
+            config.beforeCall?.(state, ...args);
+        })
 
         const res = debounceMemo(...args)(...args);
 

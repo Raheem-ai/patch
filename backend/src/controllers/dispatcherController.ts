@@ -1,8 +1,8 @@
 import { BodyParams, Controller, HeaderParams, Inject, Post, Req } from "@tsed/common";
 import { MongooseModel } from "@tsed/mongoose";
 import API from 'common/api';
-import { NotificationType, PatchEventType, UserRole } from "common/models";
-import { RequireRoles } from "../middlewares/userRoleMiddleware";
+import { PatchEventType, PatchPermissions, UserRole } from "common/models";
+import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import { ExpoPushErrorReceipt, ExpoPushSuccessTicket, ExpoPushErrorTicket } from "expo-server-sdk";
 import { expo } from "../expo";
@@ -12,105 +12,124 @@ import { Required } from "@tsed/schema";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
+import { MySocketService } from "../services/socketService";
 
 @Controller(API.namespaces.dispatch)
-export class DispatcherController implements APIController</*'broadcastRequest' |*/ 'assignRequest' | 'removeUserFromRequest'> {
+export class DispatcherController implements APIController<
+    'confirmRequestToJoinRequest' 
+    | 'declineRequestToJoinRequest' 
+    | 'notifyRespondersAboutRequest' 
+    | 'removeUserFromRequest'
+    | 'ackRequestsToJoinNotification'
+> {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     
     @Inject(Notifications) notifications: Notifications;
     @Inject(DBManager) db: DBManager;
     @Inject(PubSubService) pubSub: PubSubService;
+    @Inject(MySocketService) socket: MySocketService;
 
-    // @Post(API.server.broadcastRequest())
-    // @RequireRoles([UserRole.Dispatcher])
-    // async broadcastRequest(
-    //     @OrgId() orgId: string, 
-    //     @User() user: UserDoc,
-    //     @Required() @BodyParams('requestId') requestId: string, 
-    //     @Required() @BodyParams('to') to: string[]
-    // ) {
-    //     // TODO: should we keep track of who you have assigned this to?
-    //     const usersToAssign = await this.db.getUsersByIds(to);
-
-    //     const notifications: NotificationMetadata<NotificationType.BroadCastedIncident>[] = [];
-
-    //     for (const user of usersToAssign) {
-
-    //         if (!user.push_token) {
-    //             // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
-    //             continue;
-    //         }
-
-    //         notifications.push({
-    //             type: NotificationType.BroadCastedIncident,
-    //             to: user.push_token,
-    //             body: `You've been broadcasted HelpRequest ${requestId}`,
-    //             payload: {
-    //                 id: '1234',
-    //                 orgId
-    //             }
-    //         });
-    //     }
-
-    //     await this.notifications.sendBulk(notifications);
-    // }
-
-    @Post(API.server.assignRequest())
-    @RequireRoles([UserRole.Dispatcher])
-    async assignRequest(
+    @Post(API.server.notifyRespondersAboutRequest())
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
+    async notifyRespondersAboutRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string, 
         @Required() @BodyParams('to') to: string[]
     ) {
-        const updatedReq = await this.db.assignRequest(requestId, to);
-        const usersToAssign = await this.db.getUsersByIds(to);
+        const updatedReq = await this.db.notifyRespondersAboutRequest(requestId, user.id, to);
 
-        const notifications: NotificationMetadata<NotificationType.AssignedIncident>[] = [];
-
-        for (const user of usersToAssign) {
-
-            if (!user.push_token) {
-                // TODO: what do we do when someone doesn't accept push tokens but we assign to them?
-                continue;
-            }
-
-            notifications.push({
-                type: NotificationType.AssignedIncident,
-                to: user.push_token,
-                body: `You've been assigned to HelpRequest ${updatedReq.displayId}`,
-                payload: {
-                    id: updatedReq.id,
-                    orgId: updatedReq.orgId
-                }
-            });
-        }
-        
-        await this.notifications.sendBulk(notifications);
-
-        await this.pubSub.sys(PatchEventType.RequestRespondersAssigned, {
-            requestId
+        await this.pubSub.sys(PatchEventType.RequestRespondersNotified, {
+            requestId,
+            notifierId: user.id,
+            userIds: to
         });
 
-        return updatedReq
+        return this.db.fullHelpRequest(updatedReq)
+    }
+
+    @Post(API.server.confirmRequestToJoinRequest())
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
+    async confirmRequestToJoinRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('userId') userId: string,
+        @Required() @BodyParams('positionId') positionId: string
+    ) {
+        const res = await this.db.confirmRequestToJoinPosition(requestId, user.id, userId, positionId);
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersAccepted, {
+            accepterId: user.id,
+            responderId: userId,
+            requestId,
+            positionId,
+            orgId
+        })
+
+        return this.db.fullHelpRequest(res);
+    }
+
+    @Post(API.server.declineRequestToJoinRequest())
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
+    async declineRequestToJoinRequest(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('userId') userId: string,
+        @Required() @BodyParams('positionId') positionId: string
+    ) {
+        const res = await this.db.declineRequestToJoinPosition(requestId, user.id, userId, positionId);
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersDeclined, {
+            declinerId: user.id,
+            responderId: userId,
+            requestId,
+            positionId,
+            orgId
+        })
+
+        return this.db.fullHelpRequest(res);
     }
 
     @Post(API.server.removeUserFromRequest())
-    @RequireRoles([UserRole.Dispatcher])
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
     async removeUserFromRequest(
         @OrgId() orgId: string, 
         @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('requestId') requestId: string, 
+        @Required() @BodyParams('positionId') positionId: string, 
     ) {
-        const res = await this.db.removeUserFromRequest(userId, requestId);
+        const res = await this.db.removeUserFromRequest(user.id, userId, requestId, positionId);
 
         await this.pubSub.sys(PatchEventType.RequestRespondersRemoved, {
+            removerId: user.id,
             responderId: userId,
-            requestId
+            requestId,
+            positionId,
+            orgId
         })
 
-        return res;
+        return this.db.fullHelpRequest(res);
     }
 
+    @Post(API.server.ackRequestsToJoinNotification())
+    @RequireAllPermissions([PatchPermissions.RequestAdmin])
+    async ackRequestsToJoinNotification(
+        @OrgId() orgId: string, 
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string,
+        @Required() @BodyParams('joinRequests') joinRequests: { userId: string, positionId: string }[],
+    ) {
+        const res = await this.db.ackRequestsToJoinNotification(requestId, user.id, joinRequests);
+
+        await this.pubSub.sys(PatchEventType.RequestRespondersRequestToJoinAck, {
+            requestId,
+            orgId,
+            joinRequests
+        })
+
+        return this.db.fullHelpRequest(res);
+    }
 }

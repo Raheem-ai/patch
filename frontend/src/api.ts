@@ -1,27 +1,27 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, ChatMessage, HelpRequest, MinHelpRequest, ProtectedUser, HelpRequestFilter, AuthTokens, AppSecrets, PendingUser, RequestSkill } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
 import { securelyPersistent } from './meta';
-import { IUserStore, userStore } from './stores/interfaces';
+import { userStore } from './stores/interfaces';
 import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
-import { manifest, releaseChannel } from 'expo-updates';
 import * as Constants from 'expo-constants'
+import { runningOnDev, runningOnProd, runningOnStaging } from './utils';
 
 // TODO: the port and non local host need to come from config somehow
 // let apiHost = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
 //   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
 // //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
 //   : '';
-export let apiHost = releaseChannel == 'prod'
+export let apiHost = runningOnProd
     ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'  // TODO: update when we have prod env
-    : releaseChannel == 'staging' 
+    : runningOnStaging 
         ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' 
-        : releaseChannel == 'default' // it's always default in expo go
+        : runningOnDev // it's always default in expo go
             ? Constants.default.manifest.extra.devUrl // put dev url here
             : '' // what should be the default for an unknown release channel? 
 
@@ -73,14 +73,8 @@ export class APIClient implements IAPIService {
             try {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
-                // clear user store and reroute to signin
-                runInAction(() => {
-                    this.refreshToken = null;
-                })
-                
-                navigateTo(routerNames.signIn)
-
-                userStore().clear()
+                // route to sign in and clear all stores
+                userStore().onSignOut(routerNames.signIn)
 
                 throw 'User no longer signed in'
             }
@@ -132,14 +126,8 @@ export class APIClient implements IAPIService {
             try {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
-                // clear user store and reroute to signin
-                runInAction(() => {
-                    this.refreshToken = null;
-                })
-                
-                navigateTo(routerNames.signIn)
-
-                userStore().clear()
+                // route to sign in and clear all stores
+                userStore().onSignOut(routerNames.signIn)
 
                 throw 'User no longer signed in'
             }
@@ -234,11 +222,12 @@ export class APIClient implements IAPIService {
         return user;
     }
 
-    async editMe(ctx: OrgContext, me: Partial<Me>): Promise<ClientSideFormat<Me>> {
+    async editMe(ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.editMe()}`;
 
         return (await this.tryPost<ClientSideFormat<Me>>(url, {
-            me
+            me,
+            protectedUser
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data
@@ -284,6 +273,67 @@ export class APIClient implements IAPIService {
 
     // org scoped apis
 
+    async getOrgMetadata(ctx: OrgContext): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.getOrgMetadata()}`;
+        return (await this.tryGet<OrganizationMetadata>(url, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.editOrgMetadata()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editRole(ctx: OrgContext, roleUpdates: AtLeast<Role, 'id'>): Promise<Role> {
+        const url = `${apiHost}${API.client.editRole()}`;
+
+        return (await this.tryPost<Role>(url, { roleUpdates } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.deleteRoles()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, { roleIds } ,{
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async createNewRole(ctx: OrgContext, role: MinRole): Promise<Role> {
+        const url = `${apiHost}${API.client.createNewRole()}`;
+
+        return (await this.tryPost<Role>(url, {
+            role
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+    
+    async updateAttributes(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.updateAttributes()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            updates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async updateTags(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
+        const url = `${apiHost}${API.client.updateTags()}`;
+
+        return (await this.tryPost<OrganizationMetadata>(url, {
+            updates
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
         const url = `${apiHost}${API.client.broadcastRequest()}`;
 
@@ -295,12 +345,22 @@ export class APIClient implements IAPIService {
         });
     }
 
-    async assignRequest(ctx: OrgContext, requestId: string, to: string[]) {
-        const url = `${apiHost}${API.client.assignRequest()}`;
+    async notifyRespondersAboutRequest(ctx: OrgContext, requestId: string, to: string[]) {
+        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
             to
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async ackRequestNotification(ctx: OrgContext, requestId: string) {
+        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
@@ -316,72 +376,102 @@ export class APIClient implements IAPIService {
         })).data;
     }
 
-    async confirmRequestAssignment(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.confirmRequestAssignment()}`;
+    async ackRequestsToJoinNotification(ctx: OrgContext, requestId: string, joinRequests: { userId: string, positionId: string }[]) {
+        const url = `${apiHost}${API.client.ackRequestsToJoinNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            joinRequests
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async declineRequestAssignment(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.declineRequestAssignment()}`;
+    async confirmRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
+        const url = `${apiHost}${API.client.confirmRequestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            userId, 
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async joinRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+    async declineRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
+        const url = `${apiHost}${API.client.declineRequestToJoinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId, 
+            userId, 
+            positionId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async joinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.joinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async leaveRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
+    async requestToJoinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.requestToJoinRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {
+            requestId,
+            positionId
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })).data;
+    }
+
+    async leaveRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.leaveRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
-            requestId
+            requestId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
 
-    async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string): Promise<HelpRequest> {
+    async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string, positionId: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.removeUserFromRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
-            userId
+            userId,
+            positionId
         }, {
             headers: this.orgScopeAuthHeaders(ctx),
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
             email,
             phone,
             roles,
+            roleIds,
+            attributes,
             baseUrl,
-            skills
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
-    async editUser(ctx: OrgContext, userId: string, user: Partial<Pick<ClientSideFormat<ProtectedUser>, 'skills'>>): Promise<ClientSideFormat<ProtectedUser>> {
+    async editUser(ctx: OrgContext, userId: string, user: Partial<AdminEditableUser>): Promise<ClientSideFormat<ProtectedUser>> {
         const url = `${apiHost}${API.client.editUser()}`;
 
         return (await this.tryPost<ClientSideFormat<ProtectedUser>>(url, {
@@ -413,17 +503,6 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async removeUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
-        const url = `${apiHost}${API.client.removeUserRoles()}`;
-
-        return (await this.tryPost<User>(url, {
-            userId,
-            roles
-        }, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
-
     async addUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
         const url = `${apiHost}${API.client.addUserRoles()}`;
 
@@ -435,6 +514,18 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async addRolesToUser(ctx: OrgContext, userId: string, roles: string[]) {
+        const url = `${apiHost}${API.client.addRolesToUser()}`;
+
+        return (await this.tryPost<User>(url, {
+            userId,
+            roles
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+
     async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<ProtectedUser[]> {
         const url = `${apiHost}${API.client.getTeamMembers()}`;
 
@@ -445,13 +536,7 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async getRespondersOnDuty(ctx: OrgContext): Promise<ProtectedUser[]> {
-        const url = `${apiHost}${API.client.getRespondersOnDuty()}`;
 
-        return (await this.tryGet<ProtectedUser[]>(url, {
-            headers: this.orgScopeAuthHeaders(ctx)
-        })).data
-    }
 
     async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.createNewRequest()}`;
@@ -489,16 +574,6 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async unAssignRequest(ctx: RequestContext, userId: string): Promise<void> {
-        const url = `${apiHost}${API.client.unAssignRequest()}`;
-
-        await this.tryPost<void>(url, {
-            userId
-        }, {
-            headers: this.requestScopeAuthHeaders(ctx)
-        })
-    }
-
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
@@ -521,6 +596,22 @@ export class APIClient implements IAPIService {
 
     async resetRequestStatus(ctx: RequestContext): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.resetRequestStatus()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {}, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async reopenRequest(ctx: RequestContext): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.reopenRequest()}`;
+
+        return (await this.tryPost<HelpRequest>(url, {}, {
+            headers: this.requestScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async closeRequest(ctx: RequestContext): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.closeRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {}, {
             headers: this.requestScopeAuthHeaders(ctx)

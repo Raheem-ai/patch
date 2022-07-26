@@ -1,6 +1,6 @@
-import { Model, ObjectID, Schema } from "@tsed/mongoose";
-import { CollectionOf, Enum, getJsonSchema, MapOf, Property } from "@tsed/schema";
-import { RequestSkill, User, UserRole } from "common/models";
+import { Model, ObjectID } from "@tsed/mongoose";
+import { getJsonSchema, Property } from "@tsed/schema";
+import { CategorizedItem, User } from "common/models";
 import { Document } from "mongoose";
 import { PrivProps } from ".";
 import utils from 'util'
@@ -27,7 +27,8 @@ export class UserModel implements User {
 
     @Property()
     organizations: { [key: string]:  {
-            roles: UserRole[],
+            roleIds: string[],
+            attributes: CategorizedItem[],
             onDuty: boolean
         }
     }
@@ -62,8 +63,6 @@ export class UserModel implements User {
     @Property()
     displayColor: string
 
-    @Enum(RequestSkill)
-    skills: RequestSkill[]
 }
 
 export type UserDoc = UserModel & Document;

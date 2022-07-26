@@ -1,19 +1,15 @@
-import { Route } from "@react-navigation/routers";
-import { throws } from "assert";
-import { observable } from "mobx";
 import { observer } from "mobx-react";
-import React, {ComponentClass} from "react";
-import { Animated, Dimensions, SafeAreaView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Button, IconButton, Text } from "react-native-paper";
+import React from "react";
+import { Animated, Dimensions, StyleSheet } from "react-native";
 import { unwrap } from "../../../../common/utils";
-import { isAndroid } from "../../constants";
-import { navigateTo, navigationRef } from "../../navigation";
-import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, IBottomDrawerStore, IHeaderStore, IRequestStore, IUserStore, requestStore, userStore } from "../../stores/interfaces";
+import { HeaderHeight, InteractiveHeaderHeight, isAndroid } from "../../constants";
+import { navigateTo } from "../../navigation";
+import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
 import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
-import { HeaderHeight, InteractiveHeaderHeight } from "../header/header";
 import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
+import { BottomDrawerViewVisualArea } from "../helpers/visualArea";
 
 const dimensions = Dimensions.get('screen')
 
@@ -21,111 +17,34 @@ type BottomDrawerProps = { }
 
 @observer
 export default class GlobalBottomDrawer extends React.Component<BottomDrawerProps> {
-    submitting = observable.box<boolean>(false)
-
-    toggleExpanded = () => {
-        if (bottomDrawerStore().expanded) {
-            bottomDrawerStore().minimize()
-        } else {
-            bottomDrawerStore().expand()
-        }
-    }
-
+    
     drawer() {
-
-        const submitActionLabel = bottomDrawerStore().view.submit?.label
-            ? unwrap(bottomDrawerStore().view.submit.label)
-            : null
-
-        const minimizeLabel = bottomDrawerStore().view.minimizeLabel
-            ? unwrap(bottomDrawerStore().view.minimizeLabel)
-            : null;
-
-        const hasRaisedHeader = bottomDrawerStore().view.raisedHeader
-            ? unwrap(bottomDrawerStore().view.raisedHeader)
-            : false;
+        const isMinimizable = bottomDrawerStore().minimizable;
 
         const ChildView = bottomDrawerStore().view;
-
-        const valid = !!bottomDrawerStore().view.submit?.isValid?.()
-
-        const onSubmit = async () => {
-            this.submitting.set(true)
-
-            try {
-                await bottomDrawerStore().view.submit.action()
-            } finally {
-                this.submitting.set(false)
-            }
-        }
 
         return (
             <Animated.View key='bottomDrawer' style={[
                 styles.container, 
                 { 
                     top: bottomDrawerStore().bottomDrawerTabTop,
+                    // Note: don't use bottomDrawerStore().drawerContentHeight here because we don't want the container 
+                    // resizing as the keyboard opens/closes
                     height: dimensions.height 
-                        - (minimizeLabel ? HeaderHeight : InteractiveHeaderHeight) 
+                        - (isMinimizable ? HeaderHeight : InteractiveHeaderHeight) 
                         - (isAndroid ? BOTTOM_BAR_HEIGHT : 0)
                 },
                 bottomDrawerStore().expanded 
                     ? null
                     : styles.minimizedHeader
             ]}>
-                { bottomDrawerStore().headerShowing && !this.submitting.get()
-                    ? <View style={[
-                        styles.headerContainer, 
-                        hasRaisedHeader 
-                            ? styles.raisedHeader 
-                            : null,
-                        bottomDrawerStore().expanded 
-                            ? null
-                            : styles.minimizedHeader
-                    ]}>
-                        { bottomDrawerStore().expanded
-                            ? <View style={styles.closeIconContainer}>
-                                <IconButton
-                                    onPress={bottomDrawerStore().hide}
-                                    style={styles.closeIcon}
-                                    icon='close' 
-                                    color={styles.closeIcon.color}
-                                    size={styles.closeIcon.width} />
-                            </View>
-                            : minimizeLabel
-                                ? <View style={styles.minimizedLabelContainer} onTouchStart={this.toggleExpanded}>
-                                    <Text style={styles.minimizedLabel}>{minimizeLabel}</Text>
-                                </View>
-                                : null
-                        }
-                        { minimizeLabel
-                            ? <View style={styles.toggleExpandedIconContainer}>
-                                <IconButton
-                                    onPress={this.toggleExpanded}
-                                    style={styles.toggleExpandedIcon}
-                                    icon={ bottomDrawerStore().expanded ? 'chevron-down' : 'chevron-up'} 
-                                    // icon={ bottomDrawerStoreInst().expanded ? 'chevron-down' : 'chevron-up'} 
-                                    color={styles.toggleExpandedIcon.color}
-                                    size={styles.toggleExpandedIcon.width} />
-                            </View>
-                            : null
-                        }
-                        { bottomDrawerStore().view.submit && bottomDrawerStore().expanded 
-                            ? <Button 
-                                labelStyle={styles.submitButtonLabel}
-                                uppercase={false}
-                                onPress={onSubmit}
-                                color={valid ? styles.submitButton.color : styles.disabledSubmitButton.color}
-                                disabled={!valid}
-                                style={[styles.submitButton, !valid ? styles.disabledSubmitButton : null]}>{submitActionLabel}</Button>
-                            : null
-                        }
-                    </View>
-                    : null
-                }
                 {
-                    this.submitting.get()
+                    bottomDrawerStore().submitting
                         ? <Loader/>
-                        : <ChildView/>
+                        : <BottomDrawerViewVisualArea>
+                            <ChildView/>
+                        </BottomDrawerViewVisualArea>
+                            
                 }
             </Animated.View>
         )
@@ -133,7 +52,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
     activeRequest() {
         const onPress = () => {
-            if (requestStore().activeRequest?.id != requestStore().currentRequest?.id || bottomDrawerStore().currentRoute != routerNames.helpRequestDetails) {
+            if (requestStore().activeRequest?.id != requestStore().currentRequest?.id || navigationStore().currentRoute != routerNames.helpRequestDetails) {
                 requestStore().pushRequest(requestStore().activeRequest.id)
                 navigateTo(routerNames.helpRequestDetails)
             }
@@ -154,21 +73,21 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
     }
 
     render() {
+        // don't show bottom drawer on unauthenticated views or when the header is open
+        // need to do this here because this sits as a sibling of the navigator in App.tsx
         if (!userStore().signedIn || headerStore().isOpen) {
             return null
         }
 
-        const onRequestMap = bottomDrawerStore().currentRoute == routerNames.helpRequestMap;
-
         return (
             <>
                 {
-                    !bottomDrawerStore().view
+                    !bottomDrawerStore().view || !bottomDrawerStore().drawerShouldShow
                         ? null
                         : this.drawer()
                 }
                 {
-                    requestStore().activeRequest && !onRequestMap
+                    bottomDrawerStore().activeRequestShowing
                         ? this.activeRequest()
                         : null
                 }

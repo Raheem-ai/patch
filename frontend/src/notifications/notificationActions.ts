@@ -1,41 +1,184 @@
-import { NotificationPayload, NotificationType } from "../../../common/models";
-import { NotificationAction } from 'expo-notifications';
+import { NoisyNotificationEventType, NotificationEventType, PatchEventPacket, PatchEventType, SilentNotificationEventType } from "../../../common/models";
+import { Notification, NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
-import { requestStore, userStore } from "../stores/interfaces";
+import { navigationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { api } from "../services/interfaces";
 
-export class NotificationHandlerDefinition<T extends NotificationType = any> {
-    defaultRouteTo?: keyof RootStackParamList
+export interface NotificationHandlerDefinition<T extends PatchEventType = PatchEventType> {
+    actions: () => NotificationResponseDefinition<T>[];
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void>;
 
-    actions(): NotificationResponseDefinition<T>[] {
-        return []
-    }
-
-    constructor(private type: T) { }
+    dontForwardUpdates: boolean
+    dontShowNotification: boolean
+    /**
+     * NOTE: any stores used in this function need to be init()'d in the NotificationStore
+     */
+    defaultRouteTo: (packet: PatchEventPacket<T>) => keyof RootStackParamList
 }
 
-export class AssignedIncidentHandler extends NotificationHandlerDefinition<NotificationType.AssignedIncident> {
-    defaultRouteTo = routerNames.helpRequestDetails;
-    
-    constructor() {
-        super(NotificationType.AssignedIncident)
-    }
+export abstract class NotificationHandler<T extends NoisyNotificationEventType> implements NotificationHandlerDefinition<T> {
+    actions: () => NotificationResponseDefinition<T>[] = null
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void> = null
 
-    actions(): NotificationResponseDefinition<NotificationType.AssignedIncident>[] {
+    dontForwardUpdates = false
+    dontShowNotification = false
+    defaultRouteTo(packet: PatchEventPacket<T>): keyof RootStackParamList { 
+        return null
+    }
+}
+
+export abstract class SilentNotificationHandlerDefinition<T extends SilentNotificationEventType> implements NotificationHandlerDefinition<T> {
+    actions: () => NotificationResponseDefinition<T>[] = null
+    onNotificationRecieved: (payload: PatchEventPacket<T>) => Promise<void> = null
+
+    dontForwardUpdates = false
+    dontShowNotification = true
+    defaultRouteTo = () => null
+}
+
+////////////////////////////////////////////////////////////
+// Don't show notification but do something when an event //
+// comes in through the notification route (so it can be  //
+// picked up in the background) or via the websocket      //
+////////////////////////////////////////////////////////////
+
+export class ForcedLogoutHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserForceLogout> {
+    dontForwardUpdates = true
+
+    onNotificationRecieved = async (payload: PatchEventPacket<PatchEventType.UserForceLogout>) => {
+        await api().init()
+        await userStore().init()
+
+        if (userStore().user.id == payload.params.userId && api().refreshToken == payload.params.refreshToken) {
+            await userStore().signOut()
+        }
+    }
+}
+
+export class RequestRespondersNotificationAckHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestRespondersNotificationAck> {
+
+}
+
+export class UserEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserEdited> {
+
+}
+
+export class UserOnDutyHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserOnDuty> {
+
+}
+
+export class UserOffDutyHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserOffDuty> {
+
+}
+
+export class UserChangedRolesInOrgHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserChangedRolesInOrg> {
+
+}
+
+export class UserAddedToOrgHandler extends SilentNotificationHandlerDefinition<PatchEventType.UserAddedToOrg> {
+
+}
+
+export class RequestCreatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestCreated> {
+
+}
+
+export class RequestEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestEdited> {
+
+}
+
+export class OrganizationEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationEdited> {
+
+}
+
+export class OrganizationTagsUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationTagsUpdated> {
+
+}
+
+export class OrganizationAttributesUpdatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationAttributesUpdated> {
+
+}
+
+export class OrganizationRoleCreatedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleCreated> {
+
+}
+
+export class OrganizationRoleEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleEdited> {
+
+}
+
+export class OrganizationRoleDeletedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationRoleDeleted> {
+
+}
+
+////////////////////////////////////////////////////////////
+// Show notification with no actions but route to a view  //
+// when user interacts with it                            //
+////////////////////////////////////////////////////////////
+
+export class RequestDetailsNotificationHandler<T extends NoisyNotificationEventType> extends NotificationHandler<T> {
+    defaultRouteTo(packet: PatchEventPacket<T>): keyof RootStackParamList {
+        return navigationStore().currentRoute == routerNames.helpRequestDetails && packet.params.requestId == requestStore().currentRequestId
+            ? null
+            : routerNames.helpRequestDetails
+    }
+}
+
+// TODO: make sure help request details handles being routed to from all of these
+export class RequestChatNewMessageHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestChatNewMessage> {
+
+}
+
+export class RequestRespondersNotifiedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersNotified> {
+
+}
+
+export class RequestRespondersJoinedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersJoined> {
+
+}
+
+export class RequestRespondersLeftHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersLeft> {
+
+}
+
+export class RequestRespondersAcceptedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersAccepted> {
+
+}
+
+export class RequestRespondersDeclinedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersDeclined> {
+
+}
+
+export class RequestRespondersRemovedHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersRemoved> {
+
+}
+
+
+////////////////////////////////////////////////////////////
+// Show notification with actions and a defeult route to  //
+// a view when user interacts with it                     //
+////////////////////////////////////////////////////////////
+
+export class RequestRespondersRequestToJoinHandler extends RequestDetailsNotificationHandler<PatchEventType.RequestRespondersRequestToJoin> {
+
+    actions = (): NotificationResponseDefinition<PatchEventType.RequestRespondersRequestToJoin>[] => {
         return [
             {
-                identifier: 'AcceptIncident',
-                buttonTitle: 'Confirm',
+                identifier: 'ApproveJoinRequest',
+                buttonTitle: 'Approve',
                 options: {
                     isDestructive: false,
                     isAuthenticationRequired: false,
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await requestStore().init();
+                            await requestStore().init()
 
-                            await requestStore().confirmRequestAssignment(payload.orgId, payload.id);
-
+                            await requestStore().approveRequestToJoinRequest(
+                                payload.params.responderId,
+                                payload.params.requestId,
+                                payload.params.positionId,
+                            )
                         } catch (e) {
                             console.error(e);
                         }
@@ -43,23 +186,21 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
                 },
             },
             {
-                identifier: 'DeclineIncident',
-                buttonTitle: 'Decline',
+                identifier: 'DenyJoinRequest',
+                buttonTitle: 'Deny',
                 options: {
                     isDestructive: true,
                     isAuthenticationRequired: false,
                     opensAppToForeground: false,
                     handler: async (payload) => {
                         try {
-                            await api().init();
-                            
-                            await userStore().init();
+                            await requestStore().init()
 
-                            await api().declineRequestAssignment({ 
-                                token: userStore().authToken, 
-                                orgId: payload.orgId
-                            }, payload.id);
-                            
+                            await requestStore().denyRequestToJoinRequest(
+                                payload.params.responderId,
+                                payload.params.requestId,
+                                payload.params.positionId,
+                            )
                         } catch (e) {
                             console.error(e);
                         }
@@ -80,15 +221,7 @@ export class AssignedIncidentHandler extends NotificationHandlerDefinition<Notif
     }
 }
 
-export class BroadCastedIncidentHandler extends NotificationHandlerDefinition<NotificationType.BroadCastedIncident> {
-    defaultRouteTo = routerNames.helpRequestDetails;
-    
-    constructor() {
-        super(NotificationType.BroadCastedIncident)
-    }
-}
-
-export interface NotificationResponseDefinition<T extends NotificationType = any> extends NotificationAction {
+export interface NotificationResponseDefinition<T extends PatchEventType = any> extends NotificationAction {
     options: {
         isDestructive: boolean,
         isAuthenticationRequired: boolean,
@@ -100,11 +233,32 @@ export interface NotificationResponseDefinition<T extends NotificationType = any
         isDestructive: boolean,
         isAuthenticationRequired: boolean,
         opensAppToForeground: false,
-        handler: (payload: NotificationPayload<T>) => Promise<void>
+        handler: (payload: PatchEventPacket<T>) => Promise<void>
     }
 }
 
-export const NotificationHandlers: { [type in NotificationType]: NotificationHandlerDefinition<type> } = {
-    [NotificationType.AssignedIncident]: new AssignedIncidentHandler(),
-    [NotificationType.BroadCastedIncident]: new BroadCastedIncidentHandler()
+export const NotificationHandlers: { [type in NotificationEventType]: NotificationHandlerDefinition<type> } = {
+    [PatchEventType.UserForceLogout]: new ForcedLogoutHandler(),
+    [PatchEventType.RequestRespondersNotified]: new RequestRespondersNotifiedHandler(),
+    [PatchEventType.RequestRespondersNotificationAck]: new RequestRespondersNotificationAckHandler(), 
+    [PatchEventType.RequestRespondersJoined]: new RequestRespondersJoinedHandler(), 
+    [PatchEventType.RequestRespondersLeft]: new RequestRespondersLeftHandler(), 
+    [PatchEventType.RequestRespondersAccepted]: new RequestRespondersAcceptedHandler(), 
+    [PatchEventType.RequestRespondersDeclined]: new RequestRespondersDeclinedHandler(), 
+    [PatchEventType.RequestRespondersRemoved]: new RequestRespondersRemovedHandler(), 
+    [PatchEventType.RequestRespondersRequestToJoin]: new RequestRespondersRequestToJoinHandler(), 
+    [PatchEventType.RequestChatNewMessage]: new RequestChatNewMessageHandler(),
+    [PatchEventType.UserEdited]: new UserEditedHandler(),
+    [PatchEventType.UserOnDuty]: new UserOnDutyHandler(),    
+    [PatchEventType.UserOffDuty]: new UserOffDutyHandler(),    
+    [PatchEventType.UserChangedRolesInOrg]: new UserChangedRolesInOrgHandler(),    
+    [PatchEventType.UserAddedToOrg]: new UserAddedToOrgHandler(),    
+    [PatchEventType.RequestCreated]: new RequestCreatedHandler(),    
+    [PatchEventType.RequestEdited]: new RequestEditedHandler(),    
+    [PatchEventType.OrganizationEdited]: new OrganizationEditedHandler(),
+    [PatchEventType.OrganizationTagsUpdated]: new OrganizationTagsUpdatedHandler(),
+    [PatchEventType.OrganizationAttributesUpdated]: new OrganizationAttributesUpdatedHandler(),
+    [PatchEventType.OrganizationRoleCreated]: new OrganizationRoleCreatedHandler(),
+    [PatchEventType.OrganizationRoleEdited]: new OrganizationRoleEditedHandler(),
+    [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler(),
 }

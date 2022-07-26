@@ -1,317 +1,293 @@
+import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
-import React, { useEffect, useState,  } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
-import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../../components/forms/form";
+import React from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Button } from "react-native-paper";
+import { PatchPermissions } from "../../../../../common/models";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigateTo } from "../../../navigation";
-import { IBottomDrawerStore, ILinkingStore, IEditUserStore, IUserStore, IAlertStore, editUserStore, userStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
-import { routerNames, ScreenProps } from "../../../types";
-import { FormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-
+import { navigationRef } from "../../../navigation";
+import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
+import { Colors } from "../../../types";
+import { iHaveAllPermissions } from "../../../utils";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 @observer
 export default class EditUser extends React.Component {
-    static submit = {
-        isValid: () => {
-            const onMyProfile = editUserStore().id == userStore().user.id;
+    formInstance = observable.box<Form>(null);
 
-            return onMyProfile
-                ? editUserStore().myChangesValid
-                : editUserStore().userChangesValid
-        },
-        action: async () => {
-            const onMyProfile = editUserStore().id == userStore().user.id;
+    get onMyProfile() {
+        return editUserStore().id == userStore().user.id;
+    }
 
-            try {
-                await (onMyProfile
-                    ? editUserStore().editMe()
-                    : editUserStore().editUser());
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return   
-            }
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
 
-            const successMsg = onMyProfile
-                ? 'Successfully updated your profile.'
-                : `Successfully updated ${editUserStore().name}'s profile.`
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    editUserStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    try {
+                        bottomDrawerStore().startSubmitting()
 
-            alertStore().toastSuccess(successMsg)
+                        await (this.onMyProfile
+                            ? editUserStore().editMe()
+                            : editUserStore().editUser());
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return   
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
 
-            bottomDrawerStore().hide();
-        },
-        label: () => {
-            return `Save`
+                    const successMsg = this.onMyProfile
+                        ? 'Successfully updated your profile.'
+                        : `Successfully updated ${editUserStore().name}'s profile.`
+
+                    alertStore().toastSuccess(successMsg)
+
+                    bottomDrawerStore().hide();
+                },
+                label: 'Save',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
         }
-    }
 
-    static onHide = () => {
-        editUserStore().clear();
-    }
+        return (
+            <KeyboardAwareArea>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                    { renderHeader() }
+                    { renderInputs(inputs()) }
+                    { this.canRemoveUser()
+                        ? <View style={styles.actionButtonsContainer}>
+                            <Button 
+                                mode= 'outlined'
+                                uppercase={false}
+                                style={styles.actionButton}
+                                color={styles.actionButton.borderColor}
+                                onPress={this.removeUserFromOrg}
+                                >
+                                    {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
+                            </Button>
+                        </View>
+                        : null
+                    }
+                </ScrollView>
+            </KeyboardAwareArea>
+        )
+    })
 
     formProps = (): FormProps => {
-        const editingMe = editUserStore().id == userStore().user.id;
+        const editingMe = this.onMyProfile;
 
         return {
             headerLabel: editingMe
                 ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile'`, 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+                : `Edit ${editUserStore().name}'s profile'`,
             inputs: editingMe
                 ? this.editMeInputs()
-                : this.editUserInputs()
+                : this.editUserInputs(),
+            homeScreen: this.formHomeScreen
         }
     }
 
-    editUserInputs(): [
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TagList'>,
-    ] {
-        return [
-            {
-                onChange: (name) => editUserStore().name = name,
-                val: () => {
-                    return editUserStore().name
-                },
-                isValid: () => {
-                    return editUserStore().nameValid
-                },
-                name: 'name',
-                previewLabel: () => editUserStore().name,
-                headerLabel: () => 'Name',
-                type: 'TextInput',
-                disabled: true
-            },
-            {
-                onChange: (email) => editUserStore().email = email,
-                val: () => {
-                    return editUserStore().email
-                },
-                isValid: () => {
-                    return editUserStore().emailValid
-                },
-                name: 'email',
-                previewLabel: () => editUserStore().email,
-                headerLabel: () => 'Email',
-                type: 'TextInput',
-                disabled: true
-            },
-            {
-                onChange: (phone) => editUserStore().phone = phone,
-                val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
-                name: 'phone',
-                previewLabel: () => editUserStore().phone,
-                headerLabel: () => 'Phone',
-                type: 'TextInput',
-                disabled: true
-            },
-            {
-                onSave: (roles) => editUserStore().roles = roles,
-                val: () => {
-                    return editUserStore().roles
-                },
-                isValid: () => {
-                    return editUserStore().rolesValid
-                },
-                name: 'roles',
-                previewLabel: () => null,
-                headerLabel: () => 'Roles',
-                type: 'TagList',
-                // tTODO: remove when we update roles here too
-                disabled: true,
-                props: {
-                    options: allEnumValues(UserRole),
-                    optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
-                    optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().roles.splice(idx, 1)
-                    },
-                },
-            },
-            {
-                onSave: (skills) => editUserStore().skills = skills,
-                val: () => {
-                    return editUserStore().skills
-                },
-                isValid: () => {
-                    return editUserStore().skillsValid
-                },
-                name: 'skills',
-                previewLabel: () => null,
-                headerLabel: () => 'Skills',
-                type: 'TagList',
-                props: {
-                    options: allEnumValues(RequestSkill),
-                    optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().skills.splice(idx, 1)
-                    },
-                    dark: true
-                },
-            }
-        ]
+    onItemDeleted = (index: number) => {
+        if (index != -1) {
+            const updatedSelection = editUserStore().roles.slice()
+            updatedSelection.splice(index, 1);
+            editUserStore().roles = updatedSelection;
+        }
     }
 
-    editMeInputs(): [
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TagList'>,
-        FormInputConfig<'TextInput'>, 
-        FormInputConfig<'TextArea'>
-    ] {
-        return [
-            {
-                onChange: (name) => editUserStore().name = name,
-                val: () => {
-                    return editUserStore().name
-                },
-                isValid: () => {
-                    return editUserStore().nameValid
-                },
-                name: 'name',
-                previewLabel: () => editUserStore().name,
-                headerLabel: () => 'Name',
-                type: 'TextInput',
-            },
-            {
-                onChange: (email) => editUserStore().email = email,
-                val: () => {
-                    return editUserStore().email
-                },
-                isValid: () => {
-                    return editUserStore().emailValid
-                },
-                name: 'email',
-                previewLabel: () => editUserStore().email,
-                headerLabel: () => 'Email',
-                type: 'TextInput',
-                // TODO: remove when we have logic for changing email
-                disabled: true
-            },
-            {
-                onChange: (phone) => editUserStore().phone = phone,
-                val: () => {
-                    return editUserStore().phone
-                },
-                isValid: () => {
-                    return editUserStore().phoneValid
-                },
-                name: 'phone',
-                previewLabel: () => editUserStore().phone,
-                headerLabel: () => 'Phone',
-                type: 'TextInput',
-                required: true
-            },
-            {
+    removeUserFromOrg = async () => {
+        try {
+
+            bottomDrawerStore().startSubmitting()
+
+            if (this.onMyProfile) {
+                await userStore().removeMyselfFromOrg();
+            } else {
+                await userStore().removeCurrentUserFromOrg();
+
+                const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
+                alertStore().toastSuccess(successMsg);
+
+                navigationRef.current?.goBack();
+            }
+
+            bottomDrawerStore().hide();
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        } finally {
+            bottomDrawerStore().endSubmitting()
+        }
+    }
+
+    canRemoveUser = () => this.onMyProfile || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
+
+    editUserInputs = () => {
+        const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+        const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+        const inputs = [
+            canEditRoles
+            ? {
+                val: () => editUserStore().roles,
                 onSave: (roles) => editUserStore().roles = roles,
-                val: () => {
-                    return editUserStore().roles
-                },
                 isValid: () => {
                     return editUserStore().rolesValid
                 },
+                headerLabel: 'Roles',
+                placeholderLabel: 'Roles',
+                previewLabel: () => editUserStore().roles.map(roleId => {
+                        return organizationStore().roles.get(roleId)?.name
+                    }).join(),
                 name: 'roles',
-                previewLabel: () => null,
-                headerLabel: () => 'Roles',
-                type: 'TagList',
-                // TODO: remove when we update roles here too
-                disabled: true,
+                type: 'RoleList',
+                icon: 'key',
+                disabled: false,
                 props: {
-                    options: allEnumValues(UserRole),
-                    optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
-                    optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
                     multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().roles.splice(idx, 1)
-                    },
+                    onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
-            },
-            {
-                onSave: (skills) => editUserStore().skills = skills,
-                val: () => {
-                    return editUserStore().skills
-                },
-                isValid: () => {
-                    return editUserStore().skillsValid
-                },
-                name: 'skills',
-                previewLabel: () => null,
-                headerLabel: () => 'Skills',
-                type: 'TagList',
-                disabled: true,
-                props: {
-                    options: allEnumValues(RequestSkill),
-                    optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                    multiSelect: true,
-                    onTagDeleted: (idx: number, val: any) => {
-                        editUserStore().skills.splice(idx, 1)
-                    },
-                    dark: true
-                },
-            },
-            {
-                onChange: (pronouns) => editUserStore().pronouns = pronouns,
-                val: () => {
-                    return editUserStore().pronouns
-                },
-                isValid: () => {
-                    return editUserStore().pronounsValid
-                },
-                name: 'pronouns',
-                previewLabel: () => editUserStore().pronouns,
-                headerLabel: () => 'Pronouns',
+            } as ScreenFormInputConfig<'RoleList'>
+            : null,
+        canEditAttributes
+        ? AttributesListInput({
+            val: () => editUserStore().attributes,
+            onSave: (attributes) => editUserStore().attributes = attributes,
+            isValid: () => true,
+            icon: 'tag-heart',
+            name: 'attributes'
+        }) as ScreenFormInputConfig<'CategorizedItemList'>
+        : null
+        ].filter(v => !!v);
+
+        return inputs;
+    }
+
+    editMeInputs = () => {
+        const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+        const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+
+        const inputs = [
+            [{
+                onChange: (name) => editUserStore().name = name,
+                val: () => editUserStore().name,
+                isValid: () => editUserStore().nameValid,
+                name: 'name',
+                placeholderLabel: () => 'Name',
                 type: 'TextInput',
-            },
+                icon: 'account',
+            } as InlineFormInputConfig<'TextInput'>,
             {
                 onSave: (bio) => editUserStore().bio = bio,
-                val: () => {
-                    return editUserStore().bio
-                },
-                isValid: () => {
-                    return editUserStore().bioValid
-                },
+                val: () => editUserStore().bio,
+                isValid: () => editUserStore().bioValid,
                 name: 'bio',
                 previewLabel: () => editUserStore().bio,
                 headerLabel: () => 'Bio',
+                placeholderLabel: () => 'Bio',
                 type: 'TextArea',
-            },
-        ]
+            } as ScreenFormInputConfig<'TextArea'>,
+            {
+                onChange: (pronouns) => editUserStore().pronouns = pronouns,
+                val: () => editUserStore().pronouns,
+                isValid: () => editUserStore().pronounsValid,
+                name: 'pronouns',
+                placeholderLabel: () => 'Pronouns',
+                type: 'TextInput',
+            } as InlineFormInputConfig<'TextInput'>],
+            [{
+                onChange: (phone) => editUserStore().phone = phone,
+                val: () => editUserStore().phone,
+                isValid: () => editUserStore().phoneValid,
+                name: 'phone',
+                placeholderLabel: () => 'Phone',
+                type: 'TextInput',
+                icon: 'clipboard-account',
+                required: true
+            } as InlineFormInputConfig<'TextInput'>,,
+            {
+                onChange: (email) => editUserStore().email = email,
+                val: () => editUserStore().email,
+                isValid: () => editUserStore().emailValid,
+                name: 'email',
+                placeholderLabel: () => 'Email',
+                type: 'TextInput',
+                // TODO: remove when we have logic for changing email
+                disabled: true
+            } as InlineFormInputConfig<'TextInput'>],
+            canEditRoles
+                ? {
+                    val: () => editUserStore().roles,
+                    onSave: (roles) => editUserStore().roles = roles,
+                    isValid: () => editUserStore().rolesValid,
+                    headerLabel: 'Roles',
+                    placeholderLabel: 'Roles',
+                    previewLabel: () => editUserStore().roles.map(roleId => {
+                            return organizationStore().roles.get(roleId)?.name
+                        }).join(),
+                    name: 'roles',
+                    type: 'RoleList',
+                    icon: 'key',
+                    disabled: false,
+                    props: {
+                        multiSelect: true,
+                        onItemDeleted: (idx) => this.onItemDeleted(idx)
+                    },
+                } as ScreenFormInputConfig<'RoleList'>
+                : null,
+            canEditAttributes
+            ? AttributesListInput({
+                val: () => editUserStore().attributes,
+                onSave: (attributes) => editUserStore().attributes = attributes,
+                isValid: () => true,
+                icon: 'tag-heart',
+                name: 'attributes'
+            }) as ScreenFormInputConfig<'CategorizedItemList'>
+            : null
+        ].filter(v => !!v);
+
+        return inputs;
     }
 
     render() {
-        return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
-                
 }
 
 
 const styles = StyleSheet.create({
-    
+    actionButtonsContainer: {
+        alignContent: 'center',
+        marginVertical: 20
+    },
+    actionButton: {
+        borderColor: Colors.primary.alpha,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderRadius: 24,
+        height: 44,
+        justifyContent: 'center',
+        marginHorizontal: 38
+    },
 })

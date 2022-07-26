@@ -1,14 +1,12 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { Dimensions, KeyboardAvoidingView, Platform, View, TextInput as RNTextInput, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
-import { useKeyboard } from "../../../hooks/useKeyboard";
-import { HeaderHeight } from "../../header/header";
-import { SectionScreenProps } from "../types";
-import BackButtonHeader from "./backButtonHeader";
+import { SectionScreenViewProps } from "../../types";
+import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
-const NestedListInput = observer(({ back, config }: SectionScreenProps<'NestedList' | 'NestedTagList'>) => {
+const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'NestedList' | 'NestedTagList'>) => {
 
     const [vals, setVals] = useState(new Set(config.val()))
 
@@ -35,9 +33,22 @@ const NestedListInput = observer(({ back, config }: SectionScreenProps<'NestedLi
         setVals(cpy);
     }
 
+    const headerProps: BackButtonHeaderProps = {
+        cancel: {
+            handler: () => {
+                config.onCancel?.()
+                back()
+            }
+        },
+        save: {
+            handler: save,
+        },
+        label: config.headerLabel
+    }
+
     return (
         <>
-            <BackButtonHeader  back={back} save={save} label={config.headerLabel} />
+            <BackButtonHeader  {...headerProps} />
             <ScrollView style={{ flex: 1}}>
                 <List.Section style={{margin: 0}}>
                     {config.props.categories.map((cat) => {

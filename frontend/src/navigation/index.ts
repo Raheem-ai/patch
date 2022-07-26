@@ -2,6 +2,8 @@ import { NavigationContainerRef, StackActions } from '@react-navigation/native';
 import React from 'react';
 import { IUserStore, userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
+import { runningOnProd } from '../utils';
+import * as Linking from 'expo-linking';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
@@ -20,30 +22,46 @@ export function navigateTo<Route extends keyof RootStackParamList>(name: Route, 
 
 export type MainMenuOption = { name: string, routeTo: keyof typeof routerNames, disabled?: boolean }
 
-export const MainMenuOptions: MainMenuOption[] = [
-  {
-    name: 'Home',
-    routeTo: 'userHomePage'
-  },
-  {
-    name: 'Requests',
-    routeTo: 'helpRequestMap'
-  }, 
-  {
-    name: 'Resources',
-    routeTo: 'home',
-    disabled: true
-  }, 
-  {
-    name: 'Schedule',
-    routeTo: 'signIn',
-    disabled: true
-  }, 
-  {
-    name: 'Team',
-    routeTo: 'teamList'
-  }
-]
+// immediate function invocation syntax so we can have this stay a constant and consider our environment 
+export const MainMenuOptions: MainMenuOption[] = (() => {
+  let options: MainMenuOption[] = [
+    {
+      name: 'Home',
+      routeTo: 'userHomePage'
+    },
+    {
+      name: 'Requests',
+      routeTo: 'helpRequestList'
+    },
+    {
+      name: 'Channels',
+      routeTo: 'chats'
+    },
+    // {
+    //   name: 'Resources',
+    //   routeTo: 'home',
+    //   disabled: true
+    // }, 
+    // {
+    //   name: 'Schedule',
+    //   routeTo: 'signIn',
+    //   disabled: true
+    // }, 
+    {
+      name: 'Team',
+      routeTo: 'teamList'
+    },
+  ]
+
+  // if (!runningOnProd) {
+  //   options.push({
+  //     name: 'Component Lib', 
+  //     routeTo: 'componentLib'
+  //   })
+  // }
+
+  return options
+})()
 
 export type SubMenuOption = ({ 
   name: string, 
@@ -59,14 +77,21 @@ export type SubMenuOption = ({
 
 export const SubMenuOptions: SubMenuOption[] = [
   {
+    name: 'Profile',
+    onPress: () => {
+      userStore().pushCurrentUser(userStore().user);
+      navigateTo(routerNames.userDetails);
+    }
+  }, 
+  {
     name: 'Settings',
-    routeTo: 'userHomePage',
-    disabled: true
+    routeTo: 'settings',
   }, 
   {
     name: 'Help',
-    routeTo: 'userHomePage',
-    disabled: true
+    onPress: () => {
+      Linking.openURL('https://help.getpatch.org/');
+    }
   }, 
   {
     name: 'Log out',

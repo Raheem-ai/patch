@@ -3,8 +3,9 @@ import React from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import { alertStore, IAlertStore } from "../../stores/interfaces";
-import { HeaderHeight } from "../header/header";
+import { HeaderHeight } from "../../constants";
+import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
+import { Colors } from "../../types";
 
 
 
@@ -21,6 +22,9 @@ export const Alerts = observer(() => {
 
         return !!alertStore().prompt
             ? <View style={[styles.promptContainer, { width, top, left }]}>
+                <View style={[styles.promptTitleContainer]}>
+                    <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
+                </View>
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <Text style={styles.promptMessageLabel}>{alertStore().prompt.message}</Text>
                 </ScrollView>
@@ -55,13 +59,19 @@ export const Alerts = observer(() => {
         return !!alertStore().toast
             ? <View style={[styles.toastContainer, { width, top, left }]}>
                 <ScrollView>
-                    <Text style={{ color: '#fff' }}>{alertStore().toast.message}</Text>
+                    <Text style={{ color: Colors.text.defaultReversed }}>{alertStore().toast.message}</Text>
                 </ScrollView>
             </View>
             : null
     }
 
     if (!alertsToShow) {
+        return null
+    }
+
+    // don't show alerts on unauthenticated views, unless explicitely instructed to, or when the header is open
+    // need to do this here because this sits as a sibling of the navigator in App.tsx
+    if ((!userStore().signedIn && !alertStore().toast?.unauthenticated) || headerStore().isOpen) {
         return null
     }
 
@@ -76,7 +86,7 @@ export default Alerts;
 const styles = StyleSheet.create({
     promptContainer: {
         position: 'absolute',
-        padding: 10,
+        padding: 16,
         paddingBottom: 0,
         backgroundColor: 'rgba(17, 17, 17, .8)',
         zIndex: 1000 * 10,
@@ -111,14 +121,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // paddingVertical: 8
     },
+    promptTitleContainer: {
+        marginBottom: 4
+    },
+    promptTitleLabel: {
+        fontSize: 14,
+        color: Colors.text.defaultReversed,
+        fontWeight: '800'
+    },
     promptMessageLabel: {
         fontSize: 14,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontWeight: '400'
     },
     promptActionLabel: {
         fontSize: 14,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontWeight: '400', 
         alignSelf: 'center'
     },

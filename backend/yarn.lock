@@ -1651,6 +1651,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mhoc/axios-digest-auth@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@mhoc/axios-digest-auth@npm:0.8.0"
+  dependencies:
+    axios: 0.22.0
+  checksum: 705b38cfabb1c41ed5e9c65f968e3d0a608e98dcb92bfe9db7b59781d8bebc9104c61defd7ded9c3c44c5fed7ff127461103e120c87db35b81ace44c0f4697b1
+  languageName: node
+  linkType: hard
+
 "@mrmlnc/readdir-enhanced@npm:^2.2.1":
   version: 2.2.1
   resolution: "@mrmlnc/readdir-enhanced@npm:2.2.1"
@@ -4567,6 +4576,15 @@ __metadata:
   version: 1.11.0
   resolution: "aws4@npm:1.11.0"
   checksum: 5a00d045fd0385926d20ebebcfba5ec79d4482fe706f63c27b324d489a04c68edb0db99ed991e19eda09cb8c97dc2452059a34d97545cebf591d7a2b5a10999f
+  languageName: node
+  linkType: hard
+
+"axios@npm:0.22.0":
+  version: 0.22.0
+  resolution: "axios@npm:0.22.0"
+  dependencies:
+    follow-redirects: ^1.14.4
+  checksum: 83dc4d02e180f69aa9f0d1d0d50b84ec3603517230d58b4c3720ebd440c7e64ea86c5e892dc6e19061608e8e1103504a709d8baa4051c4b7652101b523d04b63
   languageName: node
   linkType: hard
 
@@ -8640,6 +8658,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"follow-redirects@npm:^1.14.4":
+  version: 1.14.9
+  resolution: "follow-redirects@npm:1.14.9"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: f5982e0eb481818642492d3ca35a86989c98af1128b8e1a62911a3410621bc15d2b079e8170b35b19d3bdee770b73ed431a257ed86195af773771145baa57845
+  languageName: node
+  linkType: hard
+
 "for-in@npm:^1.0.2":
   version: 1.0.2
   resolution: "for-in@npm:1.0.2"
@@ -8877,62 +8905,6 @@ __metadata:
   checksum: ca6c170f37640e2d94297da8bb4bf27a1d12bea3e00e6a3e007fd7aa32e37e000f5772acf941b4e4f3cf1c95c3752033d0c509af157ad8f526e7f00723b9eb9f
   languageName: node
   linkType: hard
-
-"functions@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "functions@workspace:."
-  dependencies:
-    "@google-cloud/pubsub": ^2.18.4
-    "@mapbox/timespace": ^2.0.4
-    "@socket.io/redis-adapter": ^7.1.0
-    "@tsed/agenda": ^6.62.3
-    "@tsed/ajv": ^6.59.9
-    "@tsed/common": ^6.59.9
-    "@tsed/core": ^6.59.9
-    "@tsed/di": ^6.59.9
-    "@tsed/exceptions": ^6.59.9
-    "@tsed/json-mapper": ^6.59.9
-    "@tsed/mongoose": ^6.59.9
-    "@tsed/passport": ^6.59.9
-    "@tsed/platform-express": ^6.59.9
-    "@tsed/schema": ^6.59.9
-    "@tsed/socketio": ^6.59.9
-    "@types/express": ^4.17.13
-    "@types/express-session": ^1.17.4
-    "@types/jsonwebtoken": ^8.5.5
-    "@types/mongodb": ^4.0.7
-    "@types/multer": ^1.4.7
-    "@types/node": ^16.3.3
-    "@types/passport": ^1.0.7
-    "@types/passport-local": ^1.0.34
-    "@types/uuid": ^8.3.1
-    agenda: ^4.2.1
-    ajv: ^8.6.2
-    body-parser: ^1.19.0
-    compression: ^1.7.4
-    connect-mongo: ^4.5.0
-    cookie-parser: ^1.4.5
-    dotenv: ^10.0.0
-    expo-server-sdk: ^3.6.0
-    express: ^4.17.1
-    firebase-admin: ^9.2.0
-    firebase-functions: ^3.11.0
-    firebase-functions-test: ^0.2.0
-    jsonwebtoken: ^8.5.1
-    method-override: ^3.0.0
-    module-alias: ^2.2.2
-    mongoose: ^5.13.7
-    passport: ^0.4.1
-    passport-jwt: ^4.0.0
-    passport-local: ^1.0.0
-    randomcolor: ^0.6.2
-    redis: ^4.0.1
-    socket.io: ^4.4.0
-    twilio: ^3.71.3
-    typescript: ^4.0.2
-    uuid: ^8.3.2
-  languageName: unknown
-  linkType: soft
 
 "fuzzy@npm:^0.1.3":
   version: 0.1.3
@@ -10191,6 +10163,7 @@ __metadata:
   resolution: "infra@workspace:infra"
   dependencies:
     "@google-cloud/secret-manager": ~3.10.0
+    "@mhoc/axios-digest-auth": ^0.8.0
     "@oclif/command": ^1.8.0
     "@oclif/config": ^1.17.0
     "@oclif/dev-cli": ^1.26.0
@@ -14521,6 +14494,62 @@ __metadata:
   checksum: 4763ec1b48cb311d60df37186e31f1b85ec3249a21cc17bbf8407d66c5b55cffe34b4eb529ebd044ed4ced7f3ea3fad744fe15e30a5de31645433e94cd444266
   languageName: node
   linkType: hard
+
+"patch-api@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "patch-api@workspace:."
+  dependencies:
+    "@google-cloud/pubsub": ^2.18.4
+    "@mapbox/timespace": ^2.0.4
+    "@socket.io/redis-adapter": ^7.1.0
+    "@tsed/agenda": ^6.62.3
+    "@tsed/ajv": ^6.59.9
+    "@tsed/common": ^6.59.9
+    "@tsed/core": ^6.59.9
+    "@tsed/di": ^6.59.9
+    "@tsed/exceptions": ^6.59.9
+    "@tsed/json-mapper": ^6.59.9
+    "@tsed/mongoose": ^6.59.9
+    "@tsed/passport": ^6.59.9
+    "@tsed/platform-express": ^6.59.9
+    "@tsed/schema": ^6.59.9
+    "@tsed/socketio": ^6.59.9
+    "@types/express": ^4.17.13
+    "@types/express-session": ^1.17.4
+    "@types/jsonwebtoken": ^8.5.5
+    "@types/mongodb": ^4.0.7
+    "@types/multer": ^1.4.7
+    "@types/node": ^16.3.3
+    "@types/passport": ^1.0.7
+    "@types/passport-local": ^1.0.34
+    "@types/uuid": ^8.3.1
+    agenda: ^4.2.1
+    ajv: ^8.6.2
+    body-parser: ^1.19.0
+    compression: ^1.7.4
+    connect-mongo: ^4.5.0
+    cookie-parser: ^1.4.5
+    dotenv: ^10.0.0
+    expo-server-sdk: ^3.6.0
+    express: ^4.17.1
+    firebase-admin: ^9.2.0
+    firebase-functions: ^3.11.0
+    firebase-functions-test: ^0.2.0
+    jsonwebtoken: ^8.5.1
+    method-override: ^3.0.0
+    module-alias: ^2.2.2
+    mongoose: ^5.13.7
+    passport: ^0.4.1
+    passport-jwt: ^4.0.0
+    passport-local: ^1.0.0
+    randomcolor: ^0.6.2
+    redis: ^4.0.1
+    socket.io: ^4.4.0
+    twilio: ^3.71.3
+    typescript: ^4.0.2
+    uuid: ^8.3.2
+  languageName: unknown
+  linkType: soft
 
 "path-case@npm:^3.0.4":
   version: 3.0.4

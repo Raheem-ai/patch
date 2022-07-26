@@ -1,7 +1,7 @@
 import { Store } from './meta';
 import { INativeEventStore } from './interfaces';
 import { Animated, Keyboard, KeyboardEvent } from 'react-native';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, when } from 'mobx';
 
 
 @Store(INativeEventStore)
@@ -59,6 +59,13 @@ export default class NativeEventStore implements INativeEventStore {
         this.keyboardHeight = 0
         this.keyboardOpen = false
         this.keyboardInTransition = true;
+    }
+
+    async hideKeyboard() {
+        if (this.keyboardOpen || this.keyboardInTransition) {
+            Keyboard.dismiss()
+            await when(() => !this.keyboardOpen && !this.keyboardInTransition)
+        }
     }
     
     clear() {

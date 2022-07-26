@@ -1,13 +1,12 @@
-import { runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
-import { unwrap } from "../../../../../common/utils"
-import Tags from "../../tags"
-import { SectionScreenProps, SectionViewProps } from "../types"
+import { unwrap } from "../../../../../../common/utils"
+import Tags from "../../../tags"
+import { SectionLabelViewProps } from "../../types"
 
-const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 'NestedTagList'>) => {
+const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagList' | 'NestedTagList'>) => {
 
     const onPress = () => {
         if (config.disabled) {
@@ -20,7 +19,7 @@ const TagListLabel = observer(({ config, expand }: SectionViewProps<'TagList' | 
     if (!config.val() || !config.val().length) {
         return (
             <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.headerLabel)}</Text>
+                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
             </Pressable>
         )
     }
@@ -55,6 +54,6 @@ const styles = StyleSheet.create({
         maxHeight: 120,
         paddingVertical: 12,
         lineHeight: 24,
-        fontSize: 18
+        fontSize: 16
     }
 })

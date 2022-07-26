@@ -1,9 +1,10 @@
+import { observer } from "mobx-react";
 import React from "react";
 import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
-import { IRequestStore } from "../stores/interfaces";
+import { requestStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
@@ -11,7 +12,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
         return (
             <PartiallyAssignedIcon 
                 frontColor={dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor} 
-                backColor={dark ? styles.darkStatusIcon.backgroundColor : '#999'} 
+                backColor={dark ? styles.darkStatusIcon.color : styles.statusIcon.color} 
                 innerSize={large ? 28 : 16} 
                 totalSize={large ? 44 : 28}
                 onPress={onPress}
@@ -37,7 +38,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 onPress={onPress}
                 style={[
                     {
-                        marginLeft: large ? 42 : 4,
+                        marginLeft: large ? 42 : 8,
                         borderColor: dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor
                     }, 
                     large 
@@ -51,6 +52,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.OnTheWay]: 'arrow-right',
     [RequestStatus.OnSite]: 'map-marker',
     [RequestStatus.Done]: 'check',
+    [RequestStatus.Closed]: 'lock',
 }
 
 type StatusIconProps = { 
@@ -87,8 +89,8 @@ export const StatusIcon = ({
 }
 
 type StatusSelectorProps = { 
-    request: HelpRequest, 
-    requestStore: IRequestStore, 
+    requestId: string, 
+    // requestStore(): IRequestStore(), 
     style?: StyleProp<ViewStyle>,
     onStatusUpdated?: () => void,
     large?: boolean,
@@ -96,15 +98,17 @@ type StatusSelectorProps = {
     withLabels?: boolean
 }
 
-export const StatusSelector = ({ 
-    request, 
-    requestStore, 
+export const StatusSelector = observer(({ 
+    requestId, 
+    // requestStore(), 
     onStatusUpdated,
     large,
     style, 
     dark,
     withLabels
 } : StatusSelectorProps) => {
+    const request = requestStore().requests.get(requestId)
+    
     const firstStatus = assignedResponderBasedRequestStatus(request);
 
     const dimensions = Dimensions.get('screen');
@@ -119,10 +123,10 @@ export const StatusSelector = ({
                 case RequestStatus.OnTheWay:
                 case RequestStatus.OnSite:
                 case RequestStatus.Done:
-                    await requestStore.setRequestStatus(request.id, status);
+                    await requestStore().setRequestStatus(request.id, status);
                     break;
                 default:
-                    await requestStore.resetRequestStatus(request.id);
+                    await requestStore().resetRequestStatus(request.id);
                     break;
             }
         }
@@ -252,7 +256,7 @@ export const StatusSelector = ({
             }
         </View>
     )
-}
+})
 
 const styles = StyleSheet.create({ 
     statusIcon: {
@@ -274,12 +278,13 @@ const styles = StyleSheet.create({
         marginLeft: 42
     },
     darkStatusIcon: {
-        borderColor:'#C3C3C3',
-        color: '#7F7C7F',
-        backgroundColor: '#C3C3C3',
+        borderColor:'#F3F1F3',
+        color: '#111',
+        backgroundColor: '#F3F1F3',
     },
     darkStatusIconToGo: {
-        color: '#C3C3C3'
+        color: '#999',
+        backgroundColor: '#666' // <-- kinda weird that the background of the dark togo icons follows the darkToGoStatusSelectorDivider, ideally it would be controllable separately
     },
     statusSelector: {
         flexDirection: 'row',
@@ -303,7 +308,7 @@ const styles = StyleSheet.create({
         borderStyle: 'dotted', 
     },
     darkToGoStatusSelectorDivider: {
-        borderBottomColor: '#7d7d7d',
+        borderBottomColor: '#666',
         borderBottomWidth: 2,
         borderStyle: 'dotted', 
     },

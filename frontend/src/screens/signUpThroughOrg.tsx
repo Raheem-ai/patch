@@ -4,7 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
 import Form, { FormProps } from "../components/forms/form";
-import { FormInputConfig } from "../components/forms/types";
+import { InlineFormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
 import { alertStore, IAlertStore, ILinkingStore, IUserStore, linkingStore, userStore } from "../stores/interfaces";
@@ -31,12 +31,15 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
         headerLabel: 'Please verify that we have the correct email and provide your name and a password to finish signing up!', 
         inputs: [
             {
+                onChange: () => {},
                 val() {
                     return pendingUser?.email
                 },
                 name: 'email',
-                previewLabel: () => pendingUser?.email,
-                headerLabel: () => 'Email',
+                placeholderLabel: () => 'Email',
+                isValid: () => {
+                    return true
+                },
                 disabled: true,
                 type: 'TextInput'
             },
@@ -49,8 +52,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                     return !!nameVal.length
                 },
                 name: 'name',
-                previewLabel: () => nameVal,
-                headerLabel: () => 'Name',
+                placeholderLabel: () => 'Name',
                 type: 'TextInput',
                 required: true
             },
@@ -63,15 +65,14 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                     return !!passwordVal.length
                 },
                 name: 'password',
-                previewLabel: () => passwordVal,
-                headerLabel: () => 'Password',
+                placeholderLabel: () => 'Password',
                 type: 'TextInput',
                 required: true
             }
         ] as [
-            FormInputConfig<'TextInput'>, 
-            FormInputConfig<'TextInput'>, 
-            FormInputConfig<'TextInput'>, 
+            InlineFormInputConfig<'TextInput'>, 
+            InlineFormInputConfig<'TextInput'>, 
+            InlineFormInputConfig<'TextInput'>, 
             // FormInputConfig<'TagList'>
         ],
         submit: {

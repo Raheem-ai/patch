@@ -17,8 +17,9 @@ export default class NewUserStore implements INewUserStore {
     @persistent() displayColor = ''
     @persistent() race? = ''
     @persistent() bio? = ''
-    @persistent() skills = []
     @persistent() roles = []
+    @persistent() roleIds = []
+    @persistent() attributes = []
     @persistent() pronouns? = ''
 
 
@@ -34,15 +35,15 @@ export default class NewUserStore implements INewUserStore {
         this.displayColor = ''
         this.race = ''
         this.bio = ''
-        this.skills = []
         this.roles = []
+        this.roleIds = []
+        this.attributes = []
         this.pronouns = ''
     }
 
     get isValid() {
         return this.phoneValid &&
             this.emailValid &&
-            this.skillsValid &&
             this.rolesValid
     }
 
@@ -54,22 +55,22 @@ export default class NewUserStore implements INewUserStore {
         return this.email.includes('@')
     }
 
-    get skillsValid(){
-        return true
-        // return !!this.skills.length
-    }
-
     get rolesValid(){
         // return true
         return !!this.roles.length
     }
 
+    get roleIDsValid() {
+        return !!this.roleIds.length
+    }
+
     inviteNewUser = async () => {
         return await userStore().inviteUserToOrg(
-            this.email, 
-            this.phone, 
-            this.roles, 
-            this.skills,
+            this.email,
+            this.phone,
+            this.roles,
+            this.roleIds,
+            this.attributes,
             linkingStore().baseUrl
         );
     }

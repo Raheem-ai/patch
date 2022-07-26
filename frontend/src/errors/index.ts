@@ -2,7 +2,7 @@ import { AxiosError } from "axios";
 
 export function resolveErrorMessage(e: AxiosError): string {
     if (!e.isAxiosError) {
-        console.log('NOT AXIOS ERROR')
+        console.log('NOT AXIOS ERROR:', e.message)
         return e.message
     }
 
@@ -16,8 +16,8 @@ export function resolveErrorMessage(e: AxiosError): string {
             const field = e.response.data.message.split('"')[1].split('.').pop();
             return `Field '${field}' has invalid format`;
         case 'BAD_REQUEST': 
+        case 'UNAUTHORIZED':
             return e.response.data.message;
-
     
         default:
             return JSON.stringify(e?.response?.data || e);

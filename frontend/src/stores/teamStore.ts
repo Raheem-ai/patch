@@ -40,8 +40,6 @@ export default class TeamStore implements ITeamStore {
                         return this.sortByFirstName(a, b)
                     case TeamSortBy.ByLastName:
                         return this.sortByLastName(a, b)
-                    case TeamSortBy.BySkill:
-                        return this.sortBySkill(a, b)
                 }
             })
     }
@@ -76,17 +74,6 @@ export default class TeamStore implements ITeamStore {
         return aLastName == bLastName
             ? 0
             : aLastName < bLastName
-                ? -1
-                : 1
-    }
-
-    sortBySkill = (a: ClientSideFormat<ProtectedUser>, b: ClientSideFormat<ProtectedUser>): number => {
-        const aSkills = a.skills.length;
-        const bSkills = b.skills.length;
-        
-        return aSkills == bSkills
-            ? 0
-            : aSkills > bSkills
                 ? -1
                 : 1
     }

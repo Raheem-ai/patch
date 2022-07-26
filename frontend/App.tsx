@@ -10,11 +10,12 @@ import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
 
 // // component imports
+import LandingPage from './src/screens/landingPage';
 import SignInForm from './src/screens/SignInForm';
 import WelcomePage from './src/screens/WelcomePage';
 import SignUpForm from './src/screens/SignUpForm';
 import UserHomePage from './src/screens/UserHomePage';
-import Header, { HeaderHeight } from './src/components/header/header';
+import Header from './src/components/header/header';
 
 import HelpRequestMap from './src/screens/helpRequestMap';
 import HelpRequestList from './src/screens/helpRequestList';
@@ -25,7 +26,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, notificationStore, userStore } from './src/stores/interfaces';
+import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -42,6 +43,12 @@ import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';
 import Alerts from './src/components/alerts/alerts';
+import ComponentLibrary from './src/screens/componentLibrary';
+import Settings from './src/screens/settings';
+import JoinOrganizationForm from './src/screens/JoinOrganizationForm';
+import InvitationSuccessfulPage from './src/screens/InvitationSuccessfulPage';
+import CreateAccountForm from './src/screens/CreateAccountForm';
+import Chats from './src/screens/chats';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -51,8 +58,8 @@ const theme = {
   roundness: 2,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#3498db',
-    accent: '#f1c40f',
+    primary: '#76599A',
+    secondary: '#5D8A98',
   },
 };
 
@@ -101,14 +108,14 @@ export default function App() {
         ? linkingStore().initialRoute
         : userStore().signedIn
             ? routerNames.userHomePage
-            : routerNames.signIn
+            : routerNames.landing
 
     return (
         // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
         // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
         <Provider container={container}>
             <PaperProvider theme={theme}>
-                <NavigationContainer ref={navigationRef} onStateChange={updateBottomDrawerRoute}>
+                <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
                 {/* <GlobalErrorBoundary> */}
                     <StatusBar
                         animated={true}
@@ -116,7 +123,12 @@ export default function App() {
                         // just for android so it's behavior is *more* similiar to ios
                         translucent={true} />
                     <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
+                        <Stack.Screen name={routerNames.landing} component={LandingPage} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+                        <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
+                        <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
+                        <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />
+                         {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
                         <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
@@ -126,7 +138,10 @@ export default function App() {
                         <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
                         <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
                         <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
+                        <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
+                        <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
+                        <Stack.Screen name={routerNames.chats} component={userScreen(visualArea(Chats))}/>
                     </Stack.Navigator>
                     <Alerts/>
                     <GlobalBottomDrawer/>
@@ -139,18 +154,18 @@ export default function App() {
 
 const userScreen = function(Component: (props) => JSX.Element) {
   return observer(function(props) {    
-    return userStore().signedIn
+    return userStore().signedIn && organizationStore().isReady
       ? <Component {...props} />
       : null
   })
 }
 
-const updateBottomDrawerRoute = function(state: NavigationState) {
+const updateNavigationRoute = function(state: NavigationState) {
   const routeName = state?.routes[state?.index]?.name;
 
   if (routeName) {
     runInAction(() => {
-      bottomDrawerStore().currentRoute = routeName
+        navigationStore().currentRoute = routeName as keyof RootStackParamList;
     })
   }
 }

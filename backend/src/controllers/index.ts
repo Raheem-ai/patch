@@ -1,8 +1,7 @@
 import { HeaderParams, Req } from "@tsed/common";
 import { IApiClient, ServerSide } from "common/api";
 import API from 'common/api';
-import { MongooseDocument } from "@tsed/mongoose";
-import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
+import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc, UserModel } from "../models/user";
 
 export type APIController<T extends keyof IApiClient> = Pick<ServerSide<HelpRequestDoc, UserDoc>, T>

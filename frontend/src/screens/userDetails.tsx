@@ -2,14 +2,13 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Button, IconButton, Text } from "react-native-paper";
-import { RequestSkillToLabelMap, UserRoleToLabelMap } from "../../../common/models";
+import { IconButton, Text } from "react-native-paper";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { visualDelim } from "../constants";
-import { navigationRef } from "../navigation";
-import { linkingStore, requestStore, userStore } from "../stores/interfaces";
+import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
+
 
 type Props = ScreenProps<'UserDetails'>;
 
@@ -17,13 +16,6 @@ const UserDetails = observer(({ navigation, route }: Props) => {
     const [ loading, setLoading ] = useState(false)
 
     const header = () => {
-
-        const removeUserFromOrg = async () => {
-            setLoading(true);
-            await userStore().removeCurrentUserFromOrg();
-            navigationRef.current?.goBack();
-        }
-
         const startCall = async () => {
             if (userStore().currentUser.phone) {
                 await linkingStore().call(userStore().currentUser.phone)
@@ -38,35 +30,39 @@ const UserDetails = observer(({ navigation, route }: Props) => {
 
         const detailsText = [
             userStore().currentUser.pronouns,
-            // TODO: add location here?
-            ...userStore().currentUser.organizations[userStore().currentOrgId].roles.map(r => UserRoleToLabelMap[r])
+            ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${visualDelim} `);
 
+        const userAttributes = userStore().currentUser.organizations[userStore().currentOrgId].attributes.map(attr => {
+            return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
+        }).filter(x => !!x)
+
         return <View style={styles.headerContainer}>
-            <View style={styles.profilePhotoContainer}>
+            {/* <View style={styles.profilePhotoContainer}>
                 <IconButton
                     style={styles.profilePhotoIcon}
                     icon='camera-plus' 
                     color={styles.profilePhotoIcon.color}
                     size={styles.profilePhotoIcon.width} />
-            </View>
+            </View> */}
             <View style={styles.nameContainer}>
                 <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
             </View>
-            <View style={styles.detailsContainer}>
+            <View style={detailsText ? styles.detailsContainer : styles.hideContainer}>
                 <Text style={styles.detailsText}>{detailsText}</Text>
             </View>
-            <View style={styles.skillsContainer}>
-                <Tags 
-                centered
-                    tags={userStore().currentUser.skills.map(skill => RequestSkillToLabelMap[skill])} 
-                    verticalMargin={12} 
-                    tagTextStyle={{ color: styles.skillTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.skillTag.backgroundColor }}/>
-            </View>
-            <View style={styles.bioContainer}>
+            <View style={userStore().currentUser.bio ? styles.bioContainer : styles.hideContainer}>
                 <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
             </View>
+            <View style={styles.attributesContainer}>
+                <Tags 
+                    centered
+                    tags={userAttributes.map(attr => attr.name)}  
+                    verticalMargin={12} 
+                    tagTextStyle={{ color: styles.attributeTag.color }}
+                    tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
+            </View>
+            {/* TODO: only show contact buttons if we have contact information */}
             <View style={styles.contactIconsContainer}>
                 <Pressable onPress={startCall} style={styles.contactIconContainer}>
                     <IconButton
@@ -83,21 +79,6 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                         size={styles.contactIcon.width} />
                 </Pressable>
             </View>
-            {
-                userStore().isAdmin && userStore().user.id != userStore().currentUser.id 
-                    ? <View style={styles.actionButtonsContainer}>
-                        <Button 
-                            mode= 'outlined'
-                            uppercase={false}
-                            style={styles.actionButton}
-                            color={styles.actionButton.borderColor}
-                            onPress={removeUserFromOrg}
-                            >
-                                {'Remove from organization'}
-                        </Button>
-                    </View>
-                    : null
-            }
         </View>
     }
 
@@ -134,7 +115,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         return null
     }
 
-    return <ScrollView showsVerticalScrollIndicator={false}>
+    return <ScrollView style={styles.fullPage} showsVerticalScrollIndicator={false}>
         { header() }
         { currentResponse() }
         { upcomingShifts() }
@@ -145,15 +126,25 @@ const UserDetails = observer(({ navigation, route }: Props) => {
 export default UserDetails;
 
 const styles = StyleSheet.create({
+
+    fullPage: {
+        backgroundColor: Colors.backgrounds.standard,
+    },
+    hideContainer: {
+        display: 'none'
+    },
     headerContainer: {
         padding: 24,
-        backgroundColor: '#F2F2F2',
+        paddingBottom: 32,
+        backgroundColor: Colors.backgrounds.secondary,
+        borderBottomColor: Colors.borders.formFields,
+        borderBottomWidth: 1,
     },
     profilePhotoContainer: {
         marginTop: 38,
         height: 84,
         width: 84,
-        backgroundColor: Colors.secondary.alpha,
+        backgroundColor: Colors.backgrounds.secondary,
         alignContent: 'center',
         justifyContent: 'center',
         borderRadius: 84,
@@ -174,38 +165,44 @@ const styles = StyleSheet.create({
     nameText: {
         fontSize: 32,
         fontWeight: '900',
-        color: '#111'
+        color: Colors.text.default,
     },
     detailsText: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#333'
+        color: Colors.text.secondary,
     },
     detailsContainer: {
         alignSelf: 'center',
-        marginVertical: 12
-    },
-    skillsContainer: {
-        alignSelf: 'center',
-    }, 
-    skillTag: {
-        color: '#fff',
-        backgroundColor: Colors.secondary.alpha
+        marginTop: 12
     },
     bioContainer: {
         alignSelf: 'center',
         marginVertical: 12
     },
+    attributesContainer: {
+        alignSelf: 'center',
+        marginTop: 12,
+    }, 
+    attributeTag: {
+        color: Colors.backgrounds.tags.primaryForeground,
+        backgroundColor: Colors.backgrounds.tags.primaryBackground,
+    },
+    skillTag: {
+        color: Colors.backgrounds.tags.tertiaryForeground,
+        backgroundColor: Colors.backgrounds.tags.tertiaryBackground
+    },
     contactIconsContainer: {
         flexDirection: 'row',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: 24,
     },
     contactIconContainer: {
-        marginHorizontal: 20,
+        marginHorizontal: 24,
         height: 64,
         width: 64,
         borderRadius: 64,
-        backgroundColor: '#F9F6FA',
+        backgroundColor: Colors.uiControls.foregroundReversed,
         justifyContent: 'center'
     },
     contactIcon: {
@@ -216,22 +213,9 @@ const styles = StyleSheet.create({
         color: Colors.primary.alpha,
         alignSelf: 'center'
     },
-    actionButtonsContainer: {
-        alignContent: 'center',
-        marginVertical: 20
-    },
-    actionButton: {
-        borderColor: Colors.primary.alpha,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderRadius: 24,
-        height: 44,
-        justifyContent: 'center',
-        marginHorizontal: 38
-    },
     currentResponseSection: {
-        backgroundColor: '#fff',
-        padding: 20
+        backgroundColor: Colors.backgrounds.standard,
+        padding: 20,
     },
     currentResponseLabelContainer: {
         flexDirection: 'row',
@@ -242,20 +226,21 @@ const styles = StyleSheet.create({
         height: 12,
         width: 12,
         borderRadius: 12,
-        backgroundColor: '#5ACC7F',
+        backgroundColor: Colors.good,
         alignSelf: 'center',
-        marginRight: 12
+        marginRight: 8
     },
     currentResponseText: {
-        color: '#5ACC7F',
+        color: Colors.good,
         fontSize: 14,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textTransform: 'uppercase'
     },
     activeRequestCard: {
         borderRadius: 8,
         borderBottomWidth: 2,
-        borderBottomColor: '#5ACC7F',
-        borderColor: '#5ACC7F',
+        borderBottomColor: Colors.good,
+        borderColor: Colors.good,
         borderWidth: 2,
         marginTop: 12
     }

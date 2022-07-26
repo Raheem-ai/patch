@@ -1,21 +1,27 @@
 import * as React from 'react';
-import { Animated, Dimensions, View } from 'react-native';
+import { Animated, Dimensions, View, Image } from 'react-native';
 import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
 import { useState } from 'react';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
-import { RootStackParamList, routerNames } from '../../types';
+import { RootStackParamList, routerNames, Colors } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, userStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
+import statusAvailable from '../../../assets/statusAvailable.png';
+import statusUnavailable from '../../../assets/statusUnavailable.png';
+import statusOnshift from '../../../assets/statusOnshift.png';
 
 type Props = StackHeaderProps & {};
 
 const Header = observer((props: Props) => {
+    if (!props.navigation.isFocused()) {
+        return null;
+    }
 
     const dimensions = Dimensions.get('screen');
     const config: HeaderRouteConfig = unwrap(HeaderConfig[props.route.name]);
@@ -24,8 +30,6 @@ const Header = observer((props: Props) => {
         ? config.title
         : config.title();
 
-    // TODO: get this from stores at some point
-
     const openHeader = () => {
         headerStore().open()
     }
@@ -33,11 +37,13 @@ const Header = observer((props: Props) => {
     const closeHeader = () => headerStore().close()
 
     const headerBar = () => {
+        if (config.unauthenticated) {
+            return null;
+        }
+
         const leftActions = config.leftActions && config.leftActions.length
             ? config.leftActions
-            : (config.unauthenticated)
-                ? []
-                : [{ icon: 'menu', callback: openHeader }];
+            : [{ icon: 'menu', callback: openHeader }];
 
         const rightActions = config.rightActions && config.rightActions.length
             ? config.rightActions
@@ -48,6 +54,11 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
+        const statusIcon = requestStore().myActiveRequests.length
+            ? statusOnshift
+            : userStore().isOnDuty
+                ? statusAvailable
+                : statusUnavailable;
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -56,7 +67,7 @@ const Header = observer((props: Props) => {
                     {   leftActions.length 
                         ? <View style={styles.leftIconContainer}>
                             {
-                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                             }
                         </View>
                         : null
@@ -66,14 +77,12 @@ const Header = observer((props: Props) => {
                     </View>
                     { 
                         <View style={styles.onDutyStatusContainer}>
-                            <View style={[styles.onDutyStatusOutline, { borderColor: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>
-                                <Text style={[styles.onDutyStatusText, { color: userStore().isOnDuty ? styles.onDuty.color : styles.offDuty.color }]}>{userStore().isOnDuty ? 'READY': 'OFF-DUTY'}</Text>
-                            </View>
+                            <Image source={ statusIcon } style={{ width: 24, height: 24 }} /> 
                         </View>
                     }
                     <View style={styles.rightIconContainer}>
                         {
-                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={iconSize} color='#fff' onPress={a.callback}/>)
+                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                         }
                     </View>
                 </View>
@@ -134,15 +143,18 @@ const Header = observer((props: Props) => {
         <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
-                    <IconButton icon='close' size={iconSize} color='#fff' onPress={closeHeader}/>
+                    <IconButton icon='close' size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
-                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Ready to go' : 'Off duty'}</Text>
+                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
                     <Switch
                         value={userStore().isOnDuty} 
-                        disabled={!userStore().isResponder}
                         onValueChange={() => userStore().toggleOnDuty()} 
-                        color='#32D74B'/>
+                        color={Colors.good}
+                        thumbColor={userStore().isOnDuty ? Colors.uiControls.foregroundReversed : Colors.uiControls.foregroundDisabledReversed}
+                        trackColor={{ false: Colors.uiControls.backgroundDisabledReversed, true: Colors.good }}
+                        ios_backgroundColor={Colors.uiControls.backgroundDisabledReversed}
+                    />
                 </View>
             </View>
             <View style={styles.fullScreenContent}>
@@ -159,23 +171,18 @@ const Header = observer((props: Props) => {
 export default Header;
 
 // const windowDimensions = Dimensions.get("screen"); // this should probably be more dynamic  
-const iconSize = 30;
-const iconPadding = 12;
-const iconContainerSize = (2 * iconPadding) + iconSize;
-export const InteractiveHeaderHeight = iconContainerSize;
 
-export const HeaderHeight = InteractiveHeaderHeight + Constants.statusBarHeight;
 
 const styles = StyleSheet.create({
     // CLOSED
     container: {
         height: HeaderHeight,
-        backgroundColor: '#000',
+        backgroundColor: Colors.backgrounds.menu,
         flexDirection: 'row',
         alignItems: 'flex-end',
     },
     leftIconContainer: {
-        width: iconContainerSize,
+        width: headerIconContainerSize,
         height: InteractiveHeaderHeight
     },
     titleContainer: {
@@ -185,7 +192,7 @@ const styles = StyleSheet.create({
         height: InteractiveHeaderHeight
     },
     title: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontSize: 20
     },
     onDutyStatusContainer: {
@@ -206,10 +213,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold' 
     },
     onDuty: {
-        color: '#17BA45',
+        color: Colors.good,
     },
     offDuty: {
-        color: '#999',
+        color: Colors.icons.darkReversed,
     },
     rightIconContainer: {
         // width: iconContainerSize,
@@ -219,14 +226,14 @@ const styles = StyleSheet.create({
     icon: {
         margin: 0,
         marginRight: 12,
-        width: iconSize,
-        height: iconSize,
+        width: headerIconSize,
+        height: headerIconSize,
         alignSelf: 'center'
     },
 
     // OPEN
     fullScreenContainer: {
-        backgroundColor: `#000`,
+        backgroundColor: Colors.backgrounds.menu,
     },
     fullScreenHeaderContainer: {
         height: HeaderHeight,
@@ -241,18 +248,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     onDutyText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         fontSize: 18,
         marginRight: 12,
-        fontWeight: 'bold'
+        fontWeight: 'normal'
     },
     offDutyText: {
-        color: '#ccc',
+        color: Colors.text.secondaryReversed,
         fontWeight: 'normal'
     },
     fullScreenContent: {
         flex: 1,
-        marginLeft: iconContainerSize,
+        marginLeft: headerIconContainerSize,
     }, 
     mainMenuOptions: {
 
@@ -262,31 +269,31 @@ const styles = StyleSheet.create({
     },
     dynamicContent: {
         flex: 1,
-        borderTopColor: '#666',
+        borderTopColor: Colors.borders.menu,
         borderWidth: 1,
         marginVertical: 10
     },
     subMenuOptions: {
-        borderTopColor: '#666',
+        borderTopColor: Colors.borders.menu,
         borderTopWidth: 1,
         paddingTop: 10,
         paddingBottom: 26
     },
     mainMenuText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         marginVertical: 10,
         fontSize: 24, 
         fontWeight: 'bold'
     },
     disabledMainMenuText: {
-        color: '#aaa'
+        color: Colors.text.disabledReversed
     },
     subMenuText: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         marginVertical: 10,
         fontSize: 18
     },
     disabledSubMenuText: {
-        color: '#aaa'
+        color: Colors.text.disabledReversed
     }
 });

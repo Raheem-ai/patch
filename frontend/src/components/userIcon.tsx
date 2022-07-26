@@ -1,22 +1,39 @@
 import React from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ColorValue, StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
+import { IconButton, Text } from 'react-native-paper';
 import { Colors } from '../types';
 import {parseFullName} from 'parse-full-name';
 
 type UserIconProps = { 
-    user: { 
+    user?: { 
         name: string
     }, 
-    style?: StyleProp<ViewStyle> ,
+    style?: ViewStyle,
     large?: boolean
+    emptyIconColor?: string
 }
 
 const UserIcon = ({ 
     user, 
     style,
-    large 
+    large,
+    emptyIconColor
 } : UserIconProps) => {
+
+    if (!user) {
+        if (style?.backgroundColor && !style.borderColor) {
+            style.borderColor = style.backgroundColor
+        }
+
+        return (
+            <IconButton
+                style={[styles.empty, style]}
+                icon='account' 
+                color={emptyIconColor || styles.empty.color}
+                size={16} />
+        )
+    }
+
     const userName = parseFullName(user.name);
 
     // single names resolve as last name for some reason?!?!
@@ -28,7 +45,8 @@ const UserIcon = ({
     let initials = last
         ? `${first[0]}${last[0]}`.toUpperCase()
         : `${first[0].toUpperCase()}${(first[1] || '').toLowerCase()}`
-    
+
+    // TO DO: differentiate available from unavailable with icon color
     return (
         <View
             style={[
@@ -48,7 +66,7 @@ const UserIcon = ({
 
 const styles = StyleSheet.create({
     userIcon: {
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         width: 28,
         height: 28,
         borderRadius: 20,
@@ -65,7 +83,19 @@ const styles = StyleSheet.create({
         height: 36,
         borderRadius: 20,
         fontSize: 18
-    }
+    },
+    empty: {
+        color: '#A9A7A9',
+        backgroundColor: '#F3F1F3',
+        width: 28,
+        height: 28,
+        borderRadius: 20,
+        margin: 0,
+        marginRight: 4,
+        borderColor:'#F3F1F3',
+        borderStyle: 'solid',
+        borderWidth: 1
+    }, 
 })
 
 export default UserIcon;

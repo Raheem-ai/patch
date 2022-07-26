@@ -5,9 +5,9 @@ import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames } from "../../types";
+import { routerNames, Colors } from "../../types";
 import UserIcon from "../userIcon";
-import { ActiveRequestTabHeight } from "../../constants";
+import { ActiveRequestTabHeight, visualDelim } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 
 type Props = {
@@ -18,8 +18,6 @@ type Props = {
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
-
-
 const HelpRequestCard = observer(({ 
     request, 
     style,
@@ -27,6 +25,7 @@ const HelpRequestCard = observer(({
     minimal,
     onPress
 } : Props) => {
+
     const [statusOpen, setStatusOpen] = useState(false);
 
     const openStatusSelector = (event: GestureResponderEvent) => {
@@ -51,25 +50,29 @@ const HelpRequestCard = observer(({
 
     const header = () => {
         const id = request.displayId;
-        const address = request.location.address.split(',').slice(0, 2).join()
-
+        const address = request.location?.address.split(',').slice(0, 2).join()
         return (
+
             <View style={styles.headerRow}>
                 <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
-                <View style={styles.locationContainer}>
-                    <IconButton
-                        style={styles.locationIcon}
-                        icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
-                    <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
-                </View>
+                {
+                    address
+                        ? <View style={styles.locationContainer}>
+                            <IconButton
+                                style={styles.locationIcon}
+                                icon='map-marker' 
+                                color={styles.locationIcon.color}
+                                size={styles.locationIcon.width} />
+                            <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
+                        </View>
+                        : null
+                }
             </View>
         )
     }
 
     const details = () => {
-        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(' · ');
+        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(` ${visualDelim} `);
         const notes = request.notes;
 
         return (
@@ -83,23 +86,35 @@ const HelpRequestCard = observer(({
     }
 
     const status = () => {
-        const respondersToAssign = request.respondersNeeded - request.assignedResponderIds.length;
+        const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
+
+        let respondersNeeded = 0;
+        
+        const joinedResponders = new Set<string>();
+
+        request.positions.forEach(pos => {
+            respondersNeeded += pos.min
+        })
+        
+        requestMetadata.positions.forEach(pos => {
+            pos.joinedUsers.forEach(userId => joinedResponders.add(userId))
+        })
+
+        const respondersToAssign = respondersNeeded - joinedResponders.size;
 
         const unAssignedResponders = [];
         const assignedResponders = [];
 
         for (let i = 0; i < respondersToAssign; i++) {
-            unAssignedResponders.push(<IconButton
-                style={styles.unAssignedResponderIcon}
-                icon='account' 
-                color={styles.unAssignedResponderIcon.color}
-                size={16} />)
+            unAssignedResponders.push(<UserIcon 
+                style={{ backgroundColor: dark ? styles.unAssignedResponderIconDark.backgroundColor : styles.unAssignedResponderIcon.backgroundColor }}
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>)
         }
 
-        for (let i = 0; i < request.assignedResponderIds.length; i++) {
-            const responder = userStore().users.get(request.assignedResponderIds[i]); 
+        joinedResponders.forEach(userId => {
+            const responder = userStore().users.get(userId); 
             assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
-        }
+        })
 
         const potentialLabel = RequestStatusToLabelMap[request.status];
         
@@ -139,17 +154,10 @@ const HelpRequestCard = observer(({
                     </>
                     { assignedResponders }
                     { unAssignedResponders }
-                    {/* <Button 
-                        contentStyle={styles.broadcastContent}
-                        style={styles.broadcastButton}
-                        labelStyle={styles.broadcastButtonLabel} 
-                        mode='text'
-                        color={styles.broadcastButtonLabel.color} 
-                        icon='bullhorn'>Broadcast</Button> */}
                 </View>
                 {
                     statusOpen
-                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} request={request} onStatusUpdated={closeStatusSelector} requestStore={requestStore()}/>
+                        ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} requestId={request.id} onStatusUpdated={closeStatusSelector} />
                         : <View style={styles.statusContainer}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {
@@ -162,15 +170,34 @@ const HelpRequestCard = observer(({
             </View>
         )
     }
+    
+    let priorityColor;
+    switch(request.priority) {
+        case 1:
+            priorityColor = Colors.okay;
+            break;
+        case 2:
+            priorityColor = Colors.bad;
+            break;
+        case 0:
+            priorityColor = Colors.nocolor; // low-priority == priority not set
+            break;
+        default:
+            priorityColor = Colors.nocolor; // if not using priorities, no need for any colors
+    }
 
     return (
         <Pressable 
             onPress={onCardPress} 
             style={[
                 styles.container, 
-                dark ? styles.darkContainer: null, 
-                minimal ? styles.minimalContainer: null, 
-                style
+                dark 
+                    ? styles.darkContainer 
+                    : null, 
+                minimal 
+                    ? styles.minimalContainer
+                    : {borderTopColor: priorityColor}, 
+                style, 
             ]}>
                 {header()}
                 { minimal 
@@ -188,23 +215,25 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
         borderBottomColor: '#e0e0e0',
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        borderTopWidth: 4
     },
     darkContainer: {
-        backgroundColor: '#444144',
+        backgroundColor: '#3F3C3F',
     },
     minimalContainer: {
-        height: ActiveRequestTabHeight,
+        height: ActiveRequestTabHeight ,
+        paddingBottom: 12,
+        justifyContent: 'space-between',
+        borderTopWidth: 0,
         borderBottomWidth: 0,
-        justifyContent: 'space-between'
+
     },
     darkText: {
-        color: '#A9A7A9'
+        color: '#E0DEE0'
     },
     headerRow: {
-        height: 22,
         margin: 12,
-        marginBottom: 0,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
@@ -227,6 +256,7 @@ const styles = StyleSheet.create({
     },
     detailsRow: {
         margin: 12,
+        marginTop: 0,
         flexDirection: 'row'
     },
     darkDetailsText: {
@@ -238,8 +268,8 @@ const styles = StyleSheet.create({
     statusRow: {
         margin: 12,
         marginTop: 0,
-        height: 28,
-        flexDirection: 'row'
+//        height: 28, // <-- why is this set explicitly?
+        flexDirection: 'row',
     }, 
     responderActions: {
         flexDirection: 'row',
@@ -275,17 +305,17 @@ const styles = StyleSheet.create({
         borderColor: '#444144',
     },
     unAssignedResponderIcon: {
-        color: '#fff',
-        backgroundColor: '#DB0000',
-        width: 28,
-        height: 28,
-        borderRadius: 20,
-        margin: 0,
-        marginRight: 4,
-        borderColor:'#DB0000',
+        color: '#666',
+        backgroundColor: '#F3F1F3',
+        borderColor:'#F3F1F3',
         borderStyle: 'solid',
         borderWidth: 1
     }, 
+    unAssignedResponderIconDark: {
+        color: '#444144',
+        backgroundColor: '#CCCACC',
+        borderColor:'#CCCACC'
+    },
     assignedResponderIcon: {
         marginRight: 4,
     }, 
@@ -314,7 +344,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     }, 
     darkStatusText: {
-        color: '#A9A7A9'
+        color: '#E0DEE0'
     },
     statusSelector: {
         position: 'absolute',

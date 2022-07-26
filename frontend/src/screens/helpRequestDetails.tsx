@@ -1,18 +1,26 @@
-import React, { useEffect, useRef } from "react";
-import { Dimensions, GestureResponderEvent, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import React, { useEffect } from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, routerNames, ScreenProps } from "../types";
-import { HelpRequestAssignment, NotificationType, RequestTypeToLabelMap } from "../../../common/models";
+import { Colors, ScreenProps } from "../types";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
-import { bottomDrawerStore, BottomDrawerView, dispatchStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
-import ResponderRow from "../components/responderRow";
-import { timestampToTime } from "../../../common/utils";
+import { dateToTimeString } from "../../../common/utils";
 
-import { useScrollIntoView, wrapScrollView } from 'react-native-scroll-into-view'
+import { wrapScrollView } from 'react-native-scroll-into-view'
 import { StatusSelector } from "../components/statusSelector";
-import { navigateTo } from "../navigation";
 import { VisualArea } from "../components/helpers/visualArea";
+import TabbedScreen from "../components/tabbedScreen";
+import PositionDetailsCard from "../components/positionDetailsCard";
+import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
+import { visualDelim } from "../constants";
+import { resolveErrorMessage } from "../errors";
+import ChatChannel from "../components/chats/chatChannel";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import Tags from "../components/tags";
+import Loader from "../components/loader";
+import { userOnRequest } from "../../../common/utils/requestUtils";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -21,34 +29,36 @@ type Props = ScreenProps<'HelpRequestDetails'>;
 const dimensions = Dimensions.get('screen');
 
 const HelpRequestDetails = observer(({ navigation, route }: Props) => {
-    const [notification, setNotification] = useState<Props['route']['params']['notification']>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const request = requestStore().currentRequest;
+    const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
+
+    const userIsOnRequest = userOnRequest(userStore().user.id, request);
+    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
     useEffect(() => {
         (async () => {
             const params = route.params;
 
             if (params && params.notification) {
-                switch (params.notification.type) {
-                    case NotificationType.AssignedIncident:
-                        // ui specific to assignment
-                        break;
-                    case NotificationType.BroadCastedIncident:
-                        // ui specific to broadcasting
-                        break;
-                }
+                // Need to mark the request store as loading so the header config knows not to use a stale
+                // req displayId while we are transitioning
+                await requestStore().loadUntil(async () => {
+                    await updateStore().pendingRequestUpdate(params.notification)
+                    await requestStore().pushRequest(params.notification.params.requestId)
+                })
 
-                // call store method to get helprequest from api (so we have latest value)
-                // and update it's state while this shows loading ui
-                await requestStore().pushRequest(params.notification.payload.id);
-                setNotification(params.notification);
                 setIsLoading(false);
             } else {
                 // got here through normal navigation...caller should worry about having up to date copy
                 setIsLoading(false)
             }
+
+
+            await requestStore().ackRequestNotification(request.id)
+
         })();
     }, []);
 
@@ -62,434 +72,664 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    const timeAndPlace = () => {
-        const address = requestStore().currentRequest.location.address.split(',').slice(0, 2).join();
+    const prioritySection = () => {
+        const priority = requestStore().currentRequest.priority;
+        const priorityLabel = RequestPriorityToLabelMap[priority];
+        
+        const priorityColor = priority == RequestPriority.High
+            ? Colors.bad
+            : priority == RequestPriority.Medium
+                ? Colors.okay
+                : priority == RequestPriority.Low
+                    ? '#999799'
+                    : null
+        
+        if (!priorityColor) {
+            return null
+        }
+        
+        return (
+            <View style={styles.priorityOutterSection}>
+                <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
+                    <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                </View>
+            </View>
+        )
+    }
+
+    const detailsSection = () => {
+        const address = requestStore().currentRequest.location?.address.split(',').slice(0, 2).join();
 
         const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
             <View style={styles.timeAndPlaceSection}>
+                {
+                    address
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='map-marker' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Text style={styles.locationText}>{address}</Text>
+                        </View>
+                        : null
+                }
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
-                        style={styles.locationIcon}
-                        icon='map-marker' 
-                        color={styles.locationIcon.color}
-                        size={styles.locationIcon.width} />
-                    <Text style={styles.locationText}>{address}</Text>
-                </View>
-                <View style={styles.timeAndPlaceRow}>
-                    <IconButton
-                        style={styles.timeIcon}
+                        style={styles.detailsIcon}
                         icon='clock-outline' 
-                        color={styles.timeIcon.color}
-                        size={styles.timeIcon.width} />
+                        color={styles.detailsIcon.color}
+                        size={styles.detailsIcon.width} />
                     <Text style={styles.timeText}>{time.toLocaleString()}</Text>
                 </View>
+                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='phone-incoming' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
+                    </View>
+                    : null
+                }
+                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='account' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <View style={styles.contactInfoRow}>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
+                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                    </View>
+                    : null
+                }
+                { tags.length != 0
+                    ? <View style={styles.timeAndPlaceRow}>
+                        <IconButton
+                            style={styles.detailsIcon}
+                            icon='tag' 
+                            color={styles.detailsIcon.color}
+                            size={styles.detailsIcon.width} />
+                        <Tags 
+                            centered
+                            tags={tags}/>
+                    </View>
+                    : null
+                }
             </View>
         )
     }
 
     const header = () => {
-        const tags = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
+        const types = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
         const edit = () => {
             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
         }
 
+        const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{tags.join(' · ')}</Text>
+                    <Text style={styles.typeLabel}>{types.join(` ${visualDelim} `)}</Text>
                 </View>
-                <View>
-                    <IconButton
-                        onPress={edit}
-                        style={styles.editIcon}
-                        icon='pencil' 
-                        color={styles.editIcon.color}
-                        size={styles.editIcon.width} />
-                </View>
-            </View>
-        )
-    }
-
-    const chatPreview = () => {
-
-        const lastChatMessage = requestStore().currentRequest.chat?.messages[requestStore().currentRequest.chat.messages.length - 1];
-
-        const chatMessageText = !!lastChatMessage
-            ? lastChatMessage.message
-            : '';
-
-        const lastMessageAuthor = !!lastChatMessage
-            ? userStore().users.get(lastChatMessage.userId)?.name
-            : ''
-
-        const lastMessageTime = !!lastChatMessage
-            ? timestampToTime(lastChatMessage.timestamp)
-            : ''
-
-        const hasUnreadMessages = (requestStore().currentRequest.chat && requestStore().currentRequest.chat.messages.length) 
-            && (!requestStore().currentRequest.chat.userReceipts[userStore().user.id] 
-                || (requestStore().currentRequest.chat.userReceipts[userStore().user.id] < requestStore().currentRequest.chat.lastMessageId));
-
-        const openChat = () => {
-            bottomDrawerStore().show(BottomDrawerView.requestChat, true);
-        }
-
-        return (
-            <Pressable style={styles.chatContainer} onPress={openChat}>
-
-                <View style={styles.chatLabelContainer}>
-                    <IconButton
-                        style={styles.chatIcon}
-                        icon='forum'
-                        color={styles.chatIcon.color}
-                        size={styles.chatIcon.width} />
-                    <Text style={styles.chatLabel}>CHAT</Text>
-                </View>
-
-                <View style={styles.chatPreviewContainer}>
-                    {
-                        !!chatMessageText
-                            ? <View>
-                                <View style={styles.chatPreviewHeader}>
-                                    <Text>
-                                        <Text style={styles.chatAuthorLabel}>{lastMessageAuthor}</Text>
-                                        <Text>{` · ${lastMessageTime}`}</Text>
-                                    </Text>
-                                    {
-                                        hasUnreadMessages
-                                            ? <View style={styles.newLabelContainer}>
-                                                <Text style={styles.newLabel}>NEW</Text>
-                                              </View>
-                                            : null
-                                    }
-                                </View>
-                                <Text>{chatMessageText}</Text>
-                              </View>
-                            : <Text>Start chat for this response</Text>
-                    }
-                </View>
-            </Pressable>
-        )
-    }
-
-    const teamSection = () => {
-        const responderIds = request?.assignedResponderIds || [];
-        const canJoin = userStore().isResponder && !request.assignedResponderIds.includes(userStore().user.id)
-        const canLeave = userStore().isResponder && request.assignedResponderIds.includes(userStore().user.id)
-
-        const addResponders = () => {
-            bottomDrawerStore().show(BottomDrawerView.assignResponders, true);
-        }
-
-        // TODO: this should be a reaction on activeRequest changing between
-        // existing/ not existing
-
-        const joinRequest = async () => {
-            await requestStore().joinRequest(request.id);
-        }
-
-        const leaveRequest = async () => {
-            await requestStore().leaveRequest(request.id);
-        }
-
-        const removeResponder = (responderId: string) => () => {
-            requestStore().removeUserFromRequest(responderId, request.id)
-        }
-
-        const teamHeader = () => {
-            return (
-                <View style={styles.teamHeader}>
-                    <View style={styles.teamLabelContainer}>
-                        <IconButton
-                            style={styles.teamIcon}
-                            icon='account-multiple'
-                            color={styles.teamIcon.color}
-                            size={styles.teamIcon.width} />
-                        <Text style={styles.teamLabel}>TEAM</Text>
-                    </View>
-                    <View>
-                        { userStore().isDispatcher
-                            ? <IconButton 
-                                onPress={addResponders}
-                                style={styles.addResponderIcon}
-                                icon='account-plus'
-                                color={styles.addResponderIcon.color}
-                                size={styles.addResponderIcon.width} />
-                            : canJoin
-                                ? <View style={styles.teamLabelContainer}>
-                                    <IconButton 
-                                        onPress={joinRequest}
-                                        style={styles.addResponderIcon}
-                                        icon='account-check'
-                                        color={styles.addResponderIcon.color}
-                                        size={styles.addResponderIcon.width} />
-                                    <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>JOIN</Text>    
-                                </View>
-                                : canLeave
-                                    ? <View style={styles.teamLabelContainer}>
-                                        <IconButton 
-                                            onPress={leaveRequest}
-                                            style={styles.addResponderIcon}
-                                            icon='account-minus'
-                                            color={styles.addResponderIcon.color}
-                                            size={styles.addResponderIcon.width} />
-                                        <Text style={{ color: styles.addResponderIcon.color, alignSelf: 'center', fontWeight: 'bold', marginLeft: 4 }}>LEAVE</Text>    
-                                    </View>
-                                    : null
-                        }
-                    </View>
-                </View>
-            )
-        }
-
-        const responders = () => {
-            if (!responderIds.length) {
-                return null;
-            }
-
-            return (
-                <View style={styles.respondersContainer}>
-                    {
-                        responderIds.map((id) => {
-                            const responder = userStore().users.get(id);
-
-                            const goToResponder = () => {
-                                userStore().pushCurrentUser(responder);
-                                navigateTo(routerNames.userDetails);
-                            }
-                            
-                            return (
-                                <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-                                    <ResponderRow onPress={goToResponder} style={{ flex: 1, marginBottom: 0 }} key={id} responder={responder} orgId={userStore().currentOrgId}/>
-                                    {
-                                        userStore().isDispatcher
-                                            ? <IconButton
-                                                onPress={removeResponder(id)}
-                                                style={styles.responderRowActionIcon}    
-                                                icon='close' 
-                                                color={styles.responderRowActionIcon.color}
-                                                size={styles.responderRowActionIcon.width} />
-                                            : null
-                                    }
-                                </View>
-                            )
-                        })
-                    }
-                </View>
-            )   
-        }
-
-        const assignments = () => {
-            if (!request?.assignments?.length) {
-                return null
-            }
-
-            const Assignment = ({assignment, style}: { assignment: HelpRequestAssignment, style?: StyleProp<ViewStyle> }) => {
-                const [isOpen, setIsOpen] = useState(false);
-                const numResponders = assignment.responderIds.length;
-                const me = useRef<View>();
-                const scrollIntoView = useScrollIntoView();
-
-                const toggleOpen = () => {
-                    setIsOpen(!isOpen);
-
-                    // runs before the state updates
-                    if (!isOpen) {
-                        setTimeout(() => {
-                            scrollIntoView(me.current)
-                        })
-                    }
-                }
-
-                // should be for each sorting each responderId into pending, assigned, declined
-                const assignedResponderIds = [];
-                const pendingResponderIds = [];
-                const declinedResponderIds = [];
-
-                assignment.responderIds.forEach(responderId => {
-                    const accepted = request.assignedResponderIds.includes(responderId);
-                    const declined = request.declinedResponderIds.includes(responderId);
-
-                    if (accepted) {
-                        assignedResponderIds.push(responderId)
-                    } else if (declined) {
-                        declinedResponderIds.push(responderId)
-                    } else {
-                        pendingResponderIds.push(responderId)
-                    }
-                })
-
-                const sendReminders = async (event: GestureResponderEvent) => {
-                    event.stopPropagation();
-
-                    await dispatchStore().assignRequest(request.id, pendingResponderIds);
-                    setIsOpen(false)
-                }
-
-                return (
-                    <View ref={me} style={[{ backgroundColor: '#E5E3E5' , borderRadius: 4, padding: 16, flex: 1 }, style]}>
-                        <Pressable style={styles.assignmentHeader} onPress={toggleOpen}>
-                            <Text>
-                                <Text style={styles.assignmentHeaderText}>{`${numResponders} ${numResponders > 1 ? 'people' : 'person'} notified`}</Text>
-                                <Text style={styles.assignmentHeaderSubText}>{` · ${timestampToTime(assignment.timestamp)}`}</Text>
-                            </Text>
+                {
+                    canEdit
+                        ? <View>
                             <IconButton
-                                style={styles.assignmentSelectIcon}
-                                icon={isOpen ? 'chevron-up' : 'chevron-down'}
-                                color={styles.assignmentSelectIcon.color}
-                                size={styles.assignmentSelectIcon.width}/>
-                        </Pressable>
-                        { isOpen
-                            ? <View>
-                                {
-                                    assignedResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
-
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentAcceptedIcon}
-                                                    icon={'check'}
-                                                    color={styles.assignmentAcceptedIcon.color}
-                                                    size={styles.assignmentAcceptedIcon.width}/>
-                                            </View>
-                                        )
-                                    })
-                                }
-                                {
-                                    declinedResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
-
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentDeclinedIcon}
-                                                    icon={'close'}
-                                                    color={styles.assignmentDeclinedIcon.color}
-                                                    size={styles.assignmentDeclinedIcon.width}/>
-                                            </View>
-                                        )
-                                    })    
-                                }
-                                {
-                                    pendingResponderIds.map((id) => {
-                                        const user = userStore().users.get(id);
-
-                                        return (
-                                            <View style={styles.assignmentRow}>
-                                                <Text style={styles.assignmentRowText}>{user.name}</Text>
-                                                <IconButton
-                                                    style={styles.assignmentPendingIcon}
-                                                    icon={'clock-outline'}
-                                                    color={styles.assignmentPendingIcon.color}
-                                                    size={styles.assignmentPendingIcon.width}/>
-                                            </View>
-                                        )
-                                    })
-                                }
-                                {
-                                    pendingResponderIds.length
-                                        ? <View style={{ flexDirection: 'row'}}>
-                                            <Text style={styles.assignmentReminderButton} onPress={sendReminders}>{`SEND ${pendingResponderIds.length} REMINDER${pendingResponderIds.length > 1 ? 'S' : ''}`}</Text>
-                                        </View>
-                                        : null
-                                }
-                            </View>
-                            : null
-                        }
-                    </View>
-                )
-            }
-
-            return (
-                <View>
-                    {
-                        request.assignments.map((assignment, i) => {
-                            return (
-                                <Assignment 
-                                    key={i} 
-                                    assignment={assignment}
-                                    style={[i > 0 ? { marginTop: 16 } : null]}/>
-                            )
-                        })
-                    }
-                </View>
-            )
-        }
-
-        return (
-            <View style={styles.teamSection}>
-                { teamHeader() }
-                { responders() }
-                { assignments() }
-                { userStore().isDispatcher
-                    ? <Button 
-                        uppercase={false}
-                        onPress={addResponders}
-                        color={styles.addResponderButton.color}
-                        icon='account-plus' 
-                        style={styles.addResponderButton}>Add responders</Button>
-                    : null
-                } 
-                { canJoin
-                    ? <Button 
-                        uppercase={false}
-                        onPress={joinRequest}
-                        color={styles.addResponderButton.color}
-                        icon='account-check' 
-                        style={styles.addResponderButton}>Join request</Button>
-                    : null
-                }
-                { canLeave
-                    ? <Button 
-                        uppercase={false}
-                        onPress={leaveRequest}
-                        color={styles.addResponderButton.color}
-                        icon='account-minus' 
-                        style={styles.addResponderButton}>Leave request</Button>
-                    : null
+                                onPress={edit}
+                                style={styles.editIcon}
+                                icon='pencil' 
+                                color={styles.editIcon.color}
+                                size={styles.editIcon.width} />
+                        </View>
+                        : null
                 }
             </View>
         )
+    }
+
+    const mapPreview = () => {
+        if (!requestStore().currentRequest.location) {
+            return null;
+        }
+
+        const initialRegion =  {
+            latitude: requestStore().currentRequest.location.latitude,
+            longitude: requestStore().currentRequest.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+        };
+        
+        return (
+            <MapView 
+                provider={PROVIDER_GOOGLE} 
+                pointerEvents="none"
+                showsUserLocation={true}
+                initialRegion={initialRegion}
+                // zoomEnabled={false}
+                // rotateEnabled={false}
+                // scrollEnabled={false}
+                // zoomTapEnabled={false}
+                style={styles.mapView}>
+                    <Marker
+                        coordinate={{ 
+                            latitude: requestStore().currentRequest.location.latitude, 
+                            longitude: requestStore().currentRequest.location.longitude
+                        }}/>
+            </MapView>
+        );
     }
 
     const statusPicker = () => {
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#454343'
+                backgroundColor: '#FFFFFF',
+                marginBottom: 12
             }}>
-                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels dark large request={request} requestStore={requestStore()} />
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request.id} />
             </View>
         )
     }
 
-    if (isLoading || !request) {
-        return null
+    const toggleRequestButton = () => {
+        const currentRequestOpen = currentRequestIsOpen();
+
+        return (
+            <View style={{ 
+                width: '100%',
+                padding: 20,
+                paddingTop: currentRequestOpen ? 0 : 20,
+                backgroundColor: '#FFFFFF',
+            }}>
+                <Button
+                    uppercase={false}
+                    color={currentRequestOpen ? '#fff' : '#76599A'}
+                    style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
+                    onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
+                    >
+                        {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                </Button>
+            </View>
+        )
     }
-    
-    return (
-        <VisualArea>
+
+    const closeRequest = async () => {
+        try {
+            await requestStore().closeRequest(requestStore().currentRequest.id);
+            setRequestIsOpen(false);
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        }
+    }
+
+    const closeRequestOrPrompt = () => async () => {
+        if (!requestStore().currentRequest.type.length) {
+            alertStore().showPrompt({
+                title: 'Type of request',
+                message: `Are you sure you want to close this request without specifying its type?`,
+                actions: [
+                    {
+                        label: 'Add now',
+                        onPress: () => {
+                            bottomDrawerStore().show(BottomDrawerView.editRequest, true)
+                        },
+                    },
+                    {   
+                        label: 'Close anyway',
+                        onPress: async () => {
+                            await closeRequest()
+                        },
+                        confirming: true
+                    }
+                ]
+            })
+        } else {
+            await closeRequest()
+        }
+    }
+
+    const reopenRequest = () => async () => {
+        await requestStore().reopenRequest(requestStore().currentRequest.id);
+        setRequestIsOpen(true);
+    }
+
+    // TODO: Added this getter because "requestIsOpen" state variable isn't being computed properly.
+    //       currently still using state variable to trigger re-render.
+    function currentRequestIsOpen() {
+        return requestStore().currentRequest?.status != RequestStatus.Closed;
+    }
+
+    if (isLoading || !request) {
+        return <Loader/>
+    }
+
+    const overview = () => {
+        const showCloseOpenReqButton = userIsRequestAdmin || (userIsOnRequest && userHasCloseRequestPermission)
+
+        return (
+        <>
             <WrappedScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
-                    { timeAndPlace() }
-                    { chatPreview() }
+                    { prioritySection() }
+                    { mapPreview() }
+                    { detailsSection() }
                 </View>
-                { statusPicker() }
-                { teamSection() }
+                {/* { teamSection() } */}
             </WrappedScrollView>
-        </VisualArea>
+            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                { currentRequestIsOpen()
+                    ? statusPicker() 
+                    : null 
+                }
+                { showCloseOpenReqButton
+                    ? toggleRequestButton()
+                    : null 
+                }
+            </View>
+        </>
+        )
+    }
+
+    const channel = () => {
+        return (
+            <View>
+                <ChatChannel inTabbedScreen={true}/>
+            </View>
+        )
+    }
+
+    const team = observer(() => {
+        const isRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin]);
+
+        const notifyAction = () => {
+            if (!isRequestAdmin || !currentRequestIsOpen()) {
+                return null
+            } else {
+                const startNotifyFlow = () => {
+                    bottomDrawerStore().show(BottomDrawerView.assignResponders, true)
+                }
+
+                return <View style={{ padding: 20, paddingBottom: 0 }}>
+                    <Button
+                        uppercase={false} 
+                        color={Colors.primary.alpha}
+                        mode={'outlined'}
+                        onPress={startNotifyFlow}
+                        style={[styles.notifyButton]}>{'Notify people'}</Button>
+                </View>
+            }
+        }
+
+        const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
+
+        const teamEventDetails = () => {
+            if (!isRequestAdmin) {
+                return null
+            } else {
+                const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
+                const numNotified = requestMetadata.notificationsSentTo.size;
+
+                const notifiedUsers = new Map(requestMetadata.notificationsSentTo);
+                const viewedUsers = new Map(requestMetadata.notificationsViewedBy);
+
+                const pendingRequests: {
+                    userId: string, 
+                    positionName: string, 
+                    positionId: string
+                }[] = [];
+
+                const deniedRequests: {
+                    userId: string, 
+                    positionName: string
+                }[] = []
+
+                const joinedUsers: {
+                    userId: string, 
+                    positionName: string
+                }[] = []
+
+                for (const pos of request.positions) {
+                    const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
+                    
+                    posMeta.pendingJoinRequests.forEach(userId => {
+                        pendingRequests.push({
+                            userId, 
+                            positionName: organizationStore().roles.get(pos.role)?.name,
+                            positionId: pos.id
+                        })
+
+                        // notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+
+                    posMeta.deniedJoinRequests.forEach(userId => {
+                        deniedRequests.push({
+                            userId, 
+                            positionName: organizationStore().roles.get(pos.role)?.name
+                        })
+
+                        // notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+
+                    Array.from(posMeta.joinedUsers.values()).forEach(userId => {
+                        joinedUsers.push({
+                            userId,
+                            positionName: organizationStore().roles.get(pos.role)?.name
+                        })
+
+                        // notifiedUsers.delete(userId);
+                        viewedUsers.delete(userId);
+                    })
+                }
+
+                viewedUsers.forEach((_, userId) => {
+                    // notifiedUsers.delete(userId)
+                })
+
+                const peeps = numNotified === 1 ? `person` : `people`;
+                const notifiedLabel = `${numNotified} ${peeps} notified`;
+
+                const newLabel = pendingRequests.length
+                    ? ` ${visualDelim} ${pendingRequests.length} asking`
+                    : null;
+
+                const positionScopedRow = ({ 
+                    userId, 
+                    positionName, 
+                    rightElem 
+                }: { userId: string, positionName: string, rightElem: () => JSX.Element }) => {
+                    const userName = userStore().users.get(userId)?.name;
+
+                    return (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text>
+                                    <Text>{`${userName} ${visualDelim} `}</Text>
+                                    <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
+                                </Text>
+                            </View>
+                            { rightElem() }
+                        </View>
+                    )
+                }
+
+                const requestScopedRow = ({ 
+                    userId, 
+                    timestamp
+                }: { userId: string, timestamp: Date }) => {
+                    const userName = userStore().users.get(userId)?.name;
+
+                    return (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                            <Text>{`${userName}`}</Text>
+                            <Text>{dateToTimeString(timestamp)}</Text>
+                        </View>
+                    )
+                }
+
+                const requestSection = () => {
+
+                    const responseLabel = (text: string) => () => {
+                        return <View style={{ flexGrow: 1 }}>
+                            <Text style={{ textAlign: 'right' }}>{text}</Text>
+                        </View>
+                    }
+
+                    const requestToJoinActions = (userId: string, positionId: string) => () => {
+                        if(!currentRequestIsOpen()) {
+                            return responseLabel('Unanswered')()
+                        }
+
+                        const deny = async () => {
+                            try {
+                                await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
+                            } catch (e) {
+                                alertStore().toastError(resolveErrorMessage(e));
+                            }
+                        
+                        }
+
+                        const approve = async () => {                        
+                            try {
+                                await requestStore().approveRequestToJoinRequest(userId, request.id, positionId)
+                            } catch (e) {
+                                alertStore().toastError(resolveErrorMessage(e));
+                            }
+                        }
+
+                        return (
+
+                            <View style={{ justifyContent: 'center', alignItems: 'flex-end',  flexGrow: 1 }}>
+                                <View style={{ flexDirection: 'row'}}>
+                                    <IconButton
+                                        color={Colors.primary.alpha}
+                                        onPress={deny}
+                                        icon='close'
+                                        style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
+                                    <IconButton
+                                        color={Colors.primary.alpha}
+                                        onPress={approve}
+                                        icon='check'
+                                        style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
+                                </View>
+                            </View>
+                        )
+                    }
+
+                    return (
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
+                            { 
+                                pendingRequests.map(({ userId, positionName, positionId }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: requestToJoinActions(userId, positionId)
+                                    })
+                                })
+                            }
+                            { 
+                                deniedRequests.map(({ userId, positionName }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: responseLabel('Denied')
+                                    })
+                                })
+                            }
+                        </View>
+                    )
+                }
+
+                const joinedSection = () => {
+
+                    const joinedIcon = () => {
+                        return (
+                            <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                <IconButton
+                                    style={styles.icon}
+                                    icon={'check-circle'}
+                                    color={Colors.good}
+                                    size={styles.icon.width} />
+                            </View>
+                        )
+                    }
+
+                    return (
+                        joinedUsers.length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Joined'}</Text>
+                            { 
+                                joinedUsers.map(({ userId, positionName }) => {
+                                    return positionScopedRow({
+                                        userId, 
+                                        positionName,
+                                        rightElem: joinedIcon
+                                    })
+                                })
+                            }
+                        </View>
+                        :
+                       null
+                    )
+                }
+
+                const viewedSection = () => {
+                    return (
+                        Array.from(viewedUsers.entries()).length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Viewed request'}</Text>
+                            { 
+                                Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                            }
+                        </View>
+                        : null
+                    )
+                }
+
+                const notificationsSection = () => {
+                    return (
+                        Array.from(notifiedUsers.entries()).length > 0
+                        ?
+                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Sent notification'}</Text>
+                            { 
+                            
+                                Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                            }
+                        </View>
+                        :
+                        null
+                    )
+                }
+
+                const toggleTeamDetails = async () => {
+                    setEventDetailsOpen(!eventDetailsOpen)
+                    
+                    if (!eventDetailsOpen) {
+                        await requestStore().ackRequestsToJoinNotification(request.id)
+                    }
+                }
+
+                return (
+                    <View>
+                        <Pressable 
+                            style={{ 
+                                padding: 20, 
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }} 
+                            onPress={toggleTeamDetails}
+                        >
+                            <View>
+                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                            </View>
+                            { newLabel
+                                ? <View style={{ flex: 1 }}>
+                                    <Text style={{ 
+                                        color: Colors.primary.alpha, 
+                                        fontSize: 14
+                                    }}>{newLabel}</Text>
+                                </View>
+                                : null
+                            }
+                            <IconButton 
+                                style={styles.largeIcon}
+                                size={styles.largeIcon.height}
+                                color={'#999'}
+                                icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
+                        </Pressable>
+                        {
+                            eventDetailsOpen
+                                ? <View>
+                                    { requestSection() }
+                                    { joinedSection() }
+                                    { viewedSection() }
+                                    { notificationsSection() }
+                                </View>
+                                : null
+                        }
+                    </View>
+                )
+            }
+        }
+
+        return (
+            <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
+                <View style={{ backgroundColor: '#F6F4F6', borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+                    { notifyAction() }
+                    { teamEventDetails() }
+                </View>
+                {
+                    request.positions.map(pos => {
+                        return (
+                            <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
+                        )
+                    })
+                }
+            </WrappedScrollView>
+        )
+    })
+
+    const tabs = []
+    const userHasPermissionToSeeChat = iHaveAnyPermissions([PatchPermissions.ChatAdmin, PatchPermissions.SeeRequestChats, PatchPermissions.RequestAdmin])
+
+    tabs.push(
+        {
+            label: Tabs.Overview,
+            view: overview
+        }
+    );
+
+    if (userIsOnRequest || userHasPermissionToSeeChat) {
+        tabs.push(
+            {
+                label: Tabs.Channel,
+                view: channel
+            }
+        );
+    }
+
+    tabs.push(
+        {
+            label: Tabs.Team,
+            view: team
+        }
+    );
+
+    return (
+        // <VisualArea>
+            <TabbedScreen 
+                bodyStyle={{ backgroundColor: '#ffffff' }}
+                defaultTab={Tabs.Overview} 
+                tabs={tabs}/>
+        // </VisualArea>
     );
 });
 
 export default HelpRequestDetails;
+
+enum Tabs {
+    Overview = 'Overview', 
+    Channel = 'Channel',
+    Team = 'Team'
+}
 
 const styles = StyleSheet.create({
     detailsContainer: {
@@ -502,19 +742,33 @@ const styles = StyleSheet.create({
     notesSection: {
         marginBottom: 16
     },
+    priorityOutterSection: {
+        marginBottom: 16,
+        // makes the inner section hug the text vs trying to dill the space of its container
+        flexDirection: 'row' 
+    },
+    priorityInnerSection: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 4
+    },
     timeAndPlaceSection: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
-        marginBottom: 16
+        marginBottom: 16,
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
+        marginVertical: 5
     },
-    locationIcon: { 
+    contactInfoRow: {
+        flexDirection: 'column',
+    },
+    detailsIcon: { 
         width: 14,
         color: '#666',
         alignSelf: 'center',
-        margin: 0
+        marginRight: 5
     },
     assignmentSelectIcon: { 
         width: 30,
@@ -586,12 +840,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: '#666',
         marginLeft: 2
-    },
-    timeIcon: { 
-        width: 14,
-        color: '#666',
-        alignSelf: 'center',
-        margin: 0
     },
     timeText: {
         fontSize: 14,
@@ -758,5 +1006,44 @@ const styles = StyleSheet.create({
     skillLabel: {
         color: '#7F7C7F',
         fontSize: 12
+    },
+    notifyButton: {
+        borderWidth: 1,
+        borderColor: Colors.primary.alpha,
+        backgroundColor: '#fff',
+        borderRadius: 32,
+        height: 40,
+    },
+    icon: {
+        width: 20,
+        height: 20,
+        margin: 0
+    },
+    largeIcon: {
+        width: 30,
+        height: 30,
+        margin: 0
+    },
+    closeRequestButton: {
+        backgroundColor: '#76599A',
+    },
+    openRequestButton: {
+        borderColor: '#76599A',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        backgroundColor: '#ffffff',
+    },
+    button: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        borderRadius: 24,
+        // margin: 20,
+        width: '100%',
+        height: 44
+    },
+    mapView: {
+        height: 120
     }
 })

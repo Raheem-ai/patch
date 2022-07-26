@@ -1,4 +1,3 @@
-import { AllStores, IBaseStore, IBottomDrawerStore, ICreateRequestStore, IDispatchStore, ILocationStore, INativeEventStore, INotificationStore, IRequestStore, ISecretStore, IEditRequestStore, IUserStore, IHeaderStore, ITeamStore, ILinkingStore, INewUserStore, IEditUserStore, IAlertStore, ISocketStore, IUpdateStore } from './interfaces';
 import UserStore from './userStore';
 import LocationStore from './locationStore';
 import NotificationStore from './notificationStore';
@@ -19,6 +18,40 @@ import EditUserStore from './editUserStore';
 import AlertStore from './alertStore';
 import SocketStore from './socketStore';
 import UpdateStore from './updateStore';
+import OrganizationStore from './organizationStore';
+import {
+    AllStores,
+    IBaseStore,
+    IBottomDrawerStore,
+    ICreateRequestStore,
+    IDispatchStore,
+    ILocationStore,
+    INativeEventStore,
+    INotificationStore,
+    IRequestStore,
+    ISecretStore,
+    IEditRequestStore,
+    IUserStore,
+    IHeaderStore,
+    ITeamStore,
+    ILinkingStore,
+    INewUserStore,
+    IEditUserStore,
+    IAlertStore,
+    ISocketStore,
+    IUpdateStore,
+    IOrganizationStore,
+    IUpsertRoleStore,
+    IManageAttributesStore,
+    IManageTagsStore,
+    INavigationStore,
+    IOrganizationSettingsStore
+} from './interfaces';
+import UpsertRoleStore from './upsertRoleStore';
+import ManageAttributesStore from './manageAttributesStore';
+import ManageTagsStore from './manageTagsStore';
+import NavigationStore from './navigationStore';
+import OrganizationSettingsStore from './organizationSettingStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -36,9 +69,15 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ ILinkingStore, LinkingStore ],
     [ INewUserStore, NewUserStore ],
     [ IEditUserStore, EditUserStore ],
-    [ IAlertStore, AlertStore ],   
+    [ IAlertStore, AlertStore ],
     [ ISocketStore, SocketStore ],
-    [ IUpdateStore, UpdateStore ] 
+    [ IUpdateStore, UpdateStore ],
+    [ IOrganizationStore, OrganizationStore ],
+    [ IUpsertRoleStore, UpsertRoleStore],
+    [ IManageAttributesStore, ManageAttributesStore ],
+    [ IManageTagsStore, ManageTagsStore ],
+    [ INavigationStore, NavigationStore],
+    [ IOrganizationSettingsStore, OrganizationSettingsStore]
 ];
 
 function validateStores() {
@@ -66,7 +105,7 @@ function validateStores() {
 export function bindStores() {
     validateStores()
 
-    for (const [ iStore, store] of storeMappings) {
+    for (const [ iStore, store ] of storeMappings) {
         container.isBound(iStore.id) || container.bind(iStore.id).to(store).inSingletonScope();
     }
 }

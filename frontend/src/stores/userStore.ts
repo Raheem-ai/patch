@@ -1,10 +1,10 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, EditableUser, Me, MinUser, ProtectedUser, RequestSkill, UserRole } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem } from '../../../common/models';
 import { Store } from './meta';
-import { IUserStore } from './interfaces';
+import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
-import { routerNames } from '../types';
+import { RootStackParamList, routerNames } from '../types';
 import { persistent } from '../meta';
 import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
@@ -37,11 +37,22 @@ export default class UserStore implements IUserStore {
 
     async init() {
         if (this.signedIn) {
-            // this effectively validates that your refresh token is still valid
-            // by calling a method that takes you through the refresh auth flow
-            // and signs you out if the refresh token has expired
-            await this.api.init()
-            await this.getLatestMe();
+            // make sure this doesn't throw because any store that depends on the user store
+            // won't get initialized when there is a stale refreshToken
+            try {
+                
+
+                // wait for api to init so it's persistent state can settle
+                // before relying on it to handle the refresh token auth flow
+                await this.api.init();
+
+                // If any of these fail because of a stale refreshToken, api() will handle calling this.onSignOut() 
+                // which will clear all stores and reroute to the correct screen
+                await this.updateOrgUsers([]);
+                await this.getLatestMe();
+            } catch (e) {
+                console.error(e)
+            }
         }
     }
 
@@ -82,37 +93,6 @@ export default class UserStore implements IUserStore {
         return !!this.user;
     }
 
-    get isResponder(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Responder);
-    }
-
-    get isDispatcher(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Dispatcher);
-    }
-
-    get isAdmin(): boolean {
-        if (!this.currentOrgId) {
-            return false
-        }
-
-        const org = this.user.organizations[this.currentOrgId];
-        return org.roles.includes(UserRole.Admin);
-    }
-
-    onSignedOut = () => {
-        // TODO: make general 'was signed out' flow that safely clears all stores
-    }
-
     async afterSignIn(authTokens: AuthTokens) {
         const token = authTokens.accessToken;
 
@@ -134,12 +114,8 @@ export default class UserStore implements IUserStore {
     }
     
     async signIn(email: string, password: string) {
-        try {
-            const authTokens = await this.api.signIn({ email, password })
-            await this.afterSignIn(authTokens);
-        } catch (e) {
-            console.error(e);
-        }
+        const authTokens = await this.api.signIn({ email, password })
+        await this.afterSignIn(authTokens);
     }
 
     async signUp(minUser: MinUser) {
@@ -155,11 +131,7 @@ export default class UserStore implements IUserStore {
         try {
             const token = this.authToken;
 
-            setTimeout(() => {
-                navigateTo(routerNames.signIn)
-                clearAllStores()
-                clearAllServices()
-            }, 0)
+            setTimeout(this.onSignOut, 0)
 
             await this.api.signOut({ token });
         } catch (e) {
@@ -167,8 +139,21 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], skills: RequestSkill[], baseUrl: string) {
-        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, skills, baseUrl);
+    /**
+     * Code that should be run whenever a user logs out or is logged out
+     * by the system.
+     * 
+     * NOTE: should not have a reference to 'this' as this may be called before 
+     * this.init() resolves ie. stale refresh token flow
+     */
+    onSignOut = (route?: keyof RootStackParamList) => {
+        navigateTo(route || routerNames.landing)
+        clearAllStores()
+        clearAllServices()
+    }
+
+    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
+        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributes, baseUrl);
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
@@ -206,34 +191,28 @@ export default class UserStore implements IUserStore {
     }
 
     async getLatestMe(prefetched?: { me: ClientSideFormat<Me>, token: string }) {
-        try {
-            const token = prefetched ? prefetched.token : this.authToken;
-            const me = prefetched ? prefetched.me : await this.api.me({ token });
+        const token = prefetched ? prefetched.token : this.authToken;
+        const me = prefetched ? prefetched.me : await this.api.me({ token });
 
-            runInAction(() => {
-                this.user = me;
+        runInAction(() => {
+            this.user = me;
 
-                if (prefetched) {
-                    this.authToken = token
-                }
+            if (prefetched) {
+                this.authToken = token
+            }
 
-                const keys = Object.keys(me.organizations);
+            const keys = Object.keys(me.organizations);
 
-                // if called when loading up a logged in user with a previously chosen org context 
-                // of an org they are still a member of, honor that org context
-                if (!prefetched && !!this.currentOrgId && keys.includes(this.currentOrgId)) {
-                    return;
-                }
+            // if called when loading up a logged in user with a previously chosen org context 
+            // of an org they are still a member of, honor that org context
+            if (!prefetched && !!this.currentOrgId && keys.includes(this.currentOrgId)) {
+                return;
+            }
 
-                if (keys.length) {
-                    this.currentOrgId = keys[0];
-                }
-            })
-        } catch (e) {
-            // TODO: if you get an auth error here we should 
-            // make you sign back in
-            console.error(e)
-        }
+            if (keys.length) {
+                this.currentOrgId = keys[0];
+            }
+        })
     }
 
     // TODO: remove this as a concept (should change routing to handle userId in route path)
@@ -241,7 +220,7 @@ export default class UserStore implements IUserStore {
         this.currentUser = user;
     }
 
-    async editUser(userId: string, user: Partial<EditableUser>) {
+    async editUser(userId: string, user: Partial<AdminEditableUser>) {
         const updatedUser = await this.api.editUser(this.orgContext(), userId, user)
 
         runInAction(() => {
@@ -253,8 +232,8 @@ export default class UserStore implements IUserStore {
         })
     }
     
-    async editMe(user: Partial<EditableMe>) {
-        const me = await this.api.editMe({ token: this.authToken }, user)
+    async editMe(user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) {
+        const me = await this.api.editMe(this.orgContext(), user, protectedUser)
 
         runInAction(() => {
             this.user = me;
@@ -263,6 +242,8 @@ export default class UserStore implements IUserStore {
                 this.currentUser = me;
             }
         })
+
+        await this.updateOrgUsers([me.id])
     }
 
     // Still need to keep user for legacy ui data
@@ -276,5 +257,17 @@ export default class UserStore implements IUserStore {
             this.users.set(user.id, user);
             this.currentUser = null
         })
+    }
+
+    async removeMyselfFromOrg() {
+        const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
+        await this.api.signOut({ token:this.authToken });
+
+        await navigationStore().navigateToSync(routerNames.signIn);
+
+        setTimeout(() => {
+            clearAllStores()
+            clearAllServices()
+        }, 0)
     }
 }

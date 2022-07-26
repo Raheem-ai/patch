@@ -1,56 +1,79 @@
 import { observer } from "mobx-react";
-import React, { useEffect, useState,  } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { PendingUser, RequestSkill, RequestSkillToLabelMap, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
+import React from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../forms/form";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigateTo } from "../../../navigation";
-import { alertStore, bottomDrawerStore, IAlertStore, IBottomDrawerStore, ILinkingStore, INewUserStore, IUserStore, newUserStore } from "../../../stores/interfaces";
-import { routerNames, ScreenProps } from "../../../types";
-import { FormInputConfig } from "../../forms/types";
-import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
-
+import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
+import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import { observable, runInAction } from "mobx";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 @observer
 export default class AddUser extends React.Component {
-    static submit = {
-        isValid: () => {
-            return newUserStore().isValid
-        },
-        action: async () => {
+    formInstance = observable.box<Form>(null);
 
-            let invitedUser: PendingUser;
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
 
-            try {
-                invitedUser = await newUserStore().inviteNewUser()
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e));
-                return
-            }
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    newUserStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    let invitedUser: PendingUser;
 
-            alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
-            bottomDrawerStore().hide();
-        },
-        label: () => {
-            return `Send Invite`
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        invitedUser = await newUserStore().inviteNewUser()
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e));
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+
+                    alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+                    bottomDrawerStore().hide();
+                },
+                label: 'Send Invite',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
         }
-    }
 
-    static onHide = () => {
-        newUserStore().clear();
-    }
+        return (
+            <KeyboardAwareArea>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </KeyboardAwareArea>
+        )
+    })
 
     formProps = (): FormProps => {
         return {
             headerLabel: 'Invite a user to join your org by providing their email and phone number!', 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
+            homeScreen: this.formHomeScreen,
             inputs: [
                 {
                     onChange: (email) => newUserStore().email = email,
@@ -61,8 +84,7 @@ export default class AddUser extends React.Component {
                         return newUserStore().emailValid
                     },
                     name: 'email',
-                    previewLabel: () => newUserStore().email,
-                    headerLabel: () => 'Email',
+                    placeholderLabel: () => 'Email',
                     type: 'TextInput',
                     required: true
                 },
@@ -75,8 +97,7 @@ export default class AddUser extends React.Component {
                         return newUserStore().phoneValid
                     },
                     name: 'phone',
-                    previewLabel: () => newUserStore().phone,
-                    headerLabel: () => 'Phone',
+                    placeholderLabel: () => 'Phone',
                     type: 'TextInput',
                     required: true
                 },
@@ -91,6 +112,7 @@ export default class AddUser extends React.Component {
                     name: 'roles',
                     previewLabel: () => null,
                     headerLabel: () => 'Roles',
+                    placeholderLabel: () => 'Roles',
                     type: 'TagList',
                     props: {
                         options: allEnumValues(UserRole),
@@ -102,48 +124,17 @@ export default class AddUser extends React.Component {
                         },
                     },
                     required: true
-                },
-                {
-                    onSave: (skills) => newUserStore().skills = skills,
-                    val: () => {
-                        return newUserStore().skills
-                    },
-                    isValid: () => {
-                        return newUserStore().skillsValid
-                    },
-                    name: 'skills',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Skills',
-                    type: 'TagList',
-                    props: {
-                        options: allEnumValues(RequestSkill),
-                        optionToPreviewLabel: (opt) => RequestSkillToLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            newUserStore().skills.splice(idx, 1)
-                        },
-                        dark: true
-                    },
                 }
-                
             ] as [
-                FormInputConfig<'TextInput'>, 
-                FormInputConfig<'TextInput'>, 
-                FormInputConfig<'TagList'>,
-                FormInputConfig<'TagList'>,
+                InlineFormInputConfig<'TextInput'>, 
+                InlineFormInputConfig<'TextInput'>, 
+                ScreenFormInputConfig<'TagList'>,
             ]
         }
     }
 
     render() {
-        return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
                 
 }

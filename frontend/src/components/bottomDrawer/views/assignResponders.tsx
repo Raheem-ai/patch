@@ -1,49 +1,61 @@
+import { observable, runInAction } from "mobx"
 import { observer } from "mobx-react"
 import React from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
-import { HelpRequest } from "../../../../../common/models"
+import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../common/models"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
 import { Colors } from "../../../types"
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
+import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
-import SkillTag from "../../skillTag"
 
 const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
-    static raisedHeader = true;
 
-    static submit = {
-        isValid: () => {
-            return !!dispatchStore().selectedResponderIds.size
-        },
-        action: async () => {
-            const id = requestStore().currentRequest.id;
+    header = () => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    dispatchStore().clear()
+                },
+            },
+            save: {
+                handler: async () => {
+                    const id = requestStore().currentRequest.id;
 
-            try {
-                await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
-            } catch(e) {
-                alertStore().toastError(resolveErrorMessage(e))
-                return
-            }
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
 
-            alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responders`)
+                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
 
-            bottomDrawerStore().hide()
-        },
-        label: () => {
-            const count = dispatchStore().selectedResponderIds.size;
-            
-            return `Notify ${count || 'selected'} responders`
+                    bottomDrawerStore().hide()
+                },
+                label: () => {
+                    const count = dispatchStore().selectedResponderIds.size;
+                    
+                    return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
+                },
+                validator: () => {
+                    return !!dispatchStore().selectedResponderIds.size
+                }
+            },
+            bottomDrawerView: true,
         }
-    }
 
-    static onHide = () => {
-        dispatchStore().clear()
+        return <BackButtonHeader {...headerConfig}/>
     }
 
     toggleSelectAll = () => {
@@ -54,36 +66,41 @@ export default class AssignResponders extends React.Component {
         dispatchStore().toggleResponder(userId)
     }
     
-    header = () => {
-        const displayIdParts = requestStore().currentRequest.displayId.split('-');
+    listHeader = () => {
 
-        return (
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.headerTitle}>
-                        <Text style={styles.importantText}>Responders for {displayIdParts[0]}</Text>
-                        <Text>-{displayIdParts[1]}</Text>
-                    </Text>
-                </View>
-                <View>
-                    <Text style={styles.headerSubTitle}>
-                        <Text style={styles.importantText}>Need {requestStore().currentRequest.respondersNeeded} people</Text>
-                        <Text> with these skills:</Text>
-                    </Text>
-                </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap'}}>
-                        { 
-                            requestStore().currentRequest.skills.map((s) => {
-                                const fulfilled = dispatchStore().selectedResponders.some(r => r.skills.includes(s));
+        const headerProps: ListHeaderProps = {
+            openHeaderLabel: 'People to notify',
+    
+            optionConfigs: [
+                {
+                    chosenOption: dispatchStore().roleOption,
+                    options: dispatchStore().roleOptions,
+                    toHeaderLabel: dispatchStore().roleOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().roleOptionToOptionLabel,
+                    onUpdate: dispatchStore().setRoleOption
+                },
+                {
+                    chosenOption: dispatchStore().statusOption,
+                    options: dispatchStore().statusOptions,
+                    toHeaderLabel: dispatchStore().statusOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().statusOptionToOptionLabel,
+                    onUpdate: dispatchStore().setStatusOption
+                },
+                {
+                    chosenOption: dispatchStore().eligibilityOption,
+                    options: dispatchStore().eligibilityOptions,
+                    toHeaderLabel: dispatchStore().eligibilityOptionToHeaderLabel,
+                    toOptionLabel: dispatchStore().eligibilityOptionToOptionLabel,
+                    onUpdate: dispatchStore().setEligibilityOption
+                }
+            ] as [
+                ListHeaderOptionConfig<string>, 
+                ListHeaderOptionConfig<StatusOption>,
+                ListHeaderOptionConfig<EligibilityOption>,
+            ]
+        }
 
-                                return (
-                                    <SkillTag style={{marginTop: 12, marginRight: 6}} skill={s} large type={fulfilled ? 'fulfilled': 'needed'} />
-                                )
-                            })
-                        }
-                </View>
-            </View>
-        )
+        return <ListHeader {...headerProps}/>
     }
 
     responderActions = () => {
@@ -91,7 +108,7 @@ export default class AssignResponders extends React.Component {
         return (
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responders`}</Text>
+                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responder` + (dispatchStore().assignableResponders.length == 1 ? '':'s')}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
@@ -101,13 +118,13 @@ export default class AssignResponders extends React.Component {
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
                     </Pressable>
                 </View>
-                <View style={styles.includeOffDutyRow}>
+                {/* <View style={styles.includeOffDutyRow}>
                     <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
                         <Switch
                             value={dispatchStore().includeOffDuty} 
                             onValueChange={() => dispatchStore().toggleIncludeOffDuty()} 
                             color='#32D74B'/>
-                </View>
+                </View> */}
             </View>
         )
     }
@@ -149,11 +166,12 @@ export default class AssignResponders extends React.Component {
 
     render() {
         return (
-            <BottomDrawerViewVisualArea >
+            <>
                 { this.header() }
+                { this.listHeader() }
                 { this.responderActions() }
                 { this.responders() }
-            </BottomDrawerViewVisualArea>
+            </>
         )
     }
 }
@@ -193,7 +211,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     selectAllIcon: {
-        color: '#838383',
+        color: Colors.icons.light,
         width: 20,
         height: 20,
     },
@@ -203,7 +221,7 @@ const styles = StyleSheet.create({
     selectAllText: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#666'
+        color: Colors.icons.dark
     },
     includeOffDutyRow: {
         flexDirection: 'row',
@@ -230,20 +248,20 @@ const styles = StyleSheet.create({
         height: 32,
         width: 32,
         borderRadius: 32,
-        borderColor: '#E0DEE0',
+        borderColor: Colors.borders.formFields,
         borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         marginLeft: 12
     },
     selectResponderIcon: {
-        color: '#E0DEE0',
+        color: Colors.borders.formFields,
         width: 20,
         margin: 0,
     },
     chosenSelectResponderIcon: {
         backgroundColor: Colors.primary.alpha,
-        color: '#fff',
+        color: Colors.text.defaultReversed,
         borderColor: Colors.primary.alpha,
         borderWidth: 1,
     }

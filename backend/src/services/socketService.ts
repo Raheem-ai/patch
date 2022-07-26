@@ -1,6 +1,7 @@
 import { Inject, registerExceptionType } from "@tsed/common";
 import { IO, Nsp, Socket, SocketService as Service, SocketSession} from "@tsed/socketio";
-import { NotificationType, PatchEventParams, PatchEventType, PatchUIEvent, PatchUIEventPacket, UserRole } from "common/models";
+import { Organization, PatchEventPacket, PatchEventParams, PatchEventType, PatchNotification, PatchPermissions, UserRole } from "common/models";
+import { notificationLabel } from 'common/utils/notificationUtils'
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc, UserModel } from "../models/user";
@@ -8,8 +9,18 @@ import { DBManager } from "./dbManager";
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { RedisAdapter } from "@socket.io/redis-adapter";
+import { OrganizationDoc } from "../models/organization";
+import { HelpRequestDoc } from "../models/helpRequest";
+import { usersAssociatedWithRequest } from "common/utils/requestUtils";
+import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
 
 type RaheemSocket = SocketIO.Socket<any, any, any, { refreshToken: string }>;
+type SendConfig = { 
+    userId: string,
+    userName: string,
+    pushToken: string,
+    body: string
+}
 
 @Service()
 export class MySocketService {
@@ -76,309 +87,618 @@ export class MySocketService {
     }
 
     async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) {
-        switch (event) {
-            case PatchEventType.UserCreated:
-            case PatchEventType.UserDeleted: // TODO: How should we handle this?
-                    // noop
-                break;
-            // send best try socket update + notification backup
+            switch (event) {
+            // case PatchEventType.UserCreated:
+            // case PatchEventType.UserDeleted: // TODO: How should we handle this?
+            //         // noop
+            //     break;
             case PatchEventType.UserForceLogout:
-                await this.handleForcedLogout(event, params as any)
+                await this.handleForcedLogout(event, params as PatchEventParams[PatchEventType.UserForceLogout])
                 break;
-            // send best try socket update 
+            case PatchEventType.RequestChatNewMessage:
+                await this.handleNewRequestChatMessage(params as PatchEventParams[PatchEventType.RequestChatNewMessage])
+                break;
             case PatchEventType.UserEdited:
+                await this.handleUserEdited(params as PatchEventParams[PatchEventType.UserEdited])
+                break;
             case PatchEventType.UserOnDuty:
+                await this.handleUserOnDuty(params as PatchEventParams[PatchEventType.UserOnDuty])
+                break;
             case PatchEventType.UserOffDuty:
+                await this.handleUserOffDuty(params as PatchEventParams[PatchEventType.UserOffDuty])
+                break;
             case PatchEventType.UserChangedRolesInOrg:
-                await this.handleUserUpdate(event, params as any)
+                await this.handleUserChangedRolesInOrg(params as PatchEventParams[PatchEventType.UserChangedRolesInOrg])
                 break;
-
-            // send best try socket update 
             case PatchEventType.UserAddedToOrg:
-            case PatchEventType.UserRemovedFromOrg:
-                await this.handleUserOrgUpdate(event, params as any)
+                await this.handleUserAddedToOrg(params as PatchEventParams[PatchEventType.UserAddedToOrg])
                 break;
-
-            // send best try socket update + notification backup
+            // TODO: case PatchEventType.UserRemovedFromOrg:
             case PatchEventType.RequestCreated:
+                await this.handleRequestCreated(params as PatchEventParams[PatchEventType.RequestCreated])
+                break;
             case PatchEventType.RequestEdited:
-            case PatchEventType.RequestDeleted:
-                await this.handleRequestUpdate(event, params as any)
+                await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
-
-            // send best try socket update + notification backup
-            case PatchEventType.RequestChatNewMessage: 
-            case PatchEventType.RequestRespondersAccepted: 
+            // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestRespondersAccepted:
+                await this.handleRequestRespondersAccepted(params as PatchEventParams[PatchEventType.RequestRespondersAccepted]) 
+                break;
             case PatchEventType.RequestRespondersJoined: 
-            case PatchEventType.RequestRespondersLeft: 
-            case PatchEventType.RequestRespondersRemoved: 
-            case PatchEventType.RequestRespondersDeclined:
-            case PatchEventType.RequestRespondersAssigned:
-                await this.handleScopedRequestUpdate(event, params as any)
+                await this.handleResponderJoinedRequest(params as PatchEventParams[PatchEventType.RequestRespondersJoined])
                 break;
-        
+            case PatchEventType.RequestRespondersLeft: 
+                await this.handleResponderLeftRequest(params as PatchEventParams[PatchEventType.RequestRespondersLeft])
+                break;
+            case PatchEventType.RequestRespondersNotified: 
+                await this.handleRespondersNotified(params as PatchEventParams[PatchEventType.RequestRespondersNotified])
+                break;
+            case PatchEventType.RequestRespondersRemoved:
+                await this.handleRequestRespondersRemoved(params as PatchEventParams[PatchEventType.RequestRespondersRemoved]) 
+                break;
+            case PatchEventType.RequestRespondersDeclined:
+                await this.handleRequestRespondersDeclined(params as PatchEventParams[PatchEventType.RequestRespondersDeclined])
+                break;
+            case PatchEventType.OrganizationEdited:
+                await this.handleOrganizationEdited(params as PatchEventParams[PatchEventType.OrganizationEdited])
+                break;
+            // TODO: case PatchEventType.OrganizationDeleted:
+            case PatchEventType.OrganizationTagsUpdated:
+                await this.handleOrganizationTagsUpdated(params as PatchEventParams[PatchEventType.OrganizationTagsUpdated])
+                break;
+            case PatchEventType.OrganizationAttributesUpdated:
+                await this.handleOrganizationAttributesUpdated(params as PatchEventParams[PatchEventType.OrganizationAttributesUpdated])
+                break;
+            case PatchEventType.OrganizationRoleCreated:
+                await this.handleOrganizationRoleCreated(params as PatchEventParams[PatchEventType.OrganizationRoleCreated])
+                break;
+            case PatchEventType.OrganizationRoleEdited:
+                await this.handleOrganizationRoleEdited(params as PatchEventParams[PatchEventType.OrganizationRoleEdited])
+                break;
+            case PatchEventType.OrganizationRoleDeleted:
+                await this.handleOrganizationRoleDeleted(params as PatchEventParams[PatchEventType.OrganizationRoleDeleted])
+                break;
         }
     }
 
-    async handleForcedLogout<SysEvent extends PatchEventType.UserForceLogout>(
-        sysEvent: SysEvent, 
-        sysParams: PatchEventParams[SysEvent]
+    async handleForcedLogout(
+        event: PatchEventType.UserForceLogout, 
+        params: PatchEventParams[PatchEventType.UserForceLogout]
     ) {
-        const { userId } = sysParams;
+        const { userId } = params;
         const user = await this.db.resolveUser(userId)
 
         // drop packet if they aren't connected 
-        const sockets = await this.io.volatile.in(userId).fetchSockets();
+        const sockets = await this.adapter.fetchSockets({
+            rooms: new Set([userId])
+        })
+
+        const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
+            event,
+            params
+        }
+
+        // piggyback on background notifications in case their socket isn't connected right now
+        const notification: NotificationMetadata<PatchEventType.UserForceLogout> = {
+            to: user.push_token,
+            body: notificationLabel(event),
+            payload: packet
+        }
 
         if (sockets.length > 1) {
             //THIS SHOULDN'T HAPPEN
             throw `Multiple sockets registered for user: ${userId}`
-        }
-
-        for (const socket of sockets) {
-
-            // send refreshToken we're looking to invalidate so UI can dedup races
-            const msg: PatchUIEventPacket<PatchUIEvent.ForceLogout> = {
-                event: PatchUIEvent.ForceLogout,
-                params: {
-                    refreshToken: socket.data?.refreshToken,
-                },
-                sysEvent,
-                sysParams
-            };
-
-            // piggyback on background notifications in case their socket isn't connected right now
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
-                to: user.push_token,
-                body: ``,
-                payload: { uiEvent: msg }
+        } if (sockets.length < 1) {
+            // socket isn't connected so just send as a notification
+            if (notification.to) {
+                await this.notifications.send(notification)
             }
-
-            socket.emit('message', msg)
-            socket.disconnect(true)
-
-            await this.notifications.send(notification)
-        }
-
-    }
-
-    async handleUserOrgUpdate<SysEvent extends 
-        PatchEventType.UserAddedToOrg 
-        | PatchEventType.UserRemovedFromOrg
-    >(
-        sysEvent: SysEvent, 
-        sysParams: PatchEventParams[SysEvent]
-    ) {  
-        const { userId, orgId } = sysParams;
-        const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
-                
-        for (const member of org.members) {
-            if (member.id != userId) {
-                try {
-                    const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                        event: PatchUIEvent.UpdateResource,                         
-                        params: { 
-                            userId,
-                            orgId,
-                            userList: true
-                        },
-                        sysEvent,
-                        sysParams
-                    };
-
-                    await this.send(member.id, msg)
-                } catch (e) {
-                    console.error(`Error sending user/org update: ${e}`)
-                }
-            }
-        }
-    }
-
-    async handleUserUpdate<SysEvent extends 
-        PatchEventType.UserEdited 
-        | PatchEventType.UserOnDuty 
-        | PatchEventType.UserOffDuty 
-        | PatchEventType.UserChangedRolesInOrg
-    >(
-        sysEvent: SysEvent, 
-        sysParams: PatchEventParams[SysEvent]
-    ) {
-        const { userId } = sysParams;
-        const user = await this.db.resolveUser(userId);
-        const orgIds = Object.keys(user.organizations);
-
-        const usersToNotify = new Set<string>()
-
-        // notify all users in all orgs the edited user is a part of
-        for (const orgId of orgIds) {
-            const org = await this.db.protectedOrganization(await this.db.resolveOrganization(orgId));
-            org?.members?.forEach(m => usersToNotify.add(m.id));
-        }
-                
-        for (const id of Array.from(usersToNotify.values())) {
-            if (id != userId) {
-                try {
-                    const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                        event: PatchUIEvent.UpdateResource,                         
-                        params: { 
-                            userId
-                        },
-                        sysEvent,
-                        sysParams
-                    };
-
-                    await this.send(id, msg)
-                } catch (e) {
-                    console.error(`Error sending user/org update: ${e}`)
-                }
-            }
-        }
-    }
-
-
-    async handleRequestUpdate<SysEvent extends 
-        PatchEventType.RequestCreated | 
-        PatchEventType.RequestEdited |
-        PatchEventType.RequestDeleted
-    >(
-        sysEvent: SysEvent, 
-        sysParams: PatchEventParams[SysEvent]
-    ) {
-        const { requestId } = sysParams;
-
-        const request = await this.db.resolveRequest(requestId);
-        const org = await this.db.resolveOrganization(request.orgId);
-
-        const notifications: NotificationMetadata<any>[] = [];
-
-        for (const user of org.members as UserModel[]) {
-            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                event: PatchUIEvent.UpdateResource,
-                params: { 
-                    requestId,
-                    requestList: sysEvent != PatchEventType.RequestEdited
-                },
-                sysEvent,
-                sysParams
-            };
-
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
-                to: (user as UserModel).push_token,
-                body: ``,
-                payload: { uiEvent: msg }
-            }
-
-            notifications.push(notification);
-
+        } else {
             try {
-                await this.send((user as UserModel).id, msg)
-            } catch (e) {
-                console.error(`Error sending user/org update over socket: ${e}`)
-            }
-        }
+                // try to send by socket
+                const socket = sockets[0] as SocketIO.Socket;
 
-        try {
-            await this.notifications.sendBulk(notifications)
-        } catch (e) {
-            console.error(`Error sending user/org update over notification: ${e}`)
-        }
-
-    }
+                await new Promise<void>((resolve, reject) => {
+                    try {
+                        socket.timeout(3000).emit('message', packet, (err) => {
+                            if (err) {
+                                return reject()
+                            }
     
-    async handleScopedRequestUpdate<SysEvent extends 
-        PatchEventType.RequestChatNewMessage |
-        PatchEventType.RequestRespondersAccepted |
-        PatchEventType.RequestRespondersJoined |
-        PatchEventType.RequestRespondersLeft |
-        PatchEventType.RequestRespondersRemoved |
-        PatchEventType.RequestRespondersDeclined |
-        PatchEventType.RequestRespondersAssigned 
-    >(
-        sysEvent: SysEvent, 
-        sysParams: PatchEventParams[SysEvent]
-    ) {
-        const { requestId } = sysParams;
-
-        const request = await this.db.resolveRequest(requestId);
-        const org = await this.db.resolveOrganization(request.orgId);
-
-        const dispatchersAndRespondersOnReq = org.members.filter((member: UserModel) => {
-            const isDispatcher = member.organizations[request.orgId]?.roles?.includes(UserRole.Dispatcher)
-            const isResponderOnReq = request.assignedResponderIds?.includes(member.id)
-
-            return isDispatcher || isResponderOnReq
-        });
-
-        const notifications: NotificationMetadata<any>[] = [];
-
-        for (const user of dispatchersAndRespondersOnReq) {
-            const msg: PatchUIEventPacket<PatchUIEvent.UpdateResource, SysEvent> = {
-                event: PatchUIEvent.UpdateResource,
-                params: { 
-                    requestId,
-                },
-                sysEvent,
-                sysParams
-            };
-
-            const notification: NotificationMetadata<NotificationType.UIUpdate> = {
-                type: NotificationType.UIUpdate,
-                to: (user as UserModel).push_token,
-                body: ``,
-                payload: { uiEvent: msg }
-            }
-
-            notifications.push(notification);
-
-            try {
-                await this.send((user as UserModel).id, msg)
+                            socket.disconnect(true)
+                            resolve()
+                        })
+                    } catch (e) {
+                        console.error('Error sending socket attempt')
+                        resolve()
+                    }
+                })
             } catch (e) {
-                console.error(`Error sending user/org update over socket: ${e}`)
+                // fallback to using notification
+                if (notification.to) {
+                    await this.notifications.send(notification)
+                }
             }
         }
-
-        try {
-            await this.notifications.sendBulk(notifications)
-        } catch (e) {
-            console.error(`Error sending user/org update over notification: ${e}`)
-        }
-
     }
 
+    async handleResponderJoinedRequest(payload: PatchEventParams[PatchEventType.RequestRespondersJoined]) {
+        const request = await this.db.resolveRequest(payload.requestId);
+        const org = await this.db.resolveOrganization(payload.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
 
-    async send(userId: string, params: PatchUIEventPacket): Promise<boolean> {
-        const sockets = await this.adapter.fetchSockets({
-            rooms: new Set([userId]),
-            flags: {
-                // drop packet if they aren't connected vs buffering
-                volatile: true
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const responderName = usersOnRequest.has(payload.responderId)
+            ? usersOnRequest.get(payload.responderId).userName
+            : (await this.db.resolveUser(payload.responderId)).name;
+
+        const body = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName);
+        const configs: SendConfig[] = [];
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
+        }
+
+        for (const responder of Array.from(usersOnRequest.values())) {
+            // dedup
+            if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
+                continue;
+            }
+
+            responder.body = body
+            configs.push(responder as SendConfig)
+        }
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersJoined,
+            params: payload
+        });
+    }
+
+    async handleRespondersNotified(payload: PatchEventParams[PatchEventType.RequestRespondersNotified]) {
+        const usersToNotify = await this.db.getUsersByIds(payload.userIds)
+        const req = await this.db.resolveRequest(payload.requestId);
+        const org = await this.db.resolveOrganization(req.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+        const admins = await this.requestAdminsInOrg(fullOrg);
+
+        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId);
+
+        const configs: SendConfig[] = usersToNotify.map(u => {
+            admins.delete(u.id)
+
+            return {
+                userId: u.id,
+                userName: u.name,
+                pushToken: u.push_token,
+                body
             }
         })
 
-        if (!sockets.length) {
-            return false;
+        const adminConfigs: SendConfig[] = Array.from(admins.values()).map(conf => {
+            return {
+                ...conf,
+                body: ''
+            } as SendConfig
+        })
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersNotified,
+            params: payload
+        })
+
+        await this.send(adminConfigs, {
+            event: PatchEventType.RequestRespondersNotified,
+            params: payload,
+            silent: true
+        })
+    }
+
+    async handleNewRequestChatMessage(payload: PatchEventParams[PatchEventType.RequestChatNewMessage]) {
+        const org = await this.db.resolveOrganization(payload.orgId)
+        const fullOrg = await this.db.fullOrganization(org)
+        const request = await this.db.resolveRequest(payload.requestId)
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const senderName = usersOnRequest.get(payload.userId)?.userName || requestAdmins.get(payload.userId)?.userName || ''
+        const body = notificationLabel(PatchEventType.RequestChatNewMessage, request.displayId, senderName)
+        const configs: SendConfig[] = [];
+
+        for (const user of Array.from(usersOnRequest.values())) {
+            user.body = body
+            configs.push(user as SendConfig)
+
+            requestAdmins.delete(user.userId)
         }
 
-        if (sockets.length > 1) {
-            //THIS SHOULDN'T HAPPEN
-            throw `Multiple sockets registered for user: ${userId}`
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
         }
 
-        const socket = sockets[0]
+        await this.send(configs, { event: PatchEventType.RequestChatNewMessage, params: payload })
+    }
+
+    async handleResponderLeftRequest(payload: PatchEventParams[PatchEventType.RequestRespondersLeft]) {
+        const request = await this.db.resolveRequest(payload.requestId);
+        const org = await this.db.resolveOrganization(payload.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const responderName = usersOnRequest.has(payload.responderId)
+            ? usersOnRequest.get(payload.responderId).userName
+            : await (await this.db.resolveUser(payload.responderId)).name;
+
+        const body = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName);
+        const configs: SendConfig[] = [];
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
+        }
+
+        for (const responder of Array.from(usersOnRequest.values())) {
+            // dedup
+            if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
+                continue;
+            }
+
+            responder.body = body
+            configs.push(responder as SendConfig)
+        }
+
+        await this.send(configs, {
+            event: PatchEventType.RequestRespondersLeft,
+            params: payload
+        });
+    }
+
+    async handleRequestRespondersAccepted(params: PatchEventParams[PatchEventType.RequestRespondersAccepted]) {
+        const request = await this.db.resolveRequest(params.requestId);
+        const org = await this.db.resolveOrganization(params.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const joinedConfigs: SendConfig[] = [];
+        let acceptedConfig: SendConfig;
         
-        // check time to make sure not expired
-        try {
-            await verifyRefreshToken(socket.data?.refreshToken, this.db);
-        } catch (e) {
-            await this.pubSub.sys(PatchEventType.UserForceLogout, { userId })
+        const responderName = usersOnRequest.get(params.responderId)?.userName 
+            || requestAdmins.get(params.responderId)?.userName
+            || (await this.db.resolveUser(params.responderId)).name
 
-            return false;
+        let accepter = requestAdmins.get(params.accepterId);
+
+        if (!accepter) {
+            const fullAccepter = await this.db.resolveUser(params.accepterId);
+            
+            accepter = {
+                userId: fullAccepter.id,
+                userName: fullAccepter.name,
+                pushToken: fullAccepter.push_token,    
+            }
         }
 
-        this.io.in(userId).emit('message', params)
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName)
+        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersAccepted, request.displayId, accepter.userName)
 
-        return true;
+        acceptedConfig = {
+            ...accepter,
+            body: userAcceptedBody
+        } as SendConfig
+
+        for (const user of Array.from(usersOnRequest.values())) {
+            requestAdmins.delete(user.userId)
+            
+            if (user.userId != params.accepterId && user.userId != params.responderId) {
+                user.body = userJoinedBody
+                joinedConfigs.push(user as SendConfig)
+            }
+        }
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            if (admin.userId != params.accepterId && admin.userId != params.responderId) {
+                admin.body = userJoinedBody
+                joinedConfigs.push(admin as SendConfig)
+            }
+        }
+
+        // Accepted user gets accepted message
+        await this.send([acceptedConfig], {
+            event: PatchEventType.RequestRespondersAccepted,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersAccepted>)
+
+        // all request admins + responders on the requewst - the approver = userjoined
+        await this.send(joinedConfigs, {
+            event: PatchEventType.RequestRespondersJoined,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersJoined>)
+    }
+
+    async handleRequestRespondersRemoved(params: PatchEventParams[PatchEventType.RequestRespondersRemoved]) {
+        const request = await this.db.resolveRequest(params.requestId);
+        const org = await this.db.resolveOrganization(params.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+
+        const leftConfigs: SendConfig[] = [];
+        let removedConfig: SendConfig;
+        
+        const responderName = usersOnRequest.get(params.responderId)?.userName 
+            || requestAdmins.get(params.responderId)?.userName
+            || (await this.db.resolveUser(params.responderId)).name
+
+        let remover = requestAdmins.get(params.removerId);
+
+        if (!remover) {
+            const fullremover = await this.db.resolveUser(params.removerId);
+            
+            remover = {
+                userId: fullremover.id,
+                userName: fullremover.name,
+                pushToken: fullremover.push_token,    
+            }
+        }
+
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName)
+        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersRemoved, request.displayId, remover.userName)
+
+        removedConfig = {
+            ...remover,
+            body: userAcceptedBody
+        } as SendConfig
+
+        for (const user of Array.from(usersOnRequest.values())) {
+            requestAdmins.delete(user.userId)
+            
+            if (user.userId != params.removerId && user.userId != params.responderId) {
+                user.body = userJoinedBody
+                leftConfigs.push(user as SendConfig)
+            }
+        }
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            if (admin.userId != params.removerId && admin.userId != params.responderId) {
+                admin.body = userJoinedBody
+                leftConfigs.push(admin as SendConfig)
+            }
+        }
+
+        // Removed responder gets removed message
+        await this.send([removedConfig], {
+            event: PatchEventType.RequestRespondersRemoved,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersRemoved>)
+
+        // admins + responders on request - remover = userleft
+        await this.send(leftConfigs, {
+            event: PatchEventType.RequestRespondersLeft,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersLeft>)
+    }
+
+    async handleRequestRespondersDeclined(params: PatchEventParams[PatchEventType.RequestRespondersDeclined]){
+        const declinedUser = await this.db.resolveUser(params.responderId);
+        const decliner = await this.db.resolveUser(params.declinerId)
+        const request = await this.db.resolveRequest(params.requestId)
+
+        await this.send([
+            {
+                userId: declinedUser.id,
+                userName: declinedUser.name,
+                body: notificationLabel(PatchEventType.RequestRespondersDeclined, request.displayId, decliner.name),
+                pushToken: declinedUser.push_token
+            }
+        ], {
+            event: PatchEventType.RequestRespondersDeclined,
+            params
+        })
+    }
+
+    async handleRequestCreated(payload: PatchEventParams[PatchEventType.RequestCreated]) {
+        await this.updateUsersInOrg(PatchEventType.RequestCreated, payload, payload.orgId, notificationLabel(PatchEventType.RequestCreated))
+    }
+
+    async handleRequestEdited(payload: PatchEventParams[PatchEventType.RequestEdited]) {
+        await this.updateUsersInOrg(PatchEventType.RequestEdited, payload, payload.orgId, notificationLabel(PatchEventType.RequestEdited))
+    }
+
+    async handleUserEdited(payload: PatchEventParams[PatchEventType.UserEdited]) {
+        await this.updateUsersInOrg(PatchEventType.UserEdited, payload, payload.orgId, notificationLabel(PatchEventType.UserEdited))
+    }
+
+    async handleUserOnDuty(payload: PatchEventParams[PatchEventType.UserOnDuty]) {
+        await this.updateUsersInOrg(PatchEventType.UserOnDuty, payload, payload.orgId, notificationLabel(PatchEventType.UserOnDuty))
+    }
+
+    async handleUserOffDuty(payload: PatchEventParams[PatchEventType.UserOffDuty]) {
+        await this.updateUsersInOrg(PatchEventType.UserOffDuty, payload, payload.orgId, notificationLabel(PatchEventType.UserOffDuty))
+    }
+
+    async handleUserChangedRolesInOrg(payload: PatchEventParams[PatchEventType.UserChangedRolesInOrg]) {
+        await this.updateUsersInOrg(PatchEventType.UserChangedRolesInOrg, payload, payload.orgId, notificationLabel(PatchEventType.UserChangedRolesInOrg))
+    }
+
+    async handleUserAddedToOrg(payload: PatchEventParams[PatchEventType.UserAddedToOrg]) {
+        await this.updateUsersInOrg(PatchEventType.UserAddedToOrg, payload, payload.orgId, notificationLabel(PatchEventType.UserAddedToOrg))
+    }
+
+    async handleOrganizationEdited(params: PatchEventParams[PatchEventType.OrganizationEdited]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationEdited, params, params.orgId, notificationLabel(PatchEventType.OrganizationEdited))
+    }
+
+    async handleOrganizationTagsUpdated(params: PatchEventParams[PatchEventType.OrganizationTagsUpdated]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationTagsUpdated, params, params.orgId, notificationLabel(PatchEventType.OrganizationTagsUpdated))
+    }
+
+    async handleOrganizationAttributesUpdated(params: PatchEventParams[PatchEventType.OrganizationAttributesUpdated]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationAttributesUpdated, params, params.orgId, notificationLabel(PatchEventType.OrganizationAttributesUpdated))
+    }
+
+    async handleOrganizationRoleCreated(params: PatchEventParams[PatchEventType.OrganizationRoleCreated]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationRoleCreated, params, params.orgId, notificationLabel(PatchEventType.OrganizationRoleCreated))
+    }
+
+    async handleOrganizationRoleEdited(params: PatchEventParams[PatchEventType.OrganizationRoleEdited]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationRoleEdited, params, params.orgId, notificationLabel(PatchEventType.OrganizationRoleEdited))
+    }
+
+    async handleOrganizationRoleDeleted(params: PatchEventParams[PatchEventType.OrganizationRoleDeleted]) {
+        await this.updateUsersInOrg(PatchEventType.OrganizationRoleDeleted, params, params.orgId, notificationLabel(PatchEventType.OrganizationRoleDeleted))
+    }
+
+    async updateUsersInOrg<Event extends PatchEventType>(
+        event: Event,
+        params: PatchEventParams[Event],
+        orgId: string,
+        body: string
+    ) {
+        const org = await this.db.resolveOrganization(orgId)
+        const fullOrg = await this.db.fullOrganization(org)
+        const usersInOrg = await this.usersInOrg(fullOrg)
+
+        const configs: SendConfig[] = [];
+
+        for (const user of Array.from(usersInOrg.values())) {
+            user.body = body
+            configs.push(user as SendConfig)
+        }
+
+        await this.send(configs, { event, params })
+    }
+
+    async usersInOrg(org: OrganizationDoc) {
+        const users = new Map<string, Partial<SendConfig>>()
+
+        org.members.forEach((member: UserModel) => {
+            users.set(member.id, {
+                userId: member.id,
+                userName: member.name,
+                pushToken: (member as unknown as UserModel).push_token
+            })
+        })
+
+        return users;
+    }
+
+    async usersOnRequest(req: HelpRequestDoc, org: OrganizationDoc) {
+        const users = new Map<string, Partial<SendConfig>>()
+
+        const userIds = usersAssociatedWithRequest(req);
+
+        org.members.forEach((member: UserModel) => {
+            if (userIds.includes(member.id)) {
+                users.set(member.id, {
+                    userId: member.id,
+                    userName: member.name,
+                    pushToken: (member as unknown as UserModel).push_token
+                })
+            }
+        })
+
+        return users;
+    }
+
+    async requestAdminsInOrg(org: OrganizationDoc) {
+        const admins = new Map<string, Partial<SendConfig>>()
+        
+        org.members.forEach((member: UserModel) => {
+            console.log(member)
+
+            const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
+                return org.roleDefinitions.find(def => def.id == roleId)
+            })
+
+            const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
+
+            if (userIsAdmin) {
+                admins.set(member.id, {
+                    userId: member.id,
+                    userName: member.name,
+                    pushToken: (member as unknown as UserModel).push_token
+                })
+            }
+        })
+
+        return admins;
+    }
+
+    async send(
+        configs: SendConfig[], 
+        packet: PatchEventPacket
+    ): Promise<void> 
+    {
+        const notifications: NotificationMetadata<any>[] = [];
+        const socketAttempts = [];
+
+        for (const config of configs) {
+            const sockets = await this.adapter.fetchSockets({
+                rooms: new Set([config.userId])
+            })
+
+            const socket = sockets[0] as SocketIO.Socket;
+
+            const patchNotification: PatchNotification = {
+                body: config.body,
+                payload: packet
+            }
+
+            const notification: NotificationMetadata<PatchEventType> = {
+                to: config.pushToken,
+                ...patchNotification
+            }
+
+            if (!socket) {
+                notifications.push(notification)
+                continue;
+            }
+            
+            try {
+                await verifyRefreshToken(socket.data?.refreshToken, this.db);
+            } catch (e) {
+                await this.pubSub.sys(PatchEventType.UserForceLogout, { 
+                    userId: config.userId,
+                    refreshToken: socket.data?.refreshToken,
+                })
+    
+                continue;
+            }
+
+            const socketAttempt = new Promise<void>((resolve, _) => {
+                
+                try {
+                    socket.timeout(3000).emit('message', patchNotification, (err) => {
+                        if (err) {
+                            notifications.push(notification)
+                        }
+
+                        resolve()
+                    })
+                } catch (e) {
+                    console.error('Error sending socket attempt')
+                    resolve()
+                }
+            })
+
+            socketAttempts.push(socketAttempt)
+        }
+
+        await Promise.all(socketAttempts);
+
+        try {
+            // Don't fail if some user's haven't accepted notifications
+            await this.notifications.sendBulk(notifications.filter(meta => !!meta.to))
+        } catch (e) {
+            console.error(`Error sending update over notification: ${e}`)
+        }
     }
 }

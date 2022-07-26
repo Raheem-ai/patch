@@ -1,0 +1,145 @@
+import { DefaultRoleIds, PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata } from "../../../../common/models"
+import { allEnumValues } from "../../../../common/utils"
+import { alertStore, upsertRoleStore, userStore } from "../../stores/interfaces"
+import Form, { CustomFormHomeScreenProps } from "./form"
+import { InlineFormInputConfig, ScreenFormInputConfig } from "./types"
+
+import React, { useRef } from "react";
+import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
+import { Pressable, ScrollView, View } from "react-native"
+import { Button, Text } from "react-native-paper"
+import { Colors } from "../../types"
+import { resolveErrorMessage } from "../../errors"
+import { iHaveAllPermissions } from "../../utils"
+import KeyboardAwareArea from "../helpers/keyboardAwareArea"
+
+type UpsertRoleFormProps = {
+    cancel: () => void,
+    save: () => void, 
+    headerLabel: string | (() => string) 
+}
+
+const UpsertRoleForm = ({
+    cancel,
+    save,
+    headerLabel
+}: UpsertRoleFormProps) => {
+    const formRef = useRef<Form>();
+
+    const isAnyoneRole = upsertRoleStore().id == DefaultRoleIds.Anyone
+    const isAdminRole = upsertRoleStore().id == DefaultRoleIds.Admin
+    const isCreating = !upsertRoleStore().id;
+
+    const nameInput = {
+        name: 'name',
+        required: true,
+        type: 'TextInput',
+        icon: 'clipboard-account',
+        val: () => upsertRoleStore().name,
+        isValid: upsertRoleStore().nameIsValid,
+        onChange: (val) => {
+            upsertRoleStore().name = val
+        },
+        placeholderLabel: () => 'Name this role'
+    } as InlineFormInputConfig<'TextInput'>;
+
+    const permissionsInput = {
+        onSave: (groups) => upsertRoleStore().permissionGroups = groups,
+        val: () => {
+            return upsertRoleStore().permissionGroups
+        },
+        isValid: () => {
+            return !!upsertRoleStore().permissionGroups.length
+        },
+        name: 'permissionGroups',
+        headerLabel: () => 'Permissions',
+        placeholderLabel: () => 'Set permissions',
+        previewLabel: () => {
+            return upsertRoleStore().permissionGroups.map(p => {
+                return PermissionGroupMetadata[p].name
+            }).join(', ')
+        },
+        type: 'PermissionGroupList',
+        icon: 'key',
+        required: true,
+        disabled: isAdminRole,
+        props: {
+            options: allEnumValues(PatchPermissionGroups),
+            optionToPreviewLabel: (opt: PatchPermissionGroups) => PermissionGroupMetadata[opt].name,
+            multiSelect: true,
+        }
+    } as ScreenFormInputConfig<'PermissionGroupList'>;
+
+    const inputs = []
+
+    if (!isAnyoneRole && !isAdminRole) {
+        inputs.push(nameInput)
+    }
+
+    inputs.push(permissionsInput);
+
+    const homeScreen = ({
+        onContainerPress,
+        renderInputs,
+        inputs,
+        isValid
+    }: CustomFormHomeScreenProps) => {
+        
+        const headerProps: BackButtonHeaderProps = {
+            cancel: {
+                handler: cancel
+            },
+            save: {
+                handler: save,
+                label: 'Save',
+                validator: isAdminRole ? () => false : isValid
+            },
+            label: headerLabel,
+            bottomBorder: true
+        }
+
+        const deleteRole = async () => {
+            try {
+                await upsertRoleStore().delete();
+                cancel()
+            } catch (e) {
+                const errMessage = resolveErrorMessage(e)
+                alertStore().toastError(errMessage, true)
+            }
+        }
+
+        const iHavePermissionToDelete = iHaveAllPermissions([PatchPermissions.RoleAdmin])
+
+        return (
+            <KeyboardAwareArea>
+                <Pressable style={{ position: 'relative', flex: 1 }} onPress={onContainerPress}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <BackButtonHeader {...headerProps} />
+                        { isAdminRole 
+                            ? <View style={{ paddingLeft: 60, padding: 20, borderStyle: 'solid', borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
+                                <Text style={{ fontSize: 16 }}>{`Note: there must always be at least one Admin in your organization.`}</Text>
+                            </View>
+                            : null
+                        }
+                        {renderInputs(inputs())}
+                        {   !isCreating && !isAnyoneRole && !isAdminRole && iHavePermissionToDelete
+                            ? <View style={{ position: 'absolute', bottom: 0, padding: 20, width: '100%' }}>
+                                <Button
+                                    uppercase={false} 
+                                    color={Colors.primary.alpha}
+                                    mode={'outlined'}
+                                    onPress={deleteRole}    
+                                    style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{'Delete this role'}</Button>
+                            </View>
+                            : null
+                        }
+                    </ScrollView>
+                </Pressable>
+            </KeyboardAwareArea>
+        )
+    }
+
+    return <Form ref={formRef} inputs={inputs} homeScreen={homeScreen}/>
+}
+
+export default UpsertRoleForm;
