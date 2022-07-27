@@ -150,7 +150,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 icon='account' 
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
-                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo ? ' ' + visualDelim: null}</Text>
+                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
+                                    ? ' ' + visualDelim 
+                                    : null}
+                                </Text>
                                 <Text style={styles.metadataText}>{requestStore().currentRequest.callerContactInfo}</Text>
                         </View>
                         : null
@@ -282,9 +285,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     uppercase={false}
                     color={Colors.primary.alpha}
                     style={[styles.button, styles.closeRequestButton]}
-                    onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
-                    >
-                        {STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
+                    onPress={currentRequestOpen 
+                        ? closeRequestOrPrompt() 
+                        : reopenRequest()
+                }>
+                    {STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
                 </Button>
             </View>
         )
@@ -345,7 +350,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
         return (
         <>
-            <WrappedScrollView showsVerticalScrollIndicator={false} style={{backgroundColor: (showCloseOpenReqButton ? Colors.backgrounds.secondary : Colors.backgrounds.standard)}}>
+            <WrappedScrollView 
+                showsVerticalScrollIndicator={false} 
+                style={{backgroundColor: (showCloseOpenReqButton 
+                    ? Colors.backgrounds.secondary 
+                    : Colors.backgrounds.standard)
+            }}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
@@ -557,28 +567,28 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         pendingRequests.length + deniedRequests.length > 0
-                        ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</Text>
-                            { 
-                                pendingRequests.map(({ userId, positionName, positionId }) => {
-                                    return positionScopedRow({
-                                        userId, 
-                                        positionName,
-                                        rightElem: requestToJoinActions(userId, positionId)
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</Text>
+                                { 
+                                    pendingRequests.map(({ userId, positionName, positionId }) => {
+                                        return positionScopedRow({
+                                            userId, 
+                                            positionName,
+                                            rightElem: requestToJoinActions(userId, positionId)
+                                        })
                                     })
-                                })
-                            }
-                            { 
-                                deniedRequests.map(({ userId, positionName }) => {
-                                    return positionScopedRow({
-                                        userId, 
-                                        positionName,
-                                        rightElem: responseLabel(STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.denied)
+                                }
+                                { 
+                                    deniedRequests.map(({ userId, positionName }) => {
+                                        return positionScopedRow({
+                                            userId, 
+                                            positionName,
+                                            rightElem: responseLabel(STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.denied)
+                                        })
                                     })
-                                })
-                            }
-                        </View>
-                        : null
+                                }
+                            </View>
+                            : null
                     )
                 }
 
@@ -598,8 +608,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         joinedUsers.length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                        ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                             <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.joined}</Text>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
@@ -611,38 +620,34 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 })
                             }
                         </View>
-                        :
-                       null
+                        : null
                     )
                 }
 
                 const viewedSection = () => {
                     return (
-                        Array.from(viewedUsers.entries()).length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</Text>
-                            { 
-                                Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
-                            }
-                        </View>
-                        : null
+                        viewedUsers.size > 0
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</Text>
+                                { 
+                                    Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                                }
+                            </View>
+                            : null
                     )
                 }
 
                 const notificationsSection = () => {
                     return (
-                        Array.from(notifiedUsers.entries()).length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</Text>
-                            { 
-                            
-                                Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
-                            }
-                        </View>
-                        :
-                        null
+                        notifiedUsers.size > 0
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</Text>
+                                { 
+                                
+                                    Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                                }
+                            </View>
+                            : null
                     )
                 }
 
@@ -655,47 +660,45 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 }
 
                 return pendingRequests.length + deniedRequests.length + Array.from(viewedUsers.entries()).length + joinedUsers.length + Array.from(notifiedUsers.entries()).length > 0
-                ? (
-                    <View>
-                        <Pressable 
-                            style={{ 
-                                padding: 20, 
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }} 
-                            onPress={toggleTeamDetails}
-                        >
-                            <View>
-                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                ? <View>
+                    <Pressable 
+                        style={{ 
+                            padding: 20, 
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }} 
+                        onPress={toggleTeamDetails}
+                    >
+                        <View>
+                            <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                        </View>
+                        { newLabel
+                            ? <View style={{ flex: 1 }}>
+                                <Text style={{ 
+                                    color: Colors.primary.alpha, 
+                                    fontSize: 14
+                                }}>{newLabel}</Text>
                             </View>
-                            { newLabel
-                                ? <View style={{ flex: 1 }}>
-                                    <Text style={{ 
-                                        color: Colors.primary.alpha, 
-                                        fontSize: 14
-                                    }}>{newLabel}</Text>
-                                </View>
-                                : null
-                            }
-                            <IconButton 
-                                style={styles.largeIcon}
-                                size={styles.largeIcon.height}
-                                color={'#999'}
-                                icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
-                        </Pressable>
-                        {
-                            eventDetailsOpen
-                                ? <View>
-                                    { requestSection() }
-                                    { joinedSection() }
-                                    { viewedSection() }
-                                    { notificationsSection() }
-                                </View>
-                                : null
+                            : null
                         }
-                    </View>
-                )
+                        <IconButton 
+                            style={styles.largeIcon}
+                            size={styles.largeIcon.height}
+                            color={'#999'}
+                            icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
+                    </Pressable>
+                    {
+                        eventDetailsOpen
+                            ? <View>
+                                { requestSection() }
+                                { joinedSection() }
+                                { viewedSection() }
+                                { notificationsSection() }
+                            </View>
+                            : null
+                    }
+                </View>
                 : <View style={{height: 20}}></View>
             }
         }
@@ -728,12 +731,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 </View>
                 {
                     request.positions.length > 0 
-                    ? request.positions.map(pos => {
-                        return (
-                            <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
-                        )
-                    })
-                    : <View style={{ padding: 20, paddingBottom: 0 }}>
+                        ? request.positions.map(pos => {
+                            return (
+                                <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
+                            )
+                        })
+                        : <View style={{ padding: 20, paddingBottom: 0 }}>
                             <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>Responders</Text>
                             <Text style={{lineHeight: 18}}>No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.</Text>
                             <View style={{ marginTop: 20 }}>{ editAction() }</View>
