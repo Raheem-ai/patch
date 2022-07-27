@@ -164,7 +164,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Tags 
-                                centered
+                                centered={false}
                                 tags={tags}
                                 verticalMargin={4}/>
                         </View>
@@ -249,12 +249,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 provider={PROVIDER_GOOGLE} 
                 pointerEvents="none"
                 showsUserLocation={true}
-                // initialRegion={initialRegion}
                 initialCamera={initialCamera}
-                // zoomEnabled={false}
-                // rotateEnabled={false}
-                // scrollEnabled={false}
-                // zoomTapEnabled={false}
                 style={styles.mapView}>
                     <Marker
                         coordinate={{ 
@@ -270,7 +265,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#FFFFFF',
+                backgroundColor: Colors.backgrounds.standard,
                 marginBottom: 12
             }}>
                 <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request.id} />
@@ -307,17 +302,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const closeRequestOrPrompt = () => async () => {
         if (!requestStore().currentRequest.type.length) {
             alertStore().showPrompt({
-                title:  STRINGS.REQUESTS.TOGGLE.TITLE,
-                message: STRINGS.REQUESTS.TOGGLE.MESSAGE,
+                title:  STRINGS.REQUESTS.TOGGLE.title,
+                message: STRINGS.REQUESTS.TOGGLE.message,
                 actions: [
                     {
-                        label: STRINGS.REQUESTS.TOGGLE.ADD,
+                        label: STRINGS.REQUESTS.TOGGLE.add,
                         onPress: () => {
                             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
                         },
                     },
                     {   
-                        label: STRINGS.REQUESTS.TOGGLE.CLOSE,
+                        label: STRINGS.REQUESTS.TOGGLE.close,
                         onPress: async () => {
                             await closeRequest()
                         },
@@ -470,11 +465,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
-                const notifiedLabel = `${numNotified} ${peeps} notified`;
+//                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
+                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.NRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
-                    ? ` ${visualDelim} ${pendingRequests.length} asking`
+                    ? STRINGS.REQUESTS.NOTIFICATIONS.NRespondersAsking(pendingRequests.length)
                     : null;
 
                 const positionScopedRow = ({ 
@@ -563,7 +558,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         pendingRequests.length + deniedRequests.length > 0
                         ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</Text>
                             { 
                                 pendingRequests.map(({ userId, positionName, positionId }) => {
                                     return positionScopedRow({
@@ -578,7 +573,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     return positionScopedRow({
                                         userId, 
                                         positionName,
-                                        rightElem: responseLabel('Denied')
+                                        rightElem: responseLabel(STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.denied)
                                     })
                                 })
                             }
@@ -605,7 +600,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         joinedUsers.length > 0
                         ?
                         <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Joined'}</Text>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.joined}</Text>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
                                     return positionScopedRow({
@@ -626,7 +621,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         Array.from(viewedUsers.entries()).length > 0
                         ?
                         <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Viewed request'}</Text>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</Text>
                             { 
                                 Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
                             }
@@ -640,7 +635,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         Array.from(notifiedUsers.entries()).length > 0
                         ?
                         <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Sent notification'}</Text>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</Text>
                             { 
                             
                                 Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
@@ -720,7 +715,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             color={Colors.primary.alpha}
                             mode={'contained'}
                             onPress={edit}
-                            style={[styles.button, styles.addPositionsButton]}>{'Add responders'}</Button>
+                            style={[styles.button, styles.addPositionsButton]}>{STRINGS.REQUESTS.ACTIONS.addResponders}</Button>
                     </View>
                     : null
             )
