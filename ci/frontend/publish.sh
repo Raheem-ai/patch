@@ -15,6 +15,10 @@ if should_deploy FILES FILES_TO_INCLUDE FILES_TO_IGNORE;
 then
     echo $(pwd)
 
+    # generate secretes in a format gcloud can comsume them
+    echo /app/backend/infra/bin/run config:generate -e $_ENVIRONMENT --toFile /app/backend/env/.env.$_ENVIRONMENT
+    /app/backend/infra/bin/run config:generate -e $_ENVIRONMENT --toFile /app/backend/env/.env.$_ENVIRONMENT
+
     echo cd /app/frontend
     cd /app/frontend
 

@@ -1,6 +1,8 @@
 const dotenv = require('dotenv');
 
-dotenv.config({ path: '../backend/env/.env.local' })
+const ENV = process._ENVIRONMENT || 'local';
+
+dotenv.config({ path: `../backend/env/.env.${ENV}` })
 
 const googleMapsKey = JSON.parse(process.env.GOOGLE_MAPS).api_key
 
