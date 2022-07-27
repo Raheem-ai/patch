@@ -41,12 +41,14 @@ export default class NewUserStore implements INewUserStore {
         this.pronouns = ''
     }
 
+    // this should use the required param instead of being hard coded
+    // removed && this.rolesValid
     get isValid() {
         return this.phoneValid &&
-            this.emailValid &&
-            this.rolesValid
+            this.emailValid 
     }
 
+    // TO DO: real phone validation
     get phoneValid(){
         return this.phone.length == 10
     }
@@ -56,7 +58,6 @@ export default class NewUserStore implements INewUserStore {
     }
 
     get rolesValid(){
-        // return true
         return !!this.roles.length
     }
 

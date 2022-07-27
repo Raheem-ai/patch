@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Calendar from 'react-native-calendar-picker';
 import { View, StyleSheet, Pressable } from "react-native";
 import moment from 'moment';
+import STRINGS from '../../../common/strings';
 
 type CalendarPickerProps = {
     onDateChange: (date: Date) => void,
@@ -21,7 +22,14 @@ const CalendarPicker = ({
 
     return (
         <Calendar
-            weekdays={['S', 'M', 'T', 'W', 'T', 'F',  'S']}
+            weekdays={[
+                STRINGS.abbreviatedDaysOfWeek.su, 
+                STRINGS.abbreviatedDaysOfWeek.mo,
+                STRINGS.abbreviatedDaysOfWeek.tu,
+                STRINGS.abbreviatedDaysOfWeek.we,
+                STRINGS.abbreviatedDaysOfWeek.th,
+                STRINGS.abbreviatedDaysOfWeek.fr,
+                STRINGS.abbreviatedDaysOfWeek.sa]}
             onDateChange={dateChanged} 
 
             // need to restrict navigation with min/max to make

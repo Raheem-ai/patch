@@ -14,7 +14,6 @@ import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
-import { visualDelim } from "../constants";
 import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -151,7 +150,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                                 <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
-                                    ? ' ' + visualDelim 
+                                    ? ' ' + STRINGS.visualDelim 
                                     : null}
                                 </Text>
                                 <Text style={styles.metadataText}>{requestStore().currentRequest.callerContactInfo}</Text>
@@ -189,7 +188,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{types.join(` ${visualDelim} `)}</Text>
+                    <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
                 {
                     canEdit
@@ -493,7 +492,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
-                                    <Text>{`${userName} ${visualDelim} `}</Text>
+                                    <Text>{`${userName} ${STRINGS.visualDelim} `}</Text>
                                     <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
                                 </Text>
                             </View>

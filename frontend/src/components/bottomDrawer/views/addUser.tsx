@@ -8,6 +8,7 @@ import { resolveErrorMessage } from "../../../errors";
 import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
+import STRINGS from "../../../../../common/strings";
 
 
 @observer
@@ -27,7 +28,7 @@ export default class AddUser extends React.Component {
                 return
             }
 
-            alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+            alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
             bottomDrawerStore().hide();
         },
         label: () => {
@@ -41,7 +42,7 @@ export default class AddUser extends React.Component {
 
     formProps = (): FormProps => {
         return {
-            headerLabel: 'Invite a user to join your org by providing their email and phone number!', 
+            headerLabel: STRINGS.ACCOUNT.inviteTitle, 
             onExpand: () => {
                 bottomDrawerStore().hideHeader();
             },
@@ -97,7 +98,7 @@ export default class AddUser extends React.Component {
                             newUserStore().roles.splice(idx, 1)
                         },
                     },
-                    required: true
+                    // required: true
                 }
             ] as [
                 InlineFormInputConfig<'TextInput'>, 

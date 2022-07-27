@@ -11,6 +11,7 @@ import { iHaveAllPermissions } from "../utils";
 import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
+import STRINGS from "../../../common/strings";
 
 type PositionDetailsCardProps = { 
     requestId: string,
@@ -111,7 +112,7 @@ const PositionDetailsCard = observer(({
                 uppercase={false}
                 color={Colors.primary.alpha}
                 mode='contained'
-                onPress={leave}>{'Leave'}</Button>
+                onPress={leave}>{STRINGS.REQUESTS.POSITIONS.leave}</Button>
         }
 
         if (positionMetadata.canJoin) {
@@ -121,7 +122,7 @@ const PositionDetailsCard = observer(({
                 labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='contained'
-                onPress={join}>{'Join'}</Button>
+                onPress={join}>{STRINGS.REQUESTS.POSITIONS.join}</Button>
         } else if (positionMetadata.canRequestToJoin) {
             return <Button 
                 uppercase={false}
@@ -129,7 +130,7 @@ const PositionDetailsCard = observer(({
                 labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='outlined'
-                onPress={requestToJoin}>{'Request'}</Button>
+                onPress={requestToJoin}>{STRINGS.REQUESTS.POSITIONS.request}</Button>
         } else {
             return null
         }
