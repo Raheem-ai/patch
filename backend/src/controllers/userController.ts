@@ -14,6 +14,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
 import { userHasPermissions } from "./utils";
+import config from "../config";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -89,6 +90,8 @@ export class ValidatedMe implements Partial<EditableMe> {
     @Property()
     bio: string
 }
+
+const googleMapsApiKey = config.GOOGLE_MAPS.get().api_key;
 
 @Controller(API.namespaces.users)
 export class UsersController implements APIController<
@@ -264,10 +267,7 @@ export class UsersController implements APIController<
         @User() user: UserDoc
     ) {
         return {
-            // TODO: this should come from the secret store but it's currently already in source 
-            // in 'app.json' of the front end so punting on this until we generate dynamic front end config
-            // and set up CI/CD for front end deployments (https://docs.expo.dev/guides/setting-up-continuous-integration/)
-            googleMapsApiKey: 'AIzaSyDVdpoHZzD9G5EdsNDEg6CG3hnE4q4zbhw'
+            googleMapsApiKey
         }
     }
 

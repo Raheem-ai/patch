@@ -9,7 +9,8 @@ import {
     ExpoCredentials,
     PatchMongoDBCredentials,
     PatchSessionSecret,
-    PatchTwilioSecret
+    PatchTwilioSecret,
+    GoogleMapsCredentials
 } from 'infra/src/secrets';
 import { ConfigInstance } from '../infra/src/config/configurable';
 
@@ -20,7 +21,8 @@ const environmentConfig = {
     MONGO_CREDS: new PatchMongoDBCredentials(),
     EXPO: new ExpoCredentials(),
     TWILIO: new PatchTwilioSecret(),
-    REDIS: new RedisConfig()
+    REDIS: new RedisConfig(),
+    GOOGLE_MAPS: new GoogleMapsCredentials()
 }
 
 // can formalize this pattern in the future to make it more reusable
