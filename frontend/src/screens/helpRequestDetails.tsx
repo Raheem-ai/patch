@@ -23,6 +23,7 @@ import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
 import * as Linking from 'expo-linking';
 import { constants } from "buffer";
+import STRINGS from "../../../common/strings";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -205,7 +206,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
-    const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+
+    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
 
     const mapClick = () => {
         Linking.openURL(mapsLink);
@@ -287,7 +289,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     style={[styles.button, styles.closeRequestButton]}
                     onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
                     >
-                        {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                        {STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
                 </Button>
             </View>
         )
@@ -305,17 +307,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const closeRequestOrPrompt = () => async () => {
         if (!requestStore().currentRequest.type.length) {
             alertStore().showPrompt({
-                title: 'Type of request',
-                message: `Are you sure you want to close this request without specifying its type?`,
+                title:  STRINGS.REQUESTS.TOGGLE.TITLE,
+                message: STRINGS.REQUESTS.TOGGLE.MESSAGE,
                 actions: [
                     {
-                        label: 'Add now',
+                        label: STRINGS.REQUESTS.TOGGLE.ADD,
                         onPress: () => {
                             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
                         },
                     },
                     {   
-                        label: 'Close anyway',
+                        label: STRINGS.REQUESTS.TOGGLE.CLOSE,
                         onPress: async () => {
                             await closeRequest()
                         },
@@ -348,7 +350,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
         return (
         <>
-            <WrappedScrollView showsVerticalScrollIndicator={false}>
+            <WrappedScrollView showsVerticalScrollIndicator={false} style={{backgroundColor: (showCloseOpenReqButton ? Colors.backgrounds.secondary : Colors.backgrounds.standard)}}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
@@ -356,13 +358,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { mapPreview() }
                     { detailsSection() }
                 </View>
-                <View>
-                    { showCloseOpenReqButton
-                        ? toggleRequestButton()
-                        : null 
-                    }
-                </View>
-                {/* { teamSection() } */}
+                { showCloseOpenReqButton
+                    ? toggleRequestButton()
+                    : null 
+                }
             </WrappedScrollView>
             <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
                 { currentRequestIsOpen()
@@ -399,7 +398,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         color={Colors.primary.alpha}
                         mode={'outlined'}
                         onPress={startNotifyFlow}
-                        style={[styles.notifyButton]}>{'Notify people'}</Button>
+                        style={[styles.notifyButton]}>{STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}</Button>
                 </View>
             }
         }
@@ -779,7 +778,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     return (
         // <VisualArea>
             <TabbedScreen 
-                bodyStyle={{ backgroundColor: Colors.backgrounds.secondary }}
+                bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
                 defaultTab={Tabs.Overview} 
                 tabs={tabs}/>
         // </VisualArea>
@@ -796,19 +795,19 @@ enum Tabs {
 
 const styles = StyleSheet.create({
     detailsContainer: {
-        flex: 1,
         padding: 16,
         paddingTop: 30,
         paddingBottom: 0,
-        backgroundColor: Colors.backgrounds.standard
+        backgroundColor: Colors.backgrounds.standard,
     },
     toggleRequestContainer: { 
         width: '100%',
-        height: '100%',
         padding: 20,
         paddingTop: 24,
+        backgroundColor: Colors.backgrounds.secondary,
         borderTopColor: Colors.borders.formFields,
         borderTopWidth: 1
+
     },
     notesSection: {
         marginBottom: 16
