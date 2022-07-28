@@ -99,7 +99,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
             "entrypoint": "bash",
-            "secretEnv": ["EXPO_TOKEN"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS"],
             "args": [
                 "ci/frontend/publish.sh"
             ],
@@ -124,6 +124,10 @@
     ],
     "availableSecrets": {
         "secretManager": [
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/google-maps/versions/latest",
+                "env": "GOOGLE_MAPS"
+            },
             {
                 "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",
                 "env": "INFRA_SSH_KEY"

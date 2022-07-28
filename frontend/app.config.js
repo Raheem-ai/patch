@@ -1,8 +1,16 @@
 const dotenv = require('dotenv');
 
-const ENV = process._ENVIRONMENT || 'local';
+// NOTE:
+// every secret that goes here needs to be added to the build def as
+// this is build time vs runtime
 
-dotenv.config({ path: `../backend/env/.env.${ENV}` })
+// provided by build
+const ENV = process._ENVIRONMENT 
+
+// if not in build then must be local
+if (!ENV) {
+	dotenv.config({ path: `../backend/env/.env.local` })
+}
 
 const googleMapsKey = JSON.parse(process.env.GOOGLE_MAPS).api_key
 
