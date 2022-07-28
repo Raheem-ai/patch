@@ -61,6 +61,7 @@ export default class AddUser extends React.Component {
                     name: 'email',
                     placeholderLabel: () => 'Email',
                     type: 'TextInput',
+                    inputType: 'email-address',
                     required: true
                 },
                 {
@@ -74,6 +75,7 @@ export default class AddUser extends React.Component {
                     name: 'phone',
                     placeholderLabel: () => 'Phone',
                     type: 'TextInput',
+                    inputType: 'phone-pad',
                     required: true
                 },
                 {

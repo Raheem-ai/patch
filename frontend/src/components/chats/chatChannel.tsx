@@ -93,10 +93,12 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         { messages() }
                     </View>
                     <View style={styles.inputContainer}>
+                        {/*
                         <IconButton 
                             disabled={loading}
                             icon='paperclip'
                             style={styles.inputAction}/>
+                        */}
                         <View style={styles.messageInputContainer} >
                             <TextInput 
                                 multiline

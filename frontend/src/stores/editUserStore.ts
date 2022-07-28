@@ -177,7 +177,8 @@ export default class EditUserStore implements IEditUserStore {
     }
 
     get phoneValid(){
-        return this._phone == null || this.phone.length == 10
+        const re = /^\+[1-9]\d{1,14}$/
+        return this._phone == null || this.phone.length == 10 || re.test(this.phone)
     }
 
     get emailValid(){

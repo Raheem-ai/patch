@@ -48,9 +48,12 @@ export default class NewUserStore implements INewUserStore {
             this.emailValid 
     }
 
-    // TO DO: real phone validation
+    // TO DO: real phone validation, e.g. using 
+    // twilio lookup API: https://www.twilio.com/docs/lookup/api
+    // or Google's libphonenumber: https://www.npmjs.com/package/libphonenumber-js
     get phoneValid(){
-        return this.phone.length == 10
+        const re = /^\+[1-9]\d{1,14}$/
+        return this.phone.length == 10 || re.test(this.phone)
     }
 
     get emailValid(){

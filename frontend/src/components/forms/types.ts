@@ -1,5 +1,5 @@
 import { ComponentType } from "react"
-import { StyleProp, ViewStyle } from "react-native";
+import { KeyboardType, StyleProp, ViewStyle } from "react-native";
 import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
@@ -199,6 +199,7 @@ export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormI
     placeholderLabel?: string | (() => string)
     // defines what component it will get mapped to
     type: Type
+    inputType?: KeyboardType
     props?: InlineFormInputOptions[Type]['props']
 } & BaseFormInputConfig;
 
