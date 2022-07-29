@@ -129,6 +129,7 @@ export type InlineFormInputOptions = {
     },
     'TextInput': {
         props: {},
+        inputType?: KeyboardType,
         type: string
     }
     'Switch': {
@@ -199,7 +200,6 @@ export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormI
     placeholderLabel?: string | (() => string)
     // defines what component it will get mapped to
     type: Type
-    inputType?: KeyboardType
     props?: InlineFormInputOptions[Type]['props']
 } & BaseFormInputConfig;
 

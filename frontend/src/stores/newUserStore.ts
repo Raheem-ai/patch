@@ -6,6 +6,7 @@ import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { persistent } from '../meta';
+import { PhoneNumberRegex } from '../../../common/constants';
 
 @Store(INewUserStore)
 export default class NewUserStore implements INewUserStore {
@@ -52,8 +53,7 @@ export default class NewUserStore implements INewUserStore {
     // twilio lookup API: https://www.twilio.com/docs/lookup/api
     // or Google's libphonenumber: https://www.npmjs.com/package/libphonenumber-js
     get phoneValid(){
-        const re = /^\+[1-9]\d{1,14}$/
-        return this.phone.length == 10 || re.test(this.phone)
+        return this.phone.length == 10 || PhoneNumberRegex.test(this.phone)
     }
 
     get emailValid(){

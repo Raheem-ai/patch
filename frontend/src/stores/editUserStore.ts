@@ -4,6 +4,7 @@ import { IEditUserStore, IUserStore, userStore } from './interfaces';
 import { Me, ProtectedUser } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
+import { PhoneNumberRegex } from '../../../common/constants';
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
@@ -177,8 +178,7 @@ export default class EditUserStore implements IEditUserStore {
     }
 
     get phoneValid(){
-        const re = /^\+[1-9]\d{1,14}$/
-        return this._phone == null || this.phone.length == 10 || re.test(this.phone)
+        return this._phone == null || this.phone.length == 10 || PhoneNumberRegex.test(this.phone)
     }
 
     get emailValid(){
