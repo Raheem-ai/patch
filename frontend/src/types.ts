@@ -137,6 +137,7 @@ export const Colors = {
         landingLinks: '#F7F3FB',
     },
     icons: {
+        superlight: '#E0E0E0',
         light: '#999',
         dark: '#666',
         lightReversed: '#f0f0f0',

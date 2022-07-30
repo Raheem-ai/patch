@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
-import { requestStore, userStore } from "../../stores/interfaces";
+import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors } from "../../types";
 import UserIcon from "../userIcon";
@@ -50,11 +50,13 @@ const HelpRequestCard = observer(({
 
     const header = () => {
         const id = request.displayId;
+        const prefix = organizationStore().metadata.requestPrefix;
+
         const address = request.location?.address.split(',').slice(0, 2).join()
         return (
 
             <View style={styles.headerRow}>
-                <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
+                <Text style={[styles.idText, dark ? styles.darkText : null]}><Text style={{color: '#999'}}>{prefix}–</Text>{id}</Text>
                 {
                     address
                         ? <View style={styles.locationContainer}>

@@ -8,6 +8,7 @@ export type IHeaderAction = {
     icon: string,
     callback: () => void
 }
+const prefix = organizationStore().metadata.requestPrefix;
 
 export type HeaderRouteConfig = {
     title: string | (() => string),
@@ -86,7 +87,7 @@ const HeaderConfig: {
                 ? ''
                 : requestStore().currentRequest.displayId;
 
-            return `Request ${id}`
+            return `Request ${prefix}–${id}`
         },
         leftActions: [{
             icon: 'chevron-left',
@@ -99,7 +100,7 @@ const HeaderConfig: {
     [routerNames.helpRequestChat]: {
         title: () => {
             const req = requestStore().currentRequest;
-            return `Channel for ${req.displayId}`
+            return `Channel for ${prefix}–${req.displayId}`
         },
         leftActions: [{
             icon: 'chevron-left',
