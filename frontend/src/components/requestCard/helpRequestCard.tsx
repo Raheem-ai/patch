@@ -88,34 +88,67 @@ const HelpRequestCard = observer(({
     const status = () => {
         const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
 
-        let respondersNeeded = 0;
+        let respondersNeeded = 0, unfilledSpotsForRequest = 0;
         
         const joinedResponders = new Set<string>();
 
         request.positions.forEach(pos => {
-            respondersNeeded += pos.min
+            respondersNeeded += pos.min;
+            // it's possible that more than the minimum number of people join a position
+            // we don't want to count them for a different position
+            unfilledSpotsForRequest += pos.min - Math.min(pos.min, pos.joinedUsers.length);
         })
-        
+
         requestMetadata.positions.forEach(pos => {
             pos.joinedUsers.forEach(userId => joinedResponders.add(userId))
         })
 
-        const respondersToAssign = respondersNeeded - joinedResponders.size;
-
         const unAssignedResponders = [];
         const assignedResponders = [];
 
-        for (let i = 0; i < respondersToAssign; i++) {
+        // figure out how many open spots there are
+        // show an icon if there are any
+        if (unfilledSpotsForRequest > 0) {
             unAssignedResponders.push(<UserIcon 
-                style={{ backgroundColor: dark ? styles.unAssignedResponderIconDark.backgroundColor : styles.unAssignedResponderIcon.backgroundColor }}
-                emptyIconColor={styles.unAssignedResponderIcon.color}/>)
-        }
+                style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>);
+            // show a stack and count if there are more than one
+            if (unfilledSpotsForRequest > 1) {
+                unAssignedResponders.push(<IconButton
+                    style={[ styles.empty, dark && styles.emptyDark ]}
+                    icon='account' 
+                    color={Colors.nocolor}
+                    size={12} />);
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGLAST } ]}>{unfilledSpotsForRequest}</Text>)        
+            } else {
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGBASIC } ]}></Text>)
+            }
+        } 
 
-        joinedResponders.forEach(userId => {
+        // figure out how many people have joined
+        // show an icon for each, up to a maximum
+        const maxJoinedToShow = 3;
+        let i:number = 0;
+        joinedResponders.forEach((userId, idx) => {
             const responder = userStore().users.get(userId); 
-            assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
-        })
-
+            i < maxJoinedToShow && assignedResponders.push(<UserIcon user={responder} style={[ {zIndex: 0-i}, i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                ? styles.assignedResponderIcon 
+                : styles.assignedResponderIconLast
+            ]}/>);
+            i++;
+        });
+        // show a stack and count if there are more than shown
+        if (joinedResponders.size > maxJoinedToShow) {
+            assignedResponders.push(<IconButton
+                style={[ styles.empty, dark && styles.emptyDark , dark && { backgroundColor: '#333' } ]}
+                icon='account' 
+                color={Colors.nocolor}
+                size={12} />);
+            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGLAST } ]}>{i}</Text>)        
+        } else if (joinedResponders.size > 0) {
+            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGBASIC } ]}></Text>)
+        }
+ 
         const potentialLabel = RequestStatusToLabelMap[request.status];
         
         const label = typeof potentialLabel == 'string'
@@ -136,7 +169,9 @@ const HelpRequestCard = observer(({
         return (
             <View style={styles.statusRow}>
                 <View style={styles.responderActions}>
-                    <>
+                    { assignedResponders }
+                    { unAssignedResponders }
+                    { hasUnreadMessages &&
                         <View>
                             <IconButton
                                 style={[styles.messageIcon, dark ? styles.messageIconDark : null]}
@@ -150,10 +185,7 @@ const HelpRequestCard = observer(({
                                 : null
                             }
                         </View>
-                        <Text style={{ marginRight: styles.messageIcon.marginRight + 2, alignSelf: 'center' }}>·</Text>
-                    </>
-                    { assignedResponders }
-                    { unAssignedResponders }
+                    }
                 </View>
                 {
                     statusOpen
@@ -211,9 +243,13 @@ const HelpRequestCard = observer(({
 
 export default HelpRequestCard;
 
+const RESPONDERSPACINGBASIC = 6;
+const RESPONDERSPACINGLAST = 12;
+const RESPONDERSPACINGPILED = -8;
+
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgrounds.standard,
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1,
         borderTopWidth: 4
@@ -242,7 +278,7 @@ const styles = StyleSheet.create({
     },
     locationIcon: { 
         width: 12,
-        color: '#999',
+        color: Colors.icons.light,
         alignSelf: 'center',
         margin: 0
     },
@@ -276,8 +312,8 @@ const styles = StyleSheet.create({
         flex: 1
     },
     messageIcon: {
-        color: '#666',
-        backgroundColor: '#fff',
+        color: Colors.good,
+        backgroundColor: Colors.backgrounds.standard,
         width: 28,
         height: 28,
         margin: 0,
@@ -285,8 +321,8 @@ const styles = StyleSheet.create({
         borderRadius: 0
     },
     messageIconDark: {
-        color: '#CCCACC',
-        backgroundColor: '#444144'
+        color: Colors.good,
+        backgroundColor: Colors.nocolor
     },
     unreadMessageNotifier: {
         backgroundColor: '#00C95C',
@@ -299,26 +335,44 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: -2,
         right: 2,
-        zIndex: 1
+        zIndex: 1,
+        display: 'none'
     },
     darkUnreadMessageNotifier: {
         borderColor: '#444144',
     },
     unAssignedResponderIcon: {
-        color: '#666',
+        color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
-        borderColor:'#F3F1F3',
+        borderColor: Colors.backgrounds.standard,
         borderStyle: 'solid',
-        borderWidth: 1
+        borderWidth: 1,
+        marginRight: RESPONDERSPACINGBASIC,
     }, 
     unAssignedResponderIconDark: {
         color: '#444144',
         backgroundColor: '#CCCACC',
-        borderColor:'#CCCACC'
+        borderColor: '#333',
+        borderStyle: 'solid',
+        borderWidth: 1,
+        marginRight: RESPONDERSPACINGBASIC,
     },
     assignedResponderIcon: {
-        marginRight: 4,
+        marginRight: RESPONDERSPACINGPILED,
+        borderWidth: 1,
+        borderColor: '#FFF',
     }, 
+    assignedResponderIconLast: {
+        marginRight: RESPONDERSPACINGBASIC,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#FFF',
+    }, 
+    responderCount: {
+        alignSelf: 'center',
+        marginRight: RESPONDERSPACINGLAST,
+        color: Colors.text.tertiary,
+    },
     broadcastButtonLabel: {
         color: '#DB0000',
         marginVertical: 0,
@@ -366,5 +420,23 @@ const styles = StyleSheet.create({
     },
     darkStatusSelector: {
         backgroundColor: '#444144',
+    },
+    empty: {
+        color: Colors.icons.light,
+        backgroundColor: Colors.icons.light,
+        width: 28,
+        height: 28,
+        borderRadius: 48,
+        marginVertical: 0,
+        marginRight: RESPONDERSPACINGBASIC,
+        marginLeft: -31,
+        borderColor: Colors.nocolor,
+        borderStyle: 'solid',
+        borderWidth: 1,
+        zIndex: -100,
+    },
+    emptyDark: {
+        color: Colors.icons.dark,
+        backgroundColor: Colors.icons.dark,
     }
 })
