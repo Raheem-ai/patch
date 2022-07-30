@@ -134,7 +134,9 @@ const HelpRequestCard = observer(({
         joinedResponders.forEach((userId, idx) => {
             const responder = userStore().users.get(userId); 
             i < maxJoinedToShow && assignedResponders.push(<UserIcon user={responder} style={[ {zIndex: 0-i}, i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
-                ? styles.assignedResponderIcon 
+                ? dark
+                    ? styles.assignedResponderIconDark
+                    : styles.assignedResponderIcon 
                 : styles.assignedResponderIconLast
             ]}/>);
             i++;
@@ -142,7 +144,7 @@ const HelpRequestCard = observer(({
         // show a stack and count if there are more than shown
         if (joinedResponders.size > maxJoinedToShow) {
             assignedResponders.push(<IconButton
-                style={[ styles.empty, dark && styles.emptyDark , dark && { backgroundColor: '#333' } ]}
+                style={[ styles.empty, dark && styles.emptyDark ]}
                 icon='account' 
                 color={Colors.nocolor}
                 size={12} />);
@@ -192,14 +194,14 @@ const HelpRequestCard = observer(({
                 {
                     statusOpen
                         ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} requestId={request.id} onStatusUpdated={closeStatusSelector} />
-                        : <View style={styles.statusContainer}>
+                        : <Pressable style={styles.statusContainer} onPress={openStatusSelector}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {
                                 request.status == RequestStatus.Unassigned 
                                     ? null  
                                     : <StatusIcon dark={dark} status={request.status} onPress={openStatusSelector}/>
                             }
-                        </View>
+                        </Pressable>
                 }       
             </View>
         )
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 4
     },
     darkContainer: {
-        backgroundColor: '#3F3C3F',
+        backgroundColor: Colors.backgrounds.dark,
     },
     minimalContainer: {
         height: ActiveRequestTabHeight ,
@@ -354,7 +356,7 @@ const styles = StyleSheet.create({
     unAssignedResponderIconDark: {
         color: '#444144',
         backgroundColor: '#CCCACC',
-        borderColor: '#333',
+        borderColor: Colors.backgrounds.dark,
         borderStyle: 'solid',
         borderWidth: 1,
         marginRight: RESPONDERSPACINGBASIC,
@@ -363,6 +365,11 @@ const styles = StyleSheet.create({
         marginRight: RESPONDERSPACINGPILED,
         borderWidth: 1,
         borderColor: '#FFF',
+    }, 
+    assignedResponderIconDark: {
+        marginRight: RESPONDERSPACINGPILED,
+        borderWidth: 1,
+        borderColor: Colors.backgrounds.dark,
     }, 
     assignedResponderIconLast: {
         marginRight: RESPONDERSPACINGBASIC,
@@ -374,6 +381,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginRight: RESPONDERSPACINGLAST,
         color: Colors.text.tertiary,
+        fontSize: 12
     },
     broadcastButtonLabel: {
         color: '#DB0000',
@@ -398,6 +406,7 @@ const styles = StyleSheet.create({
     },
     statusText: {
         alignSelf: 'center',
+        fontSize: 12
     }, 
     darkStatusText: {
         color: '#E0DEE0'
@@ -426,19 +435,17 @@ const styles = StyleSheet.create({
     empty: {
         color: Colors.icons.light,
         backgroundColor: Colors.icons.light,
-        width: 28,
-        height: 28,
+        width: 26,
+        height: 26,
+        alignSelf: 'center',
         borderRadius: 48,
         marginVertical: 0,
         marginRight: RESPONDERSPACINGBASIC,
-        marginLeft: -31,
-        borderColor: Colors.nocolor,
-        borderStyle: 'solid',
-        borderWidth: 1,
+        marginLeft: -30,
         zIndex: -100,
     },
     emptyDark: {
-        color: Colors.icons.dark,
-        backgroundColor: Colors.icons.dark,
+        color: Colors.icons.superdark,
+        backgroundColor: Colors.icons.superdark,
     }
 })

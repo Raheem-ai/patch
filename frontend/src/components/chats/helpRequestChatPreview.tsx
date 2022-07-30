@@ -6,6 +6,7 @@ import { HelpRequest } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames } from "../../types";
+import { stateFullMemoDebounce } from '../../utils/debounce';
 
 type Props = {
     request: HelpRequest,
@@ -24,7 +25,26 @@ const HelpRequestChatPreview = observer(({
 
     const header = () => {
         const id = request.displayId;
+
         const prefix = organizationStore().metadata.requestPrefix;
+/*
+        const prefix = async () => {
+            try {
+                const response:any = await organizationStore().metadata.requestPrefix;
+                if (!response.ok) {
+                    throw new Error(`Response not ok: ${response.status}`);
+                }
+                const prefix = await response;
+
+                return prefix
+            }
+            catch(error) {
+                console.error(`Could not get prefix: ${error}`);
+            }
+        }
+
+        console.log('returned: ', prefix.);
+*/
 
         const hasUnreadMessages = (request.chat && request.chat.messages.length)
                                     && (!request.chat.userReceipts[userStore().user.id] 
