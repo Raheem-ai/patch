@@ -8,6 +8,7 @@ export type IHeaderAction = {
     icon: string,
     callback: () => void
 }
+
 const prefix = organizationStore().metadata.requestPrefix;
 
 export type HeaderRouteConfig = {
