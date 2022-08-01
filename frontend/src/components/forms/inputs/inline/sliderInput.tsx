@@ -244,13 +244,13 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                     // need to consider inverted
                     this.props.config.onChange({ 
                         min: this.knobsInverted.get()
-                        ? valueToSet
-                        : this.minKnobValue, 
+                            ? valueToSet
+                            : this.minKnobValue, 
                         max: this.knobsInverted.get()
-                        ? this.minKnobValue
-                        : valueToSet > this.maxBeforeOrMore 
-                            ? MORE 
-                            : valueToSet 
+                            ? this.minKnobValue
+                            : valueToSet > this.maxBeforeOrMore 
+                                ? MORE 
+                                : valueToSet 
                     })
                 }
             })
@@ -455,7 +455,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
         return this.isExactValue 
             ? leftVal == 0 || leftVal == MORE ? 'Any number' :  `Exactly ${leftVal}`
-            : `inverted: ${inverted} / ${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
+            : `${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
 
     }
 
