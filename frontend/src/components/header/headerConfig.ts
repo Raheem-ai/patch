@@ -9,8 +9,6 @@ export type IHeaderAction = {
     callback: () => void
 }
 
-const prefix = organizationStore().metadata.requestPrefix;
-
 export type HeaderRouteConfig = {
     title: string | (() => string),
     leftActions?: IHeaderAction[],
@@ -18,6 +16,7 @@ export type HeaderRouteConfig = {
     unauthenticated?: boolean
 }
 
+const prefix = organizationStore().metadata.requestPrefix;
 const HeaderConfig: {
     [route in keyof RootStackParamList]: HeaderRouteConfig | (() => HeaderRouteConfig)
  } = {
@@ -101,6 +100,7 @@ const HeaderConfig: {
     [routerNames.helpRequestChat]: {
         title: () => {
             const req = requestStore().currentRequest;
+
             return `Channel for ${prefix}–${req.displayId}`
         },
         leftActions: [{
