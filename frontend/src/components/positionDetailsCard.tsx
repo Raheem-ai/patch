@@ -12,6 +12,7 @@ import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";
+import PatchButton from "../components/patchButton";
 
 type PositionDetailsCardProps = { 
     requestId: string,
@@ -116,13 +117,9 @@ const PositionDetailsCard = observer(({
         }
 
         if (positionMetadata.canJoin) {
-            return <Button 
-                uppercase={false}
-                style={[styles.button]}
-                labelStyle={{letterSpacing: 0.8}}
-                color={Colors.primary.alpha}
+            return <PatchButton 
                 mode='contained'
-                onPress={join}>{STRINGS.REQUESTS.POSITIONS.join}</Button>
+                onPress={join}>{STRINGS.REQUESTS.POSITIONS.join}</PatchButton>
         } else if (positionMetadata.canRequestToJoin) {
             return <Button 
                 uppercase={false}

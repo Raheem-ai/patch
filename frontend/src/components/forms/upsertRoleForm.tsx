@@ -12,6 +12,7 @@ import { Colors } from "../../types"
 import { resolveErrorMessage } from "../../errors"
 import { iHaveAllPermissions } from "../../utils"
 import KeyboardAwareArea from "../helpers/keyboardAwareArea"
+import STRINGS from "../../../../common/strings"
 
 type UpsertRoleFormProps = {
     cancel: () => void,
@@ -117,19 +118,19 @@ const UpsertRoleForm = ({
                         <BackButtonHeader {...headerProps} />
                         { isAdminRole 
                             ? <View style={{ paddingLeft: 60, padding: 20, borderStyle: 'solid', borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
-                                <Text style={{ fontSize: 16 }}>{`Note: there must always be at least one Admin in your organization.`}</Text>
+                                <Text style={{ fontSize: 16 }}>{STRINGS.SETTINGS.cannotDeleteRole('Admin')}</Text>
                             </View>
                             : null
                         }
                         {renderInputs(inputs())}
                         {   !isCreating && !isAnyoneRole && !isAdminRole && iHavePermissionToDelete
-                            ? <View style={{ position: 'absolute', bottom: 0, padding: 20, width: '100%' }}>
+                            ? <View style={{ position: 'relative', bottom: 0, padding: 20, width: '100%' }}>
                                 <Button
                                     uppercase={false} 
                                     color={Colors.primary.alpha}
                                     mode={'outlined'}
                                     onPress={deleteRole}    
-                                    style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{'Delete this role'}</Button>
+                                    style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{STRINGS.SETTINGS.deleteRole}</Button>
                             </View>
                             : null
                         }

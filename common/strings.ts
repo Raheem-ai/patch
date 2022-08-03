@@ -21,7 +21,21 @@ const STRINGS = {
         fr: 'F',
         sa: 'S',
     },
+    elements: {
+        leaveBlank: '',
+        role: 'role',
+        shift: 'shift',
+        attribute: 'attribute',
+        tag: 'tag',
+        position: `position`,
+    },
 
+    INTERFACE: {
+        addElement: (el) => `Add ${STRINGS.elements[el]}`,
+        addCategory: (el) => `Add ${STRINGS.elements[el]} category`,
+        addAnotherElement: (el) => `Add another ${el}`,
+
+    },
     REQUESTS: {
         NOTIFICATIONS: {
             notifyNResponders: (n: number) => `Notify ${n} ${STRINGS.responders(n)}`,
@@ -68,14 +82,19 @@ const STRINGS = {
         joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : null}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
         invitationSuccessful: (email:string, phone:string) => `Invitation sent to email ${email} and phone ${phone}.`,
         twilioError: (msg:string) => `Twilio Error: ${msg}`,
-        cannotEditRole: (roleName:string) => `The '${roleName}' role cannot be edited`,
-        cannotDeleteRole: (roleName:string) => `The '${roleName}' role cannot be deleted`,
+        
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
 
     },
+    SETTINGS: {
+        deleteRole: 'Delete this role',
+        cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
+        cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
+        assignedToAll: ' (assigned to all members)',
+    }
 }
 
 export default STRINGS;

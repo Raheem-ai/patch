@@ -1,6 +1,7 @@
 import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, View } from "react-native"
+import { Button } from "react-native-paper";
 import { ScrollView } from "react-native-gesture-handler"
 import { Text } from "react-native-paper"
 import { DefaultRoleIds } from "../../../../common/models"
@@ -12,6 +13,8 @@ import DescriptiveNavigationLabel from "./inputs/descriptiveNavigationLabel"
 import { NavigationFormInputConfig, SectionNavigationScreenViewProps } from "./types"
 import UpsertRoleForm from "./upsertRoleForm"
 import { VisualArea } from '../helpers/visualArea';
+import STRINGS from "../../../../common/strings"
+import { Colors } from "../../types"
 
 const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
@@ -29,7 +32,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                                 expand={editRole} 
                                 name={def.name} 
                                 inlineDescription={true}
-                                description={def.id == DefaultRoleIds.Anyone ? ' (assigned to all members)' : null} />
+                                description={def.id == DefaultRoleIds.Anyone ? STRINGS.SETTINGS.assignedToAll : null} />
                 },
                 screen: ({ back }) => {
                     const cancelEdit = () => {
@@ -61,7 +64,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             label: ({ expand }) => {
                 return (
                     <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{ color: '#666', fontSize: 16 }}>{'ADD ROLE'}</Text>
+                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.elements.role)}</Text>
                     </Pressable>
                 )
             },
