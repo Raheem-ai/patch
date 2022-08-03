@@ -1,44 +1,76 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
-import Form, { FormProps } from "../../forms/form";
+import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import STRINGS from "../../../../../common/strings";
-
+import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
+import { observable, runInAction } from "mobx";
+import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 
 @observer
 export default class AddUser extends React.Component {
-    static submit = {
-        isValid: () => {
-            return newUserStore().isValid
-        },
-        action: async () => {
+    formInstance = observable.box<Form>(null);
 
-            let invitedUser: PendingUser;
+    setRef = (formRef: Form) => {
+        runInAction(() => {
+            this.formInstance.set(formRef)
+        })
+    }
 
-            try {
-                invitedUser = await newUserStore().inviteNewUser()
-            } catch (e) {
-                alertStore().toastError(resolveErrorMessage(e));
-                return
-            }
+    formHomeScreen = observer(({
+        renderHeader,
+        renderInputs,
+        inputs
+    }: CustomFormHomeScreenProps) => {
+        const headerConfig: BackButtonHeaderProps = {
+            cancel: {
+                handler: async () => {
+                    newUserStore().clear();
+                },
+            },
+            save: {
+                handler: async () => {
+                    let invitedUser: PendingUser;
 
-            alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
-            bottomDrawerStore().hide();
-        },
-        label: () => {
-            return `Send Invite`
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        invitedUser = await newUserStore().inviteNewUser()
+                    } catch (e) {
+                        alertStore().toastError(resolveErrorMessage(e));
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
+                    bottomDrawerStore().hide();
+                },
+                label: 'Send Invite',
+                validator: () => {
+                    return this.formInstance.get()?.isValid.get()
+                }
+            },
+            bottomDrawerView: true
         }
-    }
 
-    static onHide = () => {
-        newUserStore().clear();
-    }
+        return (
+            <KeyboardAwareArea>
+                <BackButtonHeader {...headerConfig} />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={{ paddingBottom: 20 }}>
+                        { renderHeader() }
+                        { renderInputs(inputs()) }
+                    </View>
+                </ScrollView>
+            </KeyboardAwareArea>
+        )
+    })
 
     formProps = (): FormProps => {
         return {
@@ -49,6 +81,7 @@ export default class AddUser extends React.Component {
             onBack: () => {
                 bottomDrawerStore().showHeader();
             },
+            homeScreen: this.formHomeScreen,
             inputs: [
                 {
                     onChange: (email) => newUserStore().email = email,
@@ -111,14 +144,7 @@ export default class AddUser extends React.Component {
     }
 
     render() {
-        return (
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-                <BottomDrawerViewVisualArea>
-                    <Form {...this.formProps()}/>
-                </BottomDrawerViewVisualArea>
-            </KeyboardAvoidingView>
-        )
+        return <Form ref={this.setRef} {...this.formProps()}/>
     }
                 
 }

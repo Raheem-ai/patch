@@ -132,9 +132,7 @@ const PositionsInput = observer(({
     })
 
     return (
-        <VisualArea>
-            <Form inputs={inputs} homeScreen={homeScreen} />
-        </VisualArea>
+        <Form inputs={inputs} homeScreen={homeScreen} />
     )
 })
 
