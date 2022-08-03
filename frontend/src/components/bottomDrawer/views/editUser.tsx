@@ -223,9 +223,10 @@ export default class EditUser extends React.Component {
                 name: 'phone',
                 placeholderLabel: () => 'Phone',
                 type: 'TextInput',
+                inputType: 'phone-pad',
                 icon: 'clipboard-account',
                 required: true
-            } as InlineFormInputConfig<'TextInput'>,,
+            } as InlineFormInputConfig<'TextInput'>,
             {
                 onChange: (email) => editUserStore().email = email,
                 val: () => editUserStore().email,
@@ -233,6 +234,7 @@ export default class EditUser extends React.Component {
                 name: 'email',
                 placeholderLabel: () => 'Email',
                 type: 'TextInput',
+                inputType: 'email-address',
                 // TODO: remove when we have logic for changing email
                 disabled: true
             } as InlineFormInputConfig<'TextInput'>],

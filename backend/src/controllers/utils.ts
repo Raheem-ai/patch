@@ -3,11 +3,12 @@ import { PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata, Role 
 import { OrganizationDoc } from "../models/organization";
 import { UserDoc } from "../models/user";
 import { resolvePermissionsFromRoles } from 'common/utils/permissionUtils'
+import STRINGS from "../../../common/strings"
 
 export async function userHasPermissions(user: UserDoc, org: OrganizationDoc, requiredPermissions: PatchPermissions[]): Promise<boolean> {
     const orgConfig = user.organizations && user.organizations[org.id];
     if (!orgConfig) {
-        throw new Forbidden(`You do not have access to the requested org.`);
+        throw new Forbidden(STRINGS.ACCOUNT.noOrgAccess);
     }
 
     // Get all the roles that belong to a user.

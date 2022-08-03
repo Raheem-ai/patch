@@ -14,6 +14,7 @@ import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
 import { userHasPermissions } from "./utils";
+import STRINGS from "../../../common/strings";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -137,7 +138,7 @@ export class UsersController implements APIController<
 
         if (existingUsers && existingUsers.length) {
             // TODO: should this throw for a notification in the ui?
-            throw new BadRequest(`User with email: ${minUser.email} already exists`);
+            throw new BadRequest(STRINGS.ACCOUNT.userExists(minUser.email));
         } else {
             const user = await this.db.createUser(minUser);
 
@@ -161,7 +162,7 @@ export class UsersController implements APIController<
         const existingUsers = await this.users.find({ email: user.email });
 
         if (existingUsers && existingUsers.length) {
-            throw new BadRequest(`User with email: ${user.email} already exists`);
+            throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email));
         } else {
             const [ _, newUser ] = await this.db.createUserThroughOrg(orgId, pendingId, user);
 
@@ -190,11 +191,11 @@ export class UsersController implements APIController<
         const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
 
         if (!user) {
-          throw new Unauthorized(`User with email '${credentials.email}' not found`)
+          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
         }
     
         if(!(user.password == credentials.password)) {
-            throw new Unauthorized(`Wrong password`)
+            throw new Unauthorized(STRINGS.ACCOUNT.wrongPassword)
         }
 
         user.auth_etag = uuid.v1();
@@ -281,9 +282,9 @@ export class UsersController implements APIController<
     ) {
         const org = await this.db.resolveOrganization(orgId);
         if ('roleIds' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
-            throw new Unauthorized('You do not have permission to edit Roles associated with your profile.');
+            throw new Unauthorized(STRINGS.ACCOUNT.noPermissionToEditRoles);
         } else if ('attributes' in protectedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
-            throw new Unauthorized('You do not have permission to edit Attributes associated with your profile.');
+            throw new Unauthorized(STRINGS.ACCOUNT.noPermissionToEditAttributes);
         }
 
         const res = await this.db.updateUser(orgId, user, protectedUser, me);
@@ -307,9 +308,9 @@ export class UsersController implements APIController<
         const org = await this.db.resolveOrganization(orgId);
 
         if ('roleIds' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignRoles])) {
-            throw new Unauthorized("You do not have permission to edit Roles associated with this user's profile.");
+            throw new Unauthorized(STRINGS.ACCOUNT.noPermissionToEditUserRoles);
         } else if ('attributes' in updatedUser && !await userHasPermissions(user, org, [PatchPermissions.AssignAttributes])) {
-            throw new Unauthorized("You do not have permission to edit Attributes associated with this user's profile.");
+            throw new Unauthorized(STRINGS.ACCOUNT.noPermissionToEditUserAttributes);
         }
 
         const res = await this.db.updateUser(orgId, userId, updatedUser);

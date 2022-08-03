@@ -5,9 +5,9 @@ import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
-import { visualDelim } from "../constants";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
+import STRINGS from "../../../common/strings";
 
 
 type Props = ScreenProps<'UserDetails'>;
@@ -31,7 +31,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         const detailsText = [
             userStore().currentUser.pronouns,
             ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
-        ].filter(text => !!text).join(` ${visualDelim} `);
+        ].filter(text => !!text).join(` ${STRINGS.visualDelim} `);
 
         const userAttributes = userStore().currentUser.organizations[userStore().currentOrgId].attributes.map(attr => {
             return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
