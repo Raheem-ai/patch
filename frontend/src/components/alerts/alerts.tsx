@@ -3,11 +3,9 @@ import React from "react";
 import { Dimensions, Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import { HeaderHeight } from "../../constants";
+import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
 import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
 import { Colors } from "../../types";
-
-
 
 export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
@@ -53,7 +51,7 @@ export const Alerts = observer(() => {
     const toast = () => {
 
         const width = Dimensions.get('screen').width - (2 * 20);
-        const top = HeaderHeight + 20;
+        const top = HeaderHeight + TabbedScreenHeaderHeight + 20; // TO DO: only add height of Tabs when on a Tabbed Screen
         const left = 20;
 
         return !!alertStore().toast
