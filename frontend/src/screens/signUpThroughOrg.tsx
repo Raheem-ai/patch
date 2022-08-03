@@ -1,8 +1,11 @@
+import { observable, runInAction } from "mobx";
+import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, TextInput } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
 import Form, { FormProps } from "../components/forms/form";
+import BackButtonHeader, { BackButtonHeaderProps } from "../components/forms/inputs/backButtonHeader";
 import { InlineFormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
@@ -11,11 +14,18 @@ import { routerNames, ScreenProps } from "../types";
 
 type Props = ScreenProps<'SignUpThroughOrg'>;
 
-const SignUpThroughOrg = ({ navigation, route }: Props) => {
+const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     const [pendingUser, setPendingUser] = useState<LinkParams[LinkExperience.SignUpThroughOrganization]>(null);
-    const [nameVal, setNameVal] = useState('');
-    const [passwordVal, setPasswordVal] = useState('');
+    const [nameVal] = useState(observable.box(''));
+    const [passwordVal, setPasswordVal] = useState(observable.box(''));
+    const [formInstance] = useState(observable.box<Form>(null));
+
+    const setRef = (formRef: Form) => {
+        runInAction(() => {
+            formInstance.set(formRef)
+        })
+    };
 
     useEffect(() => {
         (async () => {
@@ -24,39 +34,32 @@ const SignUpThroughOrg = ({ navigation, route }: Props) => {
         })();
     }, []);
 
-    /*
-    const emailInput: InlineFormInputConfig<'TextInput'> = {
-        onChange: () => {},
-        val() {
-            return pendingUser?.email
+    const headerProps: BackButtonHeaderProps = {
+        save: {
+            handler: async () => {
+                try {
+                    await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                        email: pendingUser.email,
+                        password: passwordVal.get(),
+                        name: nameVal.get()
+                    })
+                } catch(e) {
+                    alertStore().toastError(resolveErrorMessage(e));
+                    return
+                }
+
+                alertStore().toastSuccess(`Welcome to PATCH!`)
+
+                navigateTo(routerNames.userHomePage)
+            },
+            validator: () => {
+                return formInstance.get()?.isValid.get()
+            },
+            label: 'Join us'
         },
-        name: 'email',
-        placeholderLabel: () => 'Email',
-        isValid: () => {
-            return true
-        },
-        disabled: true,
-        type: 'TextInput'
+        bottomBorder: true, 
     }
-    const nameInput: InlineFormInputConfig<'TextInput'> = {
-        val: () =>  nameVal,
-        onChange: (val) => setNameVal(val),
-        isValid: () => !!nameVal,
-        placeholderLabel: () => 'Name',
-        type: 'TextInput',
-        name: 'name',
-        required: true
-    }
-    const passwordInput: InlineFormInputConfig<'TextInput'> = {
-        val: () =>  passwordVal,
-        onChange: (val) => setPasswordVal(val),
-        isValid: () => !!passwordVal,
-        placeholderLabel: () => 'Password',
-        type: 'TextInput',
-        name: 'password',
-        required: true
-    }
-    */
+
 
     const config: FormProps = {
         headerLabel: 'Add your name and a password', 
@@ -75,18 +78,22 @@ const SignUpThroughOrg = ({ navigation, route }: Props) => {
                 type: 'TextInput'
             },
             {
-                val: () =>  null,
-                onChange: (currentVal) => setNameVal(currentVal),
-                isValid: () => !!nameVal,
+                val: () => nameVal.get(),
+                onChange: (currentVal) => {
+                    console.log('before:: nv: ',nameVal.get(),' / cv: ',currentVal);
+                    nameVal.set(currentVal);
+                    console.log('after:: nv: ',nameVal.get(),' / cv: ',currentVal);
+                },
+                isValid: () => !!nameVal.get(),
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
                 name: 'name',
                 required: true
             },
             {
-                val: () =>  null,
-                onChange: (currentVal) => setPasswordVal(currentVal),
-                isValid: () => !!passwordVal,
+                val: () =>  passwordVal.get(),
+                onChange: (currentVal) => passwordVal.set(currentVal),
+                isValid: () => !!passwordVal.get(),
                 placeholderLabel: () => 'Password',
                 type: 'TextInput',
                 name: 'password',
@@ -97,27 +104,7 @@ const SignUpThroughOrg = ({ navigation, route }: Props) => {
             InlineFormInputConfig<'TextInput'>, 
             InlineFormInputConfig<'TextInput'>
             // FormInputConfig<'TagList'>
-        ],
-        submit: {
-            handler: async () => {
-                try {
-                    await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
-                        email: pendingUser.email,
-                        password: passwordVal,
-                        name: nameVal
-                    })
-                } catch(e) {
-                    alertStore().toastError(resolveErrorMessage(e));
-                    return
-                }
-
-                alertStore().toastSuccess(`Welcome to PATCH!`)
-
-                navigateTo(routerNames.userHomePage)
-
-            },
-            label: 'Join us!'
-        }
+        ]
     }
 
     if (!pendingUser) {
@@ -126,10 +113,13 @@ const SignUpThroughOrg = ({ navigation, route }: Props) => {
 
 
     return (
-        <Form {...config} />
+        <>
+            <BackButtonHeader {...headerProps}/>
+            <Form ref={setRef} {...config} />
+        </>
     )
 
-}
+})
 
 export default SignUpThroughOrg
 
