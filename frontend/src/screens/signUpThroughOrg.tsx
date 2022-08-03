@@ -1,6 +1,5 @@
-import { observer } from "mobx-react-lite";
 import React, { useEffect, useState,  } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
 import Form, { FormProps } from "../components/forms/form";
@@ -12,23 +11,55 @@ import { routerNames, ScreenProps } from "../types";
 
 type Props = ScreenProps<'SignUpThroughOrg'>;
 
-const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
+const SignUpThroughOrg = ({ navigation, route }: Props) => {
 
     const [pendingUser, setPendingUser] = useState<LinkParams[LinkExperience.SignUpThroughOrganization]>(null);
-    // const [textAreaVal, setTextAreaVal] = useState('')
-    const [nameVal, setNameVal] = useState('')
-    const [passwordVal, setPasswordVal] = useState('')
+    const [nameVal, setNameVal] = useState('');
+    const [passwordVal, setPasswordVal] = useState('');
 
     useEffect(() => {
         (async () => {
             const params = route.params || linkingStore().initialRouteParams;
-
-            setPendingUser(params)
+            setPendingUser(params);
         })();
     }, []);
 
+    /*
+    const emailInput: InlineFormInputConfig<'TextInput'> = {
+        onChange: () => {},
+        val() {
+            return pendingUser?.email
+        },
+        name: 'email',
+        placeholderLabel: () => 'Email',
+        isValid: () => {
+            return true
+        },
+        disabled: true,
+        type: 'TextInput'
+    }
+    const nameInput: InlineFormInputConfig<'TextInput'> = {
+        val: () =>  nameVal,
+        onChange: (val) => setNameVal(val),
+        isValid: () => !!nameVal,
+        placeholderLabel: () => 'Name',
+        type: 'TextInput',
+        name: 'name',
+        required: true
+    }
+    const passwordInput: InlineFormInputConfig<'TextInput'> = {
+        val: () =>  passwordVal,
+        onChange: (val) => setPasswordVal(val),
+        isValid: () => !!passwordVal,
+        placeholderLabel: () => 'Password',
+        type: 'TextInput',
+        name: 'password',
+        required: true
+    }
+    */
+
     const config: FormProps = {
-        headerLabel: 'Please verify that we have the correct email and provide your name and a password to finish signing up!', 
+        headerLabel: 'Add your name and a password', 
         inputs: [
             {
                 onChange: () => {},
@@ -44,35 +75,27 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 type: 'TextInput'
             },
             {
-                onChange: setNameVal,
-                val() {
-                    return nameVal
-                },
-                isValid: () => {
-                    return !!nameVal.length
-                },
-                name: 'name',
+                val: () =>  null,
+                onChange: (currentVal) => setNameVal(currentVal),
+                isValid: () => !!nameVal,
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
+                name: 'name',
                 required: true
             },
             {
-                onChange: setPasswordVal,
-                val() {
-                    return passwordVal
-                },
-                isValid: () => {
-                    return !!passwordVal.length
-                },
-                name: 'password',
+                val: () =>  null,
+                onChange: (currentVal) => setPasswordVal(currentVal),
+                isValid: () => !!passwordVal,
                 placeholderLabel: () => 'Password',
                 type: 'TextInput',
-                required: true
+                name: 'password',
+                required: true,
             }
         ] as [
             InlineFormInputConfig<'TextInput'>, 
             InlineFormInputConfig<'TextInput'>, 
-            InlineFormInputConfig<'TextInput'>, 
+            InlineFormInputConfig<'TextInput'>
             // FormInputConfig<'TagList'>
         ],
         submit: {
@@ -100,15 +123,15 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
     if (!pendingUser) {
         return null
     }
-    
+
+
     return (
-        <Form {...config}/>
+        <Form {...config} />
     )
 
-})
+}
 
 export default SignUpThroughOrg
 
 const styles = StyleSheet.create({
-    
 })

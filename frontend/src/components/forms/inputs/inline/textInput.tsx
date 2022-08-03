@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
         flex: 1
     },
     disabled: {
-        // opacity: .8,
+        opacity: .8,
     }
 })
