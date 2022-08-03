@@ -1,5 +1,5 @@
 import { ComponentType } from "react"
-import { StyleProp, ViewStyle } from "react-native";
+import { KeyboardType, StyleProp, ViewStyle } from "react-native";
 import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
@@ -129,6 +129,7 @@ export type InlineFormInputOptions = {
     },
     'TextInput': {
         props: {},
+        inputType?: KeyboardType,
         type: string
     }
     'Switch': {

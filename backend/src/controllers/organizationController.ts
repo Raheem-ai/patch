@@ -17,6 +17,7 @@ import config from '../config';
 import { PubSubService } from "../services/pubSubService";
 import { OrganizationDoc } from "../models/organization";
 import { AtLeast } from "common";
+import STRINGS from "../../../common/strings"
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -139,7 +140,7 @@ export class OrganizationController implements APIController<
             }
 
             if (usersNotInOrg.length) {
-                throw new Unauthorized(`Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${org.name}`)
+                throw new Unauthorized(STRINGS.ACCOUNT.notInOrg(usersNotInOrg, org.name))
             }
 
             return specificMembers
@@ -165,7 +166,7 @@ export class OrganizationController implements APIController<
     ) {
 
         if (!roles.length) {
-            throw new BadRequest('You must invite a user with at least one role.')
+            throw new BadRequest(STRINGS.ACCOUNT.roleRequired)
         }
 
         const org = await this.db.resolveOrganization(orgId)
@@ -183,9 +184,7 @@ export class OrganizationController implements APIController<
 
         await this.db.addPendingUserToOrg(org, pendingUser);
 
-        let link: string,
-            msg: string;
-
+        let link: string;
 
         // TODO: retest this when we have the concept of being part of more than one org
         if (existingUser) {
@@ -195,8 +194,6 @@ export class OrganizationController implements APIController<
                 roles,
                 pendingId: pendingUser.pendingId    
             });
-
-            msg = `You have been invited to join '${org.name}' on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join '${org.name}'.\n${link}`;
         } else {
             link = this.getLinkUrl<LinkExperience.SignUpThroughOrganization>(baseUrl, LinkExperience.SignUpThroughOrganization, {
                 orgId,
@@ -204,9 +201,9 @@ export class OrganizationController implements APIController<
                 roles,
                 pendingId: pendingUser.pendingId
             });
-
-            msg = `You have been invited to sign up and join '${org.name}' on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join '${org.name}'.\n${link}`;
         }
+
+        const msg = STRINGS.ACCOUNT.joinOrg(org.name, link, !!existingUser);
 
         const sentMessage = await twilioClient.messages.create({
             from: twilioConfig.phoneNumber, 
@@ -215,7 +212,7 @@ export class OrganizationController implements APIController<
         })
 
         if (sentMessage.errorMessage) {
-            throw `Twilio Error: ${sentMessage.errorMessage}`
+            throw STRINGS.ACCOUNT.twilioError(sentMessage.errorMessage)
         }
 
         return pendingUser;
@@ -272,7 +269,7 @@ export class OrganizationController implements APIController<
         // dissallowed in front end so should never happen but just in case
         if (roleUpdates.id == DefaultRoleIds.Admin) {
             const adminRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Admin).name
-            throw new BadRequest(`The '${adminRoleName}' role cannot be edited`);
+            throw new BadRequest(STRINGS.ACCOUNT.cannotEditRole(adminRoleName));
         }
 
         const updatedOrg = await this.db.editRole(orgId, roleUpdates);
@@ -298,13 +295,13 @@ export class OrganizationController implements APIController<
         // dissallowed in front end so should never happen but just in case
         if (roleIds.includes(DefaultRoleIds.Anyone)) {
             const anyoneRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Anyone).name
-            throw new BadRequest(`The '${anyoneRoleName}' role cannot be deleted`);
+            throw new BadRequest(STRINGS.ACCOUNT.cannotDeleteRole(anyoneRoleName));
         }
 
         // dissallowed in front end so should never happen but just in case
         if (roleIds.includes(DefaultRoleIds.Admin)) {
             const adminRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Admin).name
-            throw new BadRequest(`The '${adminRoleName}' role cannot be deleted`);
+            throw new BadRequest(STRINGS.ACCOUNT.cannotDeleteRole(adminRoleName));
         }
 
         const updatedOrg = await this.db.removeRolesFromOrganization(org.id, roleIds);
