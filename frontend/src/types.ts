@@ -136,6 +136,9 @@ export const Colors = {
         signInTitle: '#76599A',
         landingCaption: '#FFFFFF80',
         landingLinks: '#F7F3FB',
+        good: '#55BB76',
+        okay: '#ebae13',
+        bad: '#E55300',
     },
     icons: {
         superlight: '#E0E0E0',

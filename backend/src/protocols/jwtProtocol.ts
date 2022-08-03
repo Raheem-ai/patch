@@ -7,6 +7,7 @@ import { JWTMetadata } from "../auth";
 import { UserModel } from "../models/user";
 import config from '../config';
 import { Unauthorized } from "@tsed/exceptions";
+import STRINGS from "common/strings";
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const UserContextKey = 'AuthorizedUser';
@@ -53,7 +54,7 @@ export class JwtProtocol implements OnVerify {
           ctx.set(UserContextKey, verifiedUser);
           return verifiedUser
         } else {
-          throw new Unauthorized('Unauthorized user')
+          throw new Unauthorized(STRINGS.ACCOUNT.unauthorized)
         }
     }
 }
