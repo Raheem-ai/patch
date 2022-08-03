@@ -16,7 +16,10 @@ export type HeaderRouteConfig = {
     unauthenticated?: boolean
 }
 
-const prefix = organizationStore().metadata.requestPrefix;
+const prefix = () => {
+    return organizationStore().metadata.requestPrefix;
+}
+
 const HeaderConfig: {
     [route in keyof RootStackParamList]: HeaderRouteConfig | (() => HeaderRouteConfig)
  } = {
@@ -87,7 +90,7 @@ const HeaderConfig: {
                 ? ''
                 : requestStore().currentRequest.displayId;
 
-            return `Request ${prefix}–${id}`
+            return `Request ${prefix()}–${id}`
         },
         leftActions: [{
             icon: 'chevron-left',
@@ -101,7 +104,7 @@ const HeaderConfig: {
         title: () => {
             const req = requestStore().currentRequest;
 
-            return `Channel for ${prefix}–${req.displayId}`
+            return `Channel for ${prefix()}–${req.displayId}`
         },
         leftActions: [{
             icon: 'chevron-left',
