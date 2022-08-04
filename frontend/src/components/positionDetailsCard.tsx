@@ -1,3 +1,4 @@
+import { remove } from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -137,6 +138,14 @@ const PositionDetailsCard = observer(({
         }
     }
 
+    const removeUser = async (userId) => {
+        try {
+            await requestStore().removeUserFromRequest(userId, requestId, pos.id)
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e))
+        }
+    }
+
     const outerStatusSize = 20;
     const innerStatusSize = 8;
     const outterStatusOffset = (60 - outerStatusSize)/2;
@@ -173,6 +182,14 @@ const PositionDetailsCard = observer(({
                                             }
                                         </View>
                                     </View>
+                                    <View style={styles.removeUser} >
+                                    <IconButton
+                                        icon={'close'} 
+                                        color={Colors.icons.light}
+                                        size={20} 
+                                        onPress={() => removeUser(details.userId)}
+                                        style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
+                                    </View>
                                 </View>
                             )
                         })
@@ -195,5 +212,10 @@ const styles = StyleSheet.create({
     outlineButton: {
         borderWidth: 1,
         borderColor: Colors.primary.alpha,
+    },
+    removeUser: {
+        flexGrow: 1,
+        alignItems: 'flex-end',
+        marginRight: 12,
     }
 })    
