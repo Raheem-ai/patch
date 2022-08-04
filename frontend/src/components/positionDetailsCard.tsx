@@ -108,6 +108,7 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canLeave) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
                 labelStyle={{letterSpacing: 0.8}}
                 uppercase={false}
@@ -205,6 +206,7 @@ export default PositionDetailsCard;
 
 const styles = StyleSheet.create({
     button: {
+        letterSpacing: 0.8,
         borderRadius: 32
     },
     outlineButton: {
