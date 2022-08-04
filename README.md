@@ -74,7 +74,7 @@ $> expo start --no-https
 
 ## Testing locally on a phone
 - spin up dev environment
-- copy the https url that ngrok outputs (in the form of `https://<hash>.ngrok.io`) and change the value of `extra.devUrl` in `frontend/app.json` (*Don't check in changes to devUrl*)
+- copy the https url that ngrok outputs (in the form of `https://<hash>.ngrok.io`) and change the initial value of `apiHost` in `frontend/app.config.js` (*Don't check in changes to the initialization of apiHost*)
 - download [expo go app](https://expo.dev/client)
 - create account?
 - scan qr code produced by `$> expo start --no-https` and follow the link

@@ -80,7 +80,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "ci/backend/deploy_rc.sh"
+                "/app/ci/backend/deploy_rc.sh"
             ],
             "volumes": [{
                 "name": "ssh",
@@ -101,7 +101,7 @@
             "entrypoint": "bash",
             "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS"],
             "args": [
-                "ci/frontend/publish.sh"
+                "/app/ci/frontend/publish.sh"
             ],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
@@ -114,7 +114,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "ci/backend/gc.sh"
+                "/app/ci/backend/gc.sh"
             ],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",

@@ -2,14 +2,23 @@ const dotenv = require('dotenv');
 
 // NOTE:
 // every secret that goes here needs to be added to the build def as
-// this is build time vs runtime
+// this is build time vs runtime...which means we need to build for EACH environment
 
 // provided by build
 const ENV = process._ENVIRONMENT 
 
+// NOTE: put your ngrok url here for development
+let apiHost = ''
+
+// TODO: this should come from config not here
 // if not in build then must be local
 if (!ENV) {
 	dotenv.config({ path: `../backend/env/.env.local` })
+} else if (ENV == 'prod') {
+	apiHost = 'https://patch-api-wiwa2devva-uc.a.run.app'
+} else {
+	// default to staging
+	apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'
 }
 
 const googleMapsKey = JSON.parse(process.env.GOOGLE_MAPS).api_key
@@ -68,7 +77,7 @@ export default {
 		"favicon": "./assets/favicon.png"
 	  },
 	  "extra": {
-		"devUrl": "https://66c8-2601-3c1-c380-2680-1447-e337-549-d5d4.ngrok.io"
+		"apiHost": apiHost
 	  }
 	}
 }
