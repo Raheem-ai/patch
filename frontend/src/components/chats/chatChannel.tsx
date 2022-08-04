@@ -244,6 +244,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 24,
         width: '100%',
-        height: 44,
+        height: 48,
     }
 })

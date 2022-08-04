@@ -130,6 +130,10 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     }
 
     rangeKnobs = () => {
+        // should these be declared somewhere else?
+        const upperBound = this.width.get() - 2*this.knobOffset;
+        const lowerBound = -this.knobOffset;
+
         const onTouchMove = (isMin: boolean) => (event: GestureResponderEvent) => {
             const delta = event.nativeEvent.locationX - this.touchStartX.get();
             
@@ -139,38 +143,61 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
                     const updatedMinLeft = this.minKnobLeft.get() + delta;
 
-                    const bound = this.knobsInverted.get()
+                    // if maxKnob is all the way to the right, limit this one (minKnob) to one step less
+                    if (this.maxKnobLeft.get() >= this.width.get() - this.knobOffset) {
+                        if (updatedMinLeft > upperBound) {
+                            this.minKnobLeft.set(upperBound);
+                        } else if (updatedMinLeft < lowerBound) {
+                            this.minKnobLeft.set(lowerBound);
+                        } else {
+                            this.minKnobLeft.set(updatedMinLeft);
+                        }
+                    } else {
+                        // depends on if inverted or not
+                        const bound = this.knobsInverted.get()
                         ? this.width.get() - this.knobOffset
                         : -this.knobOffset;
 
-                    const insideBounds = this.knobsInverted.get()
-                        ? updatedMinLeft < bound // upper bound
-                        : updatedMinLeft > bound // lower bound
-                    
-                    // update left by drag delta or clamp at lower bound
-                    if (!insideBounds){
-                        this.minKnobLeft.set(bound);
-                    } else {
-                        this.minKnobLeft.set(updatedMinLeft)
+                        const insideBounds = this.knobsInverted.get()
+                            ? updatedMinLeft < bound // upper bound
+                            : updatedMinLeft > bound // lower bound
+
+                            if (!insideBounds){                        
+                                this.minKnobLeft.set(bound);
+                            } else {
+                                this.minKnobLeft.set(updatedMinLeft)
+                            }
                     }
                 } else {
                     this.topKnob.set(Knobs.Max)
 
-                    const updatedMaxLeft = this.maxKnobLeft.get() + delta
+                    const updatedMaxLeft = this.maxKnobLeft.get() + delta;
 
-                    const bound = this.knobsInverted.get()
-                        ? -this.knobOffset
-                        : this.width.get() - this.knobOffset
-
-                    const insideBounds = this.knobsInverted.get()
-                        ? updatedMaxLeft > bound // lower bound
-                        : updatedMaxLeft < bound // upper bound
-
-                    // update left by drag delta or clamp at upper bound
-                    if (!insideBounds){
-                        this.maxKnobLeft.set(bound);
+                    // if minKnob is all the way to the right, limit this one (maxKnob) to one step less
+                    if (this.minKnobLeft.get() >= this.width.get() - this.knobOffset) {
+                        if (updatedMaxLeft > upperBound) {
+                            this.maxKnobLeft.set(upperBound);
+                        } else if (updatedMaxLeft < lowerBound) {
+                            this.maxKnobLeft.set(lowerBound);
+                        } else {
+                            this.maxKnobLeft.set(updatedMaxLeft);
+                        }
                     } else {
-                        this.maxKnobLeft.set(updatedMaxLeft)
+                        // depends on if inverted or not
+                        const bound = this.knobsInverted.get()
+                            ? -this.knobOffset
+                            : this.width.get() - this.knobOffset
+
+                        const insideBounds = this.knobsInverted.get()
+                            ? updatedMaxLeft > bound // lower bound
+                            : updatedMaxLeft < bound // upper bound
+
+                        // update left by drag delta or clamp at upper bound
+                        if (!insideBounds){
+                            this.maxKnobLeft.set(bound);
+                        } else {
+                            this.maxKnobLeft.set(updatedMaxLeft)
+                        }
                     }
                 }
 
@@ -184,38 +211,46 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             
             runInAction(() => {
                 if (isMin) {
-                    const step = this.leftXToStep(this.minKnobLeft.get() + delta)
+                    const step = this.leftXToStep(this.minKnobLeft.get())
                     const valueToSet = this.stepToValue(step);
                     const stepLeft = this.stepLeft(step);
-                    
                     this.minKnobLeft.set(stepLeft)
 
                     if (valueToSet == this.maxKnobValue) {
                         this.isExact.set(true)
                     }
 
+                     // need to consider inverted
                     this.props.config.onChange({ 
-                        max: this.maxKnobValue > this.maxBeforeOrMore 
+                        max: this.knobsInverted.get()
+                        ? valueToSet
+                        : this.maxKnobValue > this.maxBeforeOrMore 
                             ? MORE 
                             : this.maxKnobValue, 
-                        min: valueToSet 
+                        min: this.knobsInverted.get()
+                        ? this.maxKnobValue
+                        : valueToSet 
                     })
                 } else {
-                    const step = this.leftXToStep(this.maxKnobLeft.get() + delta)
+                    const step = this.leftXToStep(this.maxKnobLeft.get())
                     const valueToSet = this.stepToValue(step);
                     const stepLeft = this.stepLeft(step);
-
                     this.maxKnobLeft.set(stepLeft)
 
                     if (valueToSet == this.minKnobValue) {
                         this.isExact.set(true)
                     }
 
+                    // need to consider inverted
                     this.props.config.onChange({ 
-                        min: this.minKnobValue, 
-                        max: valueToSet > this.maxBeforeOrMore 
-                            ? MORE 
-                            : valueToSet 
+                        min: this.knobsInverted.get()
+                            ? valueToSet
+                            : this.minKnobValue, 
+                        max: this.knobsInverted.get()
+                            ? this.minKnobValue
+                            : valueToSet > this.maxBeforeOrMore 
+                                ? MORE 
+                                : valueToSet 
                     })
                 }
             })
@@ -223,6 +258,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
         const inverted = this.knobsInverted.get();
 
+        /* Not sure what the outer ternary is for here
         const minKnobLabel = inverted
             ? `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`
             : `${this.minKnobValue}`;
@@ -230,6 +266,10 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         const maxKnobLabel = inverted
             ? `${this.maxKnobValue}`
             : `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
+        */
+
+        const minKnobLabel = `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`;
+        const maxKnobLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
 
         return this.knobs({
             min: {
@@ -304,15 +344,16 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         const onTouchEnd = (event: GestureResponderEvent) => {
 
         }
+        const exactLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
 
         return this.knobs({
             min: {
-                label: `${this.minKnobValue}`,
+                label: `${exactLabel}`,
                 onTouchMove: onTouchMove,
                 onTouchEnd: onTouchEnd
             },
             max: {
-                label: `${this.maxKnobValue}`,
+                label: `${exactLabel}`,
                 onTouchMove: onTouchMove,
                 onTouchEnd: onTouchEnd
             }
@@ -413,8 +454,9 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             : this.maxKnobValue
 
         return this.isExactValue 
-            ? `Exactly ${leftVal}`
+            ? leftVal == 0 || leftVal == MORE ? 'Any number' :  `Exactly ${leftVal}`
             : `${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
+
     }
 
     render() {
