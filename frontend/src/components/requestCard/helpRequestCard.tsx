@@ -122,36 +122,45 @@ const HelpRequestCard = observer(({
                     icon='account' 
                     color={Colors.nocolor}
                     size={12} />);
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGLAST } ]}>{unfilledSpotsForRequest}</Text>)        
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
             } else {
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGBASIC } ]}></Text>)
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
             }
         } 
 
         // figure out how many people have joined
         // show an icon for each, up to a maximum
-        const maxJoinedToShow = 3;
+        const maxJoinedToShow = 4;
         let i:number = 0;
         joinedResponders.forEach((userId, idx) => {
             const responder = userStore().users.get(userId); 
-            i < maxJoinedToShow && assignedResponders.push(<UserIcon user={responder} style={[ {zIndex: 0-i}, i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
-                ? dark
-                    ? styles.assignedResponderIconDark
-                    : styles.assignedResponderIcon 
-                : styles.assignedResponderIconLast
-            ]}/>);
+            if(i < maxJoinedToShow) {
+                assignedResponders.push(
+                    <UserIcon user={responder} style={[
+                        {zIndex: 0-i}, 
+                        i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                            ? dark
+                                ? styles.assignedResponderIconDark
+                                : styles.assignedResponderIcon 
+                            : styles.assignedResponderIconLast ]} />)}
             i++;
         });
-        // show a stack and count if there are more than shown
         if (joinedResponders.size > maxJoinedToShow) {
+            // if there are more who have joined than we're showing
+            // show a "stack" icon...
             assignedResponders.push(<IconButton
                 style={[ styles.empty, dark && styles.emptyDark ]}
                 icon='account' 
                 color={Colors.nocolor}
                 size={12} />);
-            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGLAST } ]}>{i}</Text>)        
+
+            // ...and the total number
+            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{i}</Text>)        
+
         } else if (joinedResponders.size > 0) {
-            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDERSPACINGBASIC } ]}></Text>)
+            // if we're showing everyone who has joined (and it's more than 0) add spacing
+            assignedResponders.push(
+                <Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
         }
  
         const potentialLabel = RequestStatusToLabelMap[request.status];
@@ -248,9 +257,9 @@ const HelpRequestCard = observer(({
 
 export default HelpRequestCard;
 
-const RESPONDERSPACINGBASIC = 6;
-const RESPONDERSPACINGLAST = 12;
-const RESPONDERSPACINGPILED = -8;
+const RESPONDER_SPACING_BASIC = 6;
+const RESPONDER_SPACING_LAST = 12;
+const RESPONDER_SPACING_PILED = -8;
 
 const styles = StyleSheet.create({
     container: {
@@ -352,7 +361,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.backgrounds.standard,
         borderStyle: 'solid',
         borderWidth: 1,
-        marginRight: RESPONDERSPACINGBASIC,
+        marginRight: RESPONDER_SPACING_BASIC,
     }, 
     unAssignedResponderIconDark: {
         color: '#444144',
@@ -360,27 +369,27 @@ const styles = StyleSheet.create({
         borderColor: Colors.backgrounds.dark,
         borderStyle: 'solid',
         borderWidth: 1,
-        marginRight: RESPONDERSPACINGBASIC,
+        marginRight: RESPONDER_SPACING_BASIC,
     },
     assignedResponderIcon: {
-        marginRight: RESPONDERSPACINGPILED,
+        marginRight: RESPONDER_SPACING_PILED,
         borderWidth: 1,
         borderColor: '#FFF',
     }, 
     assignedResponderIconDark: {
-        marginRight: RESPONDERSPACINGPILED,
+        marginRight: RESPONDER_SPACING_PILED,
         borderWidth: 1,
         borderColor: Colors.backgrounds.dark,
     }, 
     assignedResponderIconLast: {
-        marginRight: RESPONDERSPACINGBASIC,
+        marginRight: RESPONDER_SPACING_BASIC,
         borderWidth: 1,
         borderStyle: 'solid',
         borderColor: '#FFF',
     }, 
     responderCount: {
         alignSelf: 'center',
-        marginRight: RESPONDERSPACINGLAST,
+        marginRight: RESPONDER_SPACING_LAST,
         color: Colors.text.tertiary,
         fontSize: 12
     },
@@ -441,7 +450,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderRadius: 48,
         marginVertical: 0,
-        marginRight: RESPONDERSPACINGBASIC,
+        marginRight: RESPONDER_SPACING_BASIC,
         marginLeft: -30,
         zIndex: -100,
     },
