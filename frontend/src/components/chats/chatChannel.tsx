@@ -85,10 +85,12 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         { messages() }
                     </View>
                     <View style={styles.inputContainer}>
+                        {/*
                         <IconButton 
                             disabled={loading}
                             icon='paperclip'
                             style={styles.inputAction}/>
+                        */}
                         <View style={styles.messageInputContainer} >
                             <TextInput 
                                 multiline
@@ -242,6 +244,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 24,
         width: '100%',
-        height: 44,
+        height: 48,
     }
 })

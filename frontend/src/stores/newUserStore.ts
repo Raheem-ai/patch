@@ -6,6 +6,7 @@ import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { persistent } from '../meta';
+import { PhoneNumberRegex } from '../../../common/constants';
 
 @Store(INewUserStore)
 export default class NewUserStore implements INewUserStore {
@@ -41,14 +42,18 @@ export default class NewUserStore implements INewUserStore {
         this.pronouns = ''
     }
 
+    // this should use the required param instead of being hard coded
+    // removed && this.rolesValid
     get isValid() {
         return this.phoneValid &&
-            this.emailValid &&
-            this.rolesValid
+            this.emailValid 
     }
 
+    // TO DO: real phone validation, e.g. using 
+    // twilio lookup API: https://www.twilio.com/docs/lookup/api
+    // or Google's libphonenumber: https://www.npmjs.com/package/libphonenumber-js
     get phoneValid(){
-        return this.phone.length == 10
+        return this.phone.length == 10 || PhoneNumberRegex.test(this.phone)
     }
 
     get emailValid(){
@@ -56,7 +61,6 @@ export default class NewUserStore implements INewUserStore {
     }
 
     get rolesValid(){
-        // return true
         return !!this.roles.length
     }
 
