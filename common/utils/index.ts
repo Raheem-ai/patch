@@ -1,3 +1,5 @@
+import STRINGS from "../strings";
+
 // This file is only for utils that DONT utilize the types in models
 
 // all enum values should either be an uncapitalized string or number and all enum keys
@@ -52,19 +54,19 @@ export type NotAFunction<T> = T extends Function ? never : T;
 export const dayNumToDayNameLabel = (num: number) => {
     switch (num) {
         case 0:
-            return 'Sunday';
+            return STRINGS.daysOfWeek.su;
         case 1:
-            return 'Monday';
+            return STRINGS.daysOfWeek.mo;
         case 2:
-            return 'Tuesday';
+            return STRINGS.daysOfWeek.tu;
         case 3:
-            return 'Wednesday';
+            return STRINGS.daysOfWeek.we;
         case 4:
-            return 'Thursday';
+            return STRINGS.daysOfWeek.th;
         case 5:
-            return 'Friday';
+            return STRINGS.daysOfWeek.fr;
         case 6:
-            return 'Saturday';    
+            return STRINGS.daysOfWeek.sa;    
     }
 
     throw 'bad day value'

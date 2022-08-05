@@ -1209,7 +1209,7 @@ export class DBManager {
         return this.transaction(async (session) => {
             org.lastRequestId++;
 
-            const displayId = `${org.requestPrefix}-${org.lastRequestId}`
+            const displayId = `${org.lastRequestId}`
             req.displayId = displayId;
 
             await org.save({ session });

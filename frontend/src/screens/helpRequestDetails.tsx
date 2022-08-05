@@ -14,13 +14,15 @@ import { VisualArea } from "../components/helpers/visualArea";
 import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
-import { visualDelim } from "../constants";
 import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
+import * as Linking from 'expo-linking';
+import { constants } from "buffer";
+import STRINGS from "../../../common/strings";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -77,11 +79,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const priorityLabel = RequestPriorityToLabelMap[priority];
         
         const priorityColor = priority == RequestPriority.High
-            ? Colors.bad
+            ? Colors.text.bad
             : priority == RequestPriority.Medium
-                ? Colors.okay
+                ? Colors.text.okay
                 : priority == RequestPriority.Low
-                    ? '#999799'
+                    ? Colors.text.tertiary
                     : null
         
         if (!priorityColor) {
@@ -107,14 +109,16 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.timeAndPlaceSection}>
                 {
                     address
-                        ? <View style={styles.timeAndPlaceRow}>
-                            <IconButton
-                                style={styles.detailsIcon}
-                                icon='map-marker' 
-                                color={styles.detailsIcon.color}
-                                size={styles.detailsIcon.width} />
-                            <Text style={styles.locationText}>{address}</Text>
-                        </View>
+                        ? <Pressable onPress={mapClick}>
+                            <View style={styles.timeAndPlaceRow}>
+                                <IconButton
+                                    style={styles.detailsIcon}
+                                    icon='map-marker' 
+                                    color={styles.detailsIcon.color}
+                                    size={styles.detailsIcon.width} />
+                                <Text style={styles.metadataText}>{address}</Text>
+                            </View>
+                        </Pressable>
                         : null
                 }
                 <View style={styles.timeAndPlaceRow}>
@@ -123,45 +127,50 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         icon='clock-outline' 
                         color={styles.detailsIcon.color}
                         size={styles.detailsIcon.width} />
-                    <Text style={styles.timeText}>{time.toLocaleString()}</Text>
+                    <Text style={styles.metadataText}>{time.toLocaleString()}</Text>
                 </View>
-                { requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='phone-incoming' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <Text style={styles.timeText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
-                    </View>
-                    : null
-                }
-                { requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='account' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <View style={styles.contactInfoRow}>
-                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerName}</Text>
-                            <Text style={[styles.timeText, { alignSelf: 'flex-start' }]}>{requestStore().currentRequest.callerContactInfo}</Text>
+                { 
+                    requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='phone-incoming' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Text style={styles.metadataText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
                         </View>
-                    </View>
-                    : null
+                        : null
                 }
-                { tags.length != 0
-                    ? <View style={styles.timeAndPlaceRow}>
-                        <IconButton
-                            style={styles.detailsIcon}
-                            icon='tag' 
-                            color={styles.detailsIcon.color}
-                            size={styles.detailsIcon.width} />
-                        <Tags 
-                            centered
-                            tags={tags}/>
-                    </View>
-                    : null
+                { 
+                    requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={styles.detailsIcon}
+                                icon='account' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
+                                    ? ' ' + STRINGS.visualDelim 
+                                    : null}
+                                </Text>
+                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerContactInfo}</Text>
+                        </View>
+                        : null
+                }
+                { 
+                    tags.length != 0
+                        ? <View style={styles.timeAndPlaceRow}>
+                            <IconButton
+                                style={[styles.detailsIcon, {marginRight: 8}]}
+                                icon='tag' 
+                                color={styles.detailsIcon.color}
+                                size={styles.detailsIcon.width} />
+                            <Tags 
+                                centered={false}
+                                tags={tags}
+                                verticalMargin={4}/>
+                        </View>
+                        : null
                 }
             </View>
         )
@@ -179,7 +188,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{types.join(` ${visualDelim} `)}</Text>
+                    <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
                 {
                     canEdit
@@ -197,35 +206,60 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
+    // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+    // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+
+    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+
+    const mapClick = () => {
+        Linking.openURL(mapsLink);
+    }
+
     const mapPreview = () => {
         if (!requestStore().currentRequest.location) {
             return null;
         }
 
-        const initialRegion =  {
+        /* const initialRegion =  {
             latitude: requestStore().currentRequest.location.latitude,
             longitude: requestStore().currentRequest.location.longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
-        };
+        }; */
         
+        const locLat = requestStore().currentRequest.location.latitude;
+        const locLong = requestStore().currentRequest.location.longitude;
+
+        const initialCamera  = {
+            center: {
+                latitude: locLat,
+                longitude: locLong,
+            },
+            pitch: 0,
+            heading: 0,
+
+            // Only on iOS MapKit, in meters. The property is ignored by Google Maps.
+            altitude: 1000,
+
+            // Only when using Google Maps.
+            zoom: 12
+        }
+
         return (
+            <Pressable onPress={mapClick}>
             <MapView 
                 provider={PROVIDER_GOOGLE} 
                 pointerEvents="none"
                 showsUserLocation={true}
-                initialRegion={initialRegion}
-                // zoomEnabled={false}
-                // rotateEnabled={false}
-                // scrollEnabled={false}
-                // zoomTapEnabled={false}
+                initialCamera={initialCamera}
                 style={styles.mapView}>
                     <Marker
                         coordinate={{ 
-                            latitude: requestStore().currentRequest.location.latitude, 
-                            longitude: requestStore().currentRequest.location.longitude
+                            latitude: locLat,
+                            longitude: locLong,
                         }}/>
             </MapView>
+            </Pressable>
         );
     }
 
@@ -233,7 +267,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={{ 
                 height: 85, 
-                backgroundColor: '#FFFFFF',
+                backgroundColor: Colors.backgrounds.standard,
                 marginBottom: 12
             }}>
                 <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request.id} />
@@ -245,19 +279,16 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         const currentRequestOpen = currentRequestIsOpen();
 
         return (
-            <View style={{ 
-                width: '100%',
-                padding: 20,
-                paddingTop: currentRequestOpen ? 0 : 20,
-                backgroundColor: '#FFFFFF',
-            }}>
+            <View style={styles.toggleRequestContainer}>
                 <Button
                     uppercase={false}
-                    color={currentRequestOpen ? '#fff' : '#76599A'}
-                    style={[styles.button, currentRequestOpen ? styles.closeRequestButton : styles.openRequestButton]}
-                    onPress={currentRequestOpen ? closeRequestOrPrompt() : reopenRequest()}
-                    >
-                        {currentRequestOpen ? 'Close this request' : 'Re-open this request'}
+                    color={Colors.primary.alpha}
+                    style={[styles.button, styles.closeRequestButton]}
+                    onPress={currentRequestOpen 
+                        ? closeRequestOrPrompt() 
+                        : reopenRequest()
+                }>
+                    {STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
                 </Button>
             </View>
         )
@@ -275,17 +306,17 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const closeRequestOrPrompt = () => async () => {
         if (!requestStore().currentRequest.type.length) {
             alertStore().showPrompt({
-                title: 'Type of request',
-                message: `Are you sure you want to close this request without specifying its type?`,
+                title:  STRINGS.REQUESTS.TOGGLE.title,
+                message: STRINGS.REQUESTS.TOGGLE.message,
                 actions: [
                     {
-                        label: 'Add now',
+                        label: STRINGS.REQUESTS.TOGGLE.add,
                         onPress: () => {
                             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
                         },
                     },
                     {   
-                        label: 'Close anyway',
+                        label: STRINGS.REQUESTS.TOGGLE.close,
                         onPress: async () => {
                             await closeRequest()
                         },
@@ -318,7 +349,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
         return (
         <>
-            <WrappedScrollView showsVerticalScrollIndicator={false}>
+            <WrappedScrollView 
+                showsVerticalScrollIndicator={false} 
+                style={{backgroundColor: (showCloseOpenReqButton 
+                    ? Colors.backgrounds.secondary 
+                    : Colors.backgrounds.standard)
+            }}>
                 <View style={styles.detailsContainer}>
                     { header() }
                     { notesSection() }
@@ -326,15 +362,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { mapPreview() }
                     { detailsSection() }
                 </View>
-                {/* { teamSection() } */}
-            </WrappedScrollView>
-            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                { currentRequestIsOpen()
-                    ? statusPicker() 
-                    : null 
-                }
                 { showCloseOpenReqButton
                     ? toggleRequestButton()
+                    : null 
+                }
+            </WrappedScrollView>
+            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                { currentRequestIsOpen()
+                    ? statusPicker() 
                     : null 
                 }
             </View>
@@ -367,7 +402,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         color={Colors.primary.alpha}
                         mode={'outlined'}
                         onPress={startNotifyFlow}
-                        style={[styles.notifyButton]}>{'Notify people'}</Button>
+                        style={[styles.notifyButton]}>{STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}</Button>
                 </View>
             }
         }
@@ -439,11 +474,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-                const peeps = numNotified === 1 ? `person` : `people`;
-                const notifiedLabel = `${numNotified} ${peeps} notified`;
+//                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
+                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.NRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
-                    ? ` ${visualDelim} ${pendingRequests.length} asking`
+                    ? STRINGS.REQUESTS.NOTIFICATIONS.NRespondersAsking(pendingRequests.length)
                     : null;
 
                 const positionScopedRow = ({ 
@@ -457,7 +492,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
-                                    <Text>{`${userName} ${visualDelim} `}</Text>
+                                    <Text>{`${userName} ${STRINGS.visualDelim} `}</Text>
                                     <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
                                 </Text>
                             </View>
@@ -530,27 +565,29 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
 
                     return (
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{'Asked to join'}</Text>
-                            { 
-                                pendingRequests.map(({ userId, positionName, positionId }) => {
-                                    return positionScopedRow({
-                                        userId, 
-                                        positionName,
-                                        rightElem: requestToJoinActions(userId, positionId)
+                        pendingRequests.length + deniedRequests.length > 0
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</Text>
+                                { 
+                                    pendingRequests.map(({ userId, positionName, positionId }) => {
+                                        return positionScopedRow({
+                                            userId, 
+                                            positionName,
+                                            rightElem: requestToJoinActions(userId, positionId)
+                                        })
                                     })
-                                })
-                            }
-                            { 
-                                deniedRequests.map(({ userId, positionName }) => {
-                                    return positionScopedRow({
-                                        userId, 
-                                        positionName,
-                                        rightElem: responseLabel('Denied')
+                                }
+                                { 
+                                    deniedRequests.map(({ userId, positionName }) => {
+                                        return positionScopedRow({
+                                            userId, 
+                                            positionName,
+                                            rightElem: responseLabel(STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.denied)
+                                        })
                                     })
-                                })
-                            }
-                        </View>
+                                }
+                            </View>
+                            : null
                     )
                 }
 
@@ -570,9 +607,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         joinedUsers.length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Joined'}</Text>
+                        ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.joined}</Text>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
                                     return positionScopedRow({
@@ -583,38 +619,34 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 })
                             }
                         </View>
-                        :
-                       null
+                        : null
                     )
                 }
 
                 const viewedSection = () => {
                     return (
-                        Array.from(viewedUsers.entries()).length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Viewed request'}</Text>
-                            { 
-                                Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
-                            }
-                        </View>
-                        : null
+                        viewedUsers.size > 0
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</Text>
+                                { 
+                                    Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                                }
+                            </View>
+                            : null
                     )
                 }
 
                 const notificationsSection = () => {
                     return (
-                        Array.from(notifiedUsers.entries()).length > 0
-                        ?
-                        <View style={{ padding: 20, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{'Sent notification'}</Text>
-                            { 
-                            
-                                Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
-                            }
-                        </View>
-                        :
-                        null
+                        notifiedUsers.size > 0
+                            ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</Text>
+                                { 
+                                
+                                    Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
+                                }
+                            </View>
+                            : null
                     )
                 }
 
@@ -626,65 +658,92 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     }
                 }
 
-                return (
-                    <View>
-                        <Pressable 
-                            style={{ 
-                                padding: 20, 
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
-                            }} 
-                            onPress={toggleTeamDetails}
-                        >
-                            <View>
-                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                return pendingRequests.length + deniedRequests.length + Array.from(viewedUsers.entries()).length + joinedUsers.length + Array.from(notifiedUsers.entries()).length > 0
+                ? <View>
+                    <Pressable 
+                        style={{ 
+                            padding: 20, 
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }} 
+                        onPress={toggleTeamDetails}
+                    >
+                        <View>
+                            <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                        </View>
+                        { newLabel
+                            ? <View style={{ flex: 1 }}>
+                                <Text style={{ 
+                                    color: Colors.primary.alpha, 
+                                    fontSize: 14
+                                }}>{newLabel}</Text>
                             </View>
-                            { newLabel
-                                ? <View style={{ flex: 1 }}>
-                                    <Text style={{ 
-                                        color: Colors.primary.alpha, 
-                                        fontSize: 14
-                                    }}>{newLabel}</Text>
-                                </View>
-                                : null
-                            }
-                            <IconButton 
-                                style={styles.largeIcon}
-                                size={styles.largeIcon.height}
-                                color={'#999'}
-                                icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
-                        </Pressable>
-                        {
-                            eventDetailsOpen
-                                ? <View>
-                                    { requestSection() }
-                                    { joinedSection() }
-                                    { viewedSection() }
-                                    { notificationsSection() }
-                                </View>
-                                : null
+                            : null
                         }
-                    </View>
-                )
+                        <IconButton 
+                            style={styles.largeIcon}
+                            size={styles.largeIcon.height}
+                            color={'#999'}
+                            icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
+                    </Pressable>
+                    {
+                        eventDetailsOpen
+                            ? <View>
+                                { requestSection() }
+                                { joinedSection() }
+                                { viewedSection() }
+                                { notificationsSection() }
+                            </View>
+                            : null
+                    }
+                </View>
+                : <View style={{height: 20}}></View>
             }
         }
 
+        const editAction = () => {
+            const edit = () => {
+                bottomDrawerStore().show(BottomDrawerView.editRequest, true)
+            }
+    
+            const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+    
+            return (
+                canEdit
+                    ? <View>
+                        <Button
+                            uppercase={false} 
+                            color={Colors.primary.alpha}
+                            mode={'contained'}
+                            onPress={edit}
+                            style={[styles.button, styles.addPositionsButton]}>{STRINGS.REQUESTS.ACTIONS.addResponders}</Button>
+                    </View>
+                    : null
+            )
+        }
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
-                <View style={{ backgroundColor: '#F6F4F6', borderBottomColor: '#E0E0E0', borderBottomWidth: 1 }}>
+                <View style={{ backgroundColor: Colors.backgrounds.secondary, borderBottomColor: Colors.borders.filter, borderBottomWidth: 1 }}>
                     { notifyAction() }
                     { teamEventDetails() }
                 </View>
                 {
-                    request.positions.map(pos => {
-                        return (
-                            <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
-                        )
-                    })
+                    request.positions.length > 0 
+                        ? request.positions.map(pos => {
+                            return (
+                                <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
+                            )
+                        })
+                        : <View style={{ padding: 20, paddingBottom: 0 }}>
+                            <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>Responders</Text>
+                            <Text style={{lineHeight: 18}}>No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.</Text>
+                            <View style={{ marginTop: 20 }}>{ editAction() }</View>
+                        </View>
                 }
             </WrappedScrollView>
         )
+
     })
 
     const tabs = []
@@ -716,7 +775,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     return (
         // <VisualArea>
             <TabbedScreen 
-                bodyStyle={{ backgroundColor: '#ffffff' }}
+                bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
                 defaultTab={Tabs.Overview} 
                 tabs={tabs}/>
         // </VisualArea>
@@ -733,11 +792,19 @@ enum Tabs {
 
 const styles = StyleSheet.create({
     detailsContainer: {
-        flex: 1,
         padding: 16,
         paddingTop: 30,
-        marginBottom: 4,
-        backgroundColor: '#fff'
+        paddingBottom: 0,
+        backgroundColor: Colors.backgrounds.standard,
+    },
+    toggleRequestContainer: { 
+        width: '100%',
+        padding: 20,
+        paddingTop: 24,
+        backgroundColor: Colors.backgrounds.secondary,
+        borderTopColor: Colors.borders.formFields,
+        borderTopWidth: 1
+
     },
     notesSection: {
         marginBottom: 16
@@ -755,97 +822,23 @@ const styles = StyleSheet.create({
     timeAndPlaceSection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
-        marginBottom: 16,
+        marginVertical: 16
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
-        marginVertical: 5
-    },
-    contactInfoRow: {
-        flexDirection: 'column',
+        marginVertical: 2
     },
     detailsIcon: { 
         width: 14,
-        color: '#666',
+        color: Colors.icons.dark,
         alignSelf: 'center',
-        marginRight: 5
+        marginRight: 4
     },
-    assignmentSelectIcon: { 
-        width: 30,
-        height: 30,
-        color: '#838383',
-        alignSelf: 'center',
-        margin: 0
-    },
-    assignmentAcceptedIcon: {
-        width: 14,
-        height: 14,
-        backgroundColor: '#55BB76',
-        color: '#fff',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 8
-    },
-    assignmentPendingIcon: {
-        width: 16,
-        height: 16,
-        color: '#666666',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 7
-    },
-    assignmentDeclinedIcon: {
-        width: 14,
-        height: 14,
-        color: '#fff',
-        backgroundColor: '#D04B00',
-        alignSelf: 'center',
-        margin: 0,
-        marginHorizontal: 8
-    },
-    assignmentReminderButton: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#694F70',
-        margin: 0,
-        padding: 0,
-        marginTop: 16
-    },
-    assignmentRow: {
-        flexDirection: 'row',
-        alignItems: "center",
-        justifyContent: 'space-between',
-        marginTop: 12
-    },
-    assignmentRowText: {
-        fontSize: 14,
-        color: '#666666'
-    },
-    assignmentHeader: {
-        flexDirection: 'row',
-        alignItems: "center",
-        justifyContent: 'space-between'
-    },
-    assignmentHeaderText: {
-        color: '#333333',
-        fontSize: 14,
-        fontWeight: 'bold'
-    },
-    assignmentHeaderSubText: {
-        color: '#666666',
-        fontSize: 14
-    },
-    locationText: {
+    metadataText: {
         fontSize: 14,
         alignSelf: 'center',
-        color: '#666',
-        marginLeft: 2
-    },
-    timeText: {
-        fontSize: 14,
-        alignSelf: 'center',
-        color: '#666',
-        marginLeft: 2
+        color: Colors.text.secondary,
+        marginLeft: 4
     },
     headerContainer: {
         marginBottom: 16,
@@ -956,7 +949,7 @@ const styles = StyleSheet.create({
         marginBottom: 12
     },
     addResponderButton: {
-        height: 44,
+        height: 48,
         borderRadius: 24,
         color: '#fff',
         backgroundColor: Colors.primary.alpha,
@@ -1025,13 +1018,13 @@ const styles = StyleSheet.create({
         margin: 0
     },
     closeRequestButton: {
-        backgroundColor: '#76599A',
-    },
-    openRequestButton: {
-        borderColor: '#76599A',
+        borderColor: Colors.primary.alpha,
         borderWidth: 1,
         borderStyle: 'solid',
-        backgroundColor: '#ffffff',
+        backgroundColor: Colors.backgrounds.standard
+    },
+    addPositionsButton: {
+        backgroundColor: Colors.primary.alpha,
     },
     button: {
         flexDirection: 'row',
@@ -1041,9 +1034,9 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         // margin: 20,
         width: '100%',
-        height: 44
+        height: 48
     },
     mapView: {
-        height: 120
+        height: 180
     }
 })
