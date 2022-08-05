@@ -1,5 +1,5 @@
 import { ComponentType } from "react"
-import { StyleProp, ViewStyle } from "react-native";
+import { KeyboardType, StyleProp, ViewStyle } from "react-native";
 import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
@@ -129,6 +129,7 @@ export type InlineFormInputOptions = {
     },
     'TextInput': {
         props: {},
+        inputType?: KeyboardType,
         type: string
     }
     'Switch': {
@@ -187,6 +188,7 @@ export type NavigationFormInputConfig = {
     screen: (props: SectionNavigationScreenViewProps) => JSX.Element
 
     labelContainerStyle?: StyleProp<ViewStyle>
+    expandOverride?: (expand: () => void) => void
     expandIcon?: string | (() => string)
     // need 'name' for a screenId and 'disabled' in case the label is a string
     // so the consumer doesn't have control over the disabled lable visual component

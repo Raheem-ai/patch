@@ -1,3 +1,4 @@
+import { remove } from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -11,6 +12,7 @@ import { iHaveAllPermissions } from "../utils";
 import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
+import STRINGS from "../../../common/strings";
 
 type PositionDetailsCardProps = { 
     requestId: string,
@@ -106,26 +108,41 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canLeave) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
+                labelStyle={{letterSpacing: 0.8}}
+                uppercase={false}
                 color={Colors.primary.alpha}
                 mode='contained'
-                onPress={leave}>{'Leave'}</Button>
+                onPress={leave}>{STRINGS.REQUESTS.POSITIONS.leave}</Button>
         }
 
         if (positionMetadata.canJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button]}
+                labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='contained'
-                onPress={join}>{'Join'}</Button>
+                onPress={join}>{STRINGS.REQUESTS.POSITIONS.join}</Button>
         } else if (positionMetadata.canRequestToJoin) {
             return <Button 
+                uppercase={false}
                 style={[styles.button, styles.outlineButton]}
+                labelStyle={{letterSpacing: 0.8}}
                 color={Colors.primary.alpha}
                 mode='outlined'
-                onPress={requestToJoin}>{'Request'}</Button>
+                onPress={requestToJoin}>{STRINGS.REQUESTS.POSITIONS.request}</Button>
         } else {
             return null
+        }
+    }
+
+    const removeUser = async (userId) => {
+        try {
+            await requestStore().removeUserFromRequest(userId, requestId, pos.id)
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e))
         }
     }
 
@@ -165,6 +182,14 @@ const PositionDetailsCard = observer(({
                                             }
                                         </View>
                                     </View>
+                                    <View style={styles.removeUser} >
+                                    <IconButton
+                                        icon={'close'} 
+                                        color={Colors.icons.light}
+                                        size={20} 
+                                        onPress={() => removeUser(details.userId)}
+                                        style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
+                                    </View>
                                 </View>
                             )
                         })
@@ -181,10 +206,16 @@ export default PositionDetailsCard;
 
 const styles = StyleSheet.create({
     button: {
+        letterSpacing: 0.8,
         borderRadius: 32
     },
     outlineButton: {
         borderWidth: 1,
         borderColor: Colors.primary.alpha,
+    },
+    removeUser: {
+        flexGrow: 1,
+        alignItems: 'flex-end',
+        marginRight: 12,
     }
 })    

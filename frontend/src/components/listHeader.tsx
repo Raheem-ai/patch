@@ -1,8 +1,8 @@
 import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
-import { visualDelim } from "../constants";
 import { Colors } from "../types";
+import STRINGS from "../../../common/strings";
 
 export type ListHeaderOptionConfig<T = any> = {
     chosenOption: T,
@@ -31,7 +31,7 @@ const ListHeader = (props: ListHeaderProps) => {
     const headerSection = () => {
         let label = isOpen
             ? props.openHeaderLabel
-            : (props.optionConfigs || []).map(conf => conf.toHeaderLabel(conf.chosenOption)).filter(val => !!val).join(` ${visualDelim} `)
+            : (props.optionConfigs || []).map(conf => conf.toHeaderLabel(conf.chosenOption)).filter(val => !!val).join(` ${STRINGS.visualDelim} `)
 
         return (
             <Pressable onPress={toggleHeader}>
