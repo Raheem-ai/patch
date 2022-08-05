@@ -115,6 +115,8 @@ export default class RequestStore implements IRequestStore {
         return this.requestsArray.filter((r) => {
             const isOnRequest = r.positions.some(pos => pos.joinedUsers.includes(userStore().currentUser?.id))
             return this.requestIsActive(r) && isOnRequest
+        }).sort((a, b) => {
+            return this.sortBySeverity(a, b)
         });
     }
 

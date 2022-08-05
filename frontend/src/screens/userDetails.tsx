@@ -238,10 +238,14 @@ const styles = StyleSheet.create({
     },
     activeRequestCard: {
         borderRadius: 8,
-        borderBottomWidth: 2,
-        borderBottomColor: Colors.good,
-        borderColor: Colors.good,
-        borderWidth: 2,
-        marginTop: 12
+
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        }
     }
 })
