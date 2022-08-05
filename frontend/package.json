@@ -14,6 +14,7 @@
     "assert": "^2.0.0",
     "axios": "^0.21.1",
     "buffer": "^6.0.3",
+    "dotenv": "^16.0.1",
     "events": "^3.3.0",
     "expo": "^43.0.0",
     "expo-app-loading": "~1.2.1",

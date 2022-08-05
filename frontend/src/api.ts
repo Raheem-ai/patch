@@ -10,20 +10,8 @@ import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
 import * as Constants from 'expo-constants'
-import { runningOnDev, runningOnProd, runningOnStaging } from './utils';
 
-// TODO: the port and non local host need to come from config somehow
-// let apiHost = !!manifest && (typeof manifest.packagerOpts === `object`) && manifest.packagerOpts.dev
-//   ? manifest.debuggerHost && ('http://' + manifest.debuggerHost.split(`:`)[0].concat(`:9000`))
-// //   : 'http://localhost:9000'//`TODO: <prod/staging api>`;
-//   : '';
-export let apiHost = runningOnProd
-    ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'  // TODO: update when we have prod env
-    : runningOnStaging 
-        ? 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app' 
-        : runningOnDev // it's always default in expo go
-            ? Constants.default.manifest.extra.devUrl // put dev url here
-            : '' // what should be the default for an unknown release channel? 
+export const apiHost = Constants.default.manifest.extra.apiHost
 
 if (!apiHost) {
     // do something?
