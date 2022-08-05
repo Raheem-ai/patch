@@ -86,7 +86,7 @@ const PositionDetailsCard = observer(({
             try {
                 await requestStore().joinRequest(requestId, pos.id)
             } catch (e) {
-                alertStore().toastError({message: resolveErrorMessage(e)})
+                alertStore().toastError(resolveErrorMessage(e))
             }
         }
 
@@ -94,7 +94,7 @@ const PositionDetailsCard = observer(({
             try {
                 await requestStore().leaveRequest(requestId, pos.id)
             } catch (e) {
-                alertStore().toastError({message: resolveErrorMessage(e)})
+                alertStore().toastError(resolveErrorMessage(e))
             }
         }
 
@@ -102,7 +102,7 @@ const PositionDetailsCard = observer(({
             try {
                 await requestStore().requestToJoinRequest(requestId, pos.id)
             } catch (e) {
-                alertStore().toastError({message: resolveErrorMessage(e)})
+                alertStore().toastError(resolveErrorMessage(e))
             }
         }
 

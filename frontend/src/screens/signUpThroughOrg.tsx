@@ -85,11 +85,11 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                         name: nameVal
                     })
                 } catch(e) {
-                    alertStore().toastError({message: resolveErrorMessage(e)});
+                    alertStore().toastError(resolveErrorMessage(e));
                     return
                 }
 
-                alertStore().toastSuccess({message: STRINGS.ACCOUNT.welcomeToPatch})
+                alertStore().toastSuccess(STRINGS.ACCOUNT.welcomeToPatch)
 
                 navigateTo(routerNames.userHomePage)
 

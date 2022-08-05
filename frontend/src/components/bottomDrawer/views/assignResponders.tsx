@@ -34,13 +34,13 @@ export default class AssignResponders extends React.Component {
                         bottomDrawerStore().startSubmitting()
                         await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
                     } catch(e) {
-                        alertStore().toastError({message: resolveErrorMessage(e)})
+                        alertStore().toastError(resolveErrorMessage(e))
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess({message: STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().selectedResponderIds.size)})
+                    alertStore().toastSuccess(STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().selectedResponderIds.size))
 
                     bottomDrawerStore().hide()
                 },

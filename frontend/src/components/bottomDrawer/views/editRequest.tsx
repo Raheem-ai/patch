@@ -50,13 +50,13 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().startSubmitting()
                         await editRequestStore().editRequest(requestStore().currentRequest.id)
                     } catch (e) {
-                        alertStore().toastError({message:resolveErrorMessage(e)})
+                        alertStore().toastError(resolveErrorMessage(e))
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess({message: STRINGS.ACCOUNT.updatedRequestSuccess(requestStore().currentRequest.displayId)})
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(requestStore().currentRequest.displayId))
         
                     bottomDrawerStore().hide()
                 },

@@ -3,9 +3,9 @@ const STRINGS = {
     // GLOBAL
     visualDelim: '·',
     responders: (n: number) => n > 1 ? 'responders' : 'responder',
-    nResponders: (n: number) => `${n} ${STRINGS.responders}`,
+    nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
     people: (n: number) => n > 1 ? 'people' : 'person',
-    nPeople: (n: number) => `${n} ${STRINGS.responders}`,
+    nPeople: (n: number) => `${n} ${STRINGS.responders(n)}`,
     daysOfWeek: {
         su: 'Sunday',
         mo: 'Monday',

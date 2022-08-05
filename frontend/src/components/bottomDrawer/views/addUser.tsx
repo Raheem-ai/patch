@@ -42,13 +42,13 @@ export default class AddUser extends React.Component {
                         bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
                     } catch (e) {
-                        alertStore().toastError({message: resolveErrorMessage(e)});
+                        alertStore().toastError(resolveErrorMessage(e));
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess({message: STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone)})
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
                     bottomDrawerStore().hide();
                 },
                 label: 'Send Invite',

@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { Store } from './meta';
-import { IAlertStore, PromptConfig, ToastConfig, UserFacingToastConfig } from './interfaces';
+import { IAlertStore, PromptConfig, ToastConfig } from './interfaces';
 
 @Store(IAlertStore)
 export default class AlertStore implements IAlertStore {
@@ -12,14 +12,12 @@ export default class AlertStore implements IAlertStore {
     constructor() {
         makeAutoObservable(this)
     }
-    
-    toastSuccess(config:UserFacingToastConfig) {
-        const { message, dismissable, unauthenticated, inTabbedView } = config;
-        this.toast = { 
+
+    toastSuccess(config:ToastConfig) {
+        this.toast = {
             message,
             dismissable,
             unauthenticated,
-            inTabbedView,
             type: 'success'
         }
 
@@ -31,14 +29,12 @@ export default class AlertStore implements IAlertStore {
         }, this.defaultToastTime)
     }
 
-    toastError(config:UserFacingToastConfig) {
-        const { message, dismissable, unauthenticated, inTabbedView } = config;
-        this.toast = { 
+    toastError(config:ToastConfig) {
+        this.toast = {
             message,
             dismissable,
             unauthenticated,
-            inTabbedView,
-            type: 'error'
+            type: 'success'
         }
 
         //TODO: start fade in animation

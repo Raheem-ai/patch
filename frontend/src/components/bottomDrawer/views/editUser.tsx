@@ -50,7 +50,7 @@ export default class EditUser extends React.Component {
                             ? editUserStore().editMe()
                             : editUserStore().editUser());
                     } catch (e) {
-                        alertStore().toastError({message: resolveErrorMessage(e)})
+                        alertStore().toastError(resolveErrorMessage(e))
                         return   
                     } finally {
                         bottomDrawerStore().endSubmitting()
@@ -60,7 +60,7 @@ export default class EditUser extends React.Component {
                         ? STRINGS.ACCOUNT.updatedProfileSuccess()
                         : STRINGS.ACCOUNT.updatedProfileSuccess(editUserStore().name)
 
-                    alertStore().toastSuccess({message: successMsg})
+                    alertStore().toastSuccess(successMsg)
 
                     bottomDrawerStore().hide();
                 },
@@ -129,14 +129,14 @@ export default class EditUser extends React.Component {
             } else {
                 await userStore().removeCurrentUserFromOrg();
 
-                alertStore().toastSuccess({message: STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name)});
+                alertStore().toastSuccess(STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name));
 
                 navigationRef.current?.goBack();
             }
 
             bottomDrawerStore().hide();
         } catch (e) {
-            alertStore().toastError({message: resolveErrorMessage(e)});
+            alertStore().toastError(resolveErrorMessage(e));
         } finally {
             bottomDrawerStore().endSubmitting()
         }

@@ -299,7 +299,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             await requestStore().closeRequest(requestStore().currentRequest.id);
             setRequestIsOpen(false);
         } catch (e) {
-            alertStore().toastError({message: resolveErrorMessage(e)});
+            alertStore().toastError(resolveErrorMessage(e));
         }
     }
 
@@ -532,7 +532,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             try {
                                 await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
                             } catch (e) {
-                                alertStore().toastError({message: resolveErrorMessage(e)});
+                                alertStore().toastError(resolveErrorMessage(e));
                             }
                         
                         }
@@ -541,7 +541,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             try {
                                 await requestStore().approveRequestToJoinRequest(userId, request.id, positionId)
                             } catch (e) {
-                                alertStore().toastError({message: resolveErrorMessage(e)});
+                                alertStore().toastError(resolveErrorMessage(e));
                             }
                         }
 

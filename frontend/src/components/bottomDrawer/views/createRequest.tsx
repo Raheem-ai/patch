@@ -51,13 +51,13 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().startSubmitting()
                         createdReq = await createRequestStore().createRequest()
                     } catch(e) {
-                        alertStore().toastError({message:resolveErrorMessage(e)})
+                        alertStore().toastError(resolveErrorMessage(e))
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess({message: STRINGS.ACCOUNT.createdRequestSuccess(createdReq.displayId)})
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(createdReq.displayId))
         
                     bottomDrawerStore().hide()
                 },

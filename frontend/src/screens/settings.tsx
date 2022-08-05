@@ -75,7 +75,7 @@ const Settings = ({ navigation, route }: Props) => {
                             await organizationSettingsStore().saveName(val) 
                             organizationSettingsStore().clear()
                         } catch(e) {
-                            alertStore().toastError({message: resolveErrorMessage(e)})
+                            alertStore().toastError(resolveErrorMessage(e))
                             return
                         }
                     },
@@ -101,7 +101,7 @@ const Settings = ({ navigation, route }: Props) => {
                             await organizationSettingsStore().saveRequestPrefix(val) 
                             organizationSettingsStore().clear()
                         } catch(e) {
-                            alertStore().toastError({message: resolveErrorMessage(e)})
+                            alertStore().toastError(resolveErrorMessage(e))
                             return
                         }
                     },

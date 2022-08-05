@@ -13,7 +13,9 @@ export const Alerts = observer(() => {
     const prompt = () => {
         const dimensions = Dimensions.get('screen');
         const width = dimensions.width - (2 * 20);
-        const top = dimensions.height / 3;
+        // const top = dimensions.height / 3;
+        const top = HeaderHeight + TabbedScreenHeaderHeight + 20;
+
         const left = 20;
 
         // const singleAction = alertStoreInst().prompt.actions.length == 1;
@@ -51,7 +53,7 @@ export const Alerts = observer(() => {
     const toast = () => {
 
         const width = Dimensions.get('screen').width - (2 * 20);
-        const top = HeaderHeight + TabbedScreenHeaderHeight + 20; // TO DO: only add height of Tabs when on a Tabbed Screen
+        const top = HeaderHeight + TabbedScreenHeaderHeight + 20;
         const left = 20;
 
         return !!alertStore().toast
