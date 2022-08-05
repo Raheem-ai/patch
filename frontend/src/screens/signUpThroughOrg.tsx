@@ -3,6 +3,7 @@ import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
+import STRINGS from "../../../common/strings";
 import Form, { FormProps } from "../components/forms/form";
 import { InlineFormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
@@ -84,11 +85,11 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                         name: nameVal
                     })
                 } catch(e) {
-                    alertStore().toastError(resolveErrorMessage(e));
+                    alertStore().toastError({message: resolveErrorMessage(e)});
                     return
                 }
 
-                alertStore().toastSuccess(`Welcome to PATCH!`)
+                alertStore().toastSuccess({message: STRINGS.ACCOUNT.welcomeToPatch})
 
                 navigateTo(routerNames.userHomePage)
 

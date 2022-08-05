@@ -12,6 +12,7 @@ import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputCo
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import STRINGS from "../../../../../common/strings";
 
 type Props = {}
 
@@ -50,13 +51,13 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().startSubmitting()
                         createdReq = await createRequestStore().createRequest()
                     } catch(e) {
-                        alertStore().toastError(resolveErrorMessage(e))
+                        alertStore().toastError({message:resolveErrorMessage(e)})
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
-        
-                    alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
+
+                    alertStore().toastSuccess({message: STRINGS.ACCOUNT.createdRequestSuccess(createdReq.displayId)})
         
                     bottomDrawerStore().hide()
                 },

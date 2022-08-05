@@ -5,6 +5,7 @@ import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
 import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../common/models"
+import STRINGS from "../../../../../common/strings"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
 import { Colors } from "../../../types"
@@ -33,13 +34,13 @@ export default class AssignResponders extends React.Component {
                         bottomDrawerStore().startSubmitting()
                         await dispatchStore().assignRequest(id, Array.from(dispatchStore().selectedResponderIds.values()))
                     } catch(e) {
-                        alertStore().toastError(resolveErrorMessage(e))
+                        alertStore().toastError({message: resolveErrorMessage(e)})
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(`Notified ${dispatchStore().selectedResponderIds.size} responder` + (dispatchStore().selectedResponderIds.size == 1 ? '':'s'))
+                    alertStore().toastSuccess({message: STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().selectedResponderIds.size)})
 
                     bottomDrawerStore().hide()
                 },
@@ -104,11 +105,11 @@ export default class AssignResponders extends React.Component {
     }
 
     responderActions = () => {
-        const selectAllText = dispatchStore().selectAll ? 'unselect all' : 'select all';
+        const selectAllText = dispatchStore().selectAll ? STRINGS.REQUESTS.NOTIFICATIONS.unselectAll : STRINGS.REQUESTS.NOTIFICATIONS.selectAll;
         return (
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{`${dispatchStore().assignableResponders.length} responder` + (dispatchStore().assignableResponders.length == 1 ? '':'s')}</Text>
+                    <Text style={styles.responderCountText}>{dispatchStore().assignableResponders.length} {STRINGS.responders(dispatchStore().assignableResponders.length)}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}

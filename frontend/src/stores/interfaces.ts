@@ -463,15 +463,24 @@ export type ToastConfig = {
     message: string,
     dismissable?: boolean,
     unauthenticated?: boolean, // outlet to allow callers to force the toast to show even if the user isnt signed in
+    inTabbedView?: boolean,
     type: 'success' | 'error'
 }
+
+export type UserFacingToastConfig = Pick<ToastConfig, 
+    'message'
+    | 'dismissable'
+    | 'unauthenticated'
+    | 'inTabbedView'
+>
+
 
 export interface IAlertStore extends IBaseStore {
     toast?: ToastConfig
     prompt?: PromptConfig
     
-    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
-    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
+    toastSuccess(config: UserFacingToastConfig): void;
+    toastError(config: UserFacingToastConfig): void;
 
     showPrompt(config: PromptConfig): void
     hidePrompt(): void

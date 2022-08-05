@@ -299,7 +299,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             await requestStore().closeRequest(requestStore().currentRequest.id);
             setRequestIsOpen(false);
         } catch (e) {
-            alertStore().toastError(resolveErrorMessage(e));
+            alertStore().toastError({message: resolveErrorMessage(e)});
         }
     }
 
@@ -475,10 +475,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 })
 
 //                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
-                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.NRespondersNotified(numNotified);
+                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
-                    ? STRINGS.REQUESTS.NOTIFICATIONS.NRespondersAsking(pendingRequests.length)
+                    ? STRINGS.REQUESTS.NOTIFICATIONS.nRespondersAsking(pendingRequests.length)
                     : null;
 
                 const positionScopedRow = ({ 
@@ -532,7 +532,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             try {
                                 await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
                             } catch (e) {
-                                alertStore().toastError(resolveErrorMessage(e));
+                                alertStore().toastError({message: resolveErrorMessage(e)});
                             }
                         
                         }
@@ -541,7 +541,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             try {
                                 await requestStore().approveRequestToJoinRequest(userId, request.id, positionId)
                             } catch (e) {
-                                alertStore().toastError(resolveErrorMessage(e));
+                                alertStore().toastError({message: resolveErrorMessage(e)});
                             }
                         }
 

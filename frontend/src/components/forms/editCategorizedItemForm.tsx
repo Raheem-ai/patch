@@ -40,11 +40,11 @@ export const EditCategorizedItemForm = observer(({
             handler: async () => {
                 try {
                     await store.save()
-                    alertStore().toastSuccess(onSaveToastLabel)
+                    alertStore().toastSuccess({message: onSaveToastLabel})
                     await nativeEventStore().hideKeyboard()
                     back()
                 } catch (e) {
-                    alertStore().toastError(resolveErrorMessage(e))
+                    alertStore().toastError({message: resolveErrorMessage(e)});
                 }
             },
             label: 'Save'

@@ -42,8 +42,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                             await upsertRoleStore().save()
                             back()
                         } catch (e) {
-                            const errMessage = resolveErrorMessage(e)
-                            alertStore().toastError(errMessage, true)
+                            alertStore().toastError({message: resolveErrorMessage(e)})
                         }
                     }
 
@@ -76,8 +75,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                         await upsertRoleStore().save()
                         back()
                     } catch (e) {
-                        const errMessage = resolveErrorMessage(e)
-                        alertStore().toastError(errMessage, true)
+                        alertStore().toastError({message: resolveErrorMessage(e)})
                     }
                 }
 

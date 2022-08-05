@@ -11,6 +11,7 @@ import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import STRINGS from "../../../../../common/strings";
 
 type Props = {}
 
@@ -49,13 +50,13 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().startSubmitting()
                         await editRequestStore().editRequest(requestStore().currentRequest.id)
                     } catch (e) {
-                        alertStore().toastError(resolveErrorMessage(e))
+                        alertStore().toastError({message:resolveErrorMessage(e)})
                         return
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
+                    alertStore().toastSuccess({message: STRINGS.ACCOUNT.updatedRequestSuccess(requestStore().currentRequest.displayId)})
         
                     bottomDrawerStore().hide()
                 },
