@@ -109,7 +109,7 @@ export default class AssignResponders extends React.Component {
         return (
             <View style={styles.responderActions}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{STRINGS.nResponders(dispatchStore().assignableResponders.length)}</Text>
+                    <Text style={styles.responderCountText}>{STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().assignableResponders.length)}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
