@@ -80,7 +80,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "/app/ci/backend/deploy_rc.sh"
+                "ci/backend/deploy_rc.sh"
             ],
             "volumes": [{
                 "name": "ssh",
@@ -114,7 +114,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "/app/ci/backend/gc.sh"
+                "ci/backend/gc.sh"
             ],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
