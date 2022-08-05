@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginVertical: 24,
         width: 296,
-        height: 44
+        height: 48
     },
     forgotPasswordText: {
         fontStyle: 'normal',
