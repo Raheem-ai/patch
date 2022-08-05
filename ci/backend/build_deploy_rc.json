@@ -80,7 +80,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "ci/backend/deploy_rc.sh"
+                "/app/ci/backend/deploy_rc.sh"
             ],
             "volumes": [{
                 "name": "ssh",
@@ -99,9 +99,9 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
             "entrypoint": "bash",
-            "secretEnv": ["EXPO_TOKEN"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS"],
             "args": [
-                "ci/frontend/publish.sh"
+                "/app/ci/frontend/publish.sh"
             ],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
@@ -114,7 +114,7 @@
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
-                "ci/backend/gc.sh"
+                "/app/ci/backend/gc.sh"
             ],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
@@ -124,6 +124,10 @@
     ],
     "availableSecrets": {
         "secretManager": [
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/google-maps/versions/latest",
+                "env": "GOOGLE_MAPS"
+            },
             {
                 "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",
                 "env": "INFRA_SSH_KEY"
