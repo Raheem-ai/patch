@@ -470,8 +470,8 @@ export interface IAlertStore extends IBaseStore {
     toast?: ToastConfig
     prompt?: PromptConfig
     
-    toastSuccess(config: ToastConfig): void;
-    toastError(config: ToastConfig): void;
+    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
+    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
 
     showPrompt(config: PromptConfig): void
     hidePrompt(): void
