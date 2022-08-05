@@ -83,8 +83,8 @@ const STRINGS = {
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
         removedUserSuccess: (name:string) => `Successfully removed ${name} from your organization.`,
         updatedProfileSuccess: (name?:string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
-        updatedRequestSuccess: (req?:string) => `Successfully updated ${req}.`,
-        createdRequestSuccess: (req?:string) => `Successfully created ${req}.`,
+        updatedRequestSuccess: (req?:string) => `Successfully updated ${req ? req : 'request'}.`,
+        createdRequestSuccess: (req?:string) => `Successfully created ${req ? req : 'request'}.`,
 
     },
 }
