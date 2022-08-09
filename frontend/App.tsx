@@ -3,9 +3,9 @@ import 'react-native-get-random-values';
 // need for some decorator/observable tings
 import "reflect-metadata"
 
-import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, Modal, Alert, StatusBar, SafeAreaView, Dimensions } from 'react-native';
-import { Button, configureFonts, DarkTheme, DefaultTheme, Provider as PaperProvider, TextInput } from 'react-native-paper';
+import React, { useState } from 'react';
+import { StyleSheet, StatusBar } from 'react-native';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
 
@@ -23,21 +23,19 @@ import HelpRequestChat from './src/screens/helpRequestChat';
 import HelpRequestDetails from './src/screens/helpRequestDetails';
 
 // // navigating imports
-import { NavigationContainer, NavigationState, Route, useNavigation, useRoute } from '@react-navigation/native';
+import { NavigationContainer, NavigationState } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinkingStore, ILocationStore, INotificationStore, IRequestStore, IUserStore, linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
-import { navigateTo, navigationRef } from './src/navigation';
+import { linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
+import { navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
 import { bindStores, initStores } from './src/stores';
 import { container } from './src/meta';
 import GlobalBottomDrawer from './src/components/bottomDrawer/globalBottomDrawer';
-import GlobalErrorBoundary from './src/globalErrorBoundary';
 import { observer } from 'mobx-react';
 import { runInAction } from 'mobx';
 import TeamList from './src/screens/teamList';
-import { ActiveRequestTabHeight } from './src/constants';
 import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
 import UserDetails from './src/screens/userDetails';

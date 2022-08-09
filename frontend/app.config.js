@@ -13,6 +13,7 @@ const ENV = process.env._ENVIRONMENT
 let apiHost = ''
 
 // just signifies if a build of a particular version is for prod or staging of that version
+// and these values will throw if we are doing a real build
 let iosBuildEnvFlag = "-1";
 let androidBuildEnvFlag = -1;
 
