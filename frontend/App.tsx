@@ -30,7 +30,6 @@ import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILinki
 import { navigateTo, navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
-import AppLoading from 'expo-app-loading';
 import { bindStores, initStores } from './src/stores';
 import { container } from './src/meta';
 import GlobalBottomDrawer from './src/components/bottomDrawer/globalBottomDrawer';
@@ -49,6 +48,7 @@ import JoinOrganizationForm from './src/screens/JoinOrganizationForm';
 import InvitationSuccessfulPage from './src/screens/InvitationSuccessfulPage';
 import CreateAccountForm from './src/screens/CreateAccountForm';
 import Chats from './src/screens/chats';
+import * as SplashScreen from 'expo-splash-screen';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -62,6 +62,9 @@ const theme = {
     secondary: '#5D8A98',
   },
 };
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
     const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +87,7 @@ export default function App() {
                 console.error('Error during initialization:', e)
             } finally {
                 setIsLoading(false);
+                await SplashScreen.hideAsync();
             }
         })()
 
@@ -98,9 +102,7 @@ export default function App() {
     }
 
     if (isLoading) {
-        return (
-            <AppLoading/>
-        )
+        return null
     }
 
     // safe to get here because isLoading doesn't get set until after store binding/init
