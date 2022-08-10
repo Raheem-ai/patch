@@ -14,7 +14,7 @@ git clone --recurse-submodules https://github.com/Raheem-ai/patch.git
 
 ## Dependencies/Setup
 - [Docker](https://www.docker.com/products/docker-desktop)
-- [Node/NPM 12+](https://nodejs.org/en/download/)
+- [Node/NPM 14.20.0+](https://nodejs.org/en/download/)
 - [Expo cli](https://docs.expo.dev/)
 - [Ngrok](https://ngrok.com/download)
 - [Yarn](https://yarnpkg.com/getting-started/install) (just run the commands under "Install Corepack")
@@ -69,7 +69,7 @@ Start frontend
 ```sh
 # from `frontend/`
 $> yarn install 
-$> expo start --no-https 
+$> yarn run dev
 ``` 
 
 ## Testing locally on a phone
