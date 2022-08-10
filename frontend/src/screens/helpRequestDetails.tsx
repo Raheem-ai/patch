@@ -466,10 +466,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 })
 
 //                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
-                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.NRespondersNotified(numNotified);
+                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
-                    ? STRINGS.REQUESTS.NOTIFICATIONS.NRespondersAsking(pendingRequests.length)
+                    ? STRINGS.REQUESTS.NOTIFICATIONS.nRespondersAsking(pendingRequests.length)
                     : null;
 
                 const positionScopedRow = ({ 
