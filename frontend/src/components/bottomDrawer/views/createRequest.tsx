@@ -1,5 +1,5 @@
 import React from "react";
-import { createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { createRequestStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
@@ -57,7 +57,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(createdReq.displayId))
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(organizationStore().metadata.requestPrefix + '–' + createdReq.displayId))
         
                     bottomDrawerStore().hide()
                 },

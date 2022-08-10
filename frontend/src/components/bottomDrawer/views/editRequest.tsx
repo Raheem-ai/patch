@@ -1,5 +1,5 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../../../stores/interfaces";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
@@ -56,7 +56,7 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(requestStore().currentRequest.displayId))
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(organizationStore().metadata.requestPrefix + '–' + requestStore().currentRequest.displayId))
         
                     bottomDrawerStore().hide()
                 },
