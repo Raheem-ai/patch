@@ -209,7 +209,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 //     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
 //     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
 
-    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
 
     const mapClick = () => {
         Linking.openURL(mapsLink);
