@@ -3,6 +3,9 @@ const STRINGS = {
     // GLOBAL
     visualDelim: '·',
     responders: (n: number) => n > 1 ? 'responders' : 'responder',
+    nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
+    people: (n: number) => n > 1 ? 'people' : 'person',
+    nPeople: (n: number) => `${n} ${STRINGS.people(n)}`,
     daysOfWeek: {
         su: 'Sunday',
         mo: 'Monday',
@@ -38,10 +41,13 @@ const STRINGS = {
     },
     REQUESTS: {
         NOTIFICATIONS: {
-            notifyNResponders: (n: number) => `Notify ${n} ${STRINGS.responders(n)}`,
-            NRespondersNotified: (n: number) => `${n} ${n === 1 ? `person` : `people`} notified`,
-            NRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,
+            notifyNResponders: (n: number) => `Notify ${STRINGS.nResponders(n)}`,
+            nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
+            nPeopleNotified: (n: number) => `${STRINGS.nPeople(n)} notified`,
+            nRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,
             notifyPeople: `Notify people`,
+            selectAll: 'select all',
+            unselectAll: 'unselect all',
             SECTIONS: {
                 asked: `Asked to join`,
                 denied: `Denied`,
@@ -70,6 +76,7 @@ const STRINGS = {
     ACCOUNT: {
         inviteTitle: `Invite to team`,
         sendInvite: `Send Invite`,
+        welcomeToPatch: `Welcome to PATCH!`,
         userNotFound: (email: string) => `User with email ${email} not found`,
         userExists: (email: string) => `User with email ${email} already exists.`,
         wrongPassword: `Password is incorrect`,
@@ -87,6 +94,10 @@ const STRINGS = {
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
+        removedUserSuccess: (name:string) => `Successfully removed ${name} from your organization.`,
+        updatedProfileSuccess: (name?:string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
+        updatedRequestSuccess: (req:string) => `Successfully updated ${req}.`,
+        createdRequestSuccess: (req:string) => `Successfully created ${req}.`,
 
     },
     SETTINGS: {

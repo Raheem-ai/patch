@@ -23,8 +23,6 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
 
     const dimensions = Dimensions.get('screen');
 
-
-
     useEffect(() => {
         Keyboard.addListener('keyboardDidShow', () => {
             setTimeout(() => scrollRef?.current?.scrollToEnd({ animated: true }))
@@ -35,13 +33,13 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
         })()
     }, [])
 
-    const messages = (bottomPadding?: number) => {
+    const messages = () => {
         if (!chat || !chat?.messages?.length) {
             return null
         }
 
         return (
-            <ScrollView ref={scrollRef} style={{height: '100%', paddingBottom: bottomPadding}}>
+            <ScrollView ref={scrollRef} style={{height: '100%'}}>
                 {
                     chat.messages.map((message) => {
                         const user = userStore().users.get(message.userId); 
@@ -126,8 +124,8 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
         const disabledActionAreaHeight = styles.openRequestButton.height + (2 * styles.inputContainer.padding)
 
         return (
-            <View style={{}}>
-                { messages(disabledActionAreaHeight) }
+            <View style={[styles.chatContainer, { paddingBottom: disabledActionAreaHeight }]}>
+                { messages() }
                 <View style={{ position: "absolute", left: 0, bottom: 0, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
                     <View style={[styles.inputContainer, styles.disabledChatContainer, {flex: 0}]}>
                             {userCanReopenRequest ?

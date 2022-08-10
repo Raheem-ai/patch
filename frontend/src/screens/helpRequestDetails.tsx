@@ -16,7 +16,7 @@ import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { resolveErrorMessage } from "../errors";
 import ChatChannel from "../components/chats/chatChannel";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { MapViewProps, Marker, MarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
@@ -206,10 +206,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         )
     }
 
-    // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
-    // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+//     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+//     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
 
-    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/dir/?api=1&destination=' + requestStore().currentRequest.location.address;
+    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
 
     const mapClick = () => {
         Linking.openURL(mapsLink);
@@ -219,46 +219,37 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         if (!requestStore().currentRequest.location) {
             return null;
         }
-
-        /* const initialRegion =  {
-            latitude: requestStore().currentRequest.location.latitude,
-            longitude: requestStore().currentRequest.location.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-        }; */
         
         const locLat = requestStore().currentRequest.location.latitude;
         const locLong = requestStore().currentRequest.location.longitude;
 
-        const initialCamera  = {
-            center: {
+        const initialRegion =  {
+            latitude: locLat,
+            longitude: locLong,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+        }; 
+
+        const mapProps: MapViewProps = {
+            provider: PROVIDER_GOOGLE,
+            pointerEvents: "none",
+            showsUserLocation: true,
+            initialRegion,
+            style: styles.mapView,
+        }
+
+        const markerProps: MarkerProps = {
+            coordinate: { 
                 latitude: locLat,
                 longitude: locLong,
-            },
-            pitch: 0,
-            heading: 0,
-
-            // Only on iOS MapKit, in meters. The property is ignored by Google Maps.
-            altitude: 1000,
-
-            // Only when using Google Maps.
-            zoom: 12
+            }
         }
 
         return (
             <Pressable onPress={mapClick}>
-            <MapView 
-                provider={PROVIDER_GOOGLE} 
-                pointerEvents="none"
-                showsUserLocation={true}
-                initialCamera={initialCamera}
-                style={styles.mapView}>
-                    <Marker
-                        coordinate={{ 
-                            latitude: locLat,
-                            longitude: locLong,
-                        }}/>
-            </MapView>
+                <MapView {...mapProps}>
+                    <Marker {...markerProps}/>
+                </MapView>
             </Pressable>
         );
     }
@@ -335,7 +326,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     // TODO: Added this getter because "requestIsOpen" state variable isn't being computed properly.
-    //       currently still using state variable to trigger re-render.
+    // currently still using state variable to trigger re-render.
     function currentRequestIsOpen() {
         return requestStore().currentRequest?.status != RequestStatus.Closed;
     }
@@ -475,10 +466,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 })
 
 //                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
-                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.NRespondersNotified(numNotified);
+                const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
-                    ? STRINGS.REQUESTS.NOTIFICATIONS.NRespondersAsking(pendingRequests.length)
+                    ? STRINGS.REQUESTS.NOTIFICATIONS.nRespondersAsking(pendingRequests.length)
                     : null;
 
                 const positionScopedRow = ({ 
@@ -722,6 +713,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     : null
             )
         }
+
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
                 <View style={{ backgroundColor: Colors.backgrounds.secondary, borderBottomColor: Colors.borders.filter, borderBottomWidth: 1 }}>
@@ -773,13 +765,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     );
 
     return (
-        // <VisualArea>
-            <TabbedScreen 
-                bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
-                defaultTab={Tabs.Overview} 
-                tabs={tabs}/>
-        // </VisualArea>
+        <TabbedScreen 
+            bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
+            defaultTab={Tabs.Overview} 
+            tabs={tabs}/>
     );
+
 });
 
 export default HelpRequestDetails;

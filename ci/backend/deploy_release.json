@@ -1,0 +1,55 @@
+{
+    "timeout": "3600s",
+    "steps": [
+        {
+            "name": "gcr.io/cloud-builders/docker",
+            "args": [
+                "pull",
+                "gcr.io/raheem-org-dev/patch-rc:b13c5a0"
+            ],
+            "env": []
+        },
+        {
+            "name": "gcr.io/raheem-org-dev/patch-rc:b13c5a0",
+            "entrypoint": "bash",
+            "args": [
+                "/app/ci/backend/generate_rc_config.sh"
+            ],
+            "env": [ 
+                "_ENVIRONMENT=prod"
+            ]
+        },
+        {
+            "name": "gcr.io/cloud-builders/gcloud",
+            "entrypoint": "bash",
+            "args": [
+                "ci/backend/deploy_release.sh"
+            ],
+            "env": [
+                "PROJECT_ID=raheem-org-dev",
+                "_SERVICE=patch-api", 
+                "_RELEASE_ID=b13c5a0"
+            ]
+        },
+        {
+            "name": "gcr.io/raheem-org-dev/patch-rc:b13c5a0",
+            "entrypoint": "bash",
+            "secretEnv": ["EXPO_TOKEN"],
+            "args": [
+                "ci/frontend/publish_release.sh"
+            ],
+            "env": [
+                "PROJECT_ID=raheem-org-dev",
+                "_ENVIRONMENT=prod"
+            ]
+        }
+    ],
+    "availableSecrets": {
+        "secretManager": [
+            {
+                "versionName": "projects/raheem-org/secrets/expo-build-deploy-bot-secret/versions/latest",
+                "env": "EXPO_TOKEN"
+            }
+        ] 
+    }
+}

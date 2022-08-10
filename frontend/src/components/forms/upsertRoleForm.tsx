@@ -104,8 +104,7 @@ const UpsertRoleForm = ({
                 await upsertRoleStore().delete();
                 cancel()
             } catch (e) {
-                const errMessage = resolveErrorMessage(e)
-                alertStore().toastError(errMessage, true)
+                alertStore().toastError(resolveErrorMessage(e))
             }
         }
 

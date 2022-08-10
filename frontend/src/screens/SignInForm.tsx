@@ -22,8 +22,7 @@ export default function SignInForm( { navigation } : Props) {
         try {
             await userStore().signIn(username, password)
         } catch(e) {
-            console.error(e)
-            alertStore().toastError(resolveErrorMessage(e), false, true)
+            alertStore().toastError(resolveErrorMessage(e))
             return
         }
 
@@ -44,6 +43,7 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.input}
                             label={labelNames.email}
                             value={username}
+                            keyboardType='email-address'
                             onChangeText={username => setTextUser(username)}/>
                         <TextInput
                             mode="flat"
