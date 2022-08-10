@@ -43,6 +43,7 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.input}
                             label={labelNames.email}
                             value={username}
+                            keyboardType='email-address'
                             onChangeText={username => setTextUser(username)}/>
                         <TextInput
                             mode="flat"
