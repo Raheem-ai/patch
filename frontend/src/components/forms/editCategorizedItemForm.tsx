@@ -44,7 +44,7 @@ export const EditCategorizedItemForm = observer(({
                     await nativeEventStore().hideKeyboard()
                     back()
                 } catch (e) {
-                    alertStore().toastError(resolveErrorMessage(e))
+                    alertStore().toastError(resolveErrorMessage(e));
                 }
             },
             label: 'Save'

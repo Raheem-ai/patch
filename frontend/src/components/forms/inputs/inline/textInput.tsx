@@ -3,6 +3,7 @@ import React, { Ref } from "react";
 import { TextInput as RNTextInput, StyleSheet, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
 import { unwrap } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
+import { Colors } from "../../../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
     style?: TextStyle
@@ -34,6 +35,7 @@ const TextInput = observer(({
                     style || null
                 ]}
                 ref={nativeRef}
+                keyboardType={config.inputType}
                 autoCorrect={!disableAutoCorrect}
                 placeholder={unwrap(config.placeholderLabel)}
                 editable={!config.disabled}
@@ -59,6 +61,7 @@ const styles = StyleSheet.create({
         flex: 1
     },
     disabled: {
-        opacity: .8,
+        // opacity: .8,
+        color: Colors.text.disabled,
     }
 })

@@ -195,7 +195,14 @@ const styles = StyleSheet.create({
     },
     card: {
         borderRadius: 8,
-        borderBottomWidth: 0
+        borderBottomWidth: 0,
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        }
     },
     returnIconContainer: {
         backgroundColor: '#444144',

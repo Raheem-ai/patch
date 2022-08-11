@@ -14,6 +14,7 @@ import { DBManager } from "../services/dbManager";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
+import STRINGS from "common/strings";
 
 @Controller(API.namespaces.responder)
 export class ResponderController implements APIController<
@@ -75,7 +76,7 @@ export class ResponderController implements APIController<
     
             return this.db.fullHelpRequest(res);
         } else {
-            throw new Unauthorized('You do not have the required attributes and/or role to join this poition.')
+            throw new Unauthorized(STRINGS.REQUESTS.POSITIONS.cannotJoin)
         }
     }
 

@@ -7,6 +7,8 @@ import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
+import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
+import STRINGS from "../../../../../common/strings";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { observable, runInAction } from "mobx";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
@@ -46,7 +48,7 @@ export default class AddUser extends React.Component {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(`User with email '${invitedUser.email}' and phone '${invitedUser.phone}' successfully invited.`)
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
                     bottomDrawerStore().hide();
                 },
                 label: 'Send Invite',
@@ -72,7 +74,13 @@ export default class AddUser extends React.Component {
 
     formProps = (): FormProps => {
         return {
-            headerLabel: 'Invite a user to join your org by providing their email and phone number!', 
+            headerLabel: STRINGS.ACCOUNT.inviteTitle, 
+            onExpand: () => {
+                bottomDrawerStore().hideHeader();
+            },
+            onBack: () => {
+                bottomDrawerStore().showHeader();
+            },
             homeScreen: this.formHomeScreen,
             inputs: [
                 {
@@ -86,6 +94,7 @@ export default class AddUser extends React.Component {
                     name: 'email',
                     placeholderLabel: () => 'Email',
                     type: 'TextInput',
+                    inputType: 'email-address',
                     required: true
                 },
                 {
@@ -99,6 +108,7 @@ export default class AddUser extends React.Component {
                     name: 'phone',
                     placeholderLabel: () => 'Phone',
                     type: 'TextInput',
+                    inputType: 'phone-pad',
                     required: true
                 },
                 {
@@ -123,7 +133,7 @@ export default class AddUser extends React.Component {
                             newUserStore().roles.splice(idx, 1)
                         },
                     },
-                    required: true
+                    // required: true
                 }
             ] as [
                 InlineFormInputConfig<'TextInput'>, 

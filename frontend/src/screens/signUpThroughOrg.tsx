@@ -4,6 +4,7 @@ import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
+import STRINGS from "../../../common/strings";
 import Form, { FormProps } from "../components/forms/form";
 import BackButtonHeader, { BackButtonHeaderProps } from "../components/forms/inputs/backButtonHeader";
 import { InlineFormInputConfig } from "../components/forms/types";
@@ -106,6 +107,31 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
             // FormInputConfig<'TagList'>
         ]
     }
+    
+    /* on staging, but in config: *********
+    
+    submit: {
+            handler: async () => {
+                try {
+                    await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                        email: pendingUser.email,
+                        password: passwordVal,
+                        name: nameVal
+                    })
+                } catch(e) {
+                    alertStore().toastError(resolveErrorMessage(e));
+                    return
+                }
+
+                alertStore().toastSuccess(STRINGS.ACCOUNT.welcomeToPatch)
+
+                navigateTo(routerNames.userHomePage)
+
+            },
+            label: 'Join us!'
+        }
+        
+        ********* */
 
     if (!pendingUser) {
         return null

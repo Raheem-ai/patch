@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
 import { userStore } from "../stores/interfaces";
 import { Colors, routerNames, ScreenProps } from "../types";
@@ -145,25 +145,15 @@ export default function UserHomePage({ navigation, route }: Props) {
                     uppercase={false}
                     onPress={() => { navigateTo(routerNames.helpRequestList) }}
                     color={Colors.text.buttonLabelPrimary}
-                    style={{
-                        height: 44,
-                        borderRadius: 24,
-                        backgroundColor: Colors.primary.alpha,
-                        justifyContent: 'center',
-                        marginTop: 24
-                    }}>{'Requests'}</Button>
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}>{'Requests'}</Button>
 
                 <Button 
                     uppercase={false}
                     onPress={() => { navigateTo(routerNames.teamList) }}
                     color={'#fff'}
-                    style={{
-                        height: 44,
-                        borderRadius: 24,
-                        backgroundColor: Colors.primary.alpha,
-                        justifyContent: 'center',
-                        marginTop: 20
-                    }}>{'Team'}</Button>
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}>{'Team'}</Button>
 
                 <Button 
                     uppercase={false}
@@ -172,14 +162,38 @@ export default function UserHomePage({ navigation, route }: Props) {
                         navigateTo(routerNames.userDetails);
                     }}
                     color={Colors.text.buttonLabelPrimary}
-                    style={{
-                        height: 44,
-                        borderRadius: 24,
-                        backgroundColor: Colors.primary.alpha,
-                        justifyContent: 'center',
-                        marginTop: 24
-                    }}>{'View profile'}</Button>
+                    style={styles.button}
+                    labelStyle={styles.buttonLabel}>{'View profile'}</Button>
                 </View>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    itemContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 60,
+        paddingRight: 20,
+        height: 48
+    },
+    button: {
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: Colors.primary.alpha,
+        justifyContent: 'center',
+        marginTop: 24,
+        paddingHorizontal: 8,
+        
+    },
+    buttonLabel: {
+        fontWeight: '700',
+        letterSpacing: 0.8
+    },
+    outlineButton: {
+        borderWidth: 1,
+        borderColor: Colors.primary.alpha,
+        backgroundColor: Colors.nocolor,
+        color: Colors.primary.alpha
+    }
+})

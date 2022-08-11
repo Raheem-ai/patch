@@ -8,6 +8,7 @@ import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
 import { DBManager } from "../services/dbManager";
+import STRINGS from "common/strings";
 
 @Middleware()
 export class RequirePermissionsMiddleware {
@@ -25,7 +26,7 @@ export class RequirePermissionsMiddleware {
     } = endpoint.get(RequirePermissionsMiddleware);
 
     if (!user) {
-      throw new Unauthorized('You must be signed in to call this api');
+      throw new Unauthorized(STRINGS.ACCOUNT.signInForAPI);
     } else if ((!requiredPermissions) || (!requiredPermissions.length)) {
       // api not restriced so allow access
       return;
@@ -33,13 +34,13 @@ export class RequirePermissionsMiddleware {
       const orgId = req.header(API.orgIdHeader);
 
       if (!orgId) {
-        throw new BadRequest(`No org scope supplied`);
+        throw new BadRequest(STRINGS.ACCOUNT.noOrgScope);
       }
 
       const orgConfig = user.organizations && user.organizations[orgId];
 
       if (!orgConfig) {
-        throw new Forbidden(`You do not have access to the supplied org scope`);
+        throw new Forbidden(STRINGS.ACCOUNT.noOrgAccess);
       }
 
       // TODO: create @Org decorator to pass the resolved org through

@@ -3,12 +3,13 @@ import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
-import { requestStore, userStore } from "../../stores/interfaces";
+import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors } from "../../types";
 import UserIcon from "../userIcon";
-import { ActiveRequestTabHeight, visualDelim } from "../../constants";
+import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
+import STRINGS from "../../../../common/strings";
 
 type Props = {
     request: HelpRequest,
@@ -50,11 +51,13 @@ const HelpRequestCard = observer(({
 
     const header = () => {
         const id = request.displayId;
+        const prefix = organizationStore().metadata.requestPrefix;
+
         const address = request.location?.address.split(',').slice(0, 2).join()
         return (
 
             <View style={styles.headerRow}>
-                <Text style={[styles.idText, dark ? styles.darkText : null]}>{id}</Text>
+                <Text style={[styles.idText, dark ? styles.darkText : null]}><Text style={{color: '#999'}}>{prefix}–</Text>{id}</Text>
                 {
                     address
                         ? <View style={styles.locationContainer}>
@@ -72,7 +75,7 @@ const HelpRequestCard = observer(({
     }
 
     const details = () => {
-        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(` ${visualDelim} `);
+        const type = request.type.map(t => RequestTypeToLabelMap[t]).join(` ${STRINGS.visualDelim} `);
         const notes = request.notes;
 
         return (
@@ -88,34 +91,78 @@ const HelpRequestCard = observer(({
     const status = () => {
         const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
 
-        let respondersNeeded = 0;
+        let respondersNeeded = 0, unfilledSpotsForRequest = 0;
         
         const joinedResponders = new Set<string>();
 
         request.positions.forEach(pos => {
-            respondersNeeded += pos.min
+            respondersNeeded += pos.min;
+            // it's possible that more than the minimum number of people join a position
+            // we don't want to count them for a different position
+            unfilledSpotsForRequest += pos.min - Math.min(pos.min, pos.joinedUsers.length);
         })
-        
+
         requestMetadata.positions.forEach(pos => {
             pos.joinedUsers.forEach(userId => joinedResponders.add(userId))
         })
 
-        const respondersToAssign = respondersNeeded - joinedResponders.size;
-
         const unAssignedResponders = [];
         const assignedResponders = [];
 
-        for (let i = 0; i < respondersToAssign; i++) {
+        // figure out how many open spots there are
+        // show an icon if there are any
+        if (unfilledSpotsForRequest > 0) {
             unAssignedResponders.push(<UserIcon 
-                style={{ backgroundColor: dark ? styles.unAssignedResponderIconDark.backgroundColor : styles.unAssignedResponderIcon.backgroundColor }}
-                emptyIconColor={styles.unAssignedResponderIcon.color}/>)
-        }
+                style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>);
+            // show a stack and count if there are more than one
+            if (unfilledSpotsForRequest > 1) {
+                unAssignedResponders.push(<IconButton
+                    style={[ styles.empty, dark && styles.emptyDark ]}
+                    icon='account' 
+                    color={Colors.nocolor}
+                    size={12} />);
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
+            } else {
+                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
+            }
+        } 
 
-        joinedResponders.forEach(userId => {
+        // figure out how many people have joined
+        // show an icon for each, up to a maximum
+        const maxJoinedToShow = 4;
+        let i:number = 0;
+        joinedResponders.forEach((userId, idx) => {
             const responder = userStore().users.get(userId); 
-            assignedResponders.push(<UserIcon user={responder} style={styles.assignedResponderIcon}/>)
-        })
+            if(i < maxJoinedToShow) {
+                assignedResponders.push(
+                    <UserIcon user={responder} style={[
+                        {zIndex: 0-i}, 
+                        i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                            ? dark
+                                ? styles.assignedResponderIconDark
+                                : styles.assignedResponderIcon 
+                            : styles.assignedResponderIconLast ]} />)}
+            i++;
+        });
+        if (joinedResponders.size > maxJoinedToShow) {
+            // if there are more who have joined than we're showing
+            // show a "stack" icon...
+            assignedResponders.push(<IconButton
+                style={[ styles.empty, dark && styles.emptyDark ]}
+                icon='account' 
+                color={Colors.nocolor}
+                size={12} />);
 
+            // ...and the total number
+            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{i}</Text>)        
+
+        } else if (joinedResponders.size > 0) {
+            // if we're showing everyone who has joined (and it's more than 0) add spacing
+            assignedResponders.push(
+                <Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
+        }
+ 
         const potentialLabel = RequestStatusToLabelMap[request.status];
         
         const label = typeof potentialLabel == 'string'
@@ -136,7 +183,9 @@ const HelpRequestCard = observer(({
         return (
             <View style={styles.statusRow}>
                 <View style={styles.responderActions}>
-                    <>
+                    { assignedResponders }
+                    { unAssignedResponders }
+                    { hasUnreadMessages &&
                         <View>
                             <IconButton
                                 style={[styles.messageIcon, dark ? styles.messageIconDark : null]}
@@ -150,22 +199,19 @@ const HelpRequestCard = observer(({
                                 : null
                             }
                         </View>
-                        <Text style={{ marginRight: styles.messageIcon.marginRight + 2, alignSelf: 'center' }}>·</Text>
-                    </>
-                    { assignedResponders }
-                    { unAssignedResponders }
+                    }
                 </View>
                 {
                     statusOpen
                         ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} requestId={request.id} onStatusUpdated={closeStatusSelector} />
-                        : <View style={styles.statusContainer}>
+                        : <Pressable style={styles.statusContainer} onPress={openStatusSelector}>
                             <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
                             {
                                 request.status == RequestStatus.Unassigned 
                                     ? null  
                                     : <StatusIcon dark={dark} status={request.status} onPress={openStatusSelector}/>
                             }
-                        </View>
+                        </Pressable>
                 }       
             </View>
         )
@@ -211,15 +257,19 @@ const HelpRequestCard = observer(({
 
 export default HelpRequestCard;
 
+const RESPONDER_SPACING_BASIC = 6;
+const RESPONDER_SPACING_LAST = 12;
+const RESPONDER_SPACING_PILED = -8;
+
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgrounds.standard,
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1,
         borderTopWidth: 4
     },
     darkContainer: {
-        backgroundColor: '#3F3C3F',
+        backgroundColor: Colors.backgrounds.dark,
     },
     minimalContainer: {
         height: ActiveRequestTabHeight ,
@@ -242,7 +292,7 @@ const styles = StyleSheet.create({
     },
     locationIcon: { 
         width: 12,
-        color: '#999',
+        color: Colors.icons.light,
         alignSelf: 'center',
         margin: 0
     },
@@ -276,8 +326,8 @@ const styles = StyleSheet.create({
         flex: 1
     },
     messageIcon: {
-        color: '#666',
-        backgroundColor: '#fff',
+        color: Colors.good,
+        backgroundColor: Colors.backgrounds.standard,
         width: 28,
         height: 28,
         margin: 0,
@@ -285,8 +335,8 @@ const styles = StyleSheet.create({
         borderRadius: 0
     },
     messageIconDark: {
-        color: '#CCCACC',
-        backgroundColor: '#444144'
+        color: Colors.good,
+        backgroundColor: Colors.nocolor
     },
     unreadMessageNotifier: {
         backgroundColor: '#00C95C',
@@ -299,26 +349,50 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: -2,
         right: 2,
-        zIndex: 1
+        zIndex: 1,
+        display: 'none'
     },
     darkUnreadMessageNotifier: {
         borderColor: '#444144',
     },
     unAssignedResponderIcon: {
-        color: '#666',
+        color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
-        borderColor:'#F3F1F3',
+        borderColor: Colors.backgrounds.standard,
         borderStyle: 'solid',
-        borderWidth: 1
+        borderWidth: 1,
+        marginRight: RESPONDER_SPACING_BASIC,
     }, 
     unAssignedResponderIconDark: {
         color: '#444144',
         backgroundColor: '#CCCACC',
-        borderColor:'#CCCACC'
+        borderColor: Colors.backgrounds.dark,
+        borderStyle: 'solid',
+        borderWidth: 1,
+        marginRight: RESPONDER_SPACING_BASIC,
     },
     assignedResponderIcon: {
-        marginRight: 4,
+        marginRight: RESPONDER_SPACING_PILED,
+        borderWidth: 1,
+        borderColor: '#FFF',
     }, 
+    assignedResponderIconDark: {
+        marginRight: RESPONDER_SPACING_PILED,
+        borderWidth: 1,
+        borderColor: Colors.backgrounds.dark,
+    }, 
+    assignedResponderIconLast: {
+        marginRight: RESPONDER_SPACING_BASIC,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#FFF',
+    }, 
+    responderCount: {
+        alignSelf: 'center',
+        marginRight: RESPONDER_SPACING_LAST,
+        color: Colors.text.tertiary,
+        fontSize: 12
+    },
     broadcastButtonLabel: {
         color: '#DB0000',
         marginVertical: 0,
@@ -342,6 +416,7 @@ const styles = StyleSheet.create({
     },
     statusText: {
         alignSelf: 'center',
+        fontSize: 12
     }, 
     darkStatusText: {
         color: '#E0DEE0'
@@ -366,5 +441,21 @@ const styles = StyleSheet.create({
     },
     darkStatusSelector: {
         backgroundColor: '#444144',
+    },
+    empty: {
+        color: Colors.icons.light,
+        backgroundColor: Colors.icons.light,
+        width: 26,
+        height: 26,
+        alignSelf: 'center',
+        borderRadius: 48,
+        marginVertical: 0,
+        marginRight: RESPONDER_SPACING_BASIC,
+        marginLeft: -30,
+        zIndex: -100,
+    },
+    emptyDark: {
+        color: Colors.icons.superdark,
+        backgroundColor: Colors.icons.superdark,
     }
 })

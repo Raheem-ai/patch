@@ -19,14 +19,13 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
         const editRoleInputs = organizationStore().metadata.roleDefinitions.map(def => {
             return {
                 name: def.id,
+                expandOverride: (expand) => {
+                    upsertRoleStore().loadRole(def)
+                    expand()
+                },
                 label: ({ expand }) => {
-                    const editRole = () => {
-                        upsertRoleStore().loadRole(def)
-                        expand()
-                    }
-
                     return <DescriptiveNavigationLabel 
-                                expand={editRole} 
+                                expand={expand} 
                                 name={def.name} 
                                 inlineDescription={true}
                                 description={def.id == DefaultRoleIds.Anyone ? ' (assigned to all members)' : null} />
@@ -42,8 +41,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                             await upsertRoleStore().save()
                             back()
                         } catch (e) {
-                            const errMessage = resolveErrorMessage(e)
-                            alertStore().toastError(errMessage, true)
+                            alertStore().toastError(resolveErrorMessage(e))
                         }
                     }
 
@@ -76,8 +74,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                         await upsertRoleStore().save()
                         back()
                     } catch (e) {
-                        const errMessage = resolveErrorMessage(e)
-                        alertStore().toastError(errMessage, true)
+                        alertStore().toastError(resolveErrorMessage(e))
                     }
                 }
 

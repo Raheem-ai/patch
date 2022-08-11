@@ -4,6 +4,7 @@ import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button } from "react-native-paper";
 import { PatchPermissions } from "../../../../../common/models";
+import STRINGS from "../../../../../common/strings";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
@@ -56,8 +57,8 @@ export default class EditUser extends React.Component {
                     }
 
                     const successMsg = this.onMyProfile
-                        ? 'Successfully updated your profile.'
-                        : `Successfully updated ${editUserStore().name}'s profile.`
+                        ? STRINGS.ACCOUNT.updatedProfileSuccess()
+                        : STRINGS.ACCOUNT.updatedProfileSuccess(editUserStore().name)
 
                     alertStore().toastSuccess(successMsg)
 
@@ -128,8 +129,7 @@ export default class EditUser extends React.Component {
             } else {
                 await userStore().removeCurrentUserFromOrg();
 
-                const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
-                alertStore().toastSuccess(successMsg);
+                alertStore().toastSuccess(STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name));
 
                 navigationRef.current?.goBack();
             }
@@ -223,9 +223,10 @@ export default class EditUser extends React.Component {
                 name: 'phone',
                 placeholderLabel: () => 'Phone',
                 type: 'TextInput',
+                inputType: 'phone-pad',
                 icon: 'clipboard-account',
                 required: true
-            } as InlineFormInputConfig<'TextInput'>,,
+            } as InlineFormInputConfig<'TextInput'>,
             {
                 onChange: (email) => editUserStore().email = email,
                 val: () => editUserStore().email,
@@ -233,6 +234,7 @@ export default class EditUser extends React.Component {
                 name: 'email',
                 placeholderLabel: () => 'Email',
                 type: 'TextInput',
+                inputType: 'email-address',
                 // TODO: remove when we have logic for changing email
                 disabled: true
             } as InlineFormInputConfig<'TextInput'>],
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 24,
-        height: 44,
+        height: 48,
         justifyContent: 'center',
         marginHorizontal: 38
     },
