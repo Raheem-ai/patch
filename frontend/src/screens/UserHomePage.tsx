@@ -95,13 +95,12 @@ export default function UserHomePage({ navigation, route }: Props) {
           const supported = await Linking.canOpenURL(url);
       
           if (supported) {
-            // Opening the link with some app, if the URL scheme is "http" the web link should be opened
-            // by some browser in the mobile
+              // Opening the link with some app; if the URL scheme is "http(s)" it should be opened by a browser
             await Linking.openURL(url);
           }
         }, [url]);
       
-        return <PatchButton mode='text' uppercase={false} label={children} onPress={handlePress} />;
+        return <PatchButton mode='text' label={children} onPress={handlePress} />;
       };
 
     const comingSoon = 'coming soon';
