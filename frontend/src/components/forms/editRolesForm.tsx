@@ -61,7 +61,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             label: ({ expand }) => {
                 return (
                     <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.elements.role)}</Text>
+                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role)}</Text>
                     </Pressable>
                 )
             },

@@ -51,7 +51,7 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
                 })
             }
             <Pressable onPress={onPlaceholderPress} style={{ paddingVertical: 20 }}>
-                <Text style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.elements.position)}</Text>
+                <Text style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position)}</Text>
             </Pressable>
         </View>
     )

@@ -6,17 +6,11 @@ import {parseFullName} from 'parse-full-name';
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import * as Linking from "expo-linking";
 import PatchButton from "../components/patchButton";
+import { observer } from "mobx-react"
 
 type Props = ScreenProps<'UserHomePage'>;
 
-export default function UserHomePage({ navigation, route }: Props) {
-    const [hasActiveRequests, setHasActiveRequests] = useState(false);
-
-    useEffect (() => {
-        userStore().currentUser = userStore().user;
-        setHasActiveRequests(!!requestStore().currentUserActiveRequests.length);
-        navigationStore().currentRoute = routerNames.userHomePage;
-    },[]);
+const UserHomePage = observer(({ navigation, route }: Props) => {
 
     // useEffect(() => {
     //     (async () => {
@@ -89,25 +83,25 @@ export default function UserHomePage({ navigation, route }: Props) {
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
 
-    const OpenURLButton = ({ url, children }) => {
-        const handlePress = useCallback(async () => {
-          // Checking if the link is supported for links with custom URL scheme.
-          const supported = await Linking.canOpenURL(url);
+    const OpenURLButton = ({ url, label }) => {
+        const handlePress = async () => {
+            // Checking if the link is supported for links with custom URL scheme.
+            const supported = await Linking.canOpenURL(url);
+        
+            if (supported) {
+                // Opening the link with some app; if the URL scheme is "http(s)" it should be opened by a browser
+                await Linking.openURL(url);
+            }
+        };
       
-          if (supported) {
-              // Opening the link with some app; if the URL scheme is "http(s)" it should be opened by a browser
-            await Linking.openURL(url);
-          }
-        }, [url]);
-      
-        return <PatchButton mode='text' label={children} onPress={handlePress} />;
-      };
+        return <PatchButton mode='text' label={label} onPress={handlePress} />;
+    }
 
     const comingSoon = 'coming soon';
     
     const defaultText = () => { 
 
-        return !hasActiveRequests
+        return !requestStore().myActiveRequests.length
             ? <View>
                 <Text style={{ fontSize: 16, marginTop: 24 }}>Welcome to Patch. Use the ☰ menu to navigate between sections:</Text>
                 <Text style={{ fontSize: 16, marginTop: 24 }}>
@@ -125,7 +119,7 @@ export default function UserHomePage({ navigation, route }: Props) {
 
     const currentResponse = () => {
 
-        return hasActiveRequests
+        return !!requestStore().myActiveRequests.length
             ? <View>
                 <View style={styles.currentResponseSection}>
                     <View style={styles.currentResponseLabelContainer}>
@@ -134,7 +128,7 @@ export default function UserHomePage({ navigation, route }: Props) {
                     </View>
                 </View>
                 {
-                    requestStore().currentUserActiveRequests.map(r => {
+                    requestStore().myActiveRequests.map(r => {
                         return (
                             <HelpRequestCard style={styles.activeRequestCard} request={r}/>
                         )
@@ -152,8 +146,8 @@ export default function UserHomePage({ navigation, route }: Props) {
                 {currentResponse()}
             </View>
             <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
-                <OpenURLButton url="https://help.getpatch.org/">Documentation</OpenURLButton>
-                <OpenURLButton url="https://raheemsupport.zendesk.com/hc/en-us/requests/new">Support request</OpenURLButton>
+                <OpenURLButton url='https://help.getpatch.org/' label='Documentation' />
+                <OpenURLButton url='https://raheemsupport.zendesk.com/hc/en-us/requests/new' label='Support request' />
             </View>
            {/*
             <View>
@@ -182,7 +176,9 @@ export default function UserHomePage({ navigation, route }: Props) {
                 */}
         </ScrollView>
     );
-};
+});
+
+export default UserHomePage;
 
 const styles = StyleSheet.create({
     button: {

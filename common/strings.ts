@@ -1,6 +1,16 @@
+enum ELEMENTS {
+    role = 'role',
+    shift = 'shift',
+    attribute = 'attribute',
+    tag = 'tag',
+    position = `position`,
+    leaveBlank = '',
+}
+
 const STRINGS = {
 
     // GLOBAL
+    ELEMENTS,
     visualDelim: '·',
     responders: (n: number) => n > 1 ? 'responders' : 'responder',
     nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
@@ -24,18 +34,9 @@ const STRINGS = {
         fr: 'F',
         sa: 'S',
     },
-    elements: {
-        leaveBlank: '',
-        role: 'role',
-        shift: 'shift',
-        attribute: 'attribute',
-        tag: 'tag',
-        position: `position`,
-    },
-
     INTERFACE: {
-        addElement: (el) => `Add ${STRINGS.elements[el]}`,
-        addCategory: (el) => `Add ${STRINGS.elements[el]} category`,
+        addElement: (el) => `Add ${STRINGS.ELEMENTS[el]}`,
+        addCategory: (el) => `Add ${STRINGS.ELEMENTS[el]} category`,
         addAnotherElement: (el) => `Add another ${el}`,
 
     },
