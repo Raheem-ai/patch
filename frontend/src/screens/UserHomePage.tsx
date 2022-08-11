@@ -147,7 +147,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
             </View>
             <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
                 <OpenURLButton url='https://help.getpatch.org/' label='Documentation' />
-                <OpenURLButton url='https://raheemsupport.zendesk.com/hc/en-us/requests/new' label='Support request' />
+                <OpenURLButton url='https://raheemsupport.zendesk.com/hc/en-us/requests/new' label='Report an issue' />
             </View>
            {/*
             <View>
