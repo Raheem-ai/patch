@@ -209,16 +209,17 @@ const CategorizedItemListInput = ({
                                         />
                                 )
                             }
-                        
+
                             const itemRowPressed = (itemId: string) => {
                                 toggleItem(categoryId, itemId)
                             }
-                            
+
                             return (
                                 <CategoryRow 
                                     key={category.name}
                                     name={category.name}
                                     items={category.items}
+                                    defaultClosed={config.props?.setDefaultClosed ? config.props.setDefaultClosed : false}
                                     id={categoryId}
                                     categoryLabelStyle={categoryLabelStyle}
                                     itemLabelStyle={itemLabelStyle}
