@@ -176,7 +176,7 @@ const CategorizedItemListInput = ({
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ }}>
                     {
-                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
+                        Array.from(config.props.definedCategories().entries()).map(([categoryId, category]) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
