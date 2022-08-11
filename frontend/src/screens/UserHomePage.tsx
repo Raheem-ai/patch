@@ -1,10 +1,12 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, ScrollView, StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
-import { userStore } from "../stores/interfaces";
+import { userStore, requestStore } from "../stores/interfaces";
 import { Colors, routerNames, ScreenProps } from "../types";
 import { navigateTo } from "../navigation";
 import {parseFullName} from 'parse-full-name';
+import PatchButton from '../components/patchButton';
+import HelpRequestCard from "../components/requestCard/helpRequestCard";
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -86,17 +88,44 @@ export default function UserHomePage({ navigation, route }: Props) {
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
 
-    const welcomeText = 'Welcome to Patch, the dispatching system for community crisis care.'
+    const welcomeText = 'Welcome to Patch.'
 
-    const menuInstructions = 'Use the ☰ menu above to get around:'
+    const menuInstructions = 'Use the ☰ menu to get around the app.'
 
-    const requestDetails = 'document and dispatch calls'
+const defaultText = (shouldShow:boolean) => { 
 
-    const teamDetails = 'manage team members'
+    return (shouldShow &&
+            <View>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>{welcomeText}</Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>{menuInstructions}</Text>
+            </View>)
+}
 
-    const channelDetails = 'communicate securely'
+    const currentResponse = () => {
+        if (!requestStore().currentUserActiveRequests.length) {
+            return null;
+        }
 
-    const comingSoon = 'coming soon'
+        return <View style={styles.currentResponseSection}>
+                <View style={styles.currentResponseLabelContainer}>
+                    <View style={styles.currentResponseIndicator}></View>
+                    <Text style={styles.currentResponseText}>Responding</Text>
+                </View>
+                {
+                    requestStore().currentUserActiveRequests.map(r => {
+                        return (
+                            <HelpRequestCard style={styles.activeRequestCard} request={r}/>
+                        )
+                    })
+                }
+            </View>
+    }
+
+
+// *******************
+// NOT UPDATING
+// *******************
+
 
     return (
         // <Provider>
@@ -116,84 +145,78 @@ export default function UserHomePage({ navigation, route }: Props) {
         //         <Button onPress={assignHelpRequest}>Assign Help Request</Button>
         //     </View>
         // </Provider>
-        <View style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: '900', marginTop: 24 }}>{`Hi ${firstName}`}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>{welcomeText}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>{menuInstructions}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Requests: </Text>
-                <Text>{requestDetails}</Text>
-            </Text>
+        <ScrollView style={{ padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: '800', marginTop: 24 }}>{`Hi ${firstName}!`}</Text>
 
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Team: </Text>
-                <Text>{teamDetails}</Text>
-            </Text>
+<Text>{requestStore().currentUserActiveRequests.length}</Text>
 
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Channels: </Text>
-                <Text>{channelDetails}</Text>
-            </Text>
-
-            <Text style={{ fontSize: 16, marginTop: 24, color: '#aaa' }}>
-                <Text style={{ fontWeight: '900'}}>Schedule: </Text>
-                <Text>{comingSoon}</Text>
-            </Text>
-
+            {defaultText(!!!requestStore().currentUserActiveRequests.length)}
+            {currentResponse()}
+            
             <View>
-                <Button 
+                <PatchButton 
+                    mode='contained'
                     uppercase={false}
-                    onPress={() => { navigateTo(routerNames.helpRequestList) }}
-                    color={Colors.text.buttonLabelPrimary}
+                    label='Requests'
                     style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'Requests'}</Button>
-
-                <Button 
+                    onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
+                <PatchButton 
+                    mode='contained'
                     uppercase={false}
-                    onPress={() => { navigateTo(routerNames.teamList) }}
-                    color={'#fff'}
+                    label='Team'
                     style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'Team'}</Button>
-
-                <Button 
+                    onPress={() => { navigateTo(routerNames.teamList) }}/>
+                <PatchButton 
+                    mode='contained'
                     uppercase={false}
+                    label='Profile'
+                    style={styles.button}
                     onPress={() => {
                         userStore().pushCurrentUser(userStore().user);
                         navigateTo(routerNames.userDetails);
-                    }}
-                    color={Colors.text.buttonLabelPrimary}
-                    style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'View profile'}</Button>
+                    }}/>
                 </View>
-        </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
-    itemContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingLeft: 60,
-        paddingRight: 20,
-        height: 48
-    },
     button: {
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: Colors.primary.alpha,
-        justifyContent: 'center',
-        marginTop: 24,
-        paddingHorizontal: 8,
-        
+        marginTop: 24,        
     },
-    buttonLabel: {
-        fontWeight: '700',
-        letterSpacing: 0.8
+    currentResponseSection: {
+        paddingTop: 32,
+
     },
-    outlineButton: {
-        borderWidth: 1,
-        borderColor: Colors.primary.alpha,
-        backgroundColor: Colors.nocolor,
-        color: Colors.primary.alpha
+    currentResponseLabelContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignContent: 'center'
+    },
+    currentResponseIndicator: {
+        height: 12,
+        width: 12,
+        borderRadius: 12,
+        backgroundColor: Colors.good,
+        alignSelf: 'center',
+        marginRight: 8
+    },
+    currentResponseText: {
+        color: Colors.good,
+        fontSize: 14,
+        fontWeight: 'bold',
+        textTransform: 'uppercase'
+    },
+    activeRequestCard: {
+        borderRadius: 8,
+
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        }
     }
 })

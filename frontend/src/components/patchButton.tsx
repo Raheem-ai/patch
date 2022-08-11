@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
+import { red100 } from "react-native-paper/lib/typescript/styles/colors";
 import { Colors } from "../types";
 
 export type PatchButtonProps = {
@@ -45,11 +46,20 @@ const PatchButton = ( props:PatchButtonProps) => {
         : styles.outlinedButton;
 
     return(
-        <Button {...rest}
-            style={[ styles.button, buttonStyle, (width ? {width: width} : (buttonStyle == styles.textButton || small ? null : {width: '100%'})), (small && styles.smallButton) ]}
+        <Button 
+            {...rest}
+            style={[ 
+                styles.button, 
+                buttonStyle, 
+                (width 
+                    ? {width: width} 
+                    : (buttonStyle == styles.textButton || small 
+                        ? null 
+                        : {width: '100%'})), 
+                (small && styles.smallButton),
+                rest.style ]}
             labelStyle={[ styles.buttonLabel, buttonLabelStyle, (small && styles.buttonLabelSmall) ]}
-            accessibilityLabel={label}>{label}
-        </Button>
+            accessibilityLabel={label}>{label}</Button>
     )
 }
 
@@ -71,7 +81,6 @@ const styles = StyleSheet.create({
     },
     containedButton: {
         backgroundColor: Colors.primary.alpha,
-        color: Colors.text.defaultReversed,
     },
     outlinedButton: {
         borderWidth: 1,
@@ -90,6 +99,7 @@ const styles = StyleSheet.create({
     },
     buttonLabelSmall: {
         fontSize: 14,
+        textTransform: 'none',
     },
     containedButtonLabel: {
         color: Colors.text.defaultReversed,
@@ -102,21 +112,3 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
     },
 })
-
-/*
-Standard Button props:
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-
-*/
