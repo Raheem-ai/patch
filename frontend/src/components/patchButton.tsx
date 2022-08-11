@@ -30,21 +30,23 @@ const PatchButton = ( props:PatchButtonProps) => {
         ...rest
     } = props;
 
-    const buttonStyle = rest.mode 
-        ? rest.mode == 'outlined'
-            ? styles.outlinedButton
-            : rest.mode == 'contained'
-                ? styles.containedButton
-                : styles.textButton
-        : styles.outlinedButton;
 
-    const buttonLabelStyle = rest.mode 
-        ? rest.mode == 'outlined'
-            ? styles.outlinedButtonLabel
-            : rest.mode == 'contained'
-                ? styles.containedButtonLabel
-                : styles.textButtonLabel
-        : styles.outlinedButton;
+    let buttonStyle, buttonLabelStyle;
+
+    switch(rest.mode) {
+        case 'text':
+            buttonStyle = styles.textButton;
+            buttonLabelStyle = styles.textButtonLabel;
+            break;
+        case 'contained':
+            buttonStyle = styles.containedButton;
+            buttonLabelStyle = styles.containedButtonLabel;
+            break;
+        default:
+            buttonStyle = styles.outlinedButton;
+            buttonLabelStyle = styles.outlinedButtonLabel;
+            break;
+    }
 
     return(
         <Button 
