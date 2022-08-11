@@ -1,13 +1,14 @@
+import { autoAction } from "mobx/dist/internal";
 import React from "react";
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Button } from 'react-native-paper';
-import { red100 } from "react-native-paper/lib/typescript/styles/colors";
 import { Colors } from "../types";
 
 export type PatchButtonProps = {
     label: string,
     width?: number | string,
     small?: boolean,
+    style?: StyleProp<ViewStyle>
   } & Pick <React.ComponentProps<typeof Button>,
     'mode'
     | 'dark'
@@ -16,7 +17,6 @@ export type PatchButtonProps = {
     | 'uppercase'
     | 'accessibilityLabel'
     | 'contentStyle'
-    | 'style'
     | 'labelStyle'
     | 'onPress'
   >;
@@ -26,6 +26,7 @@ const PatchButton = ( props:PatchButtonProps) => {
         label,
         width,
         small,
+        style,
         ...rest
     } = props;
 
@@ -50,14 +51,14 @@ const PatchButton = ( props:PatchButtonProps) => {
             {...rest}
             style={[ 
                 styles.button, 
-                buttonStyle, 
                 (width 
                     ? {width: width} 
                     : (buttonStyle == styles.textButton || small 
                         ? null 
                         : {width: '100%'})), 
                 (small && styles.smallButton),
-                rest.style ]}
+                buttonStyle, 
+                style ]}
             labelStyle={[ styles.buttonLabel, buttonLabelStyle, (small && styles.buttonLabelSmall) ]}
             accessibilityLabel={label}>{label}</Button>
     )
@@ -68,16 +69,11 @@ export default PatchButton;
 
 const styles = StyleSheet.create({
     button: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
         borderRadius: 32,
-        height: 48,
+        paddingVertical: 8,
     },
     smallButton: {
-        height: 36,
-        width: null,
+        paddingVertical: 2,
     },
     containedButton: {
         backgroundColor: Colors.primary.alpha,
@@ -89,8 +85,12 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     textButton: {
-        backgroundColor: Colors.backgrounds.standard,
+        backgroundColor: Colors.nocolor,
         borderColor: Colors.nocolor,
+        display: 'flex',
+        alignSelf: 'flex-start',
+        paddingVertical: 4,
+        paddingHorizontal: 0,
     },
     buttonLabel: {
         letterSpacing: 0.2,
@@ -110,5 +110,6 @@ const styles = StyleSheet.create({
     textButtonLabel: {
         color: Colors.primary.alpha,
         textTransform: 'uppercase',
+        textAlign: 'left',
     },
 })

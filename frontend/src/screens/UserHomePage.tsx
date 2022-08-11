@@ -1,21 +1,22 @@
-import React from "react";
-import { Text, View, ScrollView, StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
-import { userStore, requestStore } from "../stores/interfaces";
+import React, { useEffect, useState, useCallback } from "react";
+import { Text, View, ScrollView, StyleSheet, Pressable } from "react-native";
+import { userStore, requestStore, bottomDrawerStore, navigationStore} from "../stores/interfaces";
 import { Colors, routerNames, ScreenProps } from "../types";
-import { navigateTo } from "../navigation";
 import {parseFullName} from 'parse-full-name';
-import PatchButton from '../components/patchButton';
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
+import * as Linking from "expo-linking";
+import PatchButton from "../components/patchButton";
 
 type Props = ScreenProps<'UserHomePage'>;
 
 export default function UserHomePage({ navigation, route }: Props) {
-    const [visible, setVisible] = React.useState(false);
+    const [hasActiveRequests, setHasActiveRequests] = useState(false);
 
-    const openMenu = () => setVisible(true);
-
-    const closeMenu = () => setVisible(false);
+    useEffect (() => {
+        userStore().currentUser = userStore().user;
+        setHasActiveRequests(!!requestStore().currentUserActiveRequests.length);
+        navigationStore().currentRoute = routerNames.userHomePage;
+    },[]);
 
     // useEffect(() => {
     //     (async () => {
@@ -88,28 +89,50 @@ export default function UserHomePage({ navigation, route }: Props) {
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
 
-    const welcomeText = 'Welcome to Patch.'
+    const OpenURLButton = ({ url, children }) => {
+        const handlePress = useCallback(async () => {
+          // Checking if the link is supported for links with custom URL scheme.
+          const supported = await Linking.canOpenURL(url);
+      
+          if (supported) {
+            // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+            // by some browser in the mobile
+            await Linking.openURL(url);
+          }
+        }, [url]);
+      
+        return <PatchButton mode='text' uppercase={false} label={children} onPress={handlePress} />;
+      };
 
-    const menuInstructions = 'Use the ☰ menu to get around the app.'
+    const comingSoon = 'coming soon';
+    
+    const defaultText = () => { 
 
-const defaultText = (shouldShow:boolean) => { 
-
-    return (shouldShow &&
-            <View>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>{welcomeText}</Text>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>{menuInstructions}</Text>
-            </View>)
-}
+        return !hasActiveRequests
+            ? <View>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>Welcome to Patch. Use the ☰ menu to navigate between sections:</Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>Document and dispatch <Text style={{ fontWeight: '900'}}>requests</Text> for help</Text>
+                </Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>View and manage your <Text style={{ fontWeight: '900'}}>team</Text></Text>
+                </Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>Use <Text style={{ fontWeight: '900'}}>channels</Text> to communicate with response teams</Text>
+                </Text>
+            </View>
+            : null
+    }
 
     const currentResponse = () => {
-        if (!requestStore().currentUserActiveRequests.length) {
-            return null;
-        }
 
-        return <View style={styles.currentResponseSection}>
-                <View style={styles.currentResponseLabelContainer}>
-                    <View style={styles.currentResponseIndicator}></View>
-                    <Text style={styles.currentResponseText}>Responding</Text>
+        return hasActiveRequests
+            ? <View>
+                <View style={styles.currentResponseSection}>
+                    <View style={styles.currentResponseLabelContainer}>
+                        <View style={styles.currentResponseIndicator}></View>
+                        <Text style={styles.currentResponseText}>Currently responding</Text>
+                    </View>
                 </View>
                 {
                     requestStore().currentUserActiveRequests.map(r => {
@@ -119,40 +142,21 @@ const defaultText = (shouldShow:boolean) => {
                     })
                 }
             </View>
+            : null
     }
 
-
-// *******************
-// NOT UPDATING
-// *******************
-
-
     return (
-        // <Provider>
-        //     <View>
-        //         <Menu
-        //             visible={visible}
-        //             onDismiss={closeMenu}
-        //             anchor={<Button onPress={openMenu}>Menu</Button>}>
-        //             <Menu.Item title="Requests" />
-        //             <Menu.Item title="Chat" />
-        //             <Menu.Item title="Resources" />
-        //             <Menu.Item title="Schedule" />
-        //             <Menu.Item title="Sign Out" onPress={signout}/>
-        //         </Menu>
-        //         <Button onPress={startShift}>Start Shift</Button>
-        //         <Button onPress={endShift}>End Shift</Button>
-        //         <Button onPress={assignHelpRequest}>Assign Help Request</Button>
-        //     </View>
-        // </Provider>
-        <ScrollView style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: '800', marginTop: 24 }}>{`Hi ${firstName}!`}</Text>
-
-<Text>{requestStore().currentUserActiveRequests.length}</Text>
-
-            {defaultText(!!!requestStore().currentUserActiveRequests.length)}
-            {currentResponse()}
-            
+        <ScrollView>
+            <View  style={{ padding: 20 }}>
+                <Text style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
+                {defaultText()}
+                {currentResponse()}
+            </View>
+            <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
+                <OpenURLButton url="https://help.getpatch.org/">Documentation</OpenURLButton>
+                <OpenURLButton url="https://raheemsupport.zendesk.com/hc/en-us/requests/new">Support request</OpenURLButton>
+            </View>
+           {/*
             <View>
                 <PatchButton 
                     mode='contained'
@@ -162,7 +166,7 @@ const defaultText = (shouldShow:boolean) => {
                     onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
                 <PatchButton 
                     mode='contained'
-                    uppercase={false}
+                    uppercase={false}r
                     label='Team'
                     style={styles.button}
                     onPress={() => { navigateTo(routerNames.teamList) }}/>
@@ -176,13 +180,14 @@ const defaultText = (shouldShow:boolean) => {
                         navigateTo(routerNames.userDetails);
                     }}/>
                 </View>
+                */}
         </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     button: {
-        marginTop: 24,        
+        marginTop: 24,  
     },
     currentResponseSection: {
         paddingTop: 32,
