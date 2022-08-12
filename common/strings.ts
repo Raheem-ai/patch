@@ -1,15 +1,12 @@
-enum ELEMENTS {
-    role = 'role',
-    shift = 'shift',
-    attribute = 'attribute',
-    tag = 'tag',
-    position = `position`,
-    leaveBlank = '',
-}
-
 const STRINGS = {
     // GLOBAL
-    ELEMENTS,
+    ELEMENTS: {
+        role: 'role',
+        shift: 'shift',
+        attribute: 'attributes',
+        tag: 'tag',
+        position: `position`,
+    },
     visualDelim: '·',
     responders: (n: number) => n > 1 ? 'responders' : 'responder',
     nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
@@ -38,9 +35,9 @@ const STRINGS = {
         newTicket: 'Report an issue',
     },
     INTERFACE: {
-        addElement: (el) => `Add ${STRINGS.ELEMENTS[el]}`,
-        addCategory: (el) => `Add ${STRINGS.ELEMENTS[el]} category`,
-        addAnotherElement: (el) => `Add another ${el}`,
+        addElement: (el?:string) => `Add${el ? ' ' + el : ''}`,
+        addCategory: (el?:string) => `Add${el ? ' ' + el : ''} category`,
+        addAnotherElement: (el?:string) => `Add another ${el}`,
 
     },
     REQUESTS: {
