@@ -13,3 +13,10 @@ export const headerIconContainerSize = (2 * headerIconPadding) + headerIconSize;
 export const InteractiveHeaderHeight = headerIconContainerSize;
 export const HeaderHeight = InteractiveHeaderHeight + Constants.statusBarHeight;
 export const TabbedScreenHeaderHeight = InteractiveHeaderHeight - 12;
+
+// external URLs
+export const URLS = {
+    helpCenter: 'https://help.getpatch.org/',
+    newTicket: 'https://raheemsupport.zendesk.com/hc/en-us/requests/new',
+    raheemSite: 'https://raheem.org/'
+}

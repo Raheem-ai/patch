@@ -8,7 +8,6 @@ enum ELEMENTS {
 }
 
 const STRINGS = {
-
     // GLOBAL
     ELEMENTS,
     visualDelim: '·',
@@ -33,6 +32,10 @@ const STRINGS = {
         th: 'T',
         fr: 'F',
         sa: 'S',
+    },
+    LINKS: {
+        helpCenter: 'Documentation',
+        newTicket: 'Report an issue',
     },
     INTERFACE: {
         addElement: (el) => `Add ${STRINGS.ELEMENTS[el]}`,

@@ -1,12 +1,14 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Text, View, ScrollView, StyleSheet, Pressable } from "react-native";
-import { userStore, requestStore, bottomDrawerStore, navigationStore} from "../stores/interfaces";
-import { Colors, routerNames, ScreenProps } from "../types";
+import React from "react";
+import { Text, View, ScrollView, StyleSheet } from "react-native";
+import { userStore, requestStore } from "../stores/interfaces";
+import { Colors, ScreenProps } from "../types";
 import {parseFullName} from 'parse-full-name';
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import * as Linking from "expo-linking";
 import PatchButton from "../components/patchButton";
-import { observer } from "mobx-react"
+import { observer } from "mobx-react";
+import { URLS } from "../constants"
+import STRINGS from "../../../common/strings";
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -146,8 +148,8 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 {currentResponse()}
             </View>
             <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
-                <OpenURLButton url='https://help.getpatch.org/' label='Documentation' />
-                <OpenURLButton url='https://raheemsupport.zendesk.com/hc/en-us/requests/new' label='Report an issue' />
+                <OpenURLButton url={URLS.helpCenter} label={STRINGS.LINKS.helpCenter} />
+                <OpenURLButton url={URLS.newTicket} label={STRINGS.LINKS.newTicket} />
             </View>
            {/*
             <View>
