@@ -42,7 +42,7 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
 
     // Projection of the defined set of categories/items + diff of changes
     get categories() {
-        const entries = JSON.parse(JSON.stringify(Array.from(this.definedCategories.entries())))
+        const entries = JSON.parse(JSON.stringify(Array.from(this.definedCategories.entries()).reverse()))
         const map: Map<string, Category> = new Map(entries);
 
         // add new categories
