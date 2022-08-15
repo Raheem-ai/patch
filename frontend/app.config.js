@@ -2,20 +2,29 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
-// NOTE:
-// every secret that goes here needs to be added to the build def as
-// this is build time vs runtime...which means we need to build for EACH environment
-
-// provided by build
-const ENV = process.env._ENVIRONMENT 
-
 // NOTE: put your ngrok url here for development
 let apiHost = ''
+// increment every time you do a build you're going to submit
+const BUILD_NUMBER = '0.0.6'
 
-// just signifies if a build of a particular version is for prod or staging of that version
-// and these values will throw if we are doing a real build
-let iosBuildEnvFlag = "-1";
-let androidBuildEnvFlag = -1;
+// provided by (build/local) runner
+const ENV = process.env._ENVIRONMENT 
+// only needed during build
+const PLATFORM = process.env._PLATFORM
+
+/**
+ * For Apple:
+ * - corresponds to "CFBundleShortVersionString"
+ * 
+ * For Android: 
+ * - corresponds to "versionName"
+ */
+ let VERSION = ''
+
+// just signifies if a build of a particular version is for prod/staging and ios/android of that version
+// and these values will throw if we are doing a real build without passing in the required env variables
+ let IOS_BUILD_NUMBER = '-1'
+ let ANDROID_VERSION_CODE = -1
 
 function loadLocalEnv(env) {
 	const envConfigPath = path.resolve(__dirname, `../backend/env/.env.${env}`) 
@@ -27,39 +36,56 @@ function loadLocalEnv(env) {
 	dotenv.config({ path: envConfigPath })
 }
 
-// TODO: this should come from config not here
+// TODO: urls should come from config not here
 // if not in build then must be local
 if (!ENV) {
 	loadLocalEnv(`local`)
 } else if (ENV == 'prod') {
-	// in case we run this locally
+	// in case we run this locally (to build or for frontend dev)
 	if (!process.env.GOOGLE_MAPS) {
 		loadLocalEnv(`prod`)
 	}
 
 	apiHost = 'https://patch-api-wiwa2devva-uc.a.run.app'
-	iosBuildEnvFlag = "1"
-	androidBuildEnvFlag = 1
+
+	if (PLATFORM == 'ios') {
+		VERSION = BUILD_NUMBER
+		IOS_BUILD_NUMBER = '1'
+	} else if (PLATFORM == 'android') {
+		VERSION = BUILD_NUMBER
+		// needs to be unique for android
+		ANDROID_VERSION_CODE = VERSION
+	}
 } else {
-	// in case we run this locally
+	// in case we run this locally (to build or for frontend dev)
 	if (!process.env.GOOGLE_MAPS) {
 		loadLocalEnv(`staging`)
 	}
 
 	// default to staging
 	apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'
-	iosBuildEnvFlag = "0.0.1"
-	androidBuildEnvFlag = 2
+
+	if (PLATFORM == 'ios') {
+		VERSION = BUILD_NUMBER
+		IOS_BUILD_NUMBER = '0.0.1'
+	} else if (PLATFORM == 'android') {
+		VERSION = `${BUILD_NUMBER}-staging`
+		// needs to be unique for android
+		ANDROID_VERSION_CODE = BUILD_NUMBER
+	}
 }
 
+// NOTE:
+// every secret that goes here needs to be added to the build def as
+// this is build time vs runtime...which means we need to build for EACH environment
 const googleMapsKey = JSON.parse(process.env.GOOGLE_MAPS).api_key
 
-export default {
+const config = {
 	"expo": {
 	  "name": "patch",
 	  "slug": "patch",
 	  "owner": "raheem-ai",
-	  "version": "0.0.5",
+	  "version": VERSION,
 	  "orientation": "portrait",
 	  "icon": "./assets/icon.png",
 	  "scheme": "raheem",
@@ -84,14 +110,14 @@ export default {
 			"remote-notification"
 		  ]
 		},
-		"buildNumber": iosBuildEnvFlag,
+		"buildNumber": IOS_BUILD_NUMBER,
 		"bundleIdentifier": "ai.raheem.patch",
 		"config": {
 		  "googleMapsApiKey": googleMapsKey
 		}
 	  },
 	  "android": {
-		"versionCode": androidBuildEnvFlag,
+		"versionCode": ANDROID_VERSION_CODE,
 		"adaptiveIcon": {
 		  "foregroundImage": "./assets/adaptive-icon.png",
 		  "backgroundColor": "#FFFFFF"
@@ -112,4 +138,5 @@ export default {
 	  }
 	}
 }
-  
+
+export default config
