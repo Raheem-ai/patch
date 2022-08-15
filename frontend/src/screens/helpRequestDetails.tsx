@@ -23,6 +23,7 @@ import { userOnRequest } from "../../../common/utils/requestUtils";
 import * as Linking from 'expo-linking';
 import { constants } from "buffer";
 import STRINGS from "../../../common/strings";
+import PatchButton from "../components/patchButton";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -271,16 +272,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
         return (
             <View style={styles.toggleRequestContainer}>
-                <Button
+                <PatchButton 
+                    mode='outlined'
                     uppercase={false}
-                    color={Colors.primary.alpha}
-                    style={[styles.button, styles.closeRequestButton]}
+                    label={STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
                     onPress={currentRequestOpen 
                         ? closeRequestOrPrompt() 
                         : reopenRequest()
-                }>
-                    {STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
-                </Button>
+                    } />
             </View>
         )
     }
@@ -388,12 +387,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 }
 
                 return <View style={{ padding: 20, paddingBottom: 0 }}>
-                    <Button
-                        uppercase={false} 
-                        color={Colors.primary.alpha}
-                        mode={'outlined'}
-                        onPress={startNotifyFlow}
-                        style={[styles.notifyButton]}>{STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}</Button>
+                    <PatchButton 
+                        mode='outlined'
+                        uppercase={false}
+                        label={STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}
+                        onPress={startNotifyFlow} />
                 </View>
             }
         }
@@ -703,12 +701,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             return (
                 canEdit
                     ? <View>
-                        <Button
-                            uppercase={false} 
-                            color={Colors.primary.alpha}
-                            mode={'contained'}
-                            onPress={edit}
-                            style={[styles.button, styles.addPositionsButton]}>{STRINGS.REQUESTS.ACTIONS.addResponders}</Button>
+                        <PatchButton 
+                            mode='contained'
+                            uppercase={false}
+                            label={STRINGS.REQUESTS.ACTIONS.addResponders}
+                            onPress={edit} />
                     </View>
                     : null
             )

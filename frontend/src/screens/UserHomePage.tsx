@@ -1,19 +1,18 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
-import { userStore } from "../stores/interfaces";
-import { Colors, routerNames, ScreenProps } from "../types";
-import { navigateTo } from "../navigation";
+import { Text, View, ScrollView, StyleSheet } from "react-native";
+import { userStore, requestStore } from "../stores/interfaces";
+import { Colors, ScreenProps } from "../types";
 import {parseFullName} from 'parse-full-name';
+import HelpRequestCard from "../components/requestCard/helpRequestCard";
+import * as Linking from "expo-linking";
+import PatchButton from "../components/patchButton";
+import { observer } from "mobx-react";
+import { URLS } from "../constants"
+import STRINGS from "../../../common/strings";
 
 type Props = ScreenProps<'UserHomePage'>;
 
-export default function UserHomePage({ navigation, route }: Props) {
-    const [visible, setVisible] = React.useState(false);
-
-    const openMenu = () => setVisible(true);
-
-    const closeMenu = () => setVisible(false);
+const UserHomePage = observer(({ navigation, route }: Props) => {
 
     // useEffect(() => {
     //     (async () => {
@@ -86,114 +85,140 @@ export default function UserHomePage({ navigation, route }: Props) {
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;
 
-    const welcomeText = 'Welcome to Patch, the dispatching system for community crisis care.'
+    const OpenURLButton = ({ url, label }) => {
+        const handlePress = async () => {
+            // Checking if the link is supported for links with custom URL scheme.
+            const supported = await Linking.canOpenURL(url);
+        
+            if (supported) {
+                // Opening the link with some app; if the URL scheme is "http(s)" it should be opened by a browser
+                await Linking.openURL(url);
+            }
+        };
+      
+        return <PatchButton mode='text' label={label} onPress={handlePress} />;
+    }
 
-    const menuInstructions = 'Use the ☰ menu above to get around:'
+    const comingSoon = 'coming soon';
+    
+    const defaultText = () => { 
 
-    const requestDetails = 'document and dispatch calls'
+        return !requestStore().myActiveRequests.length
+            ? <View>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>Welcome to Patch. Use the ☰ menu to navigate between sections:</Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>Document and dispatch <Text style={{ fontWeight: '900'}}>requests</Text> for help</Text>
+                </Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>View and manage your <Text style={{ fontWeight: '900'}}>team</Text></Text>
+                </Text>
+                <Text style={{ fontSize: 16, marginTop: 24 }}>
+                    <Text>Use <Text style={{ fontWeight: '900'}}>channels</Text> to communicate with response teams</Text>
+                </Text>
+            </View>
+            : null
+    }
 
-    const teamDetails = 'manage team members'
+    const currentResponse = () => {
 
-    const channelDetails = 'communicate securely'
-
-    const comingSoon = 'coming soon'
+        return !!requestStore().myActiveRequests.length
+            ? <View>
+                <View style={styles.currentResponseSection}>
+                    <View style={styles.currentResponseLabelContainer}>
+                        <View style={styles.currentResponseIndicator}></View>
+                        <Text style={styles.currentResponseText}>Currently responding</Text>
+                    </View>
+                </View>
+                {
+                    requestStore().myActiveRequests.map(r => {
+                        return (
+                            <HelpRequestCard style={styles.activeRequestCard} request={r}/>
+                        )
+                    })
+                }
+            </View>
+            : null
+    }
 
     return (
-        // <Provider>
-        //     <View>
-        //         <Menu
-        //             visible={visible}
-        //             onDismiss={closeMenu}
-        //             anchor={<Button onPress={openMenu}>Menu</Button>}>
-        //             <Menu.Item title="Requests" />
-        //             <Menu.Item title="Chat" />
-        //             <Menu.Item title="Resources" />
-        //             <Menu.Item title="Schedule" />
-        //             <Menu.Item title="Sign Out" onPress={signout}/>
-        //         </Menu>
-        //         <Button onPress={startShift}>Start Shift</Button>
-        //         <Button onPress={endShift}>End Shift</Button>
-        //         <Button onPress={assignHelpRequest}>Assign Help Request</Button>
-        //     </View>
-        // </Provider>
-        <View style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: '900', marginTop: 24 }}>{`Hi ${firstName}`}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>{welcomeText}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>{menuInstructions}</Text>
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Requests: </Text>
-                <Text>{requestDetails}</Text>
-            </Text>
-
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Team: </Text>
-                <Text>{teamDetails}</Text>
-            </Text>
-
-            <Text style={{ fontSize: 16, marginTop: 24 }}>
-                <Text style={{ fontWeight: '900'}}>Channels: </Text>
-                <Text>{channelDetails}</Text>
-            </Text>
-
-            <Text style={{ fontSize: 16, marginTop: 24, color: '#aaa' }}>
-                <Text style={{ fontWeight: '900'}}>Schedule: </Text>
-                <Text>{comingSoon}</Text>
-            </Text>
-
+        <ScrollView>
+            <View  style={{ padding: 20 }}>
+                <Text style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
+                {defaultText()}
+                {currentResponse()}
+            </View>
+            <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
+                <OpenURLButton url={URLS.helpCenter} label={STRINGS.LINKS.helpCenter} />
+                <OpenURLButton url={URLS.newTicket} label={STRINGS.LINKS.newTicket} />
+            </View>
+           {/*
             <View>
-                <Button 
+                <PatchButton 
+                    mode='contained'
                     uppercase={false}
-                    onPress={() => { navigateTo(routerNames.helpRequestList) }}
-                    color={Colors.text.buttonLabelPrimary}
+                    label='Requests'
                     style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'Requests'}</Button>
-
-                <Button 
-                    uppercase={false}
-                    onPress={() => { navigateTo(routerNames.teamList) }}
-                    color={'#fff'}
+                    onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
+                <PatchButton 
+                    mode='contained'
+                    uppercase={false}r
+                    label='Team'
                     style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'Team'}</Button>
-
-                <Button 
+                    onPress={() => { navigateTo(routerNames.teamList) }}/>
+                <PatchButton 
+                    mode='contained'
                     uppercase={false}
+                    label='Profile'
+                    style={styles.button}
                     onPress={() => {
                         userStore().pushCurrentUser(userStore().user);
                         navigateTo(routerNames.userDetails);
-                    }}
-                    color={Colors.text.buttonLabelPrimary}
-                    style={styles.button}
-                    labelStyle={styles.buttonLabel}>{'View profile'}</Button>
+                    }}/>
                 </View>
-        </View>
+                */}
+        </ScrollView>
     );
-};
+});
+
+export default UserHomePage;
 
 const styles = StyleSheet.create({
-    itemContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingLeft: 60,
-        paddingRight: 20,
-        height: 48
-    },
     button: {
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: Colors.primary.alpha,
-        justifyContent: 'center',
-        marginTop: 24,
-        paddingHorizontal: 8,
-        
+        marginTop: 24,  
     },
-    buttonLabel: {
-        fontWeight: '700',
-        letterSpacing: 0.8
+    currentResponseSection: {
+        paddingTop: 32,
+
     },
-    outlineButton: {
-        borderWidth: 1,
-        borderColor: Colors.primary.alpha,
-        backgroundColor: Colors.nocolor,
-        color: Colors.primary.alpha
+    currentResponseLabelContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignContent: 'center'
+    },
+    currentResponseIndicator: {
+        height: 12,
+        width: 12,
+        borderRadius: 12,
+        backgroundColor: Colors.good,
+        alignSelf: 'center',
+        marginRight: 8
+    },
+    currentResponseText: {
+        color: Colors.good,
+        fontSize: 14,
+        fontWeight: 'bold',
+        textTransform: 'uppercase'
+    },
+    activeRequestCard: {
+        borderRadius: 8,
+
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        }
     }
 })

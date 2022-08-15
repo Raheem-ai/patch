@@ -7,6 +7,9 @@ import { requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
+import STRINGS from "../../../../common/strings";
+import PatchButton from "../../components/patchButton"
+
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -128,16 +131,13 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                 { messages() }
                 <View style={{ position: "absolute", left: 0, bottom: 0, borderTopColor: '#E0E0E0', borderTopWidth: 1 }}>
                     <View style={[styles.inputContainer, styles.disabledChatContainer, {flex: 0}]}>
-                            {userCanReopenRequest ?
-                                <Button
+                            {userCanReopenRequest 
+                                ? <PatchButton 
+                                    mode='outlined'
                                     uppercase={false}
-                                    color={'#76599A'}
-                                    style={styles.openRequestButton}
-                                    onPress={reopenRequest()}>
-                                        {'Re-open this request'}
-                                </Button>
-                                :
-                                <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                                    label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
+                                    onPress={reopenRequest}/>
+                                : <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
                             }
                     </View>
                 </View>

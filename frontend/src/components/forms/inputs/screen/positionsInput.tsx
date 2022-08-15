@@ -13,6 +13,7 @@ import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
 import { observable } from "mobx"
 import { Colors } from "../../../../types";
+import PatchButton from "../../../patchButton";
 
 export type PositionsInputProps = SectionScreenViewProps<'Positions'> 
 
@@ -140,14 +141,11 @@ const PositionsInput = observer(({
 
             return position.get().id
                 ? <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
-                    <Button 
-                        uppercase={false}
-                        style={[styles.button, styles.outlineButton]}
-                        color={Colors.primary.alpha}
+                    <PatchButton 
                         mode='outlined'
-                        labelStyle={styles.buttonLabel}
-                        onPress={deletePosition}
-                    >Delete this position</Button>
+                        uppercase={false}
+                        label='Delete this position'
+                        onPress={deletePosition}/>
                 </View>
                 : null
         }
