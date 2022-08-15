@@ -13,6 +13,7 @@ import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";
+import PatchButton from "../components/patchButton";
 
 type PositionDetailsCardProps = { 
     requestId: string,
@@ -107,32 +108,25 @@ const PositionDetailsCard = observer(({
         }
 
         if (positionMetadata.canLeave) {
-            return <Button 
-                uppercase={false}
-                style={[styles.button]}
-                labelStyle={{letterSpacing: 0.8}}
-                uppercase={false}
-                color={Colors.primary.alpha}
+            return <PatchButton 
                 mode='contained'
-                onPress={leave}>{STRINGS.REQUESTS.POSITIONS.leave}</Button>
+                label={STRINGS.REQUESTS.POSITIONS.leave}
+                small={true}
+                onPress={leave} />
         }
 
         if (positionMetadata.canJoin) {
-            return <Button 
-                uppercase={false}
-                style={[styles.button]}
-                labelStyle={{letterSpacing: 0.8}}
-                color={Colors.primary.alpha}
+            return <PatchButton 
                 mode='contained'
-                onPress={join}>{STRINGS.REQUESTS.POSITIONS.join}</Button>
+                label={STRINGS.REQUESTS.POSITIONS.join}
+                small={true}
+                onPress={join} />
         } else if (positionMetadata.canRequestToJoin) {
-            return <Button 
-                uppercase={false}
-                style={[styles.button, styles.outlineButton]}
-                labelStyle={{letterSpacing: 0.8}}
-                color={Colors.primary.alpha}
+            return <PatchButton 
                 mode='outlined'
-                onPress={requestToJoin}>{STRINGS.REQUESTS.POSITIONS.request}</Button>
+                label={STRINGS.REQUESTS.POSITIONS.request}
+                small={true}
+                onPress={requestToJoin} />
         } else {
             return null
         }
