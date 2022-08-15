@@ -11,7 +11,9 @@ import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHead
 import DescriptiveNavigationLabel from "./inputs/descriptiveNavigationLabel"
 import { NavigationFormInputConfig, SectionNavigationScreenViewProps } from "./types"
 import UpsertRoleForm from "./upsertRoleForm"
-import { VisualArea } from '../helpers/visualArea';
+import { VisualArea } from '../helpers/visualArea'
+import STRINGS from "../../../../common/strings"
+import { Colors } from "../../types"
 
 const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
@@ -28,7 +30,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                                 expand={expand} 
                                 name={def.name} 
                                 inlineDescription={true}
-                                description={def.id == DefaultRoleIds.Anyone ? ' (assigned to all members)' : null} />
+                                description={def.id == DefaultRoleIds.Anyone ? STRINGS.SETTINGS.assignedToAll : null} />
                 },
                 screen: ({ back }) => {
                     const cancelEdit = () => {
@@ -41,8 +43,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                             await upsertRoleStore().save()
                             back()
                         } catch (e) {
-                            const errMessage = resolveErrorMessage(e)
-                            alertStore().toastError(errMessage, true)
+                            alertStore().toastError(resolveErrorMessage(e))
                         }
                     }
 
@@ -60,7 +61,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             label: ({ expand }) => {
                 return (
                     <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{ color: '#666', fontSize: 16 }}>{'ADD ROLE'}</Text>
+                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role)}</Text>
                     </Pressable>
                 )
             },
@@ -75,8 +76,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                         await upsertRoleStore().save()
                         back()
                     } catch (e) {
-                        const errMessage = resolveErrorMessage(e)
-                        alertStore().toastError(errMessage, true)
+                        alertStore().toastError(resolveErrorMessage(e))
                     }
                 }
 

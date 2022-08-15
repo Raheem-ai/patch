@@ -44,7 +44,7 @@ export const EditCategorizedItemForm = observer(({
                     await nativeEventStore().hideKeyboard()
                     back()
                 } catch (e) {
-                    alertStore().toastError(resolveErrorMessage(e))
+                    alertStore().toastError(resolveErrorMessage(e));
                 }
             },
             label: 'Save'
@@ -137,15 +137,6 @@ export const EditCategorizedItemForm = observer(({
             {/* add category */}
             <View style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60 }}>
                 <TextInput config={addCategoryInputConfig} onSubmitEditing={onKeyboardSubmit} disableAutoCorrect/>
-                <View style={{ margin: 20 }}>
-                    <IconButton
-                        onPress={addCategory}
-                        icon={'plus'} 
-                        color='#666'
-                        size={20} 
-                        style={{ margin: 0, padding: 0, width: 20 }}
-                        />
-                </View>
             </View>
             
             {/* categories + items (add/remove) */}
@@ -241,14 +232,6 @@ const AddItemFooter = ({
     return (
         <View ref={me} style={{ flexDirection: 'row', alignItems: 'center', height: styles.itemContainer.height, paddingLeft: 60 }}>
             <TextInput nativeRef={itemInputRef} config={addItemInputConfig} onSubmitEditing={onKeyboardSubmit} dontBlurOnSubmit/>
-            <Pressable onPress={addItem} style={{ margin: 20 }}>
-                <IconButton
-                    icon={'plus'} 
-                    color='#999'
-                    size={20} 
-                    style={{ margin: 0, padding: 0, width: 20 }}
-                    />
-            </Pressable>
         </View>
     )
 

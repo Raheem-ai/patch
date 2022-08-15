@@ -1,5 +1,5 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore } from "../../../stores/interfaces";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
@@ -11,6 +11,7 @@ import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import STRINGS from "../../../../../common/strings";
 
 type Props = {}
 
@@ -55,7 +56,7 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(`Successfully updated request ${requestStore().currentRequest.displayId}`)
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(organizationStore().metadata.requestPrefix + '–' + requestStore().currentRequest.displayId))
         
                     bottomDrawerStore().hide()
                 },
@@ -119,7 +120,8 @@ class EditHelpRequest extends React.Component<Props> {
                         // required: true,
                         props: {
                             definedCategories: () => RequestTypeCategories,
-                            dark: true
+                            dark: true,
+                            setDefaultClosed: true
                         }
                     },
                     // Priority

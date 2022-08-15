@@ -4,6 +4,7 @@ import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button } from "react-native-paper";
 import { PatchPermissions } from "../../../../../common/models";
+import STRINGS from "../../../../../common/strings";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
@@ -14,6 +15,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import PatchButton from "../../patchButton";
 
 @observer
 export default class EditUser extends React.Component {
@@ -56,8 +58,8 @@ export default class EditUser extends React.Component {
                     }
 
                     const successMsg = this.onMyProfile
-                        ? 'Successfully updated your profile.'
-                        : `Successfully updated ${editUserStore().name}'s profile.`
+                        ? STRINGS.ACCOUNT.updatedProfileSuccess()
+                        : STRINGS.ACCOUNT.updatedProfileSuccess(editUserStore().name)
 
                     alertStore().toastSuccess(successMsg)
 
@@ -79,15 +81,11 @@ export default class EditUser extends React.Component {
                     { renderInputs(inputs()) }
                     { this.canRemoveUser()
                         ? <View style={styles.actionButtonsContainer}>
-                            <Button 
-                                mode= 'outlined'
+                            <PatchButton 
+                                mode='outlined'
                                 uppercase={false}
-                                style={styles.actionButton}
-                                color={styles.actionButton.borderColor}
-                                onPress={this.removeUserFromOrg}
-                                >
-                                    {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
-                            </Button>
+                                label={this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
+                                onPress={this.removeUserFromOrg} />
                         </View>
                         : null
                     }
@@ -128,8 +126,7 @@ export default class EditUser extends React.Component {
             } else {
                 await userStore().removeCurrentUserFromOrg();
 
-                const successMsg = `Successfully removed ${editUserStore().name} from your organization.`
-                alertStore().toastSuccess(successMsg);
+                alertStore().toastSuccess(STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name));
 
                 navigationRef.current?.goBack();
             }
@@ -281,7 +278,7 @@ export default class EditUser extends React.Component {
 const styles = StyleSheet.create({
     actionButtonsContainer: {
         alignContent: 'center',
-        marginVertical: 20
+        margin: 20
     },
     actionButton: {
         borderColor: Colors.primary.alpha,

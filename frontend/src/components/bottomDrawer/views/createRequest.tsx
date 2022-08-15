@@ -1,5 +1,5 @@
 import React from "react";
-import { createRequestStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { createRequestStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
@@ -12,6 +12,7 @@ import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputCo
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import STRINGS from "../../../../../common/strings";
 
 type Props = {}
 
@@ -55,8 +56,8 @@ class CreateHelpRequest extends React.Component<Props> {
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
-        
-                    alertStore().toastSuccess(`Successfully created request ${createdReq.displayId}`)
+
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(organizationStore().metadata.requestPrefix + '–' + createdReq.displayId))
         
                     bottomDrawerStore().hide()
                 },
@@ -124,7 +125,8 @@ class CreateHelpRequest extends React.Component<Props> {
                         // required: true,
                         props: {
                             definedCategories: () => RequestTypeCategories,
-                            dark: true
+                            dark: true,
+                            setDefaultClosed: true
                         }
                     },
                     // Priority

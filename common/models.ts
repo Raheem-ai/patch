@@ -440,7 +440,7 @@ export enum RequestTypeCategory {
     SubstanceUse = 'suu',
     TheftFraud = 'thf',
     VerbalResourceAssistance = 'vra',
-    WitnessingTrouble = 'wit'
+    WitnessingTrouble = 'wit',
 }
 
 export enum RequestType {
@@ -930,7 +930,7 @@ export const RequestTypeToLabelMap: { [key in RequestType]: string } = {
 
 export const RequestTypeCategories: Map<string, Category> = new Map();
 
-allEnumValues(RequestType).forEach(typ => {
+allEnumValues(RequestType).reverse().forEach(typ => {
     const cat = requestTypeToRequestTypeCategory(typ);
     
     const item = {
@@ -940,7 +940,7 @@ allEnumValues(RequestType).forEach(typ => {
     
     if (RequestTypeCategories.has(cat)) {
         const category = RequestTypeCategories.get(cat);
-        category.items.push(item)
+        category.items.unshift(item)
     } else {
         RequestTypeCategories.set(cat, {
             name: RequestTypeCategoryToLabelMap[cat],
