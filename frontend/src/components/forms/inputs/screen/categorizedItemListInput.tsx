@@ -219,9 +219,7 @@ const CategorizedItemListInput = ({
                                     key={category.name}
                                     name={category.name}
                                     items={category.items}
-                                    defaultClosed={config.props?.setDefaultClosed 
-                                        ? config.props.setDefaultClosed 
-                                        : false}
+                                    defaultClosed={!!config.props?.setDefaultClosed}
                                     id={categoryId}
                                     categoryLabelStyle={categoryLabelStyle}
                                     itemLabelStyle={itemLabelStyle}
