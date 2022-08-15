@@ -120,7 +120,8 @@ class EditHelpRequest extends React.Component<Props> {
                         // required: true,
                         props: {
                             definedCategories: () => RequestTypeCategories,
-                            dark: true
+                            dark: true,
+                            setDefaultClosed: true
                         }
                     },
                     // Priority
