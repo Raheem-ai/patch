@@ -140,8 +140,8 @@ export type MinTag = AtLeast<Tag, 'name'>
 export type PendingUser = {
     email: string
     phone: string
-    roles: UserRole[]
-    roleIds: string[]
+    roles?: UserRole[]
+    roleIds?: string[]
     attributes: CategorizedItem[]
     // skills: RequestSkill[]
     pendingId: string
@@ -995,13 +995,13 @@ export type LinkParams = {
     [LinkExperience.SignUpThroughOrganization]: {
         orgId: string,
         email: string,
-        roles: UserRole[],
+        roles?: UserRole[],
         pendingId: string
     },
     [LinkExperience.JoinOrganization]: {
         orgId: string,
         email: string,
-        roles: UserRole[],
+        roles?: UserRole[],
         pendingId: string
     } 
 } 

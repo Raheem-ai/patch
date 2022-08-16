@@ -56,7 +56,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
             validator: () => {
                 return formInstance.get()?.isValid.get()
             },
-            label: 'Join us'
+            label: 'Join'
         },
         bottomBorder: true, 
     }
@@ -81,9 +81,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
             {
                 val: () => nameVal.get(),
                 onChange: (currentVal) => {
-                    console.log('before:: nv: ',nameVal.get(),' / cv: ',currentVal);
                     nameVal.set(currentVal);
-                    console.log('after:: nv: ',nameVal.get(),' / cv: ',currentVal);
                 },
                 isValid: () => !!nameVal.get(),
                 placeholderLabel: () => 'Name',
@@ -140,7 +138,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     return (
         <>
-            <BackButtonHeader {...headerProps}/>
+            <BackButtonHeader {...headerProps} />
             <Form ref={setRef} {...config} />
         </>
     )
