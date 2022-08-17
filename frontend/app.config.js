@@ -15,6 +15,8 @@ const ENV = process.env._ENVIRONMENT
 const PLATFORM = process.env._PLATFORM
 
 /**
+ * ONLY NEEDED FOR BUILD TIME
+ * ie. publish will have this be blank in the manifest and that's okay
  * For Apple:
  * - corresponds to "CFBundleShortVersionString"
  * 
