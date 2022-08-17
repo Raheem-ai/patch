@@ -47,6 +47,7 @@ import InvitationSuccessfulPage from './src/screens/InvitationSuccessfulPage';
 import CreateAccountForm from './src/screens/CreateAccountForm';
 import Chats from './src/screens/chats';
 import * as SplashScreen from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -111,12 +112,13 @@ export default function App() {
             : routerNames.landing
 
     return (
-        // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
-        // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
+      // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
+      // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
         <Provider container={container}>
             <PaperProvider theme={theme}>
                 <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
                 {/* <GlobalErrorBoundary> */}
+                  <GestureHandlerRootView style={{ flex: 1 }}>
                     <StatusBar
                         animated={true}
                         barStyle={'light-content'}
@@ -128,7 +130,7 @@ export default function App() {
                         <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
                         <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
                         <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />
-                         {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
+                        {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
                         <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
@@ -146,6 +148,7 @@ export default function App() {
                     <Alerts/>
                     <GlobalBottomDrawer/>
                 {/* </GlobalErrorBoundary>   */}
+                  </GestureHandlerRootView>
                 </NavigationContainer>
             </PaperProvider>
         </Provider>

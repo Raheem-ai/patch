@@ -1,7 +1,8 @@
-import { computed, observable, runInAction } from "mobx";
+import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
-import React, { useState } from "react";
-import { View, StyleSheet, ViewStyle, Pressable, GestureResponderEvent, LayoutChangeEvent, TextStyle } from "react-native";
+import React from "react";
+import { View, StyleSheet, LayoutChangeEvent, Animated } from "react-native";
+import { PanGestureHandler, PanGestureHandlerProps } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
@@ -80,7 +81,6 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         return ((width || this.width.get())) / this.steps
     };
 
-
     initialMinKnobLeft = (width: number) => {
         return this.min <= 0
             ? -this.knobOffset
@@ -94,7 +94,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     }
 
     leftXToStep = (x: number) => {
-        const val = Math.floor((x + this.knobOffset) / this.stepWidth())
+        const val = Math.round((x + this.knobOffset) / this.stepWidth())
         
         const resolvedVal =  val < 0
             ? 0
@@ -134,14 +134,13 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         const upperBound = this.width.get() - 2*this.knobOffset;
         const lowerBound = -this.knobOffset;
 
-        const onTouchMove = (isMin: boolean) => (event: GestureResponderEvent) => {
-            const delta = event.nativeEvent.locationX - this.touchStartX.get();
-            
+        // on android this gets called even when you aren't moving
+        const onTouchMove = (isMin: boolean) => (delta: number) => {
             runInAction(() => {
                 if (isMin) {
                     this.topKnob.set(Knobs.Min)
-
-                    const updatedMinLeft = this.minKnobLeft.get() + delta;
+                    
+                    const updatedMinLeft = this.touchStartX.get() + delta
 
                     // if maxKnob is all the way to the right, limit this one (minKnob) to one step less
                     if (this.maxKnobLeft.get() >= this.width.get() - this.knobOffset) {
@@ -155,8 +154,8 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                     } else {
                         // depends on if inverted or not
                         const bound = this.knobsInverted.get()
-                        ? this.width.get() - this.knobOffset
-                        : -this.knobOffset;
+                            ? this.width.get() - this.knobOffset
+                            : -this.knobOffset;
 
                         const insideBounds = this.knobsInverted.get()
                             ? updatedMinLeft < bound // upper bound
@@ -171,7 +170,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                 } else {
                     this.topKnob.set(Knobs.Max)
 
-                    const updatedMaxLeft = this.maxKnobLeft.get() + delta;
+                    const updatedMaxLeft = this.touchStartX.get() + delta
 
                     // if minKnob is all the way to the right, limit this one (maxKnob) to one step less
                     if (this.minKnobLeft.get() >= this.width.get() - this.knobOffset) {
@@ -206,8 +205,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
         }
 
-        const onTouchEnd = (isMin: boolean) => (event: GestureResponderEvent) => {
-            const delta = event.nativeEvent.locationX - this.touchStartX.get();
+        const onTouchEnd = (isMin: boolean) => () => {
             
             runInAction(() => {
                 if (isMin) {
@@ -223,13 +221,13 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                      // need to consider inverted
                     this.props.config.onChange({ 
                         max: this.knobsInverted.get()
-                        ? valueToSet
-                        : this.maxKnobValue > this.maxBeforeOrMore 
-                            ? MORE 
-                            : this.maxKnobValue, 
+                            ? valueToSet
+                            : this.maxKnobValue > this.maxBeforeOrMore 
+                                ? MORE 
+                                : this.maxKnobValue, 
                         min: this.knobsInverted.get()
-                        ? this.maxKnobValue
-                        : valueToSet 
+                            ? this.maxKnobValue
+                            : valueToSet 
                     })
                 } else {
                     const step = this.leftXToStep(this.maxKnobLeft.get())
@@ -255,18 +253,6 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                 }
             })
         }
-
-        const inverted = this.knobsInverted.get();
-
-        /* Not sure what the outer ternary is for here
-        const minKnobLabel = inverted
-            ? `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`
-            : `${this.minKnobValue}`;
-
-        const maxKnobLabel = inverted
-            ? `${this.maxKnobValue}`
-            : `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
-        */
 
         const minKnobLabel = `${this.minKnobValue == MORE ? '+' : this.minKnobValue}`;
         const maxKnobLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
@@ -314,36 +300,34 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
     exactKnobs = () => {
 
-        const onTouchMove = (event: GestureResponderEvent) => {
-            const delta = event.nativeEvent.locationX - this.touchStartX.get();
-            
+        const onTouchMove = (delta: number) => {
             runInAction(() => {
                 if (delta > 0) {
                     // pull max open
                     if (this.minIsOnTop) {
                         this.knobsInverted.set(true);
-                        this.minKnobLeft.set(this.minKnobLeft.get() + delta)
+                        this.minKnobLeft.set(this.touchStartX.get() + delta)
                     } else {
-                        this.maxKnobLeft.set(this.maxKnobLeft.get() + delta)
+                        this.maxKnobLeft.set(this.touchStartX.get() + delta)
                     }
                 } else {
                     // pull min open
                     if (this.maxIsOnTop) {
                         this.knobsInverted.set(true);
-                        this.maxKnobLeft.set(this.maxKnobLeft.get() + delta)
+                        this.maxKnobLeft.set(this.touchStartX.get() + delta)
                     } else {
-                        this.minKnobLeft.set(this.minKnobLeft.get() + delta)
+                        this.minKnobLeft.set(this.touchStartX.get() + delta)
                     }
                 }
 
                 this.isExact.set(false)
             })
-            
         }
 
-        const onTouchEnd = (event: GestureResponderEvent) => {
+        const onTouchEnd = () => {
 
         }
+
         const exactLabel = `${this.maxKnobValue == MORE ? '+' : this.maxKnobValue}`;
 
         return this.knobs({
@@ -363,71 +347,70 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     knobs = (config: {
         min: {
             label: string,
-            onTouchMove: (event: GestureResponderEvent) => void,
-            onTouchEnd: (event: GestureResponderEvent) => void
+            onTouchMove: (delta: number) => void,
+            onTouchEnd: () => void
         },
         max: {
             label: string,
-            onTouchMove: (event: GestureResponderEvent) => void,
-            onTouchEnd: (event: GestureResponderEvent) => void
+            onTouchMove: (delta: number) => void,
+            onTouchEnd: () => void
         }
     }) => {
 
-        const onTouchStart = (event: GestureResponderEvent) => {
-            this.touchStartX.set(event.nativeEvent.locationX)
-        }
-
-        const onTouchEnd = (isMin: boolean) => (event: GestureResponderEvent) => {
+        const onTouchStart = (isMin: boolean) => () => {
             runInAction(() => {
                 if (isMin) {
-                    config.min.onTouchEnd(event)
+                    this.touchStartX.set(this.minKnobLeft.get());
                 } else {
-                    config.max.onTouchEnd(event)
+                    this.touchStartX.set(this.maxKnobLeft.get());
                 }
-                
-                this.touchStartX.set(0)
+            })
+        }
+
+        const onTouchMove = (isMin: boolean) => (delta : number) => {
+            runInAction(() => {
+                if (isMin) {
+                    config.min.onTouchMove(delta)
+                } else {
+                    config.max.onTouchMove(delta)
+                }
+            })
+        }
+
+        const onTouchEnd = (isMin: boolean) => () => {
+            runInAction(() => {
+                if (isMin) {
+                    config.min.onTouchEnd()
+                } else {
+                    config.max.onTouchEnd()
+                }
             })
         }
 
         return (
             <>
-                <Pressable 
-                    key='min' 
-                    style={[styles.knob, { left: this.minKnobLeft.get(), zIndex: this.minIsOnTop ? 10 : 1 }]}
-                    onTouchStart={onTouchStart}
-                    onTouchMove={config.min.onTouchMove}
-                    onTouchEnd={onTouchEnd(true)}
-                >
-                    <Text style={{ color: styles.knob.color }}>{config.min.label}</Text>
-                    {
-                        this.isExactValue && this.minIsOnTop
-                            ? this.exactKnobDecorations()
-                            : null
-                    }
-                </Pressable>
-                <Pressable 
-                    key='max' 
-                    style={[styles.knob, { left: this.maxKnobLeft.get(), zIndex: this.maxIsOnTop ? 10 : 1  }]}
-                    onTouchStart={onTouchStart}
-                    onTouchMove={config.max.onTouchMove}
-                    onTouchEnd={onTouchEnd(false)}
-                >
-                    <Text style={[{ color: styles.knob.color }, this.maxKnobValue == MORE ? styles.more : null ]}>{config.max.label}</Text>
-                    {
-                        this.isExactValue && this.maxIsOnTop
-                            ? this.exactKnobDecorations()
-                            : null
-                    }
-                </Pressable>
+                <Knob 
+                    key={'min'}
+                    label={config.min.label}
+                    onTop={this.minIsOnTop}
+                    left={this.minKnobLeft.get()}
+                    isExact={this.isExactValue}
+                    onMove={onTouchMove(true)}
+                    onStart={onTouchStart(true)}
+                    onEnd={onTouchEnd(true)}
+                />
+                <Knob 
+                    key={'max'}
+                    label={config.max.label}
+                    onTop={this.maxIsOnTop}
+                    left={this.maxKnobLeft.get()}
+                    isExact={this.isExactValue}
+                    onMove={onTouchMove(false)}
+                    onStart={onTouchStart(false)}
+                    onEnd={onTouchEnd(false)}
+                />
             </>
         )
-    }
-
-    exactKnobDecorations = () => {
-        return <>
-            <View style={{ borderLeftColor: styles.knob.color, borderLeftWidth: 1, height: 4, position: 'absolute', top: 0 }}></View>
-            <View style={{ borderLeftColor: styles.knob.color, borderLeftWidth: 1, height: 4, position: 'absolute', bottom: 0 }}></View>
-        </>
     }
 
     onLayout = (e: LayoutChangeEvent) => {
@@ -438,6 +421,10 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                 this.width.set(calculatedWidth)
                 this.minKnobLeft.set(this.initialMinKnobLeft(calculatedWidth))
                 this.maxKnobLeft.set(this.initialMaxKnobLeft(calculatedWidth))
+                
+                if (this.isExactValue && (this.topKnob.get() == null)) {
+                    this.topKnob.set(Knobs.Min)
+                }
             })
         }
     }
@@ -481,7 +468,9 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                                     : this.rangeKnobs() 
                                 }
                             </View>
-                            : null
+                            : <View style={{position: 'relative', flexDirection: 'row', paddingVertical: sliderVerticalPadding, marginVertical: 20 }}>
+                                { this.stepBar() }
+                            </View>
                     }
                 </View>
             </View>
@@ -522,3 +511,60 @@ const styles = StyleSheet.create({
         fontSize: 20
     }
 })
+
+
+function Knob({
+    onTop,
+    label,
+    left,
+    key,
+    isExact,
+    onStart,
+    onMove,
+    onEnd
+}: {
+    onTop: boolean,
+    label: string,
+    left: number,
+    key: string,
+    isExact: boolean,
+    onStart: () => void,
+    onMove: (deltaX: number) => void,
+    onEnd: () => void
+}) {
+    const positionStyles = { left: left, zIndex: onTop ? 10 : 1 }
+
+    const exactKnobDecorations = () => {
+        return <>
+            <View style={{ borderLeftColor: styles.knob.color, borderLeftWidth: 1, height: 4, position: 'absolute', top: 0 }}></View>
+            <View style={{ borderLeftColor: styles.knob.color, borderLeftWidth: 1, height: 4, position: 'absolute', bottom: 0 }}></View>
+        </>
+    }
+
+    const panProps: PanGestureHandlerProps = {
+        onBegan: (e) => {
+            onStart()
+        }, 
+        onGestureEvent: (e) => {
+            onMove(e.nativeEvent.translationX)
+        },
+        onEnded: (e) => {
+            onEnd()
+        }
+    }
+
+    return (
+        <PanGestureHandler key={key} {...panProps} >
+            <Animated.View
+                style={[styles.knob, positionStyles]}
+                >
+                <Text style={{ color: styles.knob.color }}>{label}</Text>
+                {
+                    isExact && onTop
+                        ? exactKnobDecorations()
+                        : null
+                }
+            </Animated.View>
+        </PanGestureHandler>
+    )
+}
