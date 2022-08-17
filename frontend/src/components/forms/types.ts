@@ -202,6 +202,7 @@ export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormI
     // defines what component it will get mapped to
     type: Type
     props?: InlineFormInputOptions[Type]['props']
+    inputType?: KeyboardType
 } & BaseFormInputConfig;
 
 export type ScreenFormInputConfig<Type extends ScreenFormInputType = ScreenFormInputType, Val extends ScreenFormInputOptions[Type]['type'] = ScreenFormInputOptions[Type]['type']> = {

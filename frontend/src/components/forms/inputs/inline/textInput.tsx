@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Ref } from "react";
-import { TextInput as RNTextInput, StyleSheet, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
+import { TextInput as RNTextInput, KeyboardType, StyleSheet, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
 import { unwrap } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
 import { Colors } from "../../../../types";
@@ -11,6 +11,7 @@ type Props = SectionInlineViewProps<'TextInput'> & {
     dontBlurOnSubmit?: boolean,
     disableAutoCorrect?: boolean,
     nativeRef?: Ref<RNTextInput>
+    inputType?: KeyboardType,
 }
 
 const TextInput = observer(({ 
@@ -19,7 +20,8 @@ const TextInput = observer(({
     onSubmitEditing,
     dontBlurOnSubmit,
     disableAutoCorrect,
-    nativeRef
+    nativeRef,
+    inputType
 }: Props) => {
 
     return (
@@ -35,7 +37,7 @@ const TextInput = observer(({
                     style || null
                 ]}
                 ref={nativeRef}
-                keyboardType={config.inputType}
+                keyboardType={inputType}
                 autoCorrect={!disableAutoCorrect}
                 placeholder={unwrap(config.placeholderLabel)}
                 editable={!config.disabled}
