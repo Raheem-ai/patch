@@ -1,6 +1,12 @@
 const STRINGS = {
-
     // GLOBAL
+    ELEMENTS: {
+        role: 'role',
+        shift: 'shift',
+        attribute: 'attributes',
+        tag: 'tag',
+        position: `position`,
+    },
     visualDelim: '·',
     responders: (n: number) => n > 1 ? 'responders' : 'responder',
     nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
@@ -24,7 +30,16 @@ const STRINGS = {
         fr: 'F',
         sa: 'S',
     },
+    LINKS: {
+        helpCenter: 'Documentation',
+        newTicket: 'Report an issue',
+    },
+    INTERFACE: {
+        addElement: (el?:string) => `Add${el ? ' ' + el : ''}`,
+        addCategory: (el?:string) => `Add${el ? ' ' + el : ''} category`,
+        addAnotherElement: (el?:string) => `Add another ${el}`,
 
+    },
     REQUESTS: {
         NOTIFICATIONS: {
             notifyNResponders: (n: number) => `Notify ${STRINGS.nResponders(n)}`,
@@ -75,8 +90,7 @@ const STRINGS = {
         joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
         invitationSuccessful: (email:string, phone:string) => `Invitation sent to email ${email} and phone ${phone}.`,
         twilioError: (msg:string) => `Twilio Error: ${msg}`,
-        cannotEditRole: (roleName:string) => `The '${roleName}' role cannot be edited`,
-        cannotDeleteRole: (roleName:string) => `The '${roleName}' role cannot be deleted`,
+        
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
@@ -88,6 +102,12 @@ const STRINGS = {
         createdRequestSuccess: (req:string) => `Successfully created ${req}.`,
 
     },
+    SETTINGS: {
+        deleteRole: 'Delete this role',
+        cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
+        cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
+        assignedToAll: ' (assigned to all members)',
+    }
 }
 
 export default STRINGS;

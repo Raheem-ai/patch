@@ -269,7 +269,7 @@ export class OrganizationController implements APIController<
         // dissallowed in front end so should never happen but just in case
         if (roleUpdates.id == DefaultRoleIds.Admin) {
             const adminRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Admin).name
-            throw new BadRequest(STRINGS.ACCOUNT.cannotEditRole(adminRoleName));
+            throw new BadRequest(STRINGS.SETTINGS.cannotEditRole(adminRoleName));
         }
 
         const updatedOrg = await this.db.editRole(orgId, roleUpdates);
@@ -295,13 +295,13 @@ export class OrganizationController implements APIController<
         // dissallowed in front end so should never happen but just in case
         if (roleIds.includes(DefaultRoleIds.Anyone)) {
             const anyoneRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Anyone).name
-            throw new BadRequest(STRINGS.ACCOUNT.cannotDeleteRole(anyoneRoleName));
+            throw new BadRequest(STRINGS.SETTINGS.cannotDeleteRole(anyoneRoleName));
         }
 
         // dissallowed in front end so should never happen but just in case
         if (roleIds.includes(DefaultRoleIds.Admin)) {
             const adminRoleName = DefaultRoles.find(def => def.id == DefaultRoleIds.Admin).name
-            throw new BadRequest(STRINGS.ACCOUNT.cannotDeleteRole(adminRoleName));
+            throw new BadRequest(STRINGS.SETTINGS.cannotDeleteRole(adminRoleName));
         }
 
         const updatedOrg = await this.db.removeRolesFromOrganization(org.id, roleIds);

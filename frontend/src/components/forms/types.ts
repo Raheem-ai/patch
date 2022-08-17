@@ -103,6 +103,7 @@ export type ScreenFormInputOptions = {
             },
             onItemDeleted?: (idx: number, val: any) => void
             dark?: boolean
+            setDefaultClosed?: boolean
         }, 
         type: CategorizedItem[]
     }, 

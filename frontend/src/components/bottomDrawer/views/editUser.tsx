@@ -16,6 +16,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import PatchButton from "../../patchButton";
 
 @observer
 export default class EditUser extends React.Component {
@@ -81,15 +82,11 @@ export default class EditUser extends React.Component {
                     { renderInputs(inputs()) }
                     { this.canRemoveUser()
                         ? <View style={styles.actionButtonsContainer}>
-                            <Button 
-                                mode= 'outlined'
+                            <PatchButton 
+                                mode='outlined'
                                 uppercase={false}
-                                style={styles.actionButton}
-                                color={styles.actionButton.borderColor}
-                                onPress={this.removeUserFromOrg}
-                                >
-                                    {this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
-                            </Button>
+                                label={this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
+                                onPress={this.removeUserFromOrg} />
                         </View>
                         : null
                     }
@@ -284,7 +281,7 @@ export default class EditUser extends React.Component {
 const styles = StyleSheet.create({
     actionButtonsContainer: {
         alignContent: 'center',
-        marginVertical: 20
+        margin: 20
     },
     actionButton: {
         borderColor: Colors.primary.alpha,
