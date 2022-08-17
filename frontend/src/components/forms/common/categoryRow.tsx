@@ -6,6 +6,7 @@ import { IconButton, Text } from "react-native-paper";
 type CategoryRowProps = {
     id: string,
     name: string,
+    defaultClosed?: boolean,
     items: {
         id: string, 
         name: string
@@ -28,6 +29,7 @@ const CategoryRow = observer(({
     name,
     items,
     categoryAction,
+    defaultClosed,
     categoryFooter,
     categoryLabelStyle,
     itemLabelStyle,
@@ -36,7 +38,7 @@ const CategoryRow = observer(({
     itemRow,
     categoryLabel
 }: CategoryRowProps) => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(defaultClosed ? false : true);
 
     const toggleOpen = () => {
         setIsOpen(!isOpen)

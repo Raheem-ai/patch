@@ -1,5 +1,6 @@
+import { autoAction } from "mobx/dist/internal";
 import React from "react";
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Colors } from "../types";
 
@@ -7,6 +8,7 @@ export type PatchButtonProps = {
     label: string,
     width?: number | string,
     small?: boolean,
+    style?: StyleProp<ViewStyle>
   } & Pick <React.ComponentProps<typeof Button>,
     'mode'
     | 'dark'
@@ -15,7 +17,6 @@ export type PatchButtonProps = {
     | 'uppercase'
     | 'accessibilityLabel'
     | 'contentStyle'
-    | 'style'
     | 'labelStyle'
     | 'onPress'
   >;
@@ -25,31 +26,43 @@ const PatchButton = ( props:PatchButtonProps) => {
         label,
         width,
         small,
+        style,
         ...rest
     } = props;
 
-    const buttonStyle = rest.mode 
-        ? rest.mode == 'outlined'
-            ? styles.outlinedButton
-            : rest.mode == 'contained'
-                ? styles.containedButton
-                : styles.textButton
-        : styles.outlinedButton;
 
-    const buttonLabelStyle = rest.mode 
-        ? rest.mode == 'outlined'
-            ? styles.outlinedButtonLabel
-            : rest.mode == 'contained'
-                ? styles.containedButtonLabel
-                : styles.textButtonLabel
-        : styles.outlinedButton;
+    let buttonStyle, buttonLabelStyle;
+
+    switch(rest.mode) {
+        case 'text':
+            buttonStyle = styles.textButton;
+            buttonLabelStyle = styles.textButtonLabel;
+            break;
+        case 'contained':
+            buttonStyle = styles.containedButton;
+            buttonLabelStyle = styles.containedButtonLabel;
+            break;
+        default:
+            buttonStyle = styles.outlinedButton;
+            buttonLabelStyle = styles.outlinedButtonLabel;
+            break;
+    }
 
     return(
-        <Button {...rest}
-            style={[ styles.button, buttonStyle, (width ? {width: width} : (buttonStyle == styles.textButton || small ? null : {width: '100%'})), (small && styles.smallButton) ]}
+        <Button 
+            {...rest}
+            style={[ 
+                styles.button, 
+                (width 
+                    ? {width: width} 
+                    : (buttonStyle == styles.textButton || small 
+                        ? null 
+                        : {width: '100%'})), 
+                (small && styles.smallButton),
+                buttonStyle, 
+                style ]}
             labelStyle={[ styles.buttonLabel, buttonLabelStyle, (small && styles.buttonLabelSmall) ]}
-            accessibilityLabel={label}>{label}
-        </Button>
+            accessibilityLabel={label}>{label}</Button>
     )
 }
 
@@ -58,20 +71,14 @@ export default PatchButton;
 
 const styles = StyleSheet.create({
     button: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
         borderRadius: 32,
-        height: 48,
+        paddingVertical: 8,
     },
     smallButton: {
-        height: 36,
-        width: null,
+        paddingVertical: 2,
     },
     containedButton: {
         backgroundColor: Colors.primary.alpha,
-        color: Colors.text.defaultReversed,
     },
     outlinedButton: {
         borderWidth: 1,
@@ -80,8 +87,12 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     textButton: {
-        backgroundColor: Colors.backgrounds.standard,
+        backgroundColor: Colors.nocolor,
         borderColor: Colors.nocolor,
+        display: 'flex',
+        alignSelf: 'flex-start',
+        paddingVertical: 4,
+        paddingHorizontal: 0,
     },
     buttonLabel: {
         letterSpacing: 0.2,
@@ -90,6 +101,7 @@ const styles = StyleSheet.create({
     },
     buttonLabelSmall: {
         fontSize: 14,
+        textTransform: 'none',
     },
     containedButtonLabel: {
         color: Colors.text.defaultReversed,
@@ -100,23 +112,6 @@ const styles = StyleSheet.create({
     textButtonLabel: {
         color: Colors.primary.alpha,
         textTransform: 'uppercase',
+        textAlign: 'left',
     },
 })
-
-/*
-Standard Button props:
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-
-*/

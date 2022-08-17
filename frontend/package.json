@@ -3,10 +3,10 @@
     "dev": "expo start --no-https",
     "dev:staging": "_ENVIRONMENT=staging expo start --no-https",
     "dev:prod": "_ENVIRONMENT=prod expo start --no-https",
-    "build:prod:ios": "_ENVIRONMENT=prod expo build:ios --release-channel prod",
-    "build:staging:ios": "_ENVIRONMENT=staging expo build:ios --release-channel staging",
-    "build:prod:android": "_ENVIRONMENT=prod expo build:android -t app-bundle --release-channel prod",
-    "build:staging:android": "_ENVIRONMENT=staging expo build:android -t app-bundle --release-channel staging"
+    "build:prod:ios": "_ENVIRONMENT=prod _PLATFORM=ios expo build:ios -t archive --release-channel prod",
+    "build:staging:ios": "_ENVIRONMENT=staging _PLATFORM=ios expo build:ios -t archive --release-channel staging",
+    "build:prod:android": "_ENVIRONMENT=prod _PLATFORM=android expo build:android -t app-bundle --release-channel prod",
+    "build:staging:android": "_ENVIRONMENT=staging _PLATFORM=android expo build:android -t app-bundle --release-channel staging"
   },
   "dependencies": {
     "@googlemaps/google-maps-services-js": "3.1.16",
