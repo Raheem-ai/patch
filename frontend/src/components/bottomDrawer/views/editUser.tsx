@@ -7,7 +7,8 @@ import { PatchPermissions } from "../../../../../common/models";
 import STRINGS from "../../../../../common/strings";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { navigationRef } from "../../../navigation";
+import { navigationRef, navigateTo } from "../../../navigation";
+import { routerNames } from '../../../types';
 import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
 import { Colors } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
@@ -102,8 +103,8 @@ export default class EditUser extends React.Component {
 
         return {
             headerLabel: editingMe
-                ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile'`,
+                ? STRINGS.ACCOUNT.editProfile()
+                : STRINGS.ACCOUNT.editProfile(editUserStore().name),
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs(),
@@ -126,12 +127,14 @@ export default class EditUser extends React.Component {
 
             if (this.onMyProfile) {
                 await userStore().removeMyselfFromOrg();
+                // what should happen at this point??
             } else {
                 await userStore().removeCurrentUserFromOrg();
 
-                alertStore().toastSuccess(STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name));
+                // alertStore().toastSuccess(STRINGS.ACCOUNT.removedUserSuccess(editUserStore().name));
 
-                navigationRef.current?.goBack();
+                // navigationRef.current?.goBack();
+                // navigateTo(routerNames.teamList);
             }
 
             bottomDrawerStore().hide();

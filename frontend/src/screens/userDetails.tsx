@@ -8,6 +8,9 @@ import Tags from "../components/tags";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
+import { navigateTo } from "../navigation";
+import { routerNames } from '../types';
+
 
 
 type Props = ScreenProps<'UserDetails'>;
@@ -28,8 +31,11 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             }
         }
 
+        // we're getting errors after removing a user from the org
+        // because currentUser has been set to null in editUser.tsx
+        // not sure why we're on this page though since we try to navigate to teamList
         const detailsText = [
-            userStore().currentUser.pronouns,
+            (userStore().currentUser.pronouns),
             ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${STRINGS.visualDelim} `);
 

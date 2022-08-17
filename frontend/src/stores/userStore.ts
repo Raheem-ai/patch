@@ -10,6 +10,8 @@ import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 import { clearAllStores } from './utils';
 import { clearAllServices } from '../services/utils';
+import { alertStore } from './interfaces';
+import { resolveErrorMessage } from "../errors";
 
 @Store(IUserStore)
 export default class UserStore implements IUserStore {
@@ -163,6 +165,7 @@ export default class UserStore implements IUserStore {
             await this.afterSignIn(authTokens);
         } catch (e) {
             console.error(e);
+            // alertStore().toastError(resolveErrorMessage(e));
         }
     }
 
@@ -253,10 +256,14 @@ export default class UserStore implements IUserStore {
     async removeCurrentUserFromOrg() {
         const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
         
+        console.log('user: ', user);
+
         runInAction(() => {
             this.users.set(user.id, user);
             this.currentUser = null
         })
+
+        await navigationStore().navigateToSync(routerNames.teamList);
     }
 
     async removeMyselfFromOrg() {
