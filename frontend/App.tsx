@@ -47,6 +47,7 @@ import InvitationSuccessfulPage from './src/screens/InvitationSuccessfulPage';
 import CreateAccountForm from './src/screens/CreateAccountForm';
 import Chats from './src/screens/chats';
 import * as SplashScreen from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -113,42 +114,44 @@ export default function App() {
     return (
         // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
         // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
-        <Provider container={container}>
-            <PaperProvider theme={theme}>
-                <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
-                {/* <GlobalErrorBoundary> */}
-                    <StatusBar
-                        animated={true}
-                        barStyle={'light-content'}
-                        // just for android so it's behavior is *more* similiar to ios
-                        translucent={true} />
-                    <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
-                        <Stack.Screen name={routerNames.landing} component={LandingPage} />
-                        <Stack.Screen name={routerNames.signIn} component={SignInForm} />
-                        <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
-                        <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
-                        <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />
-                         {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
-                        <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
-                        <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
-                        <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
-                        <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
-                        <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
-                        <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
-                        <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
-                        <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
-                        <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
-                        <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
-                        <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
-                        <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
-                        <Stack.Screen name={routerNames.chats} component={userScreen(visualArea(Chats))}/>
-                    </Stack.Navigator>
-                    <Alerts/>
-                    <GlobalBottomDrawer/>
-                {/* </GlobalErrorBoundary>   */}
-                </NavigationContainer>
-            </PaperProvider>
-        </Provider>
+          <Provider container={container}>
+              <PaperProvider theme={theme}>
+                  <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
+                  {/* <GlobalErrorBoundary> */}
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <StatusBar
+                          animated={true}
+                          barStyle={'light-content'}
+                          // just for android so it's behavior is *more* similiar to ios
+                          translucent={true} />
+                      <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
+                          <Stack.Screen name={routerNames.landing} component={LandingPage} />
+                          <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+                          <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
+                          <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
+                          <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />
+                          {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
+                          <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
+                          <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
+                          <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
+                          <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
+                          <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
+                          <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
+                          <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
+                          <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
+                          <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
+                          <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
+                          <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
+                          <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
+                          <Stack.Screen name={routerNames.chats} component={userScreen(visualArea(Chats))}/>
+                      </Stack.Navigator>
+                      <Alerts/>
+                      <GlobalBottomDrawer/>
+                  {/* </GlobalErrorBoundary>   */}
+                    </GestureHandlerRootView>
+                  </NavigationContainer>
+              </PaperProvider>
+          </Provider>
     );
 }
 

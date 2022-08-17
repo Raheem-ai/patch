@@ -4,8 +4,10 @@ const path = require('path');
 
 // NOTE: put your ngrok url here for development
 let apiHost = ''
-// increment every time you do a build you're going to submit
-const BUILD_NUMBER = '0.0.6'
+// increment every time you do a build you're going to submit a new release 
+const RELEASE_NUMBER = '0.0.7'
+// increment this any time you want to submit a new release to the play store
+const BUILD_COUNT = 3
 
 // provided by (build/local) runner
 const ENV = process.env._ENVIRONMENT 
@@ -48,14 +50,9 @@ if (!ENV) {
 
 	apiHost = 'https://patch-api-wiwa2devva-uc.a.run.app'
 
-	if (PLATFORM == 'ios') {
-		VERSION = BUILD_NUMBER
-		IOS_BUILD_NUMBER = '1'
-	} else if (PLATFORM == 'android') {
-		VERSION = BUILD_NUMBER
-		// needs to be unique for android
-		ANDROID_VERSION_CODE = VERSION
-	}
+	ANDROID_VERSION_CODE = ((BUILD_COUNT - 1) * 2) + 1
+	VERSION = RELEASE_NUMBER
+	IOS_BUILD_NUMBER = '1'
 } else {
 	// in case we run this locally (to build or for frontend dev)
 	if (!process.env.GOOGLE_MAPS) {
@@ -65,13 +62,13 @@ if (!ENV) {
 	// default to staging
 	apiHost = 'https://patch-api-staging-y4ftc4poeq-uc.a.run.app'
 
+	ANDROID_VERSION_CODE = ((BUILD_COUNT - 1) * 2)
+	IOS_BUILD_NUMBER = '0.0.1'
+
 	if (PLATFORM == 'ios') {
-		VERSION = BUILD_NUMBER
-		IOS_BUILD_NUMBER = '0.0.1'
+		VERSION = RELEASE_NUMBER
 	} else if (PLATFORM == 'android') {
-		VERSION = `${BUILD_NUMBER}-staging`
-		// needs to be unique for android
-		ANDROID_VERSION_CODE = BUILD_NUMBER
+		VERSION = `${RELEASE_NUMBER}-staging`
 	}
 }
 

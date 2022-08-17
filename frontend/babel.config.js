@@ -10,6 +10,7 @@ module.exports = function(api) {
   }
 
   const plugins = [
+    "react-native-reanimated/plugin" // NOTE: need to be the last item in this array !!!
   ];
 
   return {
