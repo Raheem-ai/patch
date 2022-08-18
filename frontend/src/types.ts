@@ -9,7 +9,6 @@ export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
 // TODO: update these types as well
 export type RootStackParamList = {
     Landing: undefined;
-    JoinOrganization: undefined;
     InvitationSuccessful: undefined;
     CreateAccount: undefined;
     SignIn: undefined;
@@ -26,7 +25,8 @@ export type RootStackParamList = {
     ComponentLib: undefined;
     Settings: undefined;
     Chats: undefined;
-    SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
+    SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization];
+    JoinOrganization: LinkParams[LinkExperience.JoinOrganization];
 };
 
 // lets us have strict types for routerNames so we can get intellisense for them
@@ -36,13 +36,13 @@ type TypedRouterNames = {
 
 export const routerNames: TypedRouterNames = {
     landing: "Landing",
-    joinOrganization: "JoinOrganization",
     invitationSuccessful: "InvitationSuccessful",
     signIn: "SignIn",
     createAccount: "CreateAccount",
     home: "Home",
     signUp: "SignUp",
     signUpThroughOrg: "SignUpThroughOrg",
+    joinOrganization: "JoinOrganization",
     userHomePage: "UserHomePage",
     userDetails: "UserDetails",
     helpRequestDetails : "HelpRequestDetails",

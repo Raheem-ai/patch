@@ -159,9 +159,9 @@ export class OrganizationController implements APIController<
         @Required() @Format('email') @BodyParams('email') email: string, 
         @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
         // can't get this to validate right
-        @Required() @BodyParams('roles') roles: UserRole[], 
+        @BodyParams('roles') roles: UserRole[], 
         @BodyParams('roleIds') roleIds: string[], 
-        @Required() @BodyParams('attributes') attributes: CategorizedItem[], 
+        @BodyParams('attributes') attributes: CategorizedItem[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
 

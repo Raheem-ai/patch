@@ -1,10 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IEditUserStore, IUserStore, userStore } from './interfaces';
-import { Me, ProtectedUser } from '../../../common/models';
+import { Me, ProtectedUser, PatchPermissions } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
 import { PhoneNumberRegex } from '../../../common/constants';
+import { iHaveAllPermissions } from '../utils';
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
@@ -213,6 +214,9 @@ export default class EditUserStore implements IEditUserStore {
         return true
     }
 
+    private canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+    private canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+
     editUser = async () => {
         return await userStore().editUser(this.id, {
             roleIds: this.roles,
@@ -231,8 +235,8 @@ export default class EditUserStore implements IEditUserStore {
             bio: this._bio == null ? undefined : this.bio
         },
         {
-            roleIds: this._roles == null ? undefined : this.roles,
-            attributes: this._attributes == null ? undefined : this.attributes
+            roleIds: (this._roles == null) || !this.canEditRoles ? undefined : this.roles,
+            attributes: (this._attributes == null) || !this.canEditRoles ? undefined : this.attributes
         })
     }
 }

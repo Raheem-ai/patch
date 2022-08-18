@@ -40,6 +40,7 @@ export class RequirePermissionsMiddleware {
       const orgConfig = user.organizations && user.organizations[orgId];
 
       if (!orgConfig) {
+        // should we sign them out at this point? Is it possible to force sign them out when we removed them?
         throw new Forbidden(STRINGS.ACCOUNT.noOrgAccess);
       }
 

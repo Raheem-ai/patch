@@ -32,12 +32,14 @@ export interface IUserStore extends IBaseStore {
     toggleOnDuty(): Promise<void>
     inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string): Promise<PendingUser>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<void>
+    joinOrganization: (orgId: string, pendingId: string, user: MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}) => Promise<void>
     pushCurrentUser: (user: ClientSideFormat<ProtectedUser>) => void;
     removeCurrentUserFromOrg: () => Promise<void>
     removeMyselfFromOrg: () => Promise<void>
     editUser: (userId: string, user: Partial<AdminEditableUser>) => Promise<void>
     editMe: (user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) => Promise<void>
 }
+
 
 export namespace IUserStore {
     export const id = Symbol('IUserStore');

@@ -84,6 +84,8 @@ export interface IApiClient {
     signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
     refreshAuth: (refreshToken: string) => Promise<string>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
+    joinOrganization: (orgId: string, pendingId: string, user: MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}) => Promise<AuthTokens>
+
     
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -291,6 +293,9 @@ type ApiRoutes = {
         signUpThroughOrg: () => {
             return '/signUpThroughOrg'
         },
+        joinOrganization: () => {
+            return '/joinOrganization'
+        },
         editUser: () => {
             return '/editUser'
         },
@@ -309,6 +314,9 @@ type ApiRoutes = {
         },
         signUpThroughOrg: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUpThroughOrg()}`
+        },
+        joinOrganization: () => {
+            return `${this.base}${this.namespaces.users}${this.server.joinOrganization()}`
         },
         signIn: () => {
             return `${this.base}${this.namespaces.users}${this.server.signIn()}`

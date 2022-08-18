@@ -42,9 +42,8 @@ export default class UserStore implements IUserStore {
             // make sure this doesn't throw because any store that depends on the user store
             // won't get initialized when there is a stale refreshToken
             try {
-                
 
-                // wait for api to init so it's persistent state can settle
+                // wait for api to init so its persistent state can settle
                 // before relying on it to handle the refresh token auth flow
                 await this.api.init();
 
@@ -160,11 +159,22 @@ export default class UserStore implements IUserStore {
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
         const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
-        
+
         try {
             await this.afterSignIn(authTokens);
         } catch (e) {
             console.error(e);
+            // alertStore().toastError(resolveErrorMessage(e));
+        }
+    }
+
+    async joinOrganization(orgId: string, pendingId: string, minUser: MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}) {
+        const authTokens = await this.api.joinOrganization(orgId, pendingId, minUser)
+
+        try {
+            await this.afterSignIn(authTokens);
+        } catch (e) {
+            console.error('in us().jo', e);
             // alertStore().toastError(resolveErrorMessage(e));
         }
     }

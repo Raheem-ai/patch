@@ -4,7 +4,7 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser } from "common/models";
+import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -106,6 +106,7 @@ export class UsersController implements APIController<
     | 'refreshAuth' 
     | 'getSecrets'
     | 'signUpThroughOrg'
+    | 'joinOrganization'
     | 'editMe'
     | 'editUser'
 > {
@@ -227,6 +228,78 @@ export class UsersController implements APIController<
         }
     }
 
+    @Post(API.server.joinOrganization())
+    async joinOrganization(
+        @Required() @BodyParams('orgId') orgId: string,
+        @Required() @BodyParams('pendingId') pendingId: string,
+        @Required() @BodyParams('user') user: ValidatedMinUser
+    ) {
+        const existingUsers = await this.users.find({ email: user.email });
+
+        if (existingUsers && existingUsers.length) {
+            // TO DO: loop through all existingUsers instead of just grabbing the first one
+            // TO DO: make this all less brittle
+
+            console.log('user: ',existingUsers[0]);
+
+            for (const org in existingUsers[0].organizations) {
+                // check all of their organizations
+                // to see if they belong to the inviting organization
+
+                let userIsActiveInOrg: boolean = false;
+
+                if (org == orgId && !!existingUsers[0].organizations[org]) {
+                    // they're already active in the org <== TO DO: brittle
+                    throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email)); // wrong error
+                }
+            }
+            // if we haven't thrown an error, it means they have an account 
+            // but no object for the organization they've been invited to
+            const theOrg = await this.db.resolveOrganization(orgId);
+            const theUser = await this.db.resolveUser(existingUsers[0].id);
+
+            // TO DO: construct user object from new information (name and roles) if provided
+            // rather than just replicating what was there before
+
+            await this.db.addUserToOrganization(theOrg, theUser, [], [], []);
+
+            // return auth tokens <== not sure what this is doing
+            const accessToken = await createAccessToken(theUser.id, theUser.auth_etag)
+            const refreshToken = await createRefreshToken(theUser.id, theUser.auth_etag)
+
+            const res = {
+                accessToken,
+                refreshToken
+            }
+
+            await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
+                userId: theUser.id,
+                orgId: orgId
+            })
+
+            return res
+
+        } else {
+            const [ _, newUser ] = await this.db.createUserThroughOrg(orgId, pendingId, user);
+
+            // return auth tokens
+            const accessToken = await createAccessToken(newUser.id, newUser.auth_etag)
+            const refreshToken = await createRefreshToken(newUser.id, newUser.auth_etag)
+
+            const res = {
+                accessToken,
+                refreshToken
+            }
+
+            await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
+                userId: newUser.id,
+                orgId: orgId
+            })
+
+            return res
+        }
+    }
+
     @Post(API.server.signIn())
     async signIn(
         @Required() @BodyParams('credentials') credentials: ValidatedBasicCredentials,
@@ -247,30 +320,6 @@ export class UsersController implements APIController<
             console.log(user.organizations[org].attributes)
             console.log(user.organizations[org].onDuty)
         }
-/*
-
-this is what it looks like when you belong to an org (though roles / attributes could be blank)
-
-    orgs on sign in:  62da9695bfd645465b542368
-    roles: [ 2, 1, 0 ],
-    roleIds: [ '__admin', '__dispatcher', '__responder' ],
-    attributes: [ {
-            categoryId: 'ff5b7650-09b8-11ed-a81d-3b3daff45a5e',
-            itemId: 'ff71bd70-09b8-11ed-a81d-3b3daff45a5e'
-        }, 
-        {
-            categoryId: 'ffb1d3b0-09b8-11ed-a81d-3b3daff45a5e',
-            itemId: 'ffc75780-09b8-11ed-a81d-3b3daff45a5e'
-        }
-    ],
-    onDuty: true
-
-
-    see signUpThroughOrg above... we can find a user that we know belongs to the current org...
-    next, we need to change organizations{orgId} from null to something like the above
-
-
-*/
 
         user.auth_etag = uuid.v1();
         await user.save();

@@ -30,10 +30,6 @@ const HeaderConfig: {
         title: 'Landing',
         unauthenticated: true
     },
-    [routerNames.joinOrganization]: {
-        title: 'Join Organization',
-        unauthenticated: true
-    },
     [routerNames.invitationSuccessful]: {
         title: 'Invitation Successful',
         unauthenticated: true
@@ -52,6 +48,10 @@ const HeaderConfig: {
     },
     [routerNames.signUpThroughOrg]: {
         title: 'Sign Up',
+        unauthenticated: true
+    },
+    [routerNames.joinOrganization]: {
+        title: 'Join Organization',
         unauthenticated: true
     },
     [routerNames.userHomePage]: {

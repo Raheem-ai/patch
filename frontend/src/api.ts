@@ -180,6 +180,22 @@ export class APIClient implements IAPIService {
         return tokens;
     }
 
+    async joinOrganization (orgId: string, pendingId: string, user: MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.joinOrganization()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { 
+            orgId, 
+            pendingId,
+            user
+        })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
     async refreshAuth(refreshToken: string): Promise<string> {
         const url = `${apiHost}${API.client.refreshAuth()}`;
 

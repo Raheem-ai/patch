@@ -86,9 +86,18 @@ const LinkConfig: LinkExperiences = {
     },
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
-            console.log(params)
-            // TODO: flush out this flow when user already exists
+            console.log('jo: ',params)
+            // TODO: flesh out this flow when user already exists
             // NOTE: this requires us to have the concept of multiple orgs in the app
+            // or at least the concept of users who don't belong to an org
+            if (!navigationRef.current) {
+                runInAction(() => {
+                    linkingStore().initialRoute = routerNames.joinOrganization;
+                    linkingStore().initialRouteParams = params;
+                })
+            } else {
+                navigateTo(routerNames.joinOrganization, params)
+            }
         }
     }
 }

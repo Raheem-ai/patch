@@ -117,7 +117,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         return null
     }
 
-    if (loading) {
+    if (loading || !userStore().currentUser) {
         return null
     }
 

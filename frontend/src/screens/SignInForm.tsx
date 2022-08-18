@@ -67,8 +67,8 @@ export default function SignInForm( { navigation } : Props) {
                     <View style={styles.bottomContainer}>
                         <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
                         <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                        <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
-                    </View>
+                        {/* <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>*/}
+                    </View> 
                 </ScrollView>
             </Pressable>
         </KeyboardAvoidingView>

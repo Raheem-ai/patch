@@ -38,6 +38,7 @@ import { runInAction } from 'mobx';
 import TeamList from './src/screens/teamList';
 import { VisualArea } from './src/components/helpers/visualArea';
 import SignUpThroughOrg from './src/screens/signUpThroughOrg';
+import JoinOrganization from './src/screens/joinOrganization';
 import UserDetails from './src/screens/userDetails';
 import Alerts from './src/components/alerts/alerts';
 import ComponentLibrary from './src/screens/componentLibrary';
@@ -127,12 +128,13 @@ export default function App() {
                     <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
                         <Stack.Screen name={routerNames.landing} component={LandingPage} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />
-                        <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
+                        {/* <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} /> */}
                         <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
                         <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />
                         {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
+                        <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganization} />
                         <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
                         <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
                         <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>

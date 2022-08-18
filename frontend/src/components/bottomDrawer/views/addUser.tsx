@@ -76,10 +76,10 @@ export default class AddUser extends React.Component {
         return {
             headerLabel: STRINGS.ACCOUNT.inviteTitle, 
             onExpand: () => {
-                bottomDrawerStore().hideHeader();
+                // bottomDrawerStore().hideHeader();
             },
             onBack: () => {
-                bottomDrawerStore().showHeader();
+                // bottomDrawerStore().showHeader();
             },
             homeScreen: this.formHomeScreen,
             inputs: [
@@ -110,8 +110,32 @@ export default class AddUser extends React.Component {
                     type: 'TextInput',
                     inputType: 'phone-pad',
                     required: true
-                },
-                {
+                }
+            ] as [
+                InlineFormInputConfig<'TextInput'>, 
+                InlineFormInputConfig<'TextInput'>
+            ]
+        }
+    }
+
+    render() {
+        return <Form ref={this.setRef} {...this.formProps()}/>
+    }
+                
+}
+
+
+const styles = StyleSheet.create({
+    
+})
+
+
+/*
+
+                ScreenFormInputConfig<'TagList'>
+
+
+
                     onSave: (roles) => newUserStore().roles = roles,
                     val: () => {
                         return newUserStore().roles
@@ -134,22 +158,4 @@ export default class AddUser extends React.Component {
                         },
                     },
                     // required: true
-                }
-            ] as [
-                InlineFormInputConfig<'TextInput'>, 
-                InlineFormInputConfig<'TextInput'>, 
-                ScreenFormInputConfig<'TagList'>,
-            ]
-        }
-    }
-
-    render() {
-        return <Form ref={this.setRef} {...this.formProps()}/>
-    }
-                
-}
-
-
-const styles = StyleSheet.create({
-    
-})
+                */
