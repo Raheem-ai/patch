@@ -159,14 +159,14 @@ export class OrganizationController implements APIController<
         @Required() @Format('email') @BodyParams('email') email: string, 
         @Required() @Pattern(/[0-9]{10}/) @BodyParams('phone') phone: string, 
         // can't get this to validate right
-        @Required() @BodyParams('roles') roles: UserRole[], 
-        @Required() @BodyParams('roleIds') roleIds: string[], 
-        @Required() @BodyParams('attributes') attributes: CategorizedItem[], 
+        @BodyParams('roles') roles: UserRole[], 
+        @BodyParams('roleIds') roleIds: string[], 
+        @BodyParams('attributes') attributes: CategorizedItem[], 
         @Required() @BodyParams('baseUrl') baseUrl: string
     ) {
 
         if (!roles.length) {
-            throw new BadRequest(STRINGS.ACCOUNT.roleRequired)
+            // throw new BadRequest(STRINGS.ACCOUNT.roleRequired)
         }
 
         const org = await this.db.resolveOrganization(orgId)

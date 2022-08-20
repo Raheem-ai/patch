@@ -41,6 +41,7 @@ export default class AddUser extends React.Component {
                     try {
                         bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
+                        newUserStore().clear()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e));
                         return

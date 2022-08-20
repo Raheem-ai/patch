@@ -4,12 +4,13 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions } from "common/models";
+import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
+import { OrganizationController } from "./organizationController";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
@@ -165,7 +166,47 @@ export class UsersController implements APIController<
         const existingUsers = await this.users.find({ email: user.email });
 
         if (existingUsers && existingUsers.length) {
-            throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email));
+            // throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email));
+           // TO DO: loop through all existingUsers instead of just grabbing the first one
+            // TO DO: make this all less brittle
+
+            for (const org in existingUsers[0].organizations) {
+                // check all of their organizations
+                // to see if they belong to the inviting organization
+
+                let userIsActiveInOrg: boolean = false;
+
+                if (org == orgId && !!existingUsers[0].organizations[org]) {
+                    // they're already active in the org <== TO DO: brittle
+                    throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email)); // wrong error
+                }
+            }
+            // if we haven't thrown an error, it means they have an account 
+            // but no object for the organization they've been invited to
+            const theOrg = await this.db.resolveOrganization(orgId);
+            const theUser = await this.db.resolveUser(existingUsers[0].id);
+
+            // TO DO: construct user object from new information (name and roles) if provided
+            // rather than just replicating what was there before
+
+            await this.db.addUserToOrganization(theOrg, theUser, [], [], []);
+
+            // return auth tokens <== not sure what this is doing
+            const accessToken = await createAccessToken(theUser.id, theUser.auth_etag)
+            const refreshToken = await createRefreshToken(theUser.id, theUser.auth_etag)
+
+            const res = {
+                accessToken,
+                refreshToken
+            }
+
+            await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
+                userId: theUser.id,
+                orgId: orgId
+            })
+
+            return res
+
         } else {
             const [ _, newUser ] = await this.db.createUserThroughOrg(orgId, pendingId, user);
 
