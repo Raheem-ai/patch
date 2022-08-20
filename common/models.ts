@@ -37,6 +37,9 @@ export type SystemProperties = 'password';
 export type PrivateProperties = 'race'
 
 export type MinUser = AtLeast<User, 'email' | SystemProperties | 'name'>
+export type MinUserWithRoles = MinUser & Pick<PendingUser, 'roleIds'>
+
+//MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}
 
 export type ProtectedUser = Omit<User, PrivateProperties | SystemProperties>;
 

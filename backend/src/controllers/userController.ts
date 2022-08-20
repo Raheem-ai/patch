@@ -232,7 +232,7 @@ export class UsersController implements APIController<
     async joinOrganization(
         @Required() @BodyParams('orgId') orgId: string,
         @Required() @BodyParams('pendingId') pendingId: string,
-        @Required() @BodyParams('user') user: ValidatedMinUser
+        @Required() @BodyParams('user') user: PendingUser & { name:string, password:string }
     ) {
         const existingUsers = await this.users.find({ email: user.email });
 
@@ -257,11 +257,16 @@ export class UsersController implements APIController<
             // but no object for the organization they've been invited to
             const theOrg = await this.db.resolveOrganization(orgId);
             const theUser = await this.db.resolveUser(existingUsers[0].id);
+            const theRoleIds = theUser.organizations[orgId].roleIds;
+            const theAttributes = theUser.organizations[orgId].attributes;
 
             // TO DO: construct user object from new information (name and roles) if provided
             // rather than just replicating what was there before
 
-            await this.db.addUserToOrganization(theOrg, theUser, [], [], []);
+            await this.db.addUserToOrganization(theOrg, theUser, [], theRoleIds, theAttributes);
+
+            // gotta find the roles and then set them with... (this will fail if we don't have any, but...)
+            // await this.db.updateUser(orgId, theUser, {roleIds: user.roleIds, attributes: user.attributes})
 
             // return auth tokens <== not sure what this is doing
             const accessToken = await createAccessToken(theUser.id, theUser.auth_etag)

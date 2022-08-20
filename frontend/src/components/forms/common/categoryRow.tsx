@@ -6,11 +6,11 @@ import { IconButton, Text } from "react-native-paper";
 type CategoryRowProps = {
     id: string,
     name: string,
-    defaultClosed?: boolean,
     items: {
         id: string, 
         name: string
     }[],
+    defaultClosed?: boolean,
     categoryAction?: {
         icon: string
         handler: (categoryId: string) => void

@@ -45,6 +45,7 @@ const JoinOrganization = observer(({ navigation, route }: Props) => {
                         email: pendingUser.email,
                         password: passwordVal.get(),
                         name: nameVal.get(),
+                        roles: pendingUser.roles,
                     }
                     )
                 } catch(e) {

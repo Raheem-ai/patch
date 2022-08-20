@@ -41,6 +41,7 @@ export default class AddUser extends React.Component {
                     try {
                         bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
+                        newUserStore().clear()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e));
                         return
@@ -110,32 +111,8 @@ export default class AddUser extends React.Component {
                     type: 'TextInput',
                     inputType: 'phone-pad',
                     required: true
-                }
-            ] as [
-                InlineFormInputConfig<'TextInput'>, 
-                InlineFormInputConfig<'TextInput'>
-            ]
-        }
-    }
-
-    render() {
-        return <Form ref={this.setRef} {...this.formProps()}/>
-    }
-                
-}
-
-
-const styles = StyleSheet.create({
-    
-})
-
-
-/*
-
-                ScreenFormInputConfig<'TagList'>
-
-
-
+                },
+                {
                     onSave: (roles) => newUserStore().roles = roles,
                     val: () => {
                         return newUserStore().roles
@@ -158,4 +135,32 @@ const styles = StyleSheet.create({
                         },
                     },
                     // required: true
+                }
+            ] as [
+                InlineFormInputConfig<'TextInput'>, 
+                InlineFormInputConfig<'TextInput'>,
+                ScreenFormInputConfig<'TagList'>
+            ]
+        }
+    }
+
+    render() {
+        return <Form ref={this.setRef} {...this.formProps()}/>
+    }
+                
+}
+
+
+const styles = StyleSheet.create({
+    
+})
+
+
+/*
+
+                
+
+
+
+                    
                 */

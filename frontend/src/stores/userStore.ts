@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, MinUserWithRoles, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem } from '../../../common/models';
 import { Store } from './meta';
-import { IUserStore, navigationStore } from './interfaces';
+import { IUserStore, navigationStore, newUserStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { RootStackParamList, routerNames } from '../types';
@@ -168,8 +168,21 @@ export default class UserStore implements IUserStore {
         }
     }
 
-    async joinOrganization(orgId: string, pendingId: string, minUser: MinUser | {roles?: UserRole[], roleIds?: string[], attributes?: CategorizedItem[]}) {
-        const authTokens = await this.api.joinOrganization(orgId, pendingId, minUser)
+    async joinOrganization(orgId: string, pendingId: string, user: MinUserWithRoles) {
+        const authTokens = await this.api.joinOrganization(orgId, pendingId, user)
+
+        // organizationController().addRolesToUser....
+        /*
+            @OrgId() orgId: string,
+            @User() user: UserDoc,
+            @Required() @BodyParams('userId') userId: string,
+            @Required() @BodyParams('roleIds') roleIds: string[]
+        */
+        try {
+            await this.api.addRolesToUser(this.orgContext(), pendingId, user.roleIds)
+        } catch (e) {
+
+        }
 
         try {
             await this.afterSignIn(authTokens);
