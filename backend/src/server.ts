@@ -17,8 +17,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
 import { env } from "process";
 import { homedir } from "os";
-// need to upgrade to 6.95.3
-// import './errors/globalErrorFilter';
+import { existsSync } from "fs";
 
 // *** rootdir is from output lib file structure not src ***
 const rootDir = __dirname;
@@ -31,8 +30,8 @@ if (process.env.PATCH_LOCAL_ENV) {
   })
 }
 
-const isLocal = config.RAHEEM.get().environment == EnvironmentId[EnvironmentId.local];
 const mongoConnectionString = config.MONGO_CONNECTION_STRING.get().connection_string;
+
 const redisConnectionString = config.REDIS.get().connection_string
 
 const socketIOPubClient = createClient({ 
@@ -40,12 +39,18 @@ const socketIOPubClient = createClient({
 });
 const socketIOSubClient = socketIOPubClient.duplicate();
 
-if (isLocal) {
-  const root = process.env.RAHEEM_INFRA_ROOT || resolve(homedir(), '.raheem_infra');
-  // TODO: Document this
-  const googleCredsPath = join(root, '/config/raheem-staging-adc.json');
+if (env.PATCH_LOCAL_ENV) {
+  const envName = env.PATCH_LOCAL_ENV == EnvironmentId[EnvironmentId.local]
+    ? EnvironmentId[EnvironmentId.staging]
+    : env.PATCH_LOCAL_ENV;
 
-  env.GOOGLE_APPLICATION_CREDENTIALS = googleCredsPath
+  // TODO: finding this path should come from infra
+  const root = process.env.RAHEEM_INFRA_ROOT || resolve(homedir(), '.raheem_infra');
+  const googleCredsPath = join(root, `/config/raheem-${envName}-adc.json`);
+
+  if (existsSync(googleCredsPath)) {
+    env.GOOGLE_APPLICATION_CREDENTIALS = googleCredsPath
+  }
 }
 
 @Configuration({

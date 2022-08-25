@@ -6,5 +6,5 @@ async function main() {
 }
 
 main()
-.then(() => console.log('done'))
+.then(() => console.log('Startup complete!'))
 .catch((e) => console.log('error: ', e))
