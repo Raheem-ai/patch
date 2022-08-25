@@ -444,13 +444,12 @@ export class APIClient implements IAPIService {
         })).data;
     }
     
-    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
+    async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
         const url = `${apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
             email,
             phone,
-            roles,
             roleIds,
             attributes,
             baseUrl,

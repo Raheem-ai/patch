@@ -152,8 +152,8 @@ export default class UserStore implements IUserStore {
         clearAllServices()
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
-        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributes, baseUrl);
+    async inviteUserToOrg(email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
+        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roleIds, attributes, baseUrl);
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {

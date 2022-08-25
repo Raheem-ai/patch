@@ -110,8 +110,7 @@ export interface IApiClient {
     removeUserFromOrg: AuthenticatedWithOrg<(userId: string) => Promise<{ user: ProtectedUser, org: Organization }>>
     addUserRoles: AuthenticatedWithOrg<(userId: string, roles: UserRole[]) => Promise<ProtectedUser>>
 
-    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => Promise<PendingUser>>
-
+    inviteUserToOrg: AuthenticatedWithOrg<(email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => Promise<PendingUser>>
 
     setOnDutyStatus: AuthenticatedWithOrg<(onDuty: boolean) => Promise<Me>>;
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>

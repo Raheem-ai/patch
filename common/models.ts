@@ -993,13 +993,11 @@ export type LinkParams = {
     [LinkExperience.SignUpThroughOrganization]: {
         orgId: string,
         email: string,
-        roles: UserRole[],
         pendingId: string
     },
     [LinkExperience.JoinOrganization]: {
         orgId: string,
         email: string,
-        roles: UserRole[],
         pendingId: string
     } 
 } 
