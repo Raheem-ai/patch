@@ -1,10 +1,12 @@
-import { observer } from "mobx-react-lite";
+import { observable, runInAction } from "mobx";
+import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
-import { StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
+import { StyleSheet, View, ScrollView } from "react-native";
+import { Text, TextInput } from "react-native-paper";
 import { LinkExperience, LinkParams } from "../../../common/models";
 import STRINGS from "../../../common/strings";
 import Form, { FormProps } from "../components/forms/form";
+import BackButtonHeader, { BackButtonHeaderProps } from "../components/forms/inputs/backButtonHeader";
 import { InlineFormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
@@ -16,20 +18,51 @@ type Props = ScreenProps<'SignUpThroughOrg'>;
 const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     const [pendingUser, setPendingUser] = useState<LinkParams[LinkExperience.SignUpThroughOrganization]>(null);
-    // const [textAreaVal, setTextAreaVal] = useState('')
-    const [nameVal, setNameVal] = useState('')
-    const [passwordVal, setPasswordVal] = useState('')
+    const [nameVal] = useState(observable.box(''));
+    const [passwordVal, setPasswordVal] = useState(observable.box(''));
+    const [formInstance] = useState(observable.box<Form>(null));
+
+    const setRef = (formRef: Form) => {
+        runInAction(() => {
+            formInstance.set(formRef)
+        })
+    };
 
     useEffect(() => {
         (async () => {
             const params = route.params || linkingStore().initialRouteParams;
-
-            setPendingUser(params)
+            setPendingUser(params);
         })();
     }, []);
 
+    const headerProps: BackButtonHeaderProps = {
+        save: {
+            handler: async () => {
+                try {
+                    await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
+                        email: pendingUser.email,
+                        password: passwordVal.get(),
+                        name: nameVal.get()
+                    })
+                } catch(e) {
+                    alertStore().toastError(resolveErrorMessage(e), false, true);
+                    return
+                }
+
+                alertStore().toastSuccess(`Welcome to PATCH!`)
+
+                navigateTo(routerNames.userHomePage)
+            },
+            validator: () => {
+                return formInstance.get()?.isValid.get()
+            },
+            label: 'Join'
+        },
+        bottomBorder: true, 
+    }
+
     const config: FormProps = {
-        headerLabel: 'Please verify that we have the correct email and provide your name and a password to finish signing up!', 
+        headerLabel: 'Add your name and a password to sign up', 
         inputs: [
             {
                 onChange: () => {},
@@ -45,38 +78,36 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 type: 'TextInput'
             },
             {
-                onChange: setNameVal,
-                val() {
-                    return nameVal
+                val: () => nameVal.get(),
+                onChange: (currentVal) => {
+                    nameVal.set(currentVal);
                 },
-                isValid: () => {
-                    return !!nameVal.length
-                },
-                name: 'name',
+                isValid: () => !!nameVal.get(),
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
+                name: 'name',
                 required: true
             },
             {
-                onChange: setPasswordVal,
-                val() {
-                    return passwordVal
-                },
-                isValid: () => {
-                    return !!passwordVal.length
-                },
-                name: 'password',
+                val: () =>  passwordVal.get(),
+                onChange: (currentVal) => passwordVal.set(currentVal),
+                isValid: () => !!passwordVal.get(),
                 placeholderLabel: () => 'Password',
                 type: 'TextInput',
-                required: true
+                name: 'password',
+                required: true,
             }
         ] as [
             InlineFormInputConfig<'TextInput'>, 
             InlineFormInputConfig<'TextInput'>, 
-            InlineFormInputConfig<'TextInput'>, 
+            InlineFormInputConfig<'TextInput'>
             // FormInputConfig<'TagList'>
-        ],
-        submit: {
+        ]
+    }
+    
+    /* on staging, but in config: *********
+    
+    submit: {
             handler: async () => {
                 try {
                     await userStore().signUpThroughOrg(pendingUser.orgId, pendingUser.pendingId, {
@@ -96,14 +127,20 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
             },
             label: 'Join us!'
         }
-    }
+        
+        ********* */
 
     if (!pendingUser) {
         return null
     }
-    
+
+
     return (
-        <Form {...config}/>
+        <>
+            <View style={{height:36}}></View>
+            <BackButtonHeader {...headerProps} />
+            <Form ref={setRef} {...config} />
+        </>
     )
 
 })
@@ -111,5 +148,4 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 export default SignUpThroughOrg
 
 const styles = StyleSheet.create({
-    
 })

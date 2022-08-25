@@ -87,8 +87,10 @@ const STRINGS = {
         unauthorized: `Unauthorized user`,
         notInOrg: (usersNotInOrg:string[], orgName:string) => `Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${orgName}`,
         roleRequired: `You must invite a user with at least one role.`,
-        joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : null}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
+        joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
+        alreadyInOrg: (orgName: string) => `You are already a member of ${orgName}!`,
         invitationSuccessful: (email:string, phone:string) => `Invitation sent to email ${email} and phone ${phone}.`,
+        inviteNotFound: (userEmail: string, orgName: string) => `Invite for user with email ${userEmail} to join '${orgName}' not found`,
         twilioError: (msg:string) => `Twilio Error: ${msg}`,
         
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,

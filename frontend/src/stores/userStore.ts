@@ -152,18 +152,13 @@ export default class UserStore implements IUserStore {
         clearAllServices()
     }
 
-    async inviteUserToOrg(email: string, phone: string, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
-        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roles, roleIds, attributes, baseUrl);
+    async inviteUserToOrg(email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
+        return await this.api.inviteUserToOrg(this.orgContext(), email, phone, roleIds, attributes, baseUrl);
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
-        const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
-        
-        try {
-            await this.afterSignIn(authTokens);
-        } catch (e) {
-            console.error(e);
-        }
+        const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)        
+        await this.afterSignIn(authTokens);
     }
 
     async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {

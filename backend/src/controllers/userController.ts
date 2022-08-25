@@ -4,12 +4,13 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions } from "common/models";
+import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
+import { OrganizationController } from "./organizationController";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
@@ -165,7 +166,23 @@ export class UsersController implements APIController<
         const existingUsers = await this.users.find({ email: user.email });
 
         if (existingUsers && existingUsers.length) {
-            throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email));
+            const [ _, existingUser ] = await this.db.acceptInviteToOrg(orgId, pendingId, existingUsers[0]);
+
+            const accessToken = await createAccessToken(existingUser.id, existingUser.auth_etag)
+            const refreshToken = await createRefreshToken(existingUser.id, existingUser.auth_etag)
+
+            const res = {
+                accessToken,
+                refreshToken
+            }
+
+            await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
+                userId: existingUser.id,
+                orgId: orgId
+            })
+
+            return res
+
         } else {
             const [ _, newUser ] = await this.db.createUserThroughOrg(orgId, pendingId, user);
 

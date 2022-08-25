@@ -35,7 +35,7 @@ const TextInput = observer(({
                     style || null
                 ]}
                 ref={nativeRef}
-                keyboardType={config.inputType}
+                keyboardType={config.props?.inputType}
                 autoCorrect={!disableAutoCorrect}
                 placeholder={unwrap(config.placeholderLabel)}
                 editable={!config.disabled}

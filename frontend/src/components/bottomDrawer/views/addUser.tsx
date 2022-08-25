@@ -41,6 +41,7 @@ export default class AddUser extends React.Component {
                     try {
                         bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
+                        newUserStore().clear()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e));
                         return
@@ -75,12 +76,6 @@ export default class AddUser extends React.Component {
     formProps = (): FormProps => {
         return {
             headerLabel: STRINGS.ACCOUNT.inviteTitle, 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
             homeScreen: this.formHomeScreen,
             inputs: [
                 {
@@ -94,7 +89,9 @@ export default class AddUser extends React.Component {
                     name: 'email',
                     placeholderLabel: () => 'Email',
                     type: 'TextInput',
-                    inputType: 'email-address',
+                    props: {
+                        inputType: 'email-address',
+                    },
                     required: true
                 },
                 {
@@ -108,7 +105,9 @@ export default class AddUser extends React.Component {
                     name: 'phone',
                     placeholderLabel: () => 'Phone',
                     type: 'TextInput',
-                    inputType: 'phone-pad',
+                    props: {
+                        inputType: 'phone-pad',
+                    },
                     required: true
                 },
                 {
