@@ -1,20 +1,14 @@
 import { Inject, Service } from "@tsed/di";
-import { Ref } from "@tsed/mongoose";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PatchPermissionGroups, PatchPermissions, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
-import { inspect } from "util";
 import {MongooseService} from "@tsed/mongoose";
 import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
-import { Populated } from "../models";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
 import * as uuid from 'uuid';
-import timespace from '@mapbox/timespace';
 import { AtLeast } from "common";
-import moment from 'moment';
-import { PubSubService } from "./pubSubService";
 import { BadRequest } from "@tsed/exceptions";
 import { resolveRequestStatus } from "common/utils/requestUtils";
 
@@ -29,8 +23,6 @@ export class DBManager {
     @Inject(HelpRequestModel) requests: Model<HelpRequestModel>
 
     @Inject(MongooseService) db: MongooseService;
-    @Inject(PubSubService) pubSub: PubSubService;
-    // @Inject(Notifications) notifications: Notifications;
 
     // the 'me' api handles returning non-system props along with personal
     // ones so the user has access...everywhere else a user is 
@@ -152,7 +144,7 @@ export class DBManager {
         } else if (parts.length == 2) {
             slug = `${parts[0].slice(0,2)}${parts[1].slice(0,2)}`
         } else {
-            slug = parts.map(word => word[0]).join()
+            slug = parts.map(word => word[0]).join('')
         }
 
         return slug.toUpperCase()
@@ -1590,105 +1582,9 @@ export class DBManager {
         return user;
     }
 
-    async createHeartOrg() {
-
-        const partialAdmin: Partial<User> = {
-            email: 'charlie@cambridge-heart.org',
-            password: 'test',
-            name: 'Charlie'
-        }
-
-        const users: Partial<User>[] = [
-            {
-                email: 'nadav@cambridge-heart.org',
-                password: 'test',
-                name: 'Nadav'
-            },
-            {
-                email: 'cosette@cambridge-heart.org',
-                password: 'test',
-                name: 'Cosette'
-            },
-
-            {
-                email: 'corinne@cambridge-heart.org',
-                password: 'test',
-                name: 'Corinne'
-            },
-            {
-                email: 'parkerlouise@earthlink.net',
-                password: 'test',
-                name: 'Parker'
-            },
-            {
-                email: 'stephanie.guirand@gmail.com',
-                password: 'test',
-                name: 'Stephanie G'
-            },
-            {
-                email: 'stephanie@cambridge-heart.org',
-                password: 'test',
-                name: 'Stephanie'
-            },
-            {
-                email: 'virginia@cambridge-heart.org',
-                password: 'test',
-                name: 'Virginia'
-            }
-        ]
-
-        await this.createOrg(partialAdmin, users, 'HEART');
-    }
-
-    async createMPOPOrg() {
-
-        const partialAdmin: Partial<User> = {
-            email: 'charlie@mpop.com',
-            password: 'test',
-            name: 'Charlie'
-        }
-
-        const users: Partial<User>[] = [
-            {
-                email: 'nadav@mpop.com',
-                password: 'test',
-                name: 'Nadav'
-            },
-            {
-                email: 'cosette@mpop.com',
-                password: 'test',
-                name: 'Cosette'
-            },
-            {
-                email: 'lilian.h.liang@gmail.com',
-                password: 'MPOP',
-                name: 'Lilian'
-            },
-            {
-                email: 'rach.sunnn@gmail.com',
-                password: 'MPOP',
-                name: 'Rach'
-            },
-            {
-                email: 'viviancarolinehua@gmail.com',
-                password: 'MPOP',
-                name: 'Vivian'
-            },
-            {
-                email: 'chuang.alex.t@gmail.com',
-                password: 'MPOP',
-                name: 'Alex'
-            },
-            {
-                email: 'kaeli.flann@gmail.com',
-                password: 'MPOP',
-                name: 'Kaeli'
-            }
-        ]
-
-        await this.createOrg(partialAdmin, users, 'MPOPg');
-    }
-
+    // util for us running scripts against an environmeent
+    // TODO: need way to run scripts using dbmanager without having to run the whole 
+    // server
     async createOrg(
         partialAdmin: Partial<User>,
         users: Partial<User>[],

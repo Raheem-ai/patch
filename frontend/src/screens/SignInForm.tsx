@@ -22,7 +22,7 @@ export default function SignInForm( { navigation } : Props) {
         try {
             await userStore().signIn(username, password)
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e))
+            alertStore().toastError(resolveErrorMessage(e), false, true)
             return
         }
 
