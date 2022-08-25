@@ -176,7 +176,6 @@ export class OrganizationController implements APIController<
         const pendingUser: PendingUser = {
             email,
             phone,
-            roles,
             roleIds,
             attributes,
             pendingId: uuid.v1()

@@ -157,13 +157,8 @@ export default class UserStore implements IUserStore {
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
-        const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)
-        
-        try {
-            await this.afterSignIn(authTokens);
-        } catch (e) {
-            console.error(e);
-        }
+        const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)        
+        await this.afterSignIn(authTokens);
     }
 
     async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {

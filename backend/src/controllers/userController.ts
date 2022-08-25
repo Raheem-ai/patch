@@ -166,34 +166,10 @@ export class UsersController implements APIController<
         const existingUsers = await this.users.find({ email: user.email });
 
         if (existingUsers && existingUsers.length) {
-            // throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email));
-           // TO DO: loop through all existingUsers instead of just grabbing the first one
-            // TO DO: make this all less brittle
+            const [ _, existingUser ] = await this.db.acceptInviteToOrg(orgId, pendingId, existingUsers[0]);
 
-            for (const org in existingUsers[0].organizations) {
-                // check all of their organizations
-                // to see if they belong to the inviting organization
-
-                let userIsActiveInOrg: boolean = false;
-
-                if (org == orgId && !!existingUsers[0].organizations[org]) {
-                    // they're already active in the org <== TO DO: brittle
-                    throw new BadRequest(STRINGS.ACCOUNT.userExists(user.email)); // wrong error
-                }
-            }
-            // if we haven't thrown an error, it means they have an account 
-            // but no object for the organization they've been invited to
-            const theOrg = await this.db.resolveOrganization(orgId);
-            const theUser = await this.db.resolveUser(existingUsers[0].id);
-
-            // TO DO: construct user object from new information (name and roles) if provided
-            // rather than just replicating what was there before
-
-            await this.db.addUserToOrganization(theOrg, theUser, [], [], []);
-
-            // return auth tokens <== not sure what this is doing
-            const accessToken = await createAccessToken(theUser.id, theUser.auth_etag)
-            const refreshToken = await createRefreshToken(theUser.id, theUser.auth_etag)
+            const accessToken = await createAccessToken(existingUser.id, existingUser.auth_etag)
+            const refreshToken = await createRefreshToken(existingUser.id, existingUser.auth_etag)
 
             const res = {
                 accessToken,
@@ -201,7 +177,7 @@ export class UsersController implements APIController<
             }
 
             await this.pubSub.sys(PatchEventType.UserAddedToOrg, { 
-                userId: theUser.id,
+                userId: existingUser.id,
                 orgId: orgId
             })
 

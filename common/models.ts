@@ -140,10 +140,8 @@ export type MinTag = AtLeast<Tag, 'name'>
 export type PendingUser = {
     email: string
     phone: string
-    roles: UserRole[]
     roleIds: string[]
     attributes: CategorizedItem[]
-    // skills: RequestSkill[]
     pendingId: string
 }
 

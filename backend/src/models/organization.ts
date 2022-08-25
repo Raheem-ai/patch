@@ -9,7 +9,6 @@ import { UserModel } from './user';
 class PendingUserSchema  implements PendingUser {
     @Required() email: string
     @Required() phone: string
-    @Required() roles: UserRole[]
     @Required() roleIds: string[]
     @Required() attributes: CategorizedItem[]
     @Required() pendingId: string

@@ -129,8 +129,9 @@ export type InlineFormInputOptions = {
         type: DateTimeRange
     },
     'TextInput': {
-        props: {},
-        inputType?: KeyboardType,
+        props: {
+            inputType?: KeyboardType
+        },
         type: string
     }
     'Switch': {

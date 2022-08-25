@@ -18,6 +18,8 @@ export function resolveErrorMessage(e: AxiosError): string {
         case 'BAD_REQUEST': 
         case 'UNAUTHORIZED':
             return e.response.data.message;
+        case 'FORBIDDEN':
+            return e.response.data.message;
     
         default:
             return JSON.stringify(e?.response?.data || e);
