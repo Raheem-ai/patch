@@ -72,7 +72,6 @@ export default class NewUserStore implements INewUserStore {
         return await userStore().inviteUserToOrg(
             this.email,
             this.phone,
-            this.roles,
             this.roleIds,
             this.attributes,
             linkingStore().baseUrl
