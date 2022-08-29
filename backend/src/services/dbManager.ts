@@ -111,9 +111,22 @@ export class DBManager {
 
         if (idx != -1) {
 
-            if (existingUser.organizations[org.id]) {
+            let alreadyInOrg = false;
+            let numOrgs = 0;
+
+            for (const orgId in existingUser.organizations) {
+                if (existingUser.organizations[orgId]) {
+                    numOrgs++;
+                }
+
+                if (orgId == org.id) {
+                    alreadyInOrg = true;
+                }
+            }
+
+            if (alreadyInOrg) {
                 throw new BadRequest(STRINGS.ACCOUNT.alreadyInOrg(org.name))
-            } else {
+            } else if (numOrgs) {
                 // TODO: remove when we have ui for being able to switch between orgs 
                 // and made sure the ui handles it + backend sign up functions
                 throw new BadRequest(`You can only be a member of one org currently!`)
