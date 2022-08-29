@@ -403,14 +403,13 @@ export namespace INewUserStore {
 }
 
 export interface INewUserStore extends ITempUserStore {
-    roles: UserRole[]
     roleIds: string[]
     attributes: CategorizedItem[]
 
     isValid: boolean
     phoneValid: boolean
     emailValid: boolean
-    rolesValid: boolean
+    roleIDsValid: boolean
     
     inviteNewUser: () => Promise<PendingUser>;
 }
