@@ -111,20 +111,22 @@ export class DBManager {
 
         if (idx != -1) {
 
-            let alreadyInOrg = false;
+            let alreadyInTagetOrg = false;
             let numOrgs = 0;
 
             for (const orgId in existingUser.organizations) {
-                if (existingUser.organizations[orgId]) {
-                    numOrgs++;
-                }
+                const inOrg = !!existingUser.organizations[orgId];
 
-                if (orgId == org.id) {
-                    alreadyInOrg = true;
+                if (inOrg) {
+                    numOrgs++;
+
+                    if (orgId == org.id) {
+                        alreadyInTagetOrg = true;
+                    }
                 }
             }
 
-            if (alreadyInOrg) {
+            if (alreadyInTagetOrg) {
                 throw new BadRequest(STRINGS.ACCOUNT.alreadyInOrg(org.name))
             } else if (numOrgs) {
                 // TODO: remove when we have ui for being able to switch between orgs 
