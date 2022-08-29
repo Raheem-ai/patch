@@ -5,7 +5,7 @@ import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } fro
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
-import { alertStore, bottomDrawerStore, newUserStore } from "../../../stores/interfaces";
+import { alertStore, bottomDrawerStore, newUserStore, organizationStore } from "../../../stores/interfaces";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import STRINGS from "../../../../../common/strings";
@@ -41,6 +41,7 @@ export default class AddUser extends React.Component {
                     try {
                         bottomDrawerStore().startSubmitting()
                         invitedUser = await newUserStore().inviteNewUser()
+                        newUserStore().clear()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e));
                         return
@@ -75,12 +76,6 @@ export default class AddUser extends React.Component {
     formProps = (): FormProps => {
         return {
             headerLabel: STRINGS.ACCOUNT.inviteTitle, 
-            onExpand: () => {
-                bottomDrawerStore().hideHeader();
-            },
-            onBack: () => {
-                bottomDrawerStore().showHeader();
-            },
             homeScreen: this.formHomeScreen,
             inputs: [
                 {
@@ -94,7 +89,9 @@ export default class AddUser extends React.Component {
                     name: 'email',
                     placeholderLabel: () => 'Email',
                     type: 'TextInput',
-                    inputType: 'email-address',
+                    props: {
+                        inputType: 'email-address',
+                    },
                     required: true
                 },
                 {
@@ -108,37 +105,29 @@ export default class AddUser extends React.Component {
                     name: 'phone',
                     placeholderLabel: () => 'Phone',
                     type: 'TextInput',
-                    inputType: 'phone-pad',
+                    props: {
+                        inputType: 'phone-pad',
+                    },
                     required: true
                 },
                 {
-                    onSave: (roles) => newUserStore().roles = roles,
-                    val: () => {
-                        return newUserStore().roles
+                    val: () => newUserStore().roleIds,
+                    onSave: (val) => { 
+                        newUserStore().roleIds = val
                     },
-                    isValid: () => {
-                        return !!newUserStore().rolesValid
-                    },
-                    name: 'roles',
-                    previewLabel: () => null,
-                    headerLabel: () => 'Roles',
-                    placeholderLabel: () => 'Roles',
-                    type: 'TagList',
-                    props: {
-                        options: allEnumValues(UserRole),
-                        optionToPreviewLabel: (opt) => UserRoleToLabelMap[opt],
-                        optionToListLabel: (opt) => UserRoleToInfoLabelMap[opt],
-                        multiSelect: true,
-                        onTagDeleted: (idx: number, val: any) => {
-                            newUserStore().roles.splice(idx, 1)
-                        },
-                    },
-                    // required: true
+                    isValid: () => newUserStore().roleIDsValid,
+                    headerLabel: 'Roles',
+                    placeholderLabel: 'Roles',
+                    previewLabel: () => newUserStore().roleIds.map(roleId => {
+                        return organizationStore().roles.get(roleId)?.name
+                    }).join(),
+                    name: 'role',
+                    type: 'RoleList'
                 }
             ] as [
                 InlineFormInputConfig<'TextInput'>, 
                 InlineFormInputConfig<'TextInput'>, 
-                ScreenFormInputConfig<'TagList'>,
+                ScreenFormInputConfig<'RoleList'>,
             ]
         }
     }

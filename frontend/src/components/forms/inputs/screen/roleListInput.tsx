@@ -82,7 +82,7 @@ const RoleListInput = ({
                 type: 'InlineList',
                 name: 'inlineList',
                 props: {
-                    onlyAddative: config.props.onlyAddative,
+                    onlyAddative: config.props?.onlyAddative,
                     options: Array.from(organizationStore().roles.values()).map(r => r.id),
                     optionToPreviewLabel: (roleId: string) => organizationStore().roles.get(roleId).name,
                     optionToListLabel: (roleId: string) => organizationStore().roles.get(roleId).name,

@@ -11,6 +11,7 @@ import * as uuid from 'uuid';
 import { AtLeast } from "common";
 import { BadRequest } from "@tsed/exceptions";
 import { resolveRequestStatus } from "common/utils/requestUtils";
+import STRINGS from "common/strings";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -104,6 +105,30 @@ export class DBManager {
         return await newUser.save();
     }
 
+    async acceptInviteToOrg(orgId: string | OrganizationDoc, pendingId: string, existingUser: UserDoc) {
+        const org = await this.resolveOrganization(orgId);
+        const idx = org?.pendingUsers?.findIndex(u => u.pendingId == pendingId);
+
+        if (idx != -1) {
+
+            if (existingUser.organizations[org.id]) {
+                throw new BadRequest(STRINGS.ACCOUNT.alreadyInOrg(org.name))
+            } else {
+                // TODO: remove when we have ui for being able to switch between orgs 
+                // and made sure the ui handles it + backend sign up functions
+                throw new BadRequest(`You can only be a member of one org currently!`)
+            }
+
+            const pendingUser = org.pendingUsers[idx];
+            
+            org.pendingUsers.splice(idx, 1);
+
+            return await this.addUserToOrganization(org, existingUser, pendingUser.roleIds, pendingUser.attributes);
+        } else {
+            throw new BadRequest(STRINGS.ACCOUNT.inviteNotFound(existingUser.email, org.name))
+        }
+    }
+
     async createUserThroughOrg(orgId: string | OrganizationDoc, pendingId: string, user: MinUser) {
         const org = await this.resolveOrganization(orgId);
         const idx = org?.pendingUsers?.findIndex(u => u.pendingId == pendingId);
@@ -123,10 +148,9 @@ export class DBManager {
 
             org.pendingUsers.splice(idx, 1);
 
-            // TODO: if skills are vetted by org this is where they should be set
-            return await this.addUserToOrganization(org, newUser, pendingUser.roles, pendingUser.roleIds, pendingUser.attributes);
+            return await this.addUserToOrganization(org, newUser, pendingUser.roleIds, pendingUser.attributes);
         } else {
-            throw `Invite for user with email ${user.email} to join '${org.name}' not found`
+            throw new BadRequest(STRINGS.ACCOUNT.inviteNotFound(user.email, org.name))
         }
     }
 
@@ -162,7 +186,7 @@ export class DBManager {
 
             const org = await (new this.orgs(newOrg)).save({ session })
 
-            return await this.addUserToOrganization(org, adminId, [UserRole.Admin], [DefaultRoleIds.Admin], [], session)
+            return await this.addUserToOrganization(org, adminId, [DefaultRoleIds.Admin], [], session)
         })
     }
     
@@ -236,7 +260,7 @@ export class DBManager {
         return await user.save()
     }
 
-    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roles: UserRole[], roleIds: string[], attributes: CategorizedItem[], session?: ClientSession) {
+    async addUserToOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, roleIds: string[], attributes: CategorizedItem[], session?: ClientSession) {
         const user = await this.resolveUser(userId);
         const org = await this.resolveOrganization(orgId);
 
@@ -246,7 +270,6 @@ export class DBManager {
             throw `User is already a member of the organization`
         } else {
             await this.updateUsersOrgConfig(user, org.id, (_) => ({
-                roles: roles,
                 roleIds: roleIds,
                 attributes: attributes,
                 onDuty: false
@@ -1599,7 +1622,7 @@ export class DBManager {
 
         for (const user of users) {
             let newUser = await this.createUser(user);
-            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [], [DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder], [])
+            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder], [])
         }
     }
 
@@ -1620,9 +1643,6 @@ export class DBManager {
             await this.bulkDelete(this.orgs, oldOrgs);
 
             console.log('creating users/org')
-
-            await this.createHeartOrg();
-            await this.createMPOPOrg()
 
             let user1 = await this.createUser({ 
                 email: 'Charlie@test.com', 
@@ -1681,13 +1701,13 @@ export class DBManager {
                 name: 'Tevy Tev2',
             });
 
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, user5 ] = await this.addUserToOrganization(org, user5, [ UserRole.Responder, UserRole.Dispatcher, UserRole.Admin ], [], []);
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [ UserRole.Admin ], [], []);
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [ UserRole.Dispatcher ], [], []);
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [ UserRole.Responder ], [], []);
+            [ org, user2 ] = await this.addUserToOrganization(org, user2, [], []);
+            [ org, user3 ] = await this.addUserToOrganization(org, user3, [], []);
+            [ org, user4 ] = await this.addUserToOrganization(org, user4, [], []);
+            [ org, user5 ] = await this.addUserToOrganization(org, user5, [], []);
+            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [], []);
+            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [], []);
+            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [], []);
 
             user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
             user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])

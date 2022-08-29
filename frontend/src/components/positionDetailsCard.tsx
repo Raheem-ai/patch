@@ -132,6 +132,8 @@ const PositionDetailsCard = observer(({
         }
     }
 
+    const userIsRequestAdmin = iHaveAllPermissions([PatchPermissions.RequestAdmin]);
+
     const removeUser = async (userId) => {
         try {
             await requestStore().removeUserFromRequest(userId, requestId, pos.id)
@@ -176,14 +178,17 @@ const PositionDetailsCard = observer(({
                                             }
                                         </View>
                                     </View>
-                                    <View style={styles.removeUser} >
-                                    <IconButton
-                                        icon={'close'} 
-                                        color={Colors.icons.light}
-                                        size={20} 
-                                        onPress={() => removeUser(details.userId)}
-                                        style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
-                                    </View>
+                                    { userIsRequestAdmin
+                                        ? <View style={styles.removeUser}>
+                                            <IconButton
+                                                icon={'close'} 
+                                                color={Colors.icons.light}
+                                                size={20} 
+                                                onPress={() => removeUser(details.userId)}
+                                                style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
+                                        </View>
+                                        : null
+                                    }
                                 </View>
                             )
                         })
