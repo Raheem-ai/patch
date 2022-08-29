@@ -2,8 +2,12 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
       "lib": ["es6", "dom"],
-      "types": ["reflect-metadata"],
+      "types": ["reflect-metadata", "jest"],
       "experimentalDecorators": true,
-      "emitDecoratorMetadata": true
+      "emitDecoratorMetadata": true,
+      "rootDirs": [
+        ".",
+        "../common"
+      ]
   }
 }
