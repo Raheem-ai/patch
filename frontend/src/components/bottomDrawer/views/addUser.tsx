@@ -122,7 +122,11 @@ export default class AddUser extends React.Component {
                         return organizationStore().roles.get(roleId)?.name
                     }).join(),
                     name: 'role',
-                    type: 'RoleList'
+                    type: 'RoleList',
+                    props: {
+                        multiSelect: true,
+                        hideAnyone: true
+                    }
                 }
             ] as [
                 InlineFormInputConfig<'TextInput'>, 

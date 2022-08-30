@@ -72,6 +72,12 @@ const RoleListInput = ({
             return <BackButtonHeader {...headerProps}/>
         }
 
+        const roleOptions = Array.from(organizationStore().roles.values()).flatMap(r => {
+            return config.props?.hideAnyone && r.id == '__anyone'
+                ? []
+                : r.id
+        })
+
         const inlineListProps: InlineListInputProps = {
             config: {
                 val: () => selectedItems,
@@ -83,7 +89,7 @@ const RoleListInput = ({
                 name: 'inlineList',
                 props: {
                     onlyAddative: config.props?.onlyAddative,
-                    options: Array.from(organizationStore().roles.values()).map(r => r.id),
+                    options: roleOptions,
                     optionToPreviewLabel: (roleId: string) => organizationStore().roles.get(roleId).name,
                     optionToListLabel: (roleId: string) => organizationStore().roles.get(roleId).name,
                     multiSelect: config.props?.multiSelect

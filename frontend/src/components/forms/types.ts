@@ -109,8 +109,9 @@ export type ScreenFormInputOptions = {
     }, 
     'RoleList': {
         props: {
-            onlyAddative?: boolean,
+            onlyAddative?: boolean
             multiSelect?: boolean
+            hideAnyone?: boolean
             onItemDeleted?: (idx: number, val: any) => void
         },
         type: string[]
