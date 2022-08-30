@@ -24,9 +24,9 @@ const TextInput = observer(({
 }: Props) => {
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+    const isPassword:boolean = config.props?.password ? config.props?.password : false;
 
-    return config.props?.password
-        ? (
+    return (
             <View 
                 style={{
                     flex: 1,
@@ -56,42 +56,24 @@ const TextInput = observer(({
                     onChangeText={(s: string) => config.onChange?.(s)}
                     onSubmitEditing={onSubmitEditing || null}
                     blurOnSubmit={!dontBlurOnSubmit}
-                    secureTextEntry={secureTextEntry}/>
-                <PaperTextInput.Icon
-                    name={!secureTextEntry ? 'eye' : 'eye-off'}
-                    onPress={() => {
-                        setSecureTextEntry(!secureTextEntry);
-                        return false;
-                    }}
-                    color={Colors.icons.dark}
-                    style={{
-                        position: 'relative',
-                        right: 12,
-                    }}/>
+                    secureTextEntry={
+                        config.props?.password 
+                            ? secureTextEntry 
+                            : false }/>
+                { isPassword
+                    ? <PaperTextInput.Icon
+                        name={!secureTextEntry ? 'eye' : 'eye-off'}
+                        onPress={() => {
+                            setSecureTextEntry(!secureTextEntry);
+                            return false;
+                        }}
+                        color={Colors.icons.dark}
+                        style={{
+                            position: 'relative',
+                            right: 12,
+                        }}/>
+                    : null }
             </View>
-        )
-        : (        
-            <RNTextInput 
-                placeholderTextColor={'#aaa'}
-                style={[
-                    { 
-                        fontSize: styles.label.fontSize,
-                        flex: 1
-                    }, 
-                    config.disabled ? styles.disabled : null,
-                    style || null
-                ]}
-                ref={nativeRef}
-                keyboardType={config.props?.inputType}
-                autoCorrect={!disableAutoCorrect}
-                placeholder={unwrap(config.placeholderLabel)}
-                editable={!config.disabled}
-                selectTextOnFocus={!config.disabled}
-                value={config.val()}
-                onChangeText={(s: string) => config.onChange?.(s)}
-                onSubmitEditing={onSubmitEditing || null}
-                secureTextEntry={false}
-                blurOnSubmit={!dontBlurOnSubmit}/>
         )
 })
 

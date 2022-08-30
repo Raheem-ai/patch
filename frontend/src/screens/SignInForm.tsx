@@ -50,7 +50,7 @@ export default function SignInForm( { navigation } : Props) {
                             secureTextEntry={secureTextEntry}
                             right={
                                 <TextInput.Icon
-                                name="eye"
+                                name={!secureTextEntry ? 'eye' : 'eye-off'}
                                 onPress={() => {
                                     setSecureTextEntry(!secureTextEntry);
                                     return false;
