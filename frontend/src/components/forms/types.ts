@@ -131,6 +131,7 @@ export type InlineFormInputOptions = {
     'TextInput': {
         props: {
             inputType?: KeyboardType
+            password?: boolean 
         },
         type: string
     }
