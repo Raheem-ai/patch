@@ -33,7 +33,6 @@ const TextInput = observer(({
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
-                    backgroundColor: '#fff',
                     paddingRight: 36,
                 }}>
                 <RNTextInput 
