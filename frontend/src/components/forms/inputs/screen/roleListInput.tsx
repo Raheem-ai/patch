@@ -9,7 +9,7 @@ import { unwrap } from "../../../../../../common/utils"
 import { iHaveAllPermissions } from "../../../../utils"
 import ListInput, { ListInputProps } from "./listInput"
 import MangeRolesForm from "../../editRolesForm"
-import { PatchPermissions } from "../../../../../../common/models"
+import { PatchPermissions, DefaultRoleIds } from "../../../../../../common/models"
 import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
 import { organizationStore } from "../../../../stores/interfaces"
 
@@ -73,7 +73,7 @@ const RoleListInput = ({
         }
 
         const roleOptions = Array.from(organizationStore().roles.values()).flatMap(r => {
-            return config.props?.hideAnyone && r.id == '__anyone'
+            return config.props?.hideAnyone && r.id == DefaultRoleIds.Anyone
                 ? []
                 : r.id
         })
