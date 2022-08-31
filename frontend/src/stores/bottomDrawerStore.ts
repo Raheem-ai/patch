@@ -64,7 +64,8 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     private disabledActiveRequestRoutes: (keyof RootStackParamList)[] = [
         routerNames.helpRequestMap,
         routerNames.helpRequestChat,
-        routerNames.userHomePage
+        routerNames.userHomePage,
+        routerNames.userDetails
     ]
 
     private disabledDrawerRoutes: (keyof RootStackParamList)[] = [
