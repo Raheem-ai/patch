@@ -61,7 +61,7 @@ const TextInput = observer(({
                             : false }/>
                 { isPassword
                     ? <PaperTextInput.Icon
-                        name={!secureTextEntry ? 'eye' : 'eye-off'}
+                        name={secureTextEntry ? 'eye-off' : 'eye'}
                         onPress={() => {
                             setSecureTextEntry(!secureTextEntry);
                             return false;
