@@ -56,7 +56,7 @@ const TextInput = observer(({
                     onSubmitEditing={onSubmitEditing || null}
                     blurOnSubmit={!dontBlurOnSubmit}
                     secureTextEntry={
-                        config.props?.password 
+                        isPassword 
                             ? secureTextEntry 
                             : false }/>
                 { isPassword
