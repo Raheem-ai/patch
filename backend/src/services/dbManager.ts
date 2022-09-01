@@ -1517,6 +1517,19 @@ export class DBManager {
 
     async removeUserFromRequest(revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
         const request = await this.resolveRequest(requestId);
+
+        const position = request.positions.find(pos => pos.id == positionId);
+
+        // TODO: this should throw
+        if (!position) {
+            return request;
+        }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+        
+        position.joinedUsers.splice(userIdx, 1);
+
+        request.markModified('positions');
         
         request.teamEvents.push({
             revokedAt: new Date().toISOString(),
