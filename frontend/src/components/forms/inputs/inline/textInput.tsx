@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Ref } from "react";
 import { TextInput as RNTextInput, View, StyleSheet, TextStyle, NativeSyntheticEvent, TextInputSubmitEditingEventData } from "react-native";
-import { TextInput as PaperTextInput } from "react-native-paper";
+import { IconButton } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
 import { Colors } from "../../../../types";
@@ -24,7 +24,7 @@ const TextInput = observer(({
 }: Props) => {
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
-    const isPassword:boolean = config.props?.password ? config.props?.password : false;
+    const isPassword = !!config.props?.password ? config.props?.password : false;
 
     return (
             <View 
@@ -32,15 +32,17 @@ const TextInput = observer(({
                     flex: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    paddingRight: 36,
+                    justifyContent: 'flex-start',
+                    marginRight: 12,
                 }}>
                 <RNTextInput 
                     placeholderTextColor={'#aaa'}
                     style={[
                         { 
                             fontSize: styles.label.fontSize,
-                            width: '100%'
+                            flex: 1,
+                            width: '100%',
+                            marginRight: 12,
                         }, 
                         config.disabled ? styles.disabled : null,
                         style || null
@@ -60,17 +62,14 @@ const TextInput = observer(({
                             ? secureTextEntry 
                             : false }/>
                 { isPassword
-                    ? <PaperTextInput.Icon
-                        name={secureTextEntry ? 'eye-off' : 'eye'}
+                    ? <IconButton
+                        icon={secureTextEntry ? 'eye-off' : 'eye'}
                         onPress={() => {
                             setSecureTextEntry(!secureTextEntry);
                             return false;
                         }}
                         color={Colors.icons.dark}
-                        style={{
-                            position: 'relative',
-                            right: 12,
-                        }}/>
+/>
                     : null }
             </View>
         )
@@ -92,5 +91,6 @@ const styles = StyleSheet.create({
     disabled: {
         // opacity: .8,
         color: Colors.text.disabled,
+        // fontFamily: 'monospace'
     }
 })

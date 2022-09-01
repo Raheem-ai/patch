@@ -12,6 +12,7 @@ import MangeRolesForm from "../../editRolesForm"
 import { PatchPermissions, DefaultRoleIds } from "../../../../../../common/models"
 import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
 import { organizationStore } from "../../../../stores/interfaces"
+import { stringify } from "uuid"
 
 export type RoleListInputProps = SectionScreenViewProps<'RoleList'> 
 
@@ -72,10 +73,10 @@ const RoleListInput = ({
             return <BackButtonHeader {...headerProps}/>
         }
 
-        const roleOptions = Array.from(organizationStore().roles.values()).flatMap(r => {
-            return config.props?.hideAnyone && r.id == DefaultRoleIds.Anyone
-                ? []
-                : r.id
+        const roleOptions = Array.from(organizationStore().roles.values()).map(r => {
+            return r.id
+        }).filter(id => {
+            return !config.props?.hideAnyone || id != DefaultRoleIds.Anyone
         })
 
         const inlineListProps: InlineListInputProps = {
