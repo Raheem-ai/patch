@@ -1541,6 +1541,8 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
     }
 }
 
+// DEFAULT ROLES
+
 export enum DefaultRoleIds {
     Anyone = '__anyone',
     Admin = '__admin',
@@ -1586,6 +1588,151 @@ export const DefaultRoles: Role[] = [
         ]
     }
 ]
+
+// DEFAULT TAGS
+
+export enum DefaultTagCategoryIds {
+    CommunicationType = '__communicationtype',
+    Context = '__context',
+    Language = '__language',
+    Resolution = '__resolution',
+}
+
+export enum DefaultTagIds {
+    Phone = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c1',
+    Text = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c2',
+    SocialMedia = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c3',
+    StaffInitiated = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c4',
+    PolicePresent = DefaultTagCategoryIds.Context + Delimiters.Enum + 'co1',
+    WeaponPresent = DefaultTagCategoryIds.Context + Delimiters.Enum + 'co2',
+    Spanish = DefaultTagCategoryIds.Language + Delimiters.Enum + 'l1',
+    Tagalog = DefaultTagCategoryIds.Language + Delimiters.Enum + 'l2',
+    ReferredToHospital = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r1',
+    TransportedToHospital = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r2',
+    ReferredToShelter = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r3',
+    TransportedToShelter = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r4',
+    ReferredToResource = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r5',
+    TransportedToResource = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r6',
+}
+
+export const DefaultTagToLabelMap: { [key in DefaultTagIds]: string } = {
+    [DefaultTagIds.Spanish]: `Spanish`,
+    [DefaultTagIds.Tagalog]: `Tagalog`,
+    [DefaultTagIds.ReferredToHospital]: `Referred to hospital`,
+    [DefaultTagIds.TransportedToHospital]: `Transported to hospital`,
+}
+
+export const DefaultTagCategoryToLabelMap: { [key in DefaultTagCategoryIds]: string } = {
+    [DefaultTagCategoryIds.CommunicationType]: 'Communication Type',
+    [DefaultTagCategoryIds.Context]: 'Context',
+    [DefaultTagCategoryIds.Language]: 'Language',
+    [DefaultTagCategoryIds.Resolution]: 'Resolution'
+}
+
+export const DefaultTagCategories: Map<string, Category> = new Map();
+
+// not sure if we need to reverse here
+allEnumValues(DefaultTagIds).reverse().forEach(tag => {
+    const cat = tagToTagCategory(tag);
+    
+    const item = {
+        id: tag,
+        name: DefaultTagToLabelMap[tag]
+    }
+    
+    if (DefaultTagCategories.has(cat)) {
+        const category = DefaultTagCategories.get(cat);
+        category.items.unshift(item)
+    } else {
+        DefaultTagCategories.set(cat, {
+            name: DefaultTagCategoryToLabelMap[cat],
+            items: [item]
+        })
+    }
+})
+
+export function tagToTagCategory(tag: DefaultTagIds): DefaultTagCategoryIds {
+    return (tag as unknown as string).split(Delimiters.Enum)[0] as DefaultTagCategoryIds
+}
+
+
+// do we need these next two functions?
+export function defaultTagsToCategorizedItems(tags: DefaultTagIds[]): CategorizedItem[] {
+    return tags.map(tag => {
+        return {
+            categoryId: tagToTagCategory(tag),
+            itemId: tag as unknown as string
+        }
+    });
+}
+
+export function categorizedItemsToDefaultTags(items: CategorizedItem[]): DefaultTagIds[] {
+    return items.map(item => item.itemId as unknown as DefaultTagIds)
+}
+
+console.log(DefaultTagCategories)
+console.log('___________________________')
+
+for (let [key, value] of DefaultTagCategories) {
+    console.log(key, value);
+}
+
+
+
+/*
+
+Can we just define them like so and then assign them at org creation time?
+
+
+export enum DefaultTagCategoryIds {
+    Language = '__language',
+    Resolution = '__resolution'
+}
+
+export const DefaultTagCategories: TagCategory[] = [
+    {
+        id: DefaultTagCategoryIds.Language,
+        name: 'Language',
+        tags: [
+            {
+                 id: '__language:spanish',
+                 name: 'Spanish'
+            },
+            {
+                 id: '__language:swahili',
+                 name: 'Swahili'
+            },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Resolution,
+        name: 'Resolution',
+        tags: [
+            {
+                 id: '__resolution:transportedtohospital',
+                 name: 'Transported to hospital'
+            },
+            {
+                 id: '__resolution:transportedtoshelter',
+                 name: 'Transported to shelter'
+            },
+        ]
+    },
+]
+
+*/
+
+
+
+
+
+
+
+
+
+// DEFAULT ATTRIBUTES
+
+// --
 
 export enum StatusOption {
     Any = 'any',
