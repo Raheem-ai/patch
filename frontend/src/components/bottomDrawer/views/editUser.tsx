@@ -163,6 +163,7 @@ export default class EditUser extends React.Component {
                 disabled: false,
                 props: {
                     multiSelect: true,
+                    hideAnyone: true,
                     onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
             } as ScreenFormInputConfig<'RoleList'>
@@ -255,6 +256,7 @@ export default class EditUser extends React.Component {
                     disabled: false,
                     props: {
                         multiSelect: true,
+                        hideAnyone: true,
                         onItemDeleted: (idx) => this.onItemDeleted(idx)
                     },
                 } as ScreenFormInputConfig<'RoleList'>

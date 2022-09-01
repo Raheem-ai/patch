@@ -9,7 +9,7 @@ import { unwrap } from "../../../../../../common/utils"
 import { iHaveAllPermissions } from "../../../../utils"
 import ListInput, { ListInputProps } from "./listInput"
 import MangeRolesForm from "../../editRolesForm"
-import { PatchPermissions } from "../../../../../../common/models"
+import { PatchPermissions, DefaultRoleIds } from "../../../../../../common/models"
 import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
 import { organizationStore } from "../../../../stores/interfaces"
 
@@ -72,6 +72,12 @@ const RoleListInput = ({
             return <BackButtonHeader {...headerProps}/>
         }
 
+        const roleOptions = Array.from(organizationStore().roles.values()).map(r => {
+            return r.id
+        }).filter(id => {
+            return !config.props?.hideAnyone || id != DefaultRoleIds.Anyone
+        })
+
         const inlineListProps: InlineListInputProps = {
             config: {
                 val: () => selectedItems,
@@ -83,7 +89,7 @@ const RoleListInput = ({
                 name: 'inlineList',
                 props: {
                     onlyAddative: config.props?.onlyAddative,
-                    options: Array.from(organizationStore().roles.values()).map(r => r.id),
+                    options: roleOptions,
                     optionToPreviewLabel: (roleId: string) => organizationStore().roles.get(roleId).name,
                     optionToListLabel: (roleId: string) => organizationStore().roles.get(roleId).name,
                     multiSelect: config.props?.multiSelect
