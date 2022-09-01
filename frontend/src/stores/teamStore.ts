@@ -58,9 +58,9 @@ export default class TeamStore implements ITeamStore {
 
     sortByFirstName = (a: ClientSideFormat<ProtectedUser>, b: ClientSideFormat<ProtectedUser>): number => {
         const aName = parseFullName(a.name);
-        const aFirstName = aName.first.length > 0 ? aName.first : aName.last;
+        const aFirstName = !!aName.first ? aName.first : aName.last;
         const bName = parseFullName(b.name);
-        const bFirstName = bName.first ? bName.first : bName.last;
+        const bFirstName = !!bName.first ? bName.first : bName.last;
         
         return aFirstName == bFirstName
             ? 0
