@@ -1727,6 +1727,3 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
         ]
     },
 ]
-
-
-
