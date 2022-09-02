@@ -21,7 +21,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
     const [nameVal] = useState(observable.box(''));
     const [passwordVal, setPasswordVal] = useState(observable.box(''));
     const [formInstance] = useState(observable.box<Form>(null));
-
+    
     const setRef = (formRef: Form) => {
         runInAction(() => {
             formInstance.set(formRef)
@@ -96,6 +96,9 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 type: 'TextInput',
                 name: 'password',
                 required: true,
+                props: {
+                    password: true,
+                }
             }
         ] as [
             InlineFormInputConfig<'TextInput'>, 
@@ -133,7 +136,6 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
     if (!pendingUser) {
         return null
     }
-
 
     return (
         <>
