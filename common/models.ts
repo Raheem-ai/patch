@@ -1589,151 +1589,6 @@ export const DefaultRoles: Role[] = [
     }
 ]
 
-// DEFAULT TAGS
-
-export enum DefaultTagCategoryIds {
-    CommunicationType = '__communicationtype',
-    Context = '__context',
-    Language = '__language',
-    Resolution = '__resolution',
-}
-
-export enum DefaultTagIds {
-    Phone = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c1',
-    Text = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c2',
-    SocialMedia = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c3',
-    StaffInitiated = DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'c4',
-    PolicePresent = DefaultTagCategoryIds.Context + Delimiters.Enum + 'co1',
-    WeaponPresent = DefaultTagCategoryIds.Context + Delimiters.Enum + 'co2',
-    Spanish = DefaultTagCategoryIds.Language + Delimiters.Enum + 'l1',
-    Tagalog = DefaultTagCategoryIds.Language + Delimiters.Enum + 'l2',
-    ReferredToHospital = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r1',
-    TransportedToHospital = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r2',
-    ReferredToShelter = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r3',
-    TransportedToShelter = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r4',
-    ReferredToResource = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r5',
-    TransportedToResource = DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'r6',
-}
-
-export const DefaultTagToLabelMap: { [key in DefaultTagIds]: string } = {
-    [DefaultTagIds.Spanish]: `Spanish`,
-    [DefaultTagIds.Tagalog]: `Tagalog`,
-    [DefaultTagIds.ReferredToHospital]: `Referred to hospital`,
-    [DefaultTagIds.TransportedToHospital]: `Transported to hospital`,
-}
-
-export const DefaultTagCategoryToLabelMap: { [key in DefaultTagCategoryIds]: string } = {
-    [DefaultTagCategoryIds.CommunicationType]: 'Communication Type',
-    [DefaultTagCategoryIds.Context]: 'Context',
-    [DefaultTagCategoryIds.Language]: 'Language',
-    [DefaultTagCategoryIds.Resolution]: 'Resolution'
-}
-
-export const DefaultTagCategories: Map<string, Category> = new Map();
-
-// not sure if we need to reverse here
-allEnumValues(DefaultTagIds).reverse().forEach(tag => {
-    const cat = tagToTagCategory(tag);
-    
-    const item = {
-        id: tag,
-        name: DefaultTagToLabelMap[tag]
-    }
-    
-    if (DefaultTagCategories.has(cat)) {
-        const category = DefaultTagCategories.get(cat);
-        category.items.unshift(item)
-    } else {
-        DefaultTagCategories.set(cat, {
-            name: DefaultTagCategoryToLabelMap[cat],
-            items: [item]
-        })
-    }
-})
-
-export function tagToTagCategory(tag: DefaultTagIds): DefaultTagCategoryIds {
-    return (tag as unknown as string).split(Delimiters.Enum)[0] as DefaultTagCategoryIds
-}
-
-
-// do we need these next two functions?
-export function defaultTagsToCategorizedItems(tags: DefaultTagIds[]): CategorizedItem[] {
-    return tags.map(tag => {
-        return {
-            categoryId: tagToTagCategory(tag),
-            itemId: tag as unknown as string
-        }
-    });
-}
-
-export function categorizedItemsToDefaultTags(items: CategorizedItem[]): DefaultTagIds[] {
-    return items.map(item => item.itemId as unknown as DefaultTagIds)
-}
-
-console.log(DefaultTagCategories)
-console.log('___________________________')
-
-for (let [key, value] of DefaultTagCategories) {
-    console.log(key, value);
-}
-
-
-
-/*
-
-Can we just define them like so and then assign them at org creation time?
-
-
-export enum DefaultTagCategoryIds {
-    Language = '__language',
-    Resolution = '__resolution'
-}
-
-export const DefaultTagCategories: TagCategory[] = [
-    {
-        id: DefaultTagCategoryIds.Language,
-        name: 'Language',
-        tags: [
-            {
-                 id: '__language:spanish',
-                 name: 'Spanish'
-            },
-            {
-                 id: '__language:swahili',
-                 name: 'Swahili'
-            },
-        ]
-    },
-    {
-        id: DefaultTagCategoryIds.Resolution,
-        name: 'Resolution',
-        tags: [
-            {
-                 id: '__resolution:transportedtohospital',
-                 name: 'Transported to hospital'
-            },
-            {
-                 id: '__resolution:transportedtoshelter',
-                 name: 'Transported to shelter'
-            },
-        ]
-    },
-]
-
-*/
-
-
-
-
-
-
-
-
-
-// DEFAULT ATTRIBUTES
-
-// --
-
 export enum StatusOption {
     Any = 'any',
     Available = 'ava',
@@ -1746,11 +1601,132 @@ export enum EligibilityOption {
     Everyone = 'eve'
 }
 
+// DEFAULT TAGS
 
+export enum DefaultTagCategoryIds {
+    CommunicationType = '__communicationtype',
+    Context = '__context',
+    Equipment = '__equipment',
+    Medication = '__medication',
+    Resolution = '__resolution',
+    Referral = '__referral',
+}
 
+export const DefaultTagCategories: TagCategory[] = [
+    {
+        id: DefaultTagCategoryIds.CommunicationType,
+        name: 'Request method',
+        tags: [
+            { name: 'Phone', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com01' },
+            { name: 'Text', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com02' },
+            { name: 'Social media', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com03' },
+            { name: 'Staff-initiated', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com04' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Context,
+        name: 'Location',
+        tags: [
+            { name: 'Weapon present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con01' },
+            { name: 'Police present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con02' },
+            { name: 'Unsafe location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con03' },
+            { name: 'Crowd at location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con04' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Equipment,
+        name: 'Equipment needed',
+        tags: [
+            { name: 'AED Defribrillator', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip01' },
+            { name: 'Nebulizer', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip02' },
+            { name: 'Vehicle', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip03' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Medication,
+        name: 'Medication needed',
+        tags: [
+            { name: 'Albuterol', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med01' },
+            { name: 'Epinephrine', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med02' },
+            { name: 'Naloxone', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med03' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Resolution,
+        name: 'Resolution',
+        tags: [
+            { name: 'Food/water provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res01' },
+            { name: 'First aid provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res02' },
+            { name: 'Mental health first aid provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res03' },
+            { name: 'Move out assistance provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res04' },
+            { name: 'Referral provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res05' },
+            { name: 'Transportation provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res06' },
+            { name: 'Refused assistance', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res07' },
+            { name: 'Did not find', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res08' },
+            { name: 'Request canceled', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res09' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Referral,
+        name: 'Referred to',
+        tags: [
+            { name: 'Shelter', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref01' },
+            { name: 'Hospital', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref02' },
+            { name: 'Legal aid', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref03' },
+            { name: 'Child care', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref04' },
+            { name: 'Other resource', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'ref05' },
+        ]
+    },
+]
 
+// DEFAULT ATTRIBUTES
 
+export enum DefaultAttributeCategoryIds {
+    Languages = '__languages',
+    Skills = '__skills',
+}
 
+export const DefaultAttributeCategories: AttributeCategory[] = [
+    {
+        id: DefaultAttributeCategoryIds.Skills,
+        name: 'Capabilities',
+        attributes: [
+            { name: 'conflict resolution', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills01' },
+            { name: 'CPR', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills02' },
+            { name: 'de-escalation', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
+            { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
+            { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
+            { name: 'Stop the Bleed', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
+            { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills07' },
+            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills08' },
+        ]
+    },
+    {
+        id: DefaultAttributeCategoryIds.Languages,
+        name: 'Languages',
+        attributes: [
+            { name: 'Amharic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan01' },
+            { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
+            { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
+            { name: 'Cantonese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan04' },
+            { name: 'Hatian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
+            { name: 'Jamaican Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan06' },
+            { name: 'Other Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan07' },
+            { name: 'French', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan08' },
+            { name: 'Hindi', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan09' },
+            { name: 'Korean', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan10' },
+            { name: 'Mandarin', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan11' },
+            { name: 'Portuguese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan12' },
+            { name: 'Spanish', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan13' },
+            { name: 'Tagalog', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan14' },
+            { name: 'Vietnamese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan15' },
+            { name: 'Yoruba', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan16' },
+            { name: 'Oromo', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan17' },
+            { name: 'Swahili', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan18' },
+            { name: 'Other language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan99' },
+        ]
+    },
+]
 
 
 
