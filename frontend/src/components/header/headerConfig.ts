@@ -90,7 +90,7 @@ const HeaderConfig: {
                 ? ''
                 : requestStore().currentRequest.displayId;
 
-            return `Request ${prefix()}–${id}`
+            return `${prefix()}–${id}`
         },
         leftActions: [{
             icon: 'chevron-left',
@@ -116,7 +116,11 @@ const HeaderConfig: {
                 //     requestStoreInst().currentRequest = null;
                 // }, 0)
             }
-        }]
+        }],
+        rightActions: [{
+            icon: 'file-document',
+            callback: () => navigateTo(routerNames.helpRequestDetails)
+        }],
     },
     [routerNames.teamList]: () => {        
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])

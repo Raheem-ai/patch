@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { HeaderHeight, headerIconContainerSize, headerIconSize, InteractiveHeaderHeight, isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, headerIconPaddingVertical, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
 import statusAvailable from '../../../assets/statusAvailable.png';
 import statusUnavailable from '../../../assets/statusUnavailable.png';
@@ -67,17 +67,17 @@ const Header = observer((props: Props) => {
                     {   leftActions.length 
                         ? <View style={styles.leftIconContainer}>
                             {
-                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
+                                leftActions.map(a => <IconButton key={a.icon} style={styles.leftIcon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                             }
                         </View>
                         : null
                     }
-                    <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 20 }]}>
+                    <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
                     { 
                         <View style={styles.onDutyStatusContainer}>
-                            <Image source={ statusIcon } style={{ width: 24, height: 24 }} /> 
+                            <Image source={ statusIcon } style={{ width: headerIconSize, height: headerIconSize }} /> 
                         </View>
                     }
                     <View style={styles.rightIconContainer}>
@@ -182,14 +182,23 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     leftIconContainer: {
-        width: headerIconContainerSize,
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+    },
+    leftIcon: {
+        margin: 0,
+        width: headerIconSize,
+        height: headerIconSize,
+        alignSelf: 'center',
     },
     titleContainer: {
         flex: 1,
         alignItems: 'flex-start', 
         justifyContent: 'center',
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
     },
     title: {
         color: Colors.text.defaultReversed,
@@ -199,7 +208,6 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start', 
         justifyContent: 'center',
         height: InteractiveHeaderHeight,
-        marginRight: 12
     },
     onDutyStatusOutline: { 
         borderStyle: 'solid', 
@@ -219,16 +227,16 @@ const styles = StyleSheet.create({
         color: Colors.icons.darkReversed,
     },
     rightIconContainer: {
-        // width: iconContainerSize,
         flexDirection: 'row',
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
+        paddingRight: 12,
     },
     icon: {
         margin: 0,
-        marginRight: 12,
+        marginLeft: headerIconPaddingHorizontal,
         width: headerIconSize,
         height: headerIconSize,
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
 
     // OPEN

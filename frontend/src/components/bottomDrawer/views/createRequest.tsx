@@ -194,7 +194,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: 'clipboard-account'
+                        icon: 'card-account-phone'
                         // required: true
                     },
                     // Caller Contact Info
