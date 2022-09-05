@@ -1,9 +1,14 @@
 import { AnyFunction, NotificationEventType, PatchEventType } from '../models'
+import { organizationStore } from "../../frontend/src/stores/interfaces"
 
 
 export function notificationLabel<T extends NotificationEventType, F extends AnyFunction = typeof NotificationLabelMap[T]>(event: T, ...args: Parameters<F>): string {
     const labelFunc = NotificationLabelMap[event] as F;
     return labelFunc(...args)
+}
+
+const prefix = () => {
+    return organizationStore().metadata.requestPrefix;
 }
 
 const NotificationLabelMap = {
@@ -26,27 +31,27 @@ const NotificationLabelMap = {
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string) => {
-        return `Request ${requestName} has a new message from ${senderName}`
+        return `${prefix()}–${requestName} has a new message from ${senderName}`
     },
     [PatchEventType.RequestRespondersNotified]: (requestName: string) => {
-        return `Help needed on request ${requestName}`
+        return `Help needed on ${prefix()}–${requestName}`
     },
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string) => {
-        return `${responderName} has joined request ${requestName}`
+        return `${responderName} joined ${prefix()}–${requestName}`
     }, 
     [PatchEventType.RequestRespondersLeft]: (requestName: string, responderName: string) => {
-        return `${responderName} has left request ${requestName}`
+        return `${responderName} left ${prefix()}–${requestName}`
     }, 
     [PatchEventType.RequestRespondersAccepted]: (requestName: string, approverName: string) => {
-        return `${approverName} has approved your request to join ${requestName}`
+        return `${approverName} approved you for ${prefix()}–${requestName}`
     }, 
     [PatchEventType.RequestRespondersDeclined]: (requestName: string, declinerName: string) => {
-        return `${declinerName} has declined your request to join ${requestName}`
+        return `${declinerName} declined your request for ${prefix()}–${requestName}`
     }, 
     [PatchEventType.RequestRespondersRemoved]: (requestName: string, removerName: string) => {
-        return `${removerName} has removed you from ${requestName}`
+        return `${removerName} removed you from ${prefix()}–${requestName}`
     }, 
     [PatchEventType.RequestRespondersRequestToJoin]: (requestName: string, requesterName: string, positionName: string) => {
-        return `${requesterName} has requested to join ${requestName} on the '${positionName}' position`
+        return `${requesterName} asked to join ${prefix()}–${requestName} as '${positionName}'`
     }, 
 }
