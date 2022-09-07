@@ -26,27 +26,27 @@ const NotificationLabelMap = {
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string) => {
-        return `Request ${requestName} has a new message from ${senderName}`
+        return `New message on #${requestName} from ${senderName}`
     },
     [PatchEventType.RequestRespondersNotified]: (requestName: string) => {
-        return `Help needed on request ${requestName}`
+        return `New Request created: #${requestName}`
     },
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string) => {
-        return `${responderName} has joined request ${requestName}`
+        return `${responderName} joined #${requestName}`
     }, 
     [PatchEventType.RequestRespondersLeft]: (requestName: string, responderName: string) => {
-        return `${responderName} has left request ${requestName}`
+        return `${responderName} left #${requestName}`
     }, 
     [PatchEventType.RequestRespondersAccepted]: (requestName: string, approverName: string) => {
-        return `${approverName} has approved your request to join ${requestName}`
+        return `${approverName} approved you for #${requestName}`
     }, 
     [PatchEventType.RequestRespondersDeclined]: (requestName: string, declinerName: string) => {
-        return `${declinerName} has declined your request to join ${requestName}`
+        return `${declinerName} declined your request to join #${requestName}`
     }, 
     [PatchEventType.RequestRespondersRemoved]: (requestName: string, removerName: string) => {
-        return `${removerName} has removed you from ${requestName}`
+        return `${removerName} removed you from #${requestName}`
     }, 
     [PatchEventType.RequestRespondersRequestToJoin]: (requestName: string, requesterName: string, positionName: string) => {
-        return `${requesterName} has requested to join ${requestName} on the '${positionName}' position`
+        return `${requesterName} requested to join #${requestName} as '${positionName}'`
     }, 
 }
