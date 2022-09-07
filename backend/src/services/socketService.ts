@@ -136,9 +136,6 @@ export class MySocketService {
             case PatchEventType.RequestRespondersRemoved:
                 await this.handleRequestRespondersRemoved(params as PatchEventParams[PatchEventType.RequestRespondersRemoved]) 
                 break;
-            case PatchEventType.RequestRespondersRequestToJoin:
-                await this.handleRequestRespondersRequested(params as PatchEventParams[PatchEventType.RequestRespondersDeclined])
-                break;
             case PatchEventType.RequestRespondersDeclined:
                 await this.handleRequestRespondersDeclined(params as PatchEventParams[PatchEventType.RequestRespondersDeclined])
                 break;
@@ -423,34 +420,6 @@ export class MySocketService {
             event: PatchEventType.RequestRespondersJoined,
             params
         } as PatchEventPacket<PatchEventType.RequestRespondersJoined>)
-    }
-
-    // not sure if this is correct, but it wasn't sending the notif without it
-    async handleRequestRespondersRequested(params: PatchEventParams[PatchEventType.RequestRespondersRequestToJoin]){
-        const request = await this.db.resolveRequest(params.requestId)
-        const org = await this.db.resolveOrganization(params.orgId);
-        const fullOrg = await this.db.fullOrganization(org);
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
-
-        const responderName = usersOnRequest.has(params.responderId)
-        ? usersOnRequest.get(params.responderId).userName
-        : (await this.db.resolveUser(params.responderId)).name;
-
-        const responderToken = usersOnRequest.has(params.responderId)
-        ? usersOnRequest.get(params.responderId).pushToken
-        : (await (await this.db.resolveUser(params.responderId)).push_token);
-
-        await this.send([
-            {
-                userId: params.responderId,
-                userName: responderName,
-                body: notificationLabel(PatchEventType.RequestRespondersRequestToJoin, request.displayId, responderName, org.requestPrefix),
-                pushToken: responderToken
-            }
-        ], {
-            event: PatchEventType.RequestRespondersRequestToJoin,
-            params
-        })
     }
 
     async handleRequestRespondersRemoved(params: PatchEventParams[PatchEventType.RequestRespondersRemoved]) {
