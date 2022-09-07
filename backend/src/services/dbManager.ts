@@ -1527,7 +1527,7 @@ export class DBManager {
 
         const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
         
-        position.joinedUsers.splice(userIdx, 1);
+        if (userIdx != -1) position.joinedUsers.splice(userIdx, 1);
 
         request.markModified('positions');
         
