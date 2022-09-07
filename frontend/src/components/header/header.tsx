@@ -12,9 +12,6 @@ import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '
 import Constants from 'expo-constants';
 import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, headerIconPaddingVertical, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
-import statusAvailable from '../../../assets/statusAvailable.png';
-import statusUnavailable from '../../../assets/statusUnavailable.png';
-import statusOnshift from '../../../assets/statusOnshift.png';
 
 type Props = StackHeaderProps & {};
 
@@ -54,11 +51,27 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
-        const statusIcon = requestStore().myActiveRequests.length
+/*        const statusIcon = requestStore().myActiveRequests.length
             ? statusOnshift
             : userStore().isOnDuty
                 ? statusAvailable
                 : statusUnavailable;
+*/        
+        const statusIcon = requestStore().myActiveRequests.length
+            ? userStore().isOnDuty
+                ? 'lightning-bolt'
+                : 'lightning-bolt'
+            : userStore().isOnDuty
+                ? 'circle'
+                : 'circle-outline';
+
+        const statusColor = requestStore().myActiveRequests.length
+            ? Colors.good
+            : userStore().isOnDuty
+                ? Colors.good
+                : Colors.icons.darkReversed;
+
+        const statusIconSize = 16;
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -75,16 +88,22 @@ const Header = observer((props: Props) => {
                     <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
-                    { 
-                        <View style={styles.onDutyStatusContainer}>
-                            <Image source={ statusIcon } style={{ width: headerIconSize, height: headerIconSize }} /> 
-                        </View>
-                    }
+
                     <View style={styles.rightIconContainer}>
                         {
                             rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                         }
                     </View>
+                    { rightActions.length
+                        ? <View style={{borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, marginLeft: 6, paddingLeft: 12, marginBottom: InteractiveHeaderHeight/2-(InteractiveHeaderHeight*0.6)/2, height: InteractiveHeaderHeight*0.6}}></View>
+                        : null
+                    }
+                    { 
+                    
+                        <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
+                            <IconButton key={'status-icon'} style={{ width: statusIconSize, height: statusIconSize }} icon={statusIcon} size={statusIconSize} color={statusColor} onPress={() => {return null}}/>
+                        </View>
+                    }
                 </View>
             </Animated.View>
             </View>
@@ -209,23 +228,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         height: InteractiveHeaderHeight,
     },
-    onDutyStatusOutline: { 
-        borderStyle: 'solid', 
-        borderWidth: 1, 
-        paddingHorizontal: 4, 
-        paddingVertical: 2, 
-        borderRadius: 4 
-    },
-    onDutyStatusText: {  
-        fontSize: 11, 
-        fontWeight: 'bold' 
-    },
-    onDuty: {
-        color: Colors.good,
-    },
-    offDuty: {
-        color: Colors.icons.darkReversed,
-    },
     rightIconContainer: {
         flexDirection: 'row',
         height: InteractiveHeaderHeight,
@@ -237,6 +239,7 @@ const styles = StyleSheet.create({
         width: headerIconSize,
         height: headerIconSize,
         alignSelf: 'center',
+        borderRadius: 0
     },
 
     // OPEN

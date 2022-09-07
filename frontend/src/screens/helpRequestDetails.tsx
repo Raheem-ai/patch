@@ -191,18 +191,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.typeLabelContainer}>
                     <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
-                {
-                    canEdit
-                        ? <View>
-                            <IconButton
-                                onPress={edit}
-                                style={styles.editIcon}
-                                icon='pencil' 
-                                color={styles.editIcon.color}
-                                size={styles.editIcon.width} />
-                        </View>
-                        : null
-                }
             </View>
         )
     }
