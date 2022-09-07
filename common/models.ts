@@ -1674,7 +1674,7 @@ export const DefaultTagCategories: TagCategory[] = [
             { name: 'Hospital', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref02' },
             { name: 'Legal aid', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref03' },
             { name: 'Child care', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref04' },
-            { name: 'Other resource', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'ref05' },
+            { name: 'Other resource', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref05' },
         ]
     },
 ]
