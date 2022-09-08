@@ -451,7 +451,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-//                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
                 const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
@@ -678,6 +677,28 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 : <View style={{height: 20}}></View>
             }
         }
+
+        // used for case where there are no positions defined and we want to include a button to add them
+        const editAction = () => {
+            const edit = () => {
+                bottomDrawerStore().show(BottomDrawerView.editRequest, true)
+            }
+
+            const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+
+            return (
+                canEdit
+                    ? <View>
+                        <PatchButton 
+                            mode='contained'
+                            uppercase={false}
+                            label={STRINGS.REQUESTS.ACTIONS.addResponders}
+                            onPress={edit} />
+                    </View>
+                    : null
+            )
+        }
+
 
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
