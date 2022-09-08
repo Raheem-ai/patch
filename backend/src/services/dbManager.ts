@@ -1528,7 +1528,7 @@ export class DBManager {
         const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
 
         if (userIdx == -1) {
-            throw `${(await this.getUserById(userId)).name} isn't on this position.`
+            throw new BadRequest(STRINGS.REQUESTS.POSITIONS.removeUser((await this.getUserById(userId)).name));
         }
         
         position.joinedUsers.splice(userIdx, 1);
