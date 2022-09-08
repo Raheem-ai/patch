@@ -53,14 +53,14 @@ const PositionDetailsCard = observer(({
                 ? Colors.good
                 : Colors.bad;
 
-    type attributeIsDesired = {
+    type AttributeIsDesired = {
         name: string,
         isDesired: boolean
     }
 
     const userDetails: {
         name: string,
-        attributes: attributeIsDesired[],
+        attributes: AttributeIsDesired[],
         userId: string
     }[] = joinedUsers.map(userId => {
         const user = userStore().users.get(userId);
@@ -80,12 +80,14 @@ const PositionDetailsCard = observer(({
                 name: manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)?.name,
                 isDesired: isDesiredAttribute(attr)
             }
-        }).filter(x => !!x)
+        })
+        .filter(x => !!x)
+        .sort((a, b) => a.isDesired && !b.isDesired ? -1 : b.isDesired && !a.isDesired ? 1 : 0)
         
         return {
             name,
             userId, 
-            attributes: attributes.sort((a, b) => a.isDesired && !b.isDesired ? -1 : b.isDesired && !a.isDesired ? 1 : 0),
+            attributes: attributes,
         }
 
     }).filter(x => !!x); 

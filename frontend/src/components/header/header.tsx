@@ -51,15 +51,10 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
-/*        const statusIcon = requestStore().myActiveRequests.length
-            ? statusOnshift
-            : userStore().isOnDuty
-                ? statusAvailable
-                : statusUnavailable;
-*/        
+
         const statusIcon = requestStore().myActiveRequests.length
             ? userStore().isOnDuty
-                ? 'lightning-bolt'
+                ? 'lightning-bolt-circle'
                 : 'lightning-bolt'
             : userStore().isOnDuty
                 ? 'circle'
@@ -94,14 +89,17 @@ const Header = observer((props: Props) => {
                             rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
                         }
                     </View>
+                    {/* Add a divider line between right icons and status icon */}
                     { rightActions.length
-                        ? <View style={{borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, marginLeft: 6, paddingLeft: 12, marginBottom: InteractiveHeaderHeight/2-(InteractiveHeaderHeight*0.6)/2, height: InteractiveHeaderHeight*0.6}}></View>
+                        ? <View style={{ flexDirection: 'row', height: InteractiveHeaderHeight, alignItems: 'center', paddingLeft: 6, paddingRight: 12 }}>
+                            <View style={{ borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, height: '60%' }}></View>
+                        </View>
                         : null
                     }
                     { 
                     
                         <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
-                            <IconButton key={'status-icon'} style={{ width: statusIconSize, height: statusIconSize }} icon={statusIcon} size={statusIconSize} color={statusColor} onPress={() => {return null}}/>
+                            <IconButton key={'status-icon'} style={{ width: statusIconSize, height: statusIconSize }} icon={statusIcon} size={statusIconSize} color={statusColor}/>
                         </View>
                     }
                 </View>

@@ -679,26 +679,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             }
         }
 
-        const editAction = () => {
-            const edit = () => {
-                bottomDrawerStore().show(BottomDrawerView.editRequest, true)
-            }
-    
-            const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
-    
-            return (
-                canEdit
-                    ? <View>
-                        <PatchButton 
-                            mode='contained'
-                            uppercase={false}
-                            label={STRINGS.REQUESTS.ACTIONS.addResponders}
-                            onPress={edit} />
-                    </View>
-                    : null
-            )
-        }
-
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
                 <View style={{ backgroundColor: Colors.backgrounds.secondary, borderBottomColor: Colors.borders.filter, borderBottomWidth: 1 }}>
