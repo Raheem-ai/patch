@@ -1,13 +1,10 @@
-import { AnyFunction, NotificationEventType, PatchEventType } from '../models'
+import { AnyFunction, NotificationEventType, PatchEventType } from '../models';
+import { requestDisplayName } from './requestUtils';
 
 
 export function notificationLabel<T extends NotificationEventType, F extends AnyFunction = typeof NotificationLabelMap[T]>(event: T, ...args: Parameters<F>): string {
     const labelFunc = NotificationLabelMap[event] as F;
     return labelFunc(...args)
-}
-
-function showPrefix(prefix) {
-    return (prefix + '–') || 'Request';
 }
 
 const NotificationLabelMap = {
@@ -30,27 +27,27 @@ const NotificationLabelMap = {
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string, prefix?: string) => {
-        return `New message on ${showPrefix(prefix)}${requestName} from ${senderName}`
+        return `New message on ${requestDisplayName(prefix, requestName)} from ${senderName}`
     },
     [PatchEventType.RequestRespondersNotified]: (requestName: string, prefix?: string) => {
-        return `New Request created: ${showPrefix(prefix)}${requestName}`
+        return `New Request created: ${requestDisplayName(prefix, requestName)}`
     },
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string, prefix: string) => {
-        return `${responderName} joined ${showPrefix(prefix)}${requestName}`
+        return `${responderName} joined ${requestDisplayName(prefix, requestName)}`
     }, 
     [PatchEventType.RequestRespondersLeft]: (requestName: string, responderName: string, prefix: string) => {
-        return `${responderName} left ${showPrefix(prefix)}${requestName}`
+        return `${responderName} left ${requestDisplayName(prefix, requestName)}`
     }, 
     [PatchEventType.RequestRespondersAccepted]: (requestName: string, approverName: string, prefix?: string) => {
-        return `${approverName} approved you for ${showPrefix(prefix)}${requestName}`
+        return `${approverName} approved you for ${requestDisplayName(prefix, requestName)}`
     }, 
     [PatchEventType.RequestRespondersDeclined]: (requestName: string, declinerName: string, prefix?: string) => {
-        return `${declinerName} declined you for ${showPrefix(prefix)}${requestName}`
+        return `${declinerName} declined you for ${requestDisplayName(prefix, requestName)}`
     }, 
     [PatchEventType.RequestRespondersRemoved]: (requestName: string, removerName: string, prefix?: string) => {
-        return `${removerName} removed you from ${showPrefix(prefix)}${requestName}`
+        return `${removerName} removed you from ${requestDisplayName(prefix, requestName)}`
     }, 
     [PatchEventType.RequestRespondersRequestToJoin]: (requestName: string, requesterName: string, prefix?: string) => {
-        return `${requesterName} requested to join ${showPrefix(prefix)}${requestName}`
+        return `${requesterName} requested to join ${requestDisplayName(prefix, requestName)}`
     }, 
 }

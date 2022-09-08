@@ -1,3 +1,8 @@
+type CaseAndNumber = {
+    cap?: boolean,
+    plural?: boolean
+};
+
 const STRINGS = {
     // GLOBAL
     ELEMENTS: {
@@ -6,6 +11,14 @@ const STRINGS = {
         attribute: 'attributes',
         tag: 'tag',
         position: `position`,
+        request: (props?:CaseAndNumber) => (props?.cap 
+            ? props?.plural
+                ? 'Requests'
+                : 'Request'
+            : props?.plural
+                ? 'requests'
+                : 'request'
+        ) 
     },
     visualDelim: '·',
     responders: (n: number) => (n > 1 || n == 0) ? 'responders' : 'responder',
