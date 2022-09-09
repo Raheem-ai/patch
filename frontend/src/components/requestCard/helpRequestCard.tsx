@@ -113,7 +113,6 @@ const HelpRequestCard = observer(({
         // figure out how many open spots there are
         // show an icon if there are any
         if (unfilledSpotsForRequest > 0) {
-            // error somewhere from here....
             unAssignedResponders.push(<UserIcon 
                 style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
                 emptyIconColor={styles.unAssignedResponderIcon.color}/>);
@@ -128,7 +127,6 @@ const HelpRequestCard = observer(({
             } else {
                 unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
             }
-            // .... to here
         } 
 
         // figure out how many people have joined
@@ -140,12 +138,13 @@ const HelpRequestCard = observer(({
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                    <UserIcon user={responder} style={ 
-                        i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
-                            ? dark
-                                ? styles.assignedResponderIconDark
-                                : styles.assignedResponderIcon 
-                            : styles.assignedResponderIconLast } /></View>)}
+                        <UserIcon user={responder} style={ 
+                            i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                                ? dark
+                                    ? styles.assignedResponderIconDark
+                                    : styles.assignedResponderIcon 
+                                : styles.assignedResponderIconLast } />
+                    </View>)}
             i++;
         });
         if (joinedResponders.size > maxJoinedToShow) {
