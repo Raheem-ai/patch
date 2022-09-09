@@ -33,7 +33,7 @@ export default function SignInForm( { navigation } : Props) {
         <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
-                <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps={true} keyboardDismissMode="none">
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                     <View style={styles.titleContainer}>
                         <Text style={styles.titleText}>Welcome to Patch!</Text>
                     </View>

@@ -1517,6 +1517,23 @@ export class DBManager {
 
     async removeUserFromRequest(revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
         const request = await this.resolveRequest(requestId);
+        const position = request.positions.find(pos => pos.id == positionId);
+        const prefix = (await this.resolveOrganization(request.orgId)).requestPrefix;
+
+        // TODO: this should throw
+        if (!position) {
+            throw `'This position doesn't exist on ${prefix + '–' || 'Request '}${request.displayId}.`
+        }
+
+        const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
+
+        if (userIdx == -1) {
+            throw new BadRequest(STRINGS.REQUESTS.POSITIONS.removeUser((await this.getUserById(userId)).name));
+        }
+        
+        position.joinedUsers.splice(userIdx, 1);
+
+        request.markModified('positions');
         
         request.teamEvents.push({
             revokedAt: new Date().toISOString(),
@@ -1609,15 +1626,15 @@ export class DBManager {
     }
 
     async resolveRequest(requestId: string | HelpRequestDoc) {
-        const user = typeof requestId === 'string'
+        const req = typeof requestId === 'string'
             ? await this.getRequest({ _id: requestId })
             : requestId;
 
-        if (!user) {
+        if (!req) {
             throw `Unknown request`
         }
 
-        return user;
+        return req;
     }
 
     // util for us running scripts against an environmeent
