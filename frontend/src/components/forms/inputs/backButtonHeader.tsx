@@ -10,12 +10,14 @@ export type BackButtonHeaderProps = {
     cancel?: {
         handler: () => void, 
         label?: string | (() => string)
+        testID?: string
     }
     save?: {
         handler: () => void, 
         label?: string | (() => string)
         outline?: boolean
         validator?: () => boolean
+        testID?: string
     }
     label?: string | (() => string),
     labelDecoration?: {
@@ -82,6 +84,7 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
         return this.props.cancel && this.props.cancel.handler
             ? <View style={{ position: "absolute", left: 0, width: 60}}>
                 <IconButton
+                    testID={this.props.cancel.testID}
                     onPress={this.cancel}
                     style={styles.closeIcon}
                     icon='close' 
@@ -96,6 +99,7 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
 
         return this.props.save && this.props.save.handler
             ? <Button
+                testID={this.props.save.testID}
                 uppercase={false} 
                 color={Colors.primary.alpha}
                 mode={this.props.save.outline ? 'outlined' : 'contained'}

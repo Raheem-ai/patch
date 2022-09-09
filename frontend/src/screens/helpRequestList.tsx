@@ -7,6 +7,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { requestStore } from "../stores/interfaces";
 import { ScreenProps } from "../types";
+import TestIds from "../test/ids";
 
 type Props = ScreenProps<'HelpRequestList'>;
 
@@ -56,7 +57,7 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
     }
     
     return (
-        <View style={styles.container}>
+        <View style={styles.container} testID={TestIds.requestList.screen}>
             <ListHeader { ...headerProps } />
             <ScrollView style={{ flex: 1}}>
                 {

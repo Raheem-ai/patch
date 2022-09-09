@@ -5,17 +5,13 @@ import { Text } from "react-native-paper";
 import { LandingPageNavigationProp, routerNames, ScreenProps, Colors } from "../types";
 import logo from '../../assets/logo.png';
 import { navigateTo } from "../navigation";
+import TestIds from "../test/ids";
 
 type Props = {
     navigation: LandingPageNavigationProp;
 };
 
 const LandingPage = observer(({ navigation }: Props) => {
-    const [ loading, setLoading ] = useState(false)
-
-    if (loading) {
-        return null
-    }
 
     return (
         <View style={styles.pageContainer}>
@@ -25,7 +21,10 @@ const LandingPage = observer(({ navigation }: Props) => {
             <View style={[styles.captionContainer, {marginBottom: 200}]}>
                 <Text style={styles.captionText}>The dispatch system for community crisis care</Text>
             </View>
-            <Pressable onPress={() => navigateTo(routerNames.signIn)}>
+            <Pressable 
+                onPress={() => navigateTo(routerNames.signIn)}
+                testID={TestIds.landingScreen.signInButton}
+            >
                 <View style={styles.captionContainer}>
                     <Text style={styles.signInText}>Sign in</Text>
                 </View>

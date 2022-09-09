@@ -48,6 +48,7 @@ import CreateAccountForm from './src/screens/CreateAccountForm';
 import Chats from './src/screens/chats';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import boot from './src/boot';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -70,29 +71,11 @@ export default function App() {
   
   // handle store binding + initialization + splash screen loading state
     useEffect(() => {
-        bindStores();
-        bindServices();
 
-        // setup notifications for both foreground/background scenarios
-        notificationStore().setup();
-
-        (async () => {
-            try {
-                await Promise.all([
-                    initStores(),
-                    initServices()
-                ]);
-            } catch (e) {
-                console.error('Error during initialization:', e)
-            } finally {
-                setIsLoading(false);
-                await SplashScreen.hideAsync();
-            }
-        })()
-
-        return () => {
-            notificationStore().teardown();
-        }
+      return boot(() => {
+        setIsLoading(false);
+        SplashScreen.hideAsync();
+      })
 
     }, []);
 

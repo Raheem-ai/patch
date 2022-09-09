@@ -13,6 +13,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
+import TestIds from "../../../test/ids";
 
 type Props = {}
 
@@ -44,6 +45,7 @@ class CreateHelpRequest extends React.Component<Props> {
                 },
             },
             save: {
+                testID: TestIds.createRequest.submit,
                 handler: async () => {
                     let createdReq: HelpRequest;
         
@@ -74,7 +76,7 @@ class CreateHelpRequest extends React.Component<Props> {
         return (
             <KeyboardAwareArea>
                 <BackButtonHeader {...headerConfig} />
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView testID={TestIds.createRequest.form} showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(inputs()) }

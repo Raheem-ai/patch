@@ -7,6 +7,7 @@ import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import { block } from 'react-native-reanimated';
+import TestIds from '../test/ids';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -33,12 +34,15 @@ export default function SignInForm( { navigation } : Props) {
         <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
-                <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false} 
+                    style={styles.scrollContainer}>
                     <View style={styles.titleContainer}>
                         <Text style={styles.titleText}>Welcome back!</Text>
                     </View>
                     <View style={styles.inputsContainer}>
                         <TextInput
+                            testID={TestIds.signIn.email}
                             mode="flat"
                             style={styles.input}
                             label={labelNames.email}
@@ -46,6 +50,7 @@ export default function SignInForm( { navigation } : Props) {
                             keyboardType='email-address'
                             onChangeText={username => setTextUser(username)}/>
                         <TextInput
+                            testID={TestIds.signIn.password}
                             mode="flat"
                             secureTextEntry={secureTextEntry}
                             right={
@@ -65,7 +70,13 @@ export default function SignInForm( { navigation } : Props) {
                             onSubmitEditing={signIn}/>
                     </View>
                     <View style={styles.bottomContainer}>
-                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
+                        <Button 
+                            testID={TestIds.signIn.submit}
+                            uppercase={false} 
+                            color={Colors.text.buttonLabelPrimary} 
+                            style={styles.signInButton} 
+                            onPress={signIn}
+                        >{'Sign in'}</Button>
                         <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
                         <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
                     </View>

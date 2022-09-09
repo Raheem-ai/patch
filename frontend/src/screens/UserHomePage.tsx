@@ -9,6 +9,7 @@ import PatchButton from "../components/patchButton";
 import { observer } from "mobx-react";
 import { URLS } from "../constants"
 import STRINGS from "../../../common/strings";
+import TestIds from "../test/ids";
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -141,7 +142,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     }
 
     return (
-        <ScrollView>
+        <ScrollView testID={TestIds.home.screen}>
             <View  style={{ padding: 20 }}>
                 <Text style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
                 {defaultText()}

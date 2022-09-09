@@ -1,19 +1,281 @@
-import { render, screen, fireEvent } from '@testing-library/react-native';
-import App from './App';
+import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react-native';
+import '@testing-library/jest-native/extend-expect';
 
-test('form submits two answers', () => {
-    // const mockFn = jest.fn();
+import App from './App';
+import {hideAsync} from 'expo-splash-screen';
+import boot from './src/boot';
+import TestIds from './src/test/ids';
+import {APIClient} from './src/api'
+import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockUsers } from './src/test/mocks';
+import { container } from './src/meta';
+import { headerStore, IUserStore, navigationStore } from './src/stores/interfaces';
+import { routerNames } from './src/types';
+import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
+import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
+import { StorageController } from 'mobx-persist-store';
+import { AppState } from 'react-native';
+import MockedSocket from 'socket.io-mock';
+import { clearAllStores } from './src/stores/utils';
+import { clearAllServices } from './src/services/utils';
+
+// // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
+jest.mock('./src/boot')
+jest.mock('expo-splash-screen')
+jest.mock('./src/meta/persistentStorage')
+
+const originalBoot = jest.requireActual('./src/boot').default;
+const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
+const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null)
+
+// // const mockedPersistentStorage = PersistentStorage as jest.MaybeMockedConstructor<StorageController>;
+// // mockedPersistentStorage.mockImplementation(function (secureKeys: string[], propConfigs: PersistentPropConfigs) { return mockAsyncStorage })
+
+jest.mock('./src/meta/persistentStorage', () => {
+    const originalModule = jest.requireActual('./src/meta/persistentStorage');
   
-    render(<App/>);
-  
-    // const answerInputs = screen.getAllByLabelText('answer input');
-  
-    // fireEvent.changeText(answerInputs[0], 'a1');
-    // fireEvent.changeText(answerInputs[1], 'a2');
-    // fireEvent.press(screen.getByText('Submit'));
-  
-    // expect(mockFn).toBeCalledWith({
-    //   '1': { q: 'q1', a: 'a1' },
-    //   '2': { q: 'q2', a: 'a2' },
-    // });
+    //Mock the default export and named export 'foo'
+    return {
+      __esModule: true,
+      ...originalModule,
+      default: () => mockAsyncStorage,
+    };
 });
+
+jest.mock('socket.io-client', () => {
+    const originalModule = jest.requireActual('socket.io-client');
+    const EventEmitter = jest.requireActual('react-native').EventEmitter;
+  
+    return {
+      __esModule: true,
+      ...originalModule,
+      io: jest.fn().mockImplementation(() => {
+        const mockSocket = new MockedSocket()
+
+        mockSocket.io = new EventEmitter()
+
+        return mockSocket
+      })
+    };
+});
+
+async function mockBoot() {
+    const mockedBoot = boot as jest.MaybeMocked<typeof boot>;
+    const mockedHideAsync = hideAsync as jest.MaybeMocked<typeof hideAsync>;
+
+    mockedHideAsync.mockImplementation(originalHideAsync);
+
+    const bootup = new Promise<void>((resolve) => {
+        mockedBoot.mockImplementation((doneLoading: (() => void)) => {
+            return originalBoot(() => {
+                console.log('UNLOCKING AFTER MOCK BOOTUP')
+                act(doneLoading)
+                resolve()
+            })
+        })
+    });
+
+    const utils = render(<App/>);
+    
+    await bootup;
+
+    return utils
+}
+
+async function mockSignIn() {
+    const { getByTestId, ...rest } = await mockBoot();
+
+    const signInButton = await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+
+    await act(async () => {
+        fireEvent(signInButton, 'click');
+    })
+   
+    const emailInput = await waitFor(() => getByTestId(TestIds.signIn.email))
+    const passwordInput = await waitFor(() => getByTestId(TestIds.signIn.password)) 
+    const submitButton = await waitFor(() => getByTestId(TestIds.signIn.submit))
+
+    const mockedUser = MockUsers()[0];
+    
+    await act(async () => {
+        fireEvent.changeText(emailInput, mockedUser.email)
+        fireEvent.changeText(passwordInput, mockedUser.password)
+    })
+
+    const response = {
+        // mocked apis
+        signInMock: jest.spyOn(APIClient.prototype, 'signIn').mockResolvedValue(MockAuthTokens()),
+        getMeMock: jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser),
+        getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockUsers()),
+        getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
+        getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
+        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests()),
+
+        // mocked data
+        mockedUser,
+
+        // utils
+        getByTestId,
+        ...rest
+    }
+
+    await act(async () => {
+        fireEvent(submitButton, 'click')
+    })
+
+    return response;
+}
+
+describe('Boot Scenarios', () => {
+
+    // afterEach(cleanup)
+
+    test('Waits for stores to load to hide the Splash Screen', async () => {
+        render(<App/>);
+        expect(hideAsync).not.toHaveBeenCalled();
+    });
+
+    test('Hides the Splash Screen and shows the landing page after stores load', async () => {
+        const { getByTestId, toJSON } = await mockBoot();
+
+        expect(hideAsync).toHaveBeenCalled();
+
+        expect(toJSON()).toMatchSnapshot();
+
+        await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+    });
+})
+
+describe('Signed in Scenarios', () => {
+
+    afterEach(() => {
+        cleanup()
+        clearAllStores()
+        clearAllServices()
+    })
+
+    test('Stores fetch initial data after sign in and route to homepage', async () => {
+        const {
+            signInMock,
+            getMeMock,
+            getTeamMembersMock,
+            getOrgMetadataMock,
+            getOrgSecretsMock,
+            getRequestsMock,
+            getByTestId,
+            mockedUser
+        } = await mockSignIn()
+
+        await waitFor(() => {
+            expect(signInMock).toHaveBeenCalledWith({
+                email: mockedUser.email,
+                password: mockedUser.password
+            })
+        })
+
+        await waitFor(() => {
+            expect(getMeMock).toHaveBeenCalledWith({
+                token: MockAuthTokens().accessToken
+            })
+        })
+
+        await waitFor(() => {
+            expect(getTeamMembersMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgMetadataMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgSecretsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getRequestsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => getByTestId(TestIds.home.screen));
+    });
+
+    test('Can create request after login', async () => {
+        const {
+            getByTestId,
+            mockedUser,
+            toJSON,
+            getOrgMetadataMock,
+            signInMock
+        } = await mockSignIn()
+
+        await waitFor(() => {
+            expect(signInMock).toHaveBeenCalledWith({
+                email: mockedUser.email,
+                password: mockedUser.password
+            })
+        })
+
+        await waitFor(() => {
+            expect(getOrgMetadataMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                }
+            )
+        })
+
+        await waitFor(() => getByTestId(TestIds.home.screen));
+
+        const openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
+
+        await act(async() => {
+            fireEvent(openHeaderButton, 'click')
+        })
+
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+
+        fireEvent(navToRequestButton, 'press')
+
+        await waitFor(() => {
+            return !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList
+        });
+
+        await waitFor(() => {
+            return getByTestId(TestIds.requestList.screen)
+        });
+
+        const createRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.createRequest))
+
+        await act(async() => {
+            fireEvent(createRequestButton, 'press')
+        })
+
+        await waitFor(() => getByTestId(TestIds.createRequest.form));
+        
+        const createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
+
+        // expect(toJSON()).toMatchSnapshot()
+        expect(createRequestSubmitButton).toBeDisabled();
+
+    })
+
+})

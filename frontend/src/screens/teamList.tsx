@@ -10,6 +10,7 @@ import { ScreenProps, routerNames } from "../types";
 import { IconButton } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { navigateTo } from "../navigation";
+import TestIds from "../test/ids";
 
 type Props = ScreenProps<'TeamList'>;
 
@@ -73,7 +74,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
     }
     
     return (
-        <View style={styles.container}>
+        <View style={styles.container} testID={TestIds.team.screen}>
             <ListHeader { ...headerProps } />
             <ScrollView style={styles.scrollView}>
                 {

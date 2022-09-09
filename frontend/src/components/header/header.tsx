@@ -15,6 +15,7 @@ import { unwrap } from '../../../../common/utils';
 import statusAvailable from '../../../assets/statusAvailable.png';
 import statusUnavailable from '../../../assets/statusUnavailable.png';
 import statusOnshift from '../../../assets/statusOnshift.png';
+import TestIds from '../../test/ids';
 
 type Props = StackHeaderProps & {};
 
@@ -67,7 +68,21 @@ const Header = observer((props: Props) => {
                     {   leftActions.length 
                         ? <View style={styles.leftIconContainer}>
                             {
-                                leftActions.map(a => <IconButton key={a.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
+                                leftActions.map((a) => {
+                                    const testId = a.icon == 'menu'
+                                        ? TestIds.header.menu
+                                        : a.testId || null;
+
+                                    return (
+                                        <IconButton 
+                                            testID={testId} 
+                                            key={a.icon} 
+                                            icon={a.icon} 
+                                            size={headerIconSize} 
+                                            color={Colors.icons.lightReversed} 
+                                            onPress={a.callback}/>
+                                    )
+                                })
                             }
                         </View>
                         : null
@@ -82,7 +97,18 @@ const Header = observer((props: Props) => {
                     }
                     <View style={styles.rightIconContainer}>
                         {
-                            rightActions.map(a => <IconButton key={a.icon} style={styles.icon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
+                            rightActions.map((a) => {
+                                return (
+                                    <IconButton 
+                                        testID={a.testId}
+                                        key={a.icon} 
+                                        style={styles.icon} 
+                                        icon={a.icon} 
+                                        size={headerIconSize} 
+                                        color={Colors.icons.lightReversed} 
+                                        onPress={a.callback}/>
+                                )
+                            })
                         }
                     </View>
                 </View>
@@ -108,9 +134,23 @@ const Header = observer((props: Props) => {
             }
         }
 
+        const option = (opt: MainMenuOption) => {
+            return (
+                <Text 
+                    testID={opt.testId}
+                    key={opt.name} 
+                    style={[
+                        styles.mainMenuText, 
+                        opt.disabled ? styles.disabledMainMenuText : null
+                    ]} 
+                    onPress={onPress(opt)}
+                >{opt.name}</Text>
+            )
+        }
+
         return (
             <View style={style}>
-                {MainMenuOptions.map(opt => <Text key={opt.name} style={[styles.mainMenuText, opt.disabled ? styles.disabledMainMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {MainMenuOptions.map(option)}
             </View>
         )
     }

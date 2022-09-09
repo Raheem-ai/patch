@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1661533431406" clover="3.2.0">
-  <project timestamp="1661533431407" name="All files">
+<coverage generated="1662758163391" clover="3.2.0">
+  <project timestamp="1662758163391" name="All files">
     <metrics statements="49" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="3" coveredmethods="0" elements="70" coveredelements="0" complexity="0" loc="49" ncloc="49" packages="1" files="3" classes="3"/>
     <file name="app.config.js" path="/Users/charlie/work/patch/frontend/app.config.js">
       <metrics statements="35" coveredstatements="0" conditionals="14" coveredconditionals="0" methods="1" coveredmethods="0"/>

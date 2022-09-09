@@ -26,6 +26,7 @@ export type FormProps = {
     },
     homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
     adHocScreens?: AdHocScreenConfig[]
+    testID?: string
 }
 
 export type CustomFormHomeScreenProps = {
@@ -35,7 +36,7 @@ export type CustomFormHomeScreenProps = {
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
     inputs: () => Grouped<StandAloneFormInputConfig>[],
     isValid: () => boolean,
-    navigateToScreen: (screenName: string) => void
+    navigateToScreen: (screenName: string) => void,
 }
 
 const WrappedScrollView = wrapScrollView(ScrollView)
@@ -349,7 +350,7 @@ export default class Form extends React.Component<FormProps> {
 
         return (
                 <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-                    <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
+                    <Pressable testID={this.props.testID} onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(this.groupedInputs.get()) }
                         {
