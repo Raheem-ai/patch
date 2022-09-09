@@ -24,7 +24,7 @@ const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }:
             <View style={styles.userIconContainer}>
                 <UserIcon user={responder} large/>
             </View>
-            <View style={{ flex: 1 }}> 
+            <View style={{ flex: 1, justifyContent: 'center' }}> 
                 <View>
                     <View style={styles.responderHeader}>
                         <Text style={styles.responderLabel}>{responder.name}</Text>
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     responderRow: {
         flexDirection: 'row',
         alignContent: 'center',
-        marginBottom: 12
+        marginBottom: 16
     },
     responderLabel: {
         fontWeight: 'bold',
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
         height: 18
     },
     userIconContainer: {
-        marginRight: 4,
+        marginRight: 8,
         justifyContent: 'center'
     },
     skillDelim: {

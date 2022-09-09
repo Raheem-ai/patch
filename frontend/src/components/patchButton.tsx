@@ -61,7 +61,7 @@ const PatchButton = ( props:PatchButtonProps) => {
                 (small && styles.smallButton),
                 buttonStyle, 
                 style ]}
-            labelStyle={[ styles.buttonLabel, buttonLabelStyle, (small && styles.buttonLabelSmall) ]}
+            labelStyle={[ styles.buttonLabel, buttonLabelStyle, (small && styles.buttonLabelSmall), (props.labelStyle && props.labelStyle) ]}
             accessibilityLabel={label}>{label}</Button>
     )
 }
@@ -113,5 +113,6 @@ const styles = StyleSheet.create({
         color: Colors.primary.alpha,
         textTransform: 'uppercase',
         textAlign: 'left',
+        marginLeft: 0
     },
 })

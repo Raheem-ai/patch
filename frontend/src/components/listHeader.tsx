@@ -94,7 +94,8 @@ const styles = StyleSheet.create({
         borderStyle: "solid"
     },
     toggleHeaderButton: {
-        alignSelf: 'center'
+        alignSelf: 'center',
+        margin: 0,
     },
     optionRowContainer: {
         height: 48,
@@ -102,11 +103,11 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.borders.filter,
         borderBottomWidth: 1,
         borderStyle: "solid",
-        marginHorizontal: 12
+        paddingHorizontal: 16
     },
     headerLabel: {
         alignSelf: 'center',
-        marginHorizontal: 12,
+        marginHorizontal: 16,
         fontSize: 14,
         color: Colors.text.default
     },
@@ -115,12 +116,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     optionContainer: {
-        paddingVertical: 2,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
         alignSelf: 'center',
         marginRight: 18
     },
     chosenOptionContainer: {
-        paddingHorizontal: 6,
         backgroundColor: Colors.backgrounds.filterSelectedItem,
         borderRadius: 14
     },

@@ -55,6 +55,5 @@ const styles = StyleSheet.create({
     },
     requestSection: {
         backgroundColor: Colors.backgrounds.standard,
-        marginTop: 24,
     }
 })

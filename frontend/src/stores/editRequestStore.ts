@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore } from './interfaces';
-import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestSkill, RequestType } from '../../../common/models';
+import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { api } from '../services/interfaces';
 
