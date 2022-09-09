@@ -343,7 +343,7 @@ export default class RequestStore implements IRequestStore {
 
         const canLeave = joinedUsers.has(targetUserId) && canEditRequests;
         const canJoin = haveAllAttributes && haveRole && !haveBeenKicked && canEditRequests;
-        const canRequestToJoin = !waitingOnRequestResults && !requestDenied && canEditRequests;
+        const canRequestToJoin = !waitingOnRequestResults && canEditRequests;
 
         return {
             canJoin, 
