@@ -96,6 +96,9 @@ const Settings = ({ navigation, route }: Props) => {
                     onCancel: async () => {
                         // organizationSettingsStore().clear()
                     },
+                    textTransform: (currentValue:string) => {
+                        return currentValue.toUpperCase()
+                    },
                     onSave: async (val) => { 
                         try {
                             await organizationSettingsStore().saveRequestPrefix(val) 

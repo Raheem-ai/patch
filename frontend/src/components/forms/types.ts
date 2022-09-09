@@ -216,6 +216,9 @@ export type ScreenFormInputConfig<Type extends ScreenFormInputType = ScreenFormI
     onCancel?(): void
     val(): Val
 
+    // allow per-instance transforms such as forcing uppercase
+    textTransform?(val: Val): string
+
     // TODO: this should be isValid(currentVal: Val): boolean as the val()
     // passed in is only relevent for intial state
     isValid(): boolean
