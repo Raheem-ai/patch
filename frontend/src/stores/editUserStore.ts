@@ -5,6 +5,8 @@ import { Me, ProtectedUser } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
 import { PhoneNumberRegex } from '../../../common/constants';
+import { iHaveAllPermissions } from "../utils";
+import { PatchPermissions } from "../../../common/models";
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {
@@ -221,6 +223,9 @@ export default class EditUserStore implements IEditUserStore {
     }
 
     editMe = async () => {
+        const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
+        const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+
         return await userStore().editMe({
             name: this._name == null ? undefined : this.name,
             email: this._email == null ? undefined : this.email,
@@ -231,8 +236,8 @@ export default class EditUserStore implements IEditUserStore {
             bio: this._bio == null ? undefined : this.bio
         },
         {
-            roleIds: this._roles == null ? undefined : this.roles,
-            attributes: this._attributes == null ? undefined : this.attributes
+            roleIds: (!canEditRoles || this._roles == null) ? undefined : this.roles,
+            attributes: (!canEditAttributes || this._attributes == null) ? undefined : this.attributes
         })
     }
 }
