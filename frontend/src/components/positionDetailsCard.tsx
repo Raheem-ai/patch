@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
+import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
 import { resolveErrorMessage } from "../errors";
 import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors } from "../types";
@@ -53,9 +53,14 @@ const PositionDetailsCard = observer(({
                 ? Colors.good
                 : Colors.bad;
 
+    type AttributeIsDesired = {
+        name: string,
+        isDesired: boolean
+    }
+
     const userDetails: {
         name: string,
-        attributes: string[],
+        attributes: AttributeIsDesired[],
         userId: string
     }[] = joinedUsers.map(userId => {
         const user = userStore().users.get(userId);
@@ -66,14 +71,23 @@ const PositionDetailsCard = observer(({
 
         const name = user.name;
 
-        const attributeNames = user.organizations[userStore().currentOrgId].attributes.map(attr => {
-            return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)?.name
-        }).filter(x => !!x)
+        const isDesiredAttribute = (attr: CategorizedItem) => {
+            return pos.attributes.some(el => el.itemId === attr.itemId);
+        }
+
+        const attributes = user.organizations[userStore().currentOrgId].attributes.map(attr => {
+            return {
+                name: manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)?.name,
+                isDesired: isDesiredAttribute(attr)
+            }
+        })
+        .filter(x => !!x)
+        .sort((a, b) => a.isDesired && !b.isDesired ? -1 : b.isDesired && !a.isDesired ? 1 : 0)
         
         return {
             name,
             userId, 
-            attributes: attributeNames
+            attributes: attributes,
         }
 
     }).filter(x => !!x); 
@@ -168,13 +182,13 @@ const PositionDetailsCard = observer(({
                     {
                         userDetails.map(details => {
                             return (
-                                <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center' }}>
-                                    <UserIcon user={{ name: details.name }}/>
+                                <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
+                                    <UserIcon user={{ name: details.name }} style={{marginTop: 2}}/>
                                     <View style={{ marginLeft: 6 }}>
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
-                                        <View style={{ flexDirection: 'row' }}>
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {
-                                                details.attributes.map(attr => <Text key={attr} style={{ color: Colors.text.tertiary, marginRight: 6 }}>{attr}</Text>)
+                                                details.attributes.map(attr => <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>)
                                             }
                                         </View>
                                     </View>
@@ -216,5 +230,13 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'flex-end',
         marginRight: 12,
+    },
+    attribute: {
+        color: Colors.text.tertiary, 
+        marginRight: 8
+    },
+    desiredAttribute: {
+        color: Colors.text.secondary,
+        marginRight: 8,
     }
 })    
