@@ -96,7 +96,7 @@ export const Colors = {
         settings: '#F0EDF0',
         secondary: '#F6F4F6',
         signIn: '#F0EDF0',
-        dark: '#3F3C3F',
+        dark: '#111',
         filter: '#F0F0F0',
         filterSelectedItem: '#999',
         menu: '#111',

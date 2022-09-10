@@ -16,6 +16,7 @@ type Props = {
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
+    onMapView?: boolean,
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
@@ -24,6 +25,7 @@ const HelpRequestCard = observer(({
     style,
     dark,
     minimal,
+    onMapView,
     onPress
 } : Props) => {
 
@@ -80,7 +82,7 @@ const HelpRequestCard = observer(({
 
         return (
             <View style={styles.detailsRow}>
-                <Text numberOfLines={4} style={dark ? styles.darkDetailsText : {}}>
+                <Text numberOfLines={minimal ? 1 : onMapView ? 3 : 4} style={dark ? styles.darkDetailsText : {}}>
                     <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type}: </Text>
                     <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
                 </Text>
@@ -136,13 +138,16 @@ const HelpRequestCard = observer(({
             const responder = userStore().users.get(userId); 
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
-                    <UserIcon user={responder} style={[
-                        {zIndex: 0-i}, 
-                        i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
-                            ? dark
-                                ? styles.assignedResponderIconDark
-                                : styles.assignedResponderIcon 
-                            : styles.assignedResponderIconLast ]} />)}
+                    <View style={{zIndex: 0-i}}>
+                        <UserIcon user={responder} style={[
+                            styles.assignedResponderIcon,
+                            dark 
+                                ? styles.assignedResponderIconDark 
+                                : null,
+                            i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                                ? null 
+                                : styles.assignedResponderIconLast ]}/>
+                    </View>)}
             i++;
         });
         if (joinedResponders.size > maxJoinedToShow) {
@@ -226,10 +231,10 @@ const HelpRequestCard = observer(({
             priorityColor = Colors.bad;
             break;
         case 0:
-            priorityColor = Colors.nocolor; // low-priority == priority not set
+            priorityColor = Colors.nocolor; // low-priority == priority not set (for now)
             break;
         default:
-            priorityColor = Colors.nocolor; // if not using priorities, no need for any colors
+            priorityColor = Colors.nocolor; // if folks aren't using priorities, let's keep it simple
     }
 
     return (
@@ -274,7 +279,8 @@ const styles = StyleSheet.create({
     minimalContainer: {
         height: ActiveRequestTabHeight ,
         paddingBottom: 12,
-        justifyContent: 'space-between',
+        paddingHorizontal: 12,
+        justifyContent: 'space-evenly',
         borderTopWidth: 0,
         borderBottomWidth: 0,
 
@@ -344,8 +350,7 @@ const styles = StyleSheet.create({
         width: 10,
         borderRadius: 8,
         borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#fff',
+        borderColor: Colors.backgrounds.standard,
         position: 'absolute',
         top: -2,
         right: 2,
@@ -359,7 +364,6 @@ const styles = StyleSheet.create({
         color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
         borderColor: Colors.backgrounds.standard,
-        borderStyle: 'solid',
         borderWidth: 1,
         marginRight: RESPONDER_SPACING_BASIC,
     }, 
@@ -367,25 +371,19 @@ const styles = StyleSheet.create({
         color: '#444144',
         backgroundColor: '#CCCACC',
         borderColor: Colors.backgrounds.dark,
-        borderStyle: 'solid',
         borderWidth: 1,
         marginRight: RESPONDER_SPACING_BASIC,
     },
     assignedResponderIcon: {
         marginRight: RESPONDER_SPACING_PILED,
         borderWidth: 1,
-        borderColor: '#FFF',
+        borderColor: Colors.backgrounds.standard,
     }, 
     assignedResponderIconDark: {
-        marginRight: RESPONDER_SPACING_PILED,
-        borderWidth: 1,
-        borderColor: Colors.backgrounds.dark,
+        borderColor: Colors.icons.superdark,
     }, 
     assignedResponderIconLast: {
         marginRight: RESPONDER_SPACING_BASIC,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#FFF',
     }, 
     responderCount: {
         alignSelf: 'center',
@@ -434,13 +432,17 @@ const styles = StyleSheet.create({
         shadowColor: '#ccc',
         shadowOpacity: 1,
         shadowOffset: {
-            height: 0,
+            height: 2,
             width: 0
         },
         width: 200
     },
     darkStatusSelector: {
-        backgroundColor: '#444144',
+        backgroundColor: '#333',
+        shadowColor: '#000',
+        borderColor: '#444',
+        borderWidth: 1,
+        paddingHorizontal: 8
     },
     empty: {
         color: Colors.icons.light,
