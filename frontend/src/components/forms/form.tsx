@@ -510,7 +510,7 @@ const DefaultSection = observer((props: {
 
     return preview 
             ? <>
-                <Pressable style={resolvedStyles} onPress={expand}>
+                <Pressable testID={props.inputConfig.testID} style={resolvedStyles} onPress={expand}>
                     { props.inputConfig.icon
                         ? <View style={styles.iconContainer}>
                             <IconButton
@@ -540,7 +540,7 @@ const DefaultSection = observer((props: {
                 }
             </>
             : <>
-                <Pressable style={resolvedStyles} onPress={expand}>
+                <Pressable testID={props.inputConfig.testID} style={resolvedStyles} onPress={expand}>
                     { props.inputConfig.icon
                         ? <View style={styles.iconContainer}>
                             <IconButton
@@ -737,7 +737,7 @@ const NavigationSection = observer((props: {
 
     return (
         <>
-            <Pressable style={resolvedStyles} onPress={resolvedExpand}>
+            <Pressable testID={props.inputConfig.testID} style={resolvedStyles} onPress={resolvedExpand}>
                 { props.inputConfig.icon
                     ? <View style={styles.iconContainer}>
                         <IconButton

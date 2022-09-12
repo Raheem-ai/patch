@@ -4,6 +4,7 @@ import { Dimensions, View, TextInput as RNTextInput, StyleSheet } from "react-na
 import { Text } from "react-native-paper";
 import { HeaderHeight } from "../../../../constants";
 import { useKeyboard } from "../../../../hooks/useKeyboard";
+import TestIds from "../../../../test/ids";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
@@ -23,17 +24,18 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
         back();
     }
 
-    const dimensions = Dimensions.get('screen');
-    const keyboardHeight = useKeyboard()
-
-    const targetHeight = dimensions.height - HeaderHeight - keyboardHeight;
-
     const headerProps: BackButtonHeaderProps = {
         cancel: {
-            handler: cancel
+            handler: cancel,
+            testID: config.testID 
+                ? TestIds.screenInputCancelButton(config.testID)
+                : null
         },
         save: {
-            handler: save
+            handler: save,
+            testID: config.testID 
+                ? TestIds.screenInputSaveButton(config.testID)
+                : null
         },
         label: config.headerLabel
     }
@@ -60,6 +62,7 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
                 <View style={styles.notes}>
                     { charLimitIndicator() }
                     <RNTextInput 
+                        testID={config.testID ? TestIds.expandedFormInput(config.testID) : null}
                         style={{ lineHeight: styles.label.lineHeight, fontSize: styles.label.fontSize }}
                         maxLength={config.props?.maxChar}
                         multiline

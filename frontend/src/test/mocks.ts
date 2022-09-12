@@ -6,8 +6,16 @@ export function MockSecrets(): AppSecrets {
     }
 }
 
-export function MockRequests(): HelpRequest[] {
-    return []
+export function MockRequests(): Partial<HelpRequest>[] {
+    return [
+        {
+            id: 'xxx-req1-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 1',
+            displayId: '1',
+            dispatcherId: MockUsers()[0].id
+        }
+    ]
 }
 
 export function MockAuthTokens(): AuthTokens {

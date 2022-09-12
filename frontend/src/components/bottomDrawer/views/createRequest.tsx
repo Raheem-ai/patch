@@ -109,7 +109,8 @@ class CreateHelpRequest extends React.Component<Props> {
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
                         type: 'TextArea',
-                        required: true
+                        required: true,
+                        testID: TestIds.createRequest.description
                     },
                     // Type of request
                     {

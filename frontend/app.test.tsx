@@ -108,7 +108,7 @@ async function mockSignIn() {
         getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockUsers()),
         getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
         getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
-        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests()),
+        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),
 
         // mocked data
         mockedUser,
@@ -271,11 +271,32 @@ describe('Signed in Scenarios', () => {
 
         await waitFor(() => getByTestId(TestIds.createRequest.form));
         
-        const createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
+        let createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
 
         // expect(toJSON()).toMatchSnapshot()
         expect(createRequestSubmitButton).toBeDisabled();
 
+        const descriptionInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.description));
+
+        await act(async() => {
+            fireEvent(descriptionInputLabel, 'press')
+        })
+
+        const descriptionInput = await waitFor(() => getByTestId(TestIds.expandedFormInput(TestIds.createRequest.description)));
+
+        await act(async() => {
+            fireEvent.changeText(descriptionInput, MockRequests()[0].notes)
+        })
+
+        const saveDescriptionButton = await waitFor(() => getByTestId(TestIds.screenInputSaveButton(TestIds.createRequest.description)));
+
+        await act(async() => {
+            fireEvent(saveDescriptionButton, 'press')
+        })
+
+        createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
+
+        expect(createRequestSubmitButton).not.toBeDisabled();
     })
 
 })

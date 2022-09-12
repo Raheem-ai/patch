@@ -1,4 +1,7 @@
 const TestIds = {
+    expandedFormInput: (testId: string) => `${testId}-expanded`,
+    screenInputSaveButton: (testId: string) => `${testId}-save`,
+    screenInputCancelButton: (testId: string) => `${testId}-cancel`,
     landingScreen: {
         signInButton: 'landingScreenSignInButton'
     },
