@@ -24,6 +24,7 @@ import * as Linking from 'expo-linking';
 import { constants } from "buffer";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
+import TestIds from "../test/ids";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -70,7 +71,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         
         return (
             <View style={styles.notesSection}>
-                <Text>{notes}</Text>
+                <Text testID={TestIds.requestDetails.notes}>{notes}</Text>
             </View>
         )
     }

@@ -10,6 +10,7 @@ import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
+import TestIds from "../../test/ids";
 
 type Props = {
     request: HelpRequest,
@@ -235,6 +236,7 @@ const HelpRequestCard = observer(({
     return (
         <Pressable 
             onPress={onCardPress} 
+            testID={TestIds.requestCard(request.id)}
             style={[
                 styles.container, 
                 dark 

@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, Organization, OrganizationMetadata, ProtectedUser, User } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, Organization, OrganizationMetadata, ProtectedUser, RequestStatus, User } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -13,7 +13,13 @@ export function MockRequests(): Partial<HelpRequest>[] {
             orgId: MockOrgMetadata().id,
             notes: 'mock description 1',
             displayId: '1',
-            dispatcherId: MockUsers()[0].id
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Unassigned,
+            teamEvents: [],
+            statusEvents: []
         }
     ]
 }

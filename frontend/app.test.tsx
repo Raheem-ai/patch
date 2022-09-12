@@ -1,4 +1,4 @@
-import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act, cleanup, waitForElementToBeRemoved } from '@testing-library/react-native';
 import '@testing-library/jest-native/extend-expect';
 
 import App from './App';
@@ -234,13 +234,13 @@ describe('Signed in Scenarios', () => {
             })
         })
 
+        const mockOrgContext = {
+            token: MockAuthTokens().accessToken,
+            orgId: MockOrgMetadata().id
+        };
+
         await waitFor(() => {
-            expect(getOrgMetadataMock).toHaveBeenCalledWith(
-                {
-                    token: MockAuthTokens().accessToken,
-                    orgId: MockOrgMetadata().id
-                }
-            )
+            expect(getOrgMetadataMock).toHaveBeenCalledWith(mockOrgContext)
         })
 
         await waitFor(() => getByTestId(TestIds.home.screen));
@@ -273,7 +273,6 @@ describe('Signed in Scenarios', () => {
         
         let createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
 
-        // expect(toJSON()).toMatchSnapshot()
         expect(createRequestSubmitButton).toBeDisabled();
 
         const descriptionInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.description));
@@ -284,8 +283,10 @@ describe('Signed in Scenarios', () => {
 
         const descriptionInput = await waitFor(() => getByTestId(TestIds.expandedFormInput(TestIds.createRequest.description)));
 
+        const mockRequest = MockRequests()[0];
+
         await act(async() => {
-            fireEvent.changeText(descriptionInput, MockRequests()[0].notes)
+            fireEvent.changeText(descriptionInput, mockRequest.notes)
         })
 
         const saveDescriptionButton = await waitFor(() => getByTestId(TestIds.screenInputSaveButton(TestIds.createRequest.description)));
@@ -294,9 +295,38 @@ describe('Signed in Scenarios', () => {
             fireEvent(saveDescriptionButton, 'press')
         })
 
-        createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
+        await waitForElementToBeRemoved(() => getByTestId(TestIds.screenInputSaveButton(TestIds.createRequest.description)));
 
         expect(createRequestSubmitButton).not.toBeDisabled();
+
+        const createNewRequestMock = jest.spyOn(APIClient.prototype, 'createNewRequest').mockResolvedValue(mockRequest)
+
+        await act(async() => {
+            fireEvent(createRequestSubmitButton, 'press')
+        })
+
+        expect(createNewRequestMock).toHaveBeenCalledWith(mockOrgContext, {
+            type: [],
+            location: null,
+            notes: mockRequest.notes,
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            priority: null,
+            tagHandles: [],
+            positions: []
+        })
+
+        const newReqCard = await waitFor(() => getByTestId(TestIds.requestCard(mockRequest.id)));
+
+        await act(async() => {
+            fireEvent(newReqCard, 'press')
+        })
+
+        const requestDetailsNotes = await waitFor(() => getByTestId(TestIds.requestDetails.notes));
+
+        expect(requestDetailsNotes).toHaveTextContent(mockRequest.notes)
     })
 
 })
