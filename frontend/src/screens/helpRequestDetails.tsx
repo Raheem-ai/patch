@@ -345,7 +345,19 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     : null 
                 }
             </WrappedScrollView>
-            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+            <View style={{ 
+                position: "relative",
+                left: 0, 
+                bottom: 0, 
+                backgroundColor: styles.detailsContainer.backgroundColor, 
+                borderTopColor: Colors.borders.filter, 
+                borderTopWidth: 1,
+                shadowColor: '#000',
+                shadowOpacity: .1,
+                shadowOffset: {
+                    height: -1,
+                    width: 0
+                } }}>
                 { currentRequestIsOpen()
                     ? statusPicker() 
                     : null 

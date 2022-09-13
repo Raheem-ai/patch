@@ -18,26 +18,26 @@ const PermissionGroupListConfig: {
     groups: PatchPermissionGroups[]
 }[] = [
     {
-        icon: 'domain',
+        icon: ICONS.organization,
         groups: [
             PatchPermissionGroups.ManageOrg,
         ]
     },
     {
-        icon: 'account-multiple',
+        icon: ICONS.accountMultiple,
         groups: [
             PatchPermissionGroups.ManageTeam,
             PatchPermissionGroups.EditRoles
         ]
     },
     {
-        icon: 'calendar-heart',
+        icon: ICONS.schedule,
         groups: [
             PatchPermissionGroups.ManageSchedule,
         ]
     },
     {
-        icon: 'file-document',
+        icon: ICONS.request,
         groups: [
             PatchPermissionGroups.ManageRequests,
             PatchPermissionGroups.ContributeToRequests,
@@ -45,14 +45,14 @@ const PermissionGroupListConfig: {
         ]
     },
     {
-        icon: 'tag',
+        icon: ICONS.tag,
         groups: [
             PatchPermissionGroups.ManageMetadata,
             PatchPermissionGroups.ExportData
         ]
     },
     {
-        icon: 'forum',
+        icon: ICONS.channels,
         groups: [
             PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.InviteToChats,

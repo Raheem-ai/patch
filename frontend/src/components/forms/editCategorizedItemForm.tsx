@@ -146,7 +146,7 @@ export const EditCategorizedItemForm = observer(({
                     // reverse so the newest one is always at the top
                     Array.from(store.categories.entries()).reverse().map(([categoryId, category]) => {
                         const removeCategory = {
-                            icon: 'delete',
+                            icon: ICONS.deleteCategory,
                             handler: store.removeCategory
                         }
 

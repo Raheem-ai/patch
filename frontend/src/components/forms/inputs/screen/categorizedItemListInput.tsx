@@ -14,7 +14,7 @@ import Tags from "../../../tags"
 import EditCategorizedItemForm from "../../editCategorizedItemForm"
 import CategoryRow from "../../common/categoryRow"
 import reactStringReplace from 'react-string-replace';
-import { Colors } from '../../../../types';
+import { Colors, ICONS } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
 
@@ -81,7 +81,7 @@ const CategorizedItemListInput = ({
                         await nativeEventStore().hideKeyboard()
                         navigateToScreen('edit')
                     }, 
-                    icon: 'pencil'
+                    icon: ICONS.edit
                 }
                 : null
         }
@@ -202,7 +202,7 @@ const CategorizedItemListInput = ({
 
                                 return (
                                     <IconButton
-                                        icon={'check'} 
+                                        icon={ICONS.check} 
                                         color={'#000'}
                                         size={30} 
                                         style={{ margin: 0, padding: 0, width: 30 }}

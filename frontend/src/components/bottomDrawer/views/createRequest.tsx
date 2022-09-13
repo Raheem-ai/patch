@@ -130,26 +130,21 @@ class CreateHelpRequest extends React.Component<Props> {
                             setDefaultClosed: true
                         }
                     },
-                    // Priority
+                    // Location
                     {
-                        onSave: (priorities) => createRequestStore().priority = priorities[0],
+                        onSave: (location) => createRequestStore().location = location,
                         val: () => {
-                            return typeof createRequestStore().priority == 'number'
-                                ? [createRequestStore().priority]
-                                : []
+                            return createRequestStore().location
                         },
                         isValid: () => {
-                            return !!createRequestStore().priority 
+                            return createRequestStore().locationValid
                         },
-                        name: 'priority',
-                        previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
-                        headerLabel: () => 'Priority',
-                        placeholderLabel: () => 'Priority',
-                        type: 'List',
-                        props: {
-                            options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
-                        },
+                        name: 'location',
+                        previewLabel: () => createRequestStore().location?.address,
+                        headerLabel: () => 'Location',
+                        placeholderLabel: () => 'Location',
+                        type: 'Map',
+                        // required: true
                     },
                 ],
                 [
@@ -181,8 +176,6 @@ class CreateHelpRequest extends React.Component<Props> {
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
                     },
-                ],
-                [
                     // Caller Name
                     {
                         onChange: (callerName) => createRequestStore().callerName = callerName,
@@ -195,7 +188,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: ICONS.callerContactInfo
+//                        icon: ICONS.callerContactInfo
                         // required: true
                     },
                     // Caller Contact Info
@@ -212,23 +205,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         type: 'TextInput',
                     },
                 ],
-                // Location
-                {
-                    onSave: (location) => createRequestStore().location = location,
-                    val: () => {
-                        return createRequestStore().location
-                    },
-                    isValid: () => {
-                        return createRequestStore().locationValid
-                    },
-                    name: 'location',
-                    icon: ICONS.mapMarker,
-                    previewLabel: () => createRequestStore().location?.address,
-                    headerLabel: () => 'Location',
-                    placeholderLabel: () => 'Location',
-                    type: 'Map',
-                    // required: true
-                },
+
                 // Positions
                 {
                     onSave: (data) => {
@@ -246,6 +223,32 @@ class CreateHelpRequest extends React.Component<Props> {
                     },
                     name: 'positions',
                     type: 'Positions'
+                },
+                // Priority
+                {
+                    onSave: (priorities) => createRequestStore().priority = priorities[0],
+                    val: () => {
+                        return typeof createRequestStore().priority == 'number'
+                            ? [createRequestStore().priority]
+                            : []
+                    },
+                    isValid: () => {
+                        return !!createRequestStore().priority 
+                    },
+                    name: 'priority',
+                    previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
+                    headerLabel: () => 'Priority',
+                    placeholderLabel: () => 'Priority',
+                    type: 'List',
+                    icon: createRequestStore().priority == 2 
+                        ? ICONS.priority3
+                        : createRequestStore().priority == 1
+                            ? ICONS.priority2
+                            : ICONS.priority1,
+                    props: {
+                        options: allEnumValues(RequestPriority),
+                        optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
+                    },
                 },
                 // Tags
                 TagsListInput({
@@ -265,18 +268,17 @@ class CreateHelpRequest extends React.Component<Props> {
                 [
                     ScreenFormInputConfig<'TextArea'>,
                     ScreenFormInputConfig<'CategorizedItemList'>,
-                    ScreenFormInputConfig<'List'>
+                    ScreenFormInputConfig<'Map'>, 
                 ],
                 [
                     InlineFormInputConfig<'TextInput'>,
-                    InlineFormInputConfig<'TextInput'>
-                ],
-                [
+                    InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>
                 ],
-                ScreenFormInputConfig<'Map'>, 
                 ScreenFormInputConfig<'Positions'>,
+                ScreenFormInputConfig<'List'>,
+
                 ScreenFormInputConfig<'CategorizedItemList'>
             ]
         }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
-import { ICONS } from '../types';
+import { Colors, ICONS } from '../types';
 
 type Props = {
     tags: string[],
@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
         // position: 'relative'
     },
     dark: {
-        color: '#e0e0e0',
-        backgroundColor: '#111'
+        color: Colors.backgrounds.tags.secondaryForeground,
+        backgroundColor: Colors.backgrounds.tags.secondaryBackground,
     }, 
     light: {
         color: '#666',

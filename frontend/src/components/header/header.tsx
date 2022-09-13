@@ -40,7 +40,7 @@ const Header = observer((props: Props) => {
 
         const leftActions = config.leftActions && config.leftActions.length
             ? config.leftActions
-            : [{ icon: 'menu', callback: openHeader }];
+            : [{ icon: ICONS.menu, callback: openHeader }];
 
         const rightActions = config.rightActions && config.rightActions.length
             ? config.rightActions
@@ -54,11 +54,11 @@ const Header = observer((props: Props) => {
 
         const statusIcon = requestStore().myActiveRequests.length
             ? userStore().isOnDuty
-                ? 'lightning-bolt-circle'
-                : 'lightning-bolt'
+                ? ICONS.userStatusOnRequestOnDuty
+                : ICONS.userStatusOnRequestOffDuty
             : userStore().isOnDuty
-                ? 'circle'
-                : 'circle-outline';
+                ? ICONS.userStatusOnDuty
+                : ICONS.userStatusOffDuty;
 
         const statusColor = requestStore().myActiveRequests.length
             ? Colors.good

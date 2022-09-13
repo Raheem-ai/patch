@@ -1,7 +1,7 @@
 import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
-import { RootStackParamList, routerNames } from "../../types"
+import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
 
 export type IHeaderAction = {
@@ -62,21 +62,15 @@ const HeaderConfig: {
                 ? oName //.slice(0,Math.min(16, oName.length)) + '…'
                 : 'Home'
             return orgName
-        },
-        rightActions: [{
-            icon: 'plus',
-            callback: () => {
-                bottomDrawerStore().show(BottomDrawerView.createRequest, true);
-            }
-        }]
+        }
     },
     [routerNames.helpRequestList]: {
         title: 'Requests',
         rightActions: [{
-            icon: 'map',
+            icon: ICONS.map,
             callback: () => navigateTo(routerNames.helpRequestMap)
         }, {
-            icon: 'plus',
+            icon: ICONS.add,
             callback: () => {
                 bottomDrawerStore().show(BottomDrawerView.createRequest, true);
             }
@@ -85,10 +79,10 @@ const HeaderConfig: {
     [routerNames.helpRequestMap]: {
         title: 'Requests',
         rightActions: [{
-            icon: 'view-agenda',
+            icon: ICONS.cardList,
             callback: () => navigateTo(routerNames.helpRequestList)
         }, {
-            icon: 'plus',
+            icon: ICONS.add,
             callback: () => {
                 bottomDrawerStore().show(BottomDrawerView.createRequest, true);
             }
@@ -104,7 +98,7 @@ const HeaderConfig: {
         };
         
         const leftActions = [{
-            icon: 'chevron-left',
+            icon: ICONS.navBack,
             callback: () => {
                 requestStore().tryPopRequest();
                 navigationRef.current.goBack();
@@ -114,7 +108,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
                 {
-                    icon: 'pencil',
+                    icon: ICONS.edit,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.editRequest, true);
                     }
@@ -135,7 +129,7 @@ const HeaderConfig: {
             return `Channel for ${prefix()}–${req.displayId}`
         },
         leftActions: [{
-            icon: 'chevron-left',
+            icon: ICONS.navBack,
             callback: () => {
                 navigationRef.current.goBack();
 
@@ -146,7 +140,7 @@ const HeaderConfig: {
             }
         }],
         rightActions: [{
-            icon: 'human-greeting-variant',
+            icon: ICONS.request,
             callback: () => navigateTo(routerNames.helpRequestDetails)
         }],
     },
@@ -154,7 +148,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
-                    icon: 'plus',
+                    icon: ICONS.add,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.inviteUserToOrg, true);
                     }
@@ -175,7 +169,7 @@ const HeaderConfig: {
         const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
-                    icon: 'pencil',
+                    icon: ICONS.edit,
                     callback: async () => {
                         if (onMyProfile) {
                             editUserStore().loadMe(userStore().user);
@@ -194,7 +188,7 @@ const HeaderConfig: {
                 ? 'My profile'
                 : 'User profile',
             leftActions: [{
-                icon: 'chevron-left',
+                icon: ICONS.navBack,
                 callback: () => {
                     navigationRef.current.goBack();
                 }

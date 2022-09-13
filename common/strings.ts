@@ -41,6 +41,16 @@ const STRINGS = {
 
     },
     REQUESTS: {
+        description: 'Description',
+        callStart: 'Call start',
+        callEnd: 'Call end',
+        requestType: 'Type of request',
+        Location: 'Location',
+        callerName: 'Caller name',
+        callerContactInfo: 'Caller contact info',
+        positions: 'Responders needed',
+        priority: 'Priority',
+        tags: 'Tags',
         NOTIFICATIONS: {
             notifyNResponders: (n: number) => `Notify ${STRINGS.nResponders(n)}`,
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
@@ -106,6 +116,8 @@ const STRINGS = {
     },
     SETTINGS: {
         deleteRole: 'Delete this role',
+        nameRole: 'Name this role',
+        setPermissions: 'Set permissions',
         cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',

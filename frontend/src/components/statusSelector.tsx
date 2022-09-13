@@ -6,6 +6,7 @@ import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../co
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
 import { requestStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
+import { ICONS } from "../types"
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
@@ -48,11 +49,11 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 ]}/>
         )
     },
-    [RequestStatus.Ready]: 'account-multiple',
-    [RequestStatus.OnTheWay]: 'arrow-right',
-    [RequestStatus.OnSite]: 'map-marker',
-    [RequestStatus.Done]: 'check',
-    [RequestStatus.Closed]: 'lock',
+    [RequestStatus.Ready]: ICONS.statusUnassignedOrReady,
+    [RequestStatus.OnTheWay]: ICONS.statusOnTheWay,
+    [RequestStatus.OnSite]: ICONS.statusOnSite,
+    [RequestStatus.Done]: ICONS.statusFinished,
+    [RequestStatus.Closed]: ICONS.statusClosed,
 }
 
 type StatusIconProps = { 

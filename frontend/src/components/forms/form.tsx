@@ -347,6 +347,7 @@ export default class Form extends React.Component<FormProps> {
             return <CustomHomeScreen {...customProps} />
         }
 
+        // where in the app does this get returned?
         return (
                 <WrappedScrollView 
                     showsVerticalScrollIndicator={false} 
@@ -737,7 +738,7 @@ const NavigationSection = observer((props: {
 
     const rightIcon = props.inputConfig.expandIcon
         ? unwrap(props.inputConfig.expandIcon)
-        : 'chevron-right'
+        : ICONS.openListItem
 
     return (
         <>
