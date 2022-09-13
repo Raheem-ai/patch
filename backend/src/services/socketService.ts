@@ -234,7 +234,7 @@ export class MySocketService {
             ? usersOnRequest.get(payload.responderId).userName
             : (await this.db.resolveUser(payload.responderId)).name;
 
-        const body = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName);
+        const body = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName, org.requestPrefix);
         const configs: SendConfig[] = [];
 
         for (const admin of Array.from(requestAdmins.values())) {
@@ -265,7 +265,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
         const admins = await this.requestAdminsInOrg(fullOrg);
 
-        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId);
+        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, org.requestPrefix);
 
         const configs: SendConfig[] = usersToNotify.map(u => {
             admins.delete(u.id)
@@ -304,7 +304,7 @@ export class MySocketService {
         const usersOnRequest = await this.usersOnRequest(request, fullOrg);
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
         const senderName = usersOnRequest.get(payload.userId)?.userName || requestAdmins.get(payload.userId)?.userName || ''
-        const body = notificationLabel(PatchEventType.RequestChatNewMessage, request.displayId, senderName)
+        const body = notificationLabel(PatchEventType.RequestChatNewMessage, request.displayId, senderName, org.requestPrefix)
         const configs: SendConfig[] = [];
 
         for (const user of Array.from(usersOnRequest.values())) {
@@ -334,7 +334,7 @@ export class MySocketService {
             ? usersOnRequest.get(payload.responderId).userName
             : await (await this.db.resolveUser(payload.responderId)).name;
 
-        const body = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName);
+        const body = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName, org.requestPrefix);
         const configs: SendConfig[] = [];
 
         for (const admin of Array.from(requestAdmins.values())) {
@@ -385,8 +385,8 @@ export class MySocketService {
             }
         }
 
-        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName)
-        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersAccepted, request.displayId, accepter.userName)
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName, org.requestPrefix)
+        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersAccepted, request.displayId, accepter.userName, org.requestPrefix)
 
         acceptedConfig = {
             ...accepter,
@@ -449,8 +449,8 @@ export class MySocketService {
             }
         }
 
-        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName)
-        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersRemoved, request.displayId, remover.userName)
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName, org.requestPrefix)
+        const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersRemoved, request.displayId, remover.userName, org.requestPrefix)
 
         removedConfig = {
             ...remover,
@@ -490,12 +490,13 @@ export class MySocketService {
         const declinedUser = await this.db.resolveUser(params.responderId);
         const decliner = await this.db.resolveUser(params.declinerId)
         const request = await this.db.resolveRequest(params.requestId)
+        const org = await this.db.resolveOrganization(params.orgId);
 
         await this.send([
             {
                 userId: declinedUser.id,
                 userName: declinedUser.name,
-                body: notificationLabel(PatchEventType.RequestRespondersDeclined, request.displayId, decliner.name),
+                body: notificationLabel(PatchEventType.RequestRespondersDeclined, request.displayId, decliner.name, org.requestPrefix),
                 pushToken: declinedUser.push_token
             }
         ], {

@@ -14,6 +14,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
+import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 
 type Props = {}
 
@@ -58,7 +59,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(organizationStore().metadata.requestPrefix + '–' + createdReq.displayId))
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
         
                     bottomDrawerStore().hide()
                 },

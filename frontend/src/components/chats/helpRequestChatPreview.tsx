@@ -6,6 +6,7 @@ import { HelpRequest } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames } from "../../types";
+import { requestDisplayName } from "../../../../common/utils/requestUtils"
 
 type Props = {
     request: HelpRequest,
@@ -36,7 +37,7 @@ const HelpRequestChatPreview = observer(({
                     ? <View style={styles.unreadMessagesIndicator}/>
                     : <View style={styles.readMessagesIndicator}/>
                 }
-                <Text style={styles.idText}>{prefix}–{id}</Text>
+                <Text style={styles.idText}>{requestDisplayName(prefix, id)}</Text>
             </View>
         )
     }

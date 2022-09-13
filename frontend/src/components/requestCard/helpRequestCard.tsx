@@ -10,6 +10,7 @@ import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
+import { requestDisplayName } from "../../../../common/utils/requestUtils"
 
 type Props = {
     request: HelpRequest,
@@ -59,7 +60,7 @@ const HelpRequestCard = observer(({
         return (
 
             <View style={styles.headerRow}>
-                <Text style={[styles.idText, dark ? styles.darkText : null]}><Text style={{color: '#999'}}>{prefix}–</Text>{id}</Text>
+                <Text style={[styles.idText, dark ? styles.darkText : null]}>{requestDisplayName(prefix, id)}</Text>
                 {
                     address
                         ? <View style={styles.locationContainer}>
@@ -139,17 +140,14 @@ const HelpRequestCard = observer(({
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                        <UserIcon user={responder} style={[
-                            styles.assignedResponderIcon,
-                            dark 
-                                ? styles.assignedResponderIconDark 
-                                : null,
-                            (i < (joinedResponders.size - 1)) && (i < maxJoinedToShow - 1) 
-                                ? null 
-                                : styles.assignedResponderIconLast ]}/>
-                    </View>)
-                }
-                i++;
+                        <UserIcon user={responder} style={ 
+                            i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                                ? dark
+                                    ? styles.assignedResponderIconDark
+                                    : styles.assignedResponderIcon 
+                                : styles.assignedResponderIconLast } />
+                    </View>)}
+            i++;
         });
         if (joinedResponders.size > maxJoinedToShow) {
             // if there are more who have joined than we're showing
@@ -200,10 +198,7 @@ const HelpRequestCard = observer(({
                                 onPress={goToChat}
                                 size={28}>
                             </IconButton>
-                            { hasUnreadMessages 
-                                ? <View style={[styles.unreadMessageNotifier, dark ? styles.darkUnreadMessageNotifier : null]}/>
-                                : null
-                            }
+                            <View style={[styles.unreadMessageNotifier, dark ? styles.darkUnreadMessageNotifier : null]}/>
                         </View>
                     }
                 </View>
