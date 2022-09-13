@@ -98,7 +98,7 @@ class EditHelpRequest extends React.Component<Props> {
                             return !!editRequestStore().notes
                         },
                         name: 'description',
-                        icon: 'note-text',
+                        icon: 'human-greeting-variant',
                         previewLabel: () => editRequestStore().notes,
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
@@ -190,7 +190,7 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: 'clipboard-account'
+                        icon: 'card-account-phone'
                         // required: true
                     },
                     // Caller Contact Info
@@ -253,7 +253,7 @@ class EditHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return true
                     },
-                    icon: 'label',
+                    icon: 'tag',
                     name: 'tags'
                 })
             ] as [

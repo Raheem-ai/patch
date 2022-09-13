@@ -1,4 +1,4 @@
-import { PatchPermissions, UserRole } from "../../../../common/models"
+import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import { RootStackParamList, routerNames } from "../../types"
@@ -77,7 +77,7 @@ const HeaderConfig: {
     [routerNames.helpRequestMap]: {
         title: 'Requests',
         rightActions: [{
-            icon: 'view-list',
+            icon: 'view-agenda',
             callback: () => navigateTo(routerNames.helpRequestList)
         }, {
             icon: 'plus',
@@ -86,8 +86,8 @@ const HeaderConfig: {
             }
         }]
     },
-    [routerNames.helpRequestDetails]: {
-        title: () => {
+    [routerNames.helpRequestDetails]: () => {   
+        const title = () => {
             const id = requestStore().loading
                 ? ''
                 : requestStore().currentRequest.displayId;
@@ -100,7 +100,24 @@ const HeaderConfig: {
                 requestStore().tryPopRequest();
                 navigationRef.current.goBack();
             }
-        }]
+        }];
+
+        const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
+            ? [
+                {
+                    icon: 'pencil',
+                    callback: async () => {
+                        bottomDrawerStore().show(BottomDrawerView.editRequest, true);
+                    }
+                }
+            ]
+            : [];
+        
+        return {
+            title,
+            leftActions,
+            rightActions 
+        }
     },
     [routerNames.helpRequestChat]: {
         title: () => {
@@ -118,7 +135,11 @@ const HeaderConfig: {
                 //     requestStoreInst().currentRequest = null;
                 // }, 0)
             }
-        }]
+        }],
+        rightActions: [{
+            icon: 'human-greeting-variant',
+            callback: () => navigateTo(routerNames.helpRequestDetails)
+        }],
     },
     [routerNames.teamList]: () => {        
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])

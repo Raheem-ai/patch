@@ -75,6 +75,7 @@ const STRINGS = {
             leave: `Leave`,
             join: `Join`,
             request: `Request`,
+            removeUser: (userName:string) => `${userName} isn't on this position.`
         },
         TOGGLE: {
             toggleRequest: (isOpen: boolean) => isOpen ? `Close this request` : `Re-open this request`,

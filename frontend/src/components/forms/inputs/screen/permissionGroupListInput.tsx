@@ -30,13 +30,13 @@ const PermissionGroupListConfig: {
         ]
     },
     {
-        icon: 'calendar-blank',
+        icon: 'calendar-heart',
         groups: [
             PatchPermissionGroups.ManageSchedule,
         ]
     },
     {
-        icon: 'lightning-bolt',
+        icon: 'file-document',
         groups: [
             PatchPermissionGroups.ManageRequests,
             PatchPermissionGroups.ContributeToRequests,
@@ -44,14 +44,14 @@ const PermissionGroupListConfig: {
         ]
     },
     {
-        icon: 'tag-heart',
+        icon: 'tag',
         groups: [
             PatchPermissionGroups.ManageMetadata,
             PatchPermissionGroups.ExportData
         ]
     },
     {
-        icon: 'message',
+        icon: 'forum',
         groups: [
             PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.InviteToChats,
@@ -148,8 +148,8 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
                                             const checkColor = isSelected 
                                                 ? '#000'
                                                 : isForced
-                                                    ? '#666'
-                                                    : '#999';
+                                                    ? '#000'
+                                                    : '#ccc';
 
 
                                             return (

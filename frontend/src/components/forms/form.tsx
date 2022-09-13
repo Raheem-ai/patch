@@ -352,7 +352,7 @@ export default class Form extends React.Component<FormProps> {
                     showsVerticalScrollIndicator={false} 
                     style={{ flex: 1 }}
                     contentContainerStyle={{ display: 'flex', flexGrow: 1 }} 
-                    keyboardShouldPersistTaps={true} 
+                    keyboardShouldPersistTaps='always' 
                     keyboardDismissMode='on-drag'>
                     <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
                         { renderHeader() }

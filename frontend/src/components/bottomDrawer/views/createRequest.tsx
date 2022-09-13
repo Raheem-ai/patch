@@ -103,7 +103,7 @@ class CreateHelpRequest extends React.Component<Props> {
                             return !!createRequestStore().notes
                         },
                         name: 'description',
-                        icon: 'note-text',
+                        icon: 'human-greeting-variant',
                         previewLabel: () => createRequestStore().notes,
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
@@ -195,7 +195,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: 'clipboard-account'
+                        icon: 'card-account-phone'
                         // required: true
                     },
                     // Caller Contact Info
@@ -258,7 +258,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return true
                     },
-                    icon: 'label',
+                    icon: 'tag',
                     name: 'tags'
                 })
             ] as [
