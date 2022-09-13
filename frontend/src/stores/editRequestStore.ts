@@ -68,7 +68,7 @@ export default class EditRequestStore implements IEditRequestStore  {
             }
 
             const updatedReq = await api().editRequest(this.requestContext(reqId), req);
-            requestStore().updateOrAddReq(updatedReq);
+            requestStore().updateRequestInternals(updatedReq);
         } catch (e) {
             console.error(e);
         }
