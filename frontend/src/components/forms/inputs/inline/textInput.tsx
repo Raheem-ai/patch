@@ -4,7 +4,7 @@ import { TextInput as RNTextInput, View, StyleSheet, TextStyle, NativeSyntheticE
 import { IconButton } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
-import { Colors } from "../../../../types";
+import { Colors, ICONS } from "../../../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
     style?: TextStyle
@@ -63,7 +63,7 @@ const TextInput = observer(({
                             : false }/>
                 { isPassword
                     ? <IconButton
-                        icon={secureTextEntry ? 'eye-off' : 'eye'}
+                        icon={secureTextEntry ? ICONS.hidePassword : ICONS.showPassword}
                         onPress={() => {
                             setSecureTextEntry(!secureTextEntry);
                             return false;

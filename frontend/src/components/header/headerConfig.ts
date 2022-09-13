@@ -57,8 +57,18 @@ const HeaderConfig: {
     [routerNames.userHomePage]: {
         title: () => {
             // TODO: get org name for here
-            return 'Home'
-        }
+            const oName = organizationStore().metadata.name;
+            const orgName = oName !== undefined
+                ? oName //.slice(0,Math.min(16, oName.length)) + '…'
+                : 'Home'
+            return orgName
+        },
+        rightActions: [{
+            icon: 'plus',
+            callback: () => {
+                bottomDrawerStore().show(BottomDrawerView.createRequest, true);
+            }
+        }]
     },
     [routerNames.helpRequestList]: {
         title: 'Requests',

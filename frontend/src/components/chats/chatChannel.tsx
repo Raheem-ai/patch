@@ -9,6 +9,7 @@ import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
 import STRINGS from "../../../../common/strings";
 import PatchButton from "../../components/patchButton";
+import { ICONS } from "../../types";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -88,7 +89,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         {/*
                         <IconButton 
                             disabled={loading}
-                            icon='paperclip'
+                            icon={ICONS.attachment}
                             style={styles.inputAction}/>
                         */}
                         <View style={styles.messageInputContainer} >
@@ -103,7 +104,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         <IconButton 
                             disabled={loading}
                             onPress={sendMessage}
-                            icon='send'
+                            icon={ICONS.sendMessage}
                             style={styles.inputAction}/>
                     </View>
                 </View>

@@ -8,7 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import STRINGS from "../../../../../common/strings"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
-import { Colors } from "../../../types"
+import { Colors, ICONS } from "../../../types"
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
@@ -113,7 +113,7 @@ export default class AssignResponders extends React.Component {
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
-                            icon={dispatchStore().selectAll ? 'check-circle' : 'check-circle-outline'}
+                            icon={dispatchStore().selectAll ? ICONS.selectedSmall : ICONS.unselectedSmall}
                             color={dispatchStore().selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
@@ -153,7 +153,7 @@ export default class AssignResponders extends React.Component {
                                 <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
                                     <IconButton
                                         style={styles.selectResponderIcon}
-                                        icon='check' 
+                                        icon={ICONS.check} 
                                         color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
                                         size={styles.selectResponderIcon.width} />
                                 </View>

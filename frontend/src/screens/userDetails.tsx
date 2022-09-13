@@ -6,7 +6,7 @@ import { IconButton, Text } from "react-native-paper";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
-import { Colors, ScreenProps } from "../types";
+import { Colors, ICONS, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
 
 
@@ -41,7 +41,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             {/* <View style={styles.profilePhotoContainer}>
                 <IconButton
                     style={styles.profilePhotoIcon}
-                    icon='camera-plus' 
+                    icon={ICONS.addPhoto} 
                     color={styles.profilePhotoIcon.color}
                     size={styles.profilePhotoIcon.width} />
             </View> */}
@@ -67,14 +67,14 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 <Pressable onPress={startCall} style={styles.contactIconContainer}>
                     <IconButton
                         style={styles.contactIcon}
-                        icon='phone' 
+                        icon={ICONS.callPhone} 
                         color={styles.contactIcon.color}
                         size={styles.contactIcon.width} />
                 </Pressable>
                 <Pressable onPress={mailTo} style={styles.contactIconContainer}>
                     <IconButton
                         style={styles.contactIcon}
-                        icon='email' 
+                        icon={ICONS.sendEmail} 
                         color={styles.contactIcon.color}
                         size={styles.contactIcon.width} />
                 </Pressable>

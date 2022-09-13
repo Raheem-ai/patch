@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
-import { Colors } from "../types";
+import { Colors, ICONS } from "../types";
 import STRINGS from "../../../common/strings";
 
 export type ListHeaderOptionConfig<T = any> = {
@@ -41,7 +41,7 @@ const ListHeader = (props: ListHeaderProps) => {
                         style={styles.toggleHeaderButton}
                         size={36}
                         color={Colors.icons.light}
-                        icon={isOpen ? 'chevron-up' : 'chevron-down'}/>
+                        icon={isOpen ? ICONS.filterClose : ICONS.filterOpen}/>
                 </View>
             </Pressable>
         )

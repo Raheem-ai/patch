@@ -6,6 +6,7 @@ import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
+import { ICONS } from "../../types";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import CategoryRow from "./common/categoryRow";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader";
@@ -85,7 +86,7 @@ export const EditCategorizedItemForm = observer(({
         return  (
             <IconButton
                 onPress={() => store.removeItemFromCategory(categoryId, itemId)}
-                icon={'minus'} 
+                icon={ICONS.removeCategorizedItem} 
                 color='#999'
                 size={20} 
                 style={{ margin: 0, padding: 0, width: 20 }}

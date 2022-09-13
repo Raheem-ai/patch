@@ -5,7 +5,7 @@ import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames, Colors } from "../../types";
+import { routerNames, Colors, ICONS } from "../../types";
 import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
@@ -65,7 +65,7 @@ const HelpRequestCard = observer(({
                         ? <View style={styles.locationContainer}>
                             <IconButton
                                 style={styles.locationIcon}
-                                icon='map-marker' 
+                                icon={ICONS.mapMarker} 
                                 color={styles.locationIcon.color}
                                 size={styles.locationIcon.width} />
                             <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
@@ -121,7 +121,7 @@ const HelpRequestCard = observer(({
             if (unfilledSpotsForRequest > 1) {
                 unAssignedResponders.push(<IconButton
                     style={[ styles.empty, dark && styles.emptyDark ]}
-                    icon='account' 
+                    icon={ICONS.responder} 
                     color={Colors.nocolor}
                     size={12} />);
                 unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
@@ -155,7 +155,7 @@ const HelpRequestCard = observer(({
             // show a "stack" icon...
             assignedResponders.push(<IconButton
                 style={[ styles.empty, dark && styles.emptyDark ]}
-                icon='account' 
+                icon={ICONS.responder} 
                 color={Colors.nocolor}
                 size={12} />);
 
@@ -194,7 +194,7 @@ const HelpRequestCard = observer(({
                         <View>
                             <IconButton
                                 style={[styles.messageIcon, dark ? styles.messageIconDark : null]}
-                                icon='message-text' 
+                                icon={ICONS.newMessage} 
                                 color={dark ? styles.messageIconDark.color : styles.messageIcon.color}
                                 onPress={goToChat}
                                 size={28}>
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
         zIndex: -100,
     },
     emptyDark: {
-        color: Colors.icons.superdark,
-        backgroundColor: Colors.icons.superdark,
+        color: Colors.icons.darkReversed,
+        backgroundColor: Colors.icons.darkReversed,
     }
 })

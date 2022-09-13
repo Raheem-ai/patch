@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, ScreenProps } from "../types";
+import { Colors, ICONS, ScreenProps } from "../types";
 import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
@@ -114,7 +114,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <View style={styles.timeAndPlaceRow}>
                                 <IconButton
                                     style={styles.detailsIcon}
-                                    icon='map-marker' 
+                                    icon={ICONS.mapMarker} 
                                     color={styles.detailsIcon.color}
                                     size={styles.detailsIcon.width} />
                                 <Text style={styles.metadataText}>{address}</Text>
@@ -125,7 +125,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
                         style={styles.detailsIcon}
-                        icon='clock-outline' 
+                        icon={ICONS.timeRequestCreated} 
                         color={styles.detailsIcon.color}
                         size={styles.detailsIcon.width} />
                     <Text style={styles.metadataText}>{time.toLocaleString()}</Text>
@@ -135,7 +135,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={styles.detailsIcon}
-                                icon='phone-incoming' 
+                                icon={ICONS.timeCallStarted}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Text style={styles.metadataText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
@@ -147,7 +147,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={styles.detailsIcon}
-                                icon='account' 
+                                icon={ICONS.callerContactInfo}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                                 <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
@@ -163,7 +163,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={[styles.detailsIcon, {marginRight: 8}]}
-                                icon='tag' 
+                                icon={ICONS.tag} 
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Tags 
@@ -528,12 +528,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     <IconButton
                                         color={Colors.primary.alpha}
                                         onPress={deny}
-                                        icon='close'
+                                        icon={ICONS.joinDecline}
                                         style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
                                     <IconButton
                                         color={Colors.primary.alpha}
                                         onPress={approve}
-                                        icon='check'
+                                        icon={ICONS.joinAccept}
                                         style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
                                 </View>
                             </View>
@@ -574,7 +574,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
                                 <IconButton
                                     style={styles.icon}
-                                    icon={'check-circle'}
+                                    icon={ICONS.joinAccepted}
                                     color={Colors.good}
                                     size={styles.icon.width} />
                             </View>
@@ -661,7 +661,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             style={styles.largeIcon}
                             size={styles.largeIcon.height}
                             color={'#999'}
-                            icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
+                            icon={!eventDetailsOpen ? ICONS.filterOpen : ICONS.filterClose}/>
                     </Pressable>
                     {
                         eventDetailsOpen

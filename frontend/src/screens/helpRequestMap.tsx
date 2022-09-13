@@ -8,7 +8,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import { ActiveRequestTabHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
-import { ScreenProps, routerNames } from "../types";
+import { ScreenProps, routerNames, ICONS } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
 
@@ -151,7 +151,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     ? <View style={styles.returnIconContainer} onTouchStart={goToActiveRequest}>
                         <IconButton
                             style={styles.returnIcon}
-                            icon={'keyboard-return'}
+                            icon={ICONS.returnToActiveRequest}
                             color={styles.returnIcon.color}
                             size={styles.returnIcon.width}/>
                     </View>

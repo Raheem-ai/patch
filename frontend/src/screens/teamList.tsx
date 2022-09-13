@@ -6,7 +6,7 @@ import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ITeamStore, IUserStore, teamStore, userStore } from "../stores/interfaces";
-import { ScreenProps, routerNames } from "../types";
+import { ScreenProps, routerNames, ICONS } from "../types";
 import { IconButton } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { navigateTo } from "../navigation";
@@ -85,7 +85,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
                                 <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
                                 <IconButton
                                     style={styles.goToResponderIcon}
-                                    icon='chevron-right' 
+                                    icon={ICONS.openListItem} 
                                     color={styles.goToResponderIcon.color}
                                     size={styles.goToResponderIcon.width} />
                             </Pressable>

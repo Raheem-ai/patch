@@ -139,7 +139,7 @@ const lib: Library = [
                 isValid: () => {
                     return true
                 },
-                icon: 'tag-heart',
+                icon: 'tag',
                 name: 'attributes'
             }), 
             TagsListInput({

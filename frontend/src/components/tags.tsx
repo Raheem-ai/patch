@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
+import { ICONS } from '../types';
 
 type Props = {
     tags: string[],
@@ -60,7 +61,7 @@ export default function Tags(props: Props) {
                                 props.onTagDeleted 
                                     ? <IconButton
                                         style={styles.closeIcon}
-                                        icon='close' 
+                                        icon={ICONS.deleteItem} 
                                         color={props.dark ? styles.dark.color : styles.light.color}
                                         onPress={onDeleteTagTapped(idx, t)}
                                         size={styles.closeIcon.height}></IconButton>

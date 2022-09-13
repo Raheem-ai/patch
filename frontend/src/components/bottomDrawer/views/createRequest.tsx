@@ -13,6 +13,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
+import { ICONS } from "../../../types";
 
 type Props = {}
 
@@ -102,7 +103,7 @@ class CreateHelpRequest extends React.Component<Props> {
                             return !!createRequestStore().notes
                         },
                         name: 'description',
-                        icon: 'human-greeting-variant',
+                        icon: ICONS.request,
                         previewLabel: () => createRequestStore().notes,
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
@@ -164,7 +165,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callStart',
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
-                        icon: 'phone-incoming'
+                        icon: ICONS.timeCallStarted
                         // required: true
                     },
                     // Call End
@@ -194,7 +195,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: 'card-account-phone'
+                        icon: ICONS.callerContactInfo
                         // required: true
                     },
                     // Caller Contact Info
@@ -221,7 +222,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         return createRequestStore().locationValid
                     },
                     name: 'location',
-                    icon: 'map-marker',
+                    icon: ICONS.mapMarker,
                     previewLabel: () => createRequestStore().location?.address,
                     headerLabel: () => 'Location',
                     placeholderLabel: () => 'Location',
@@ -239,7 +240,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     isValid: () => true,
                     headerLabel: () => 'Responders needed',
                     placeholderLabel: () => 'Responders needed',
-                    icon: 'account-multiple',
+                    icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
                     },
@@ -257,7 +258,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return true
                     },
-                    icon: 'tag',
+                    icon: ICONS.tag,
                     name: 'tags'
                 })
             ] as [

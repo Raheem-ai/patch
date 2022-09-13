@@ -6,6 +6,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
 import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
+import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
@@ -168,7 +169,7 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
                                                     </View>
                                                     <View style={styles.selectedIconContainer}>
                                                         <IconButton
-                                                            icon={'check'} 
+                                                            icon={ICONS.selectListItem} 
                                                             color={checkColor}
                                                             size={styles.selectedIconContainer.height} 
                                                             style={{ margin: 0, padding: 0, width: styles.selectedIconContainer.height, height: styles.selectedIconContainer.height }}

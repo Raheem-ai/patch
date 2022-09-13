@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import { computed, observable, runInAction } from "mobx";
 import { FormInputConfig, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
 import { unwrap } from "../../../../common/utils";
-import { Colors } from "../../types";
+import { Colors, ICONS } from "../../types";
 import { nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
@@ -530,7 +530,7 @@ const DefaultSection = observer((props: {
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
-                            icon='chevron-right' 
+                            icon={ICONS.openListItem} 
                             color='rgba(60,60,67,.3)'
                             onPress={expand}
                             size={30} />
@@ -560,7 +560,7 @@ const DefaultSection = observer((props: {
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30 }}
-                            icon='chevron-right' 
+                            icon={ICONS.openListItem}
                             color='rgba(60,60,67,.3)'
                             onPress={expand}
                             size={30} />
@@ -681,7 +681,7 @@ const LabelSection = observer((props: {
                 { !props.inputConfig.disabled && !props.viewConfig.hideExpandArrow
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
-                        icon='chevron-right' 
+                        icon={ICONS.openListItem}
                         color='rgba(60,60,67,.3)'
                         onPress={autoExpand}
                         size={30} />
