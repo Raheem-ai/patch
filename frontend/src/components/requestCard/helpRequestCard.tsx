@@ -134,7 +134,7 @@ const HelpRequestCard = observer(({
         // show an icon for each, up to a maximum
         const maxJoinedToShow = 4;
         let i:number = 0;
-        joinedResponders.forEach((userId, idx) => {
+        joinedResponders.forEach((userId) => {
             const responder = userStore().users.get(userId); 
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
@@ -144,11 +144,12 @@ const HelpRequestCard = observer(({
                             dark 
                                 ? styles.assignedResponderIconDark 
                                 : null,
-                            i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
+                            (i < (joinedResponders.size - 1)) && (i < maxJoinedToShow - 1) 
                                 ? null 
                                 : styles.assignedResponderIconLast ]}/>
-                    </View>)}
-            i++;
+                    </View>)
+                }
+                i++;
         });
         if (joinedResponders.size > maxJoinedToShow) {
             // if there are more who have joined than we're showing
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
     statusRow: {
         margin: 12,
         marginTop: 0,
-//        height: 28, // <-- why is this set explicitly?
+        height: 28, // keeps row from collapsing when there are no positions and status selector is opened
         flexDirection: 'row',
     }, 
     responderActions: {
