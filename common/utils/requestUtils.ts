@@ -1,4 +1,5 @@
 import { CategorizedItem, DefaultRoleIds, HelpRequest, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
+import STRINGS from "../strings";
 
 export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
@@ -172,4 +173,10 @@ export function usersAssociatedWithRequest(req: Pick<HelpRequest, 'dispatcherId'
 
 export function userOnRequest(userId: string, req: Pick<HelpRequest, 'positions'>) {
     return req.positions.some(pos => pos.joinedUsers.includes(userId))
+}
+
+export function requestDisplayName(prefix, requestId) {
+    return !!(prefix && requestId)
+        ? prefix + '–' + requestId
+        : STRINGS.ELEMENTS.request({cap:true});
 }

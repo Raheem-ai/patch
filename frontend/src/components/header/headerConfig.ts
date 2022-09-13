@@ -3,6 +3,8 @@ import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import { RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
+import { requestDisplayName } from "../../../../common/utils/requestUtils"
+import STRINGS from "../../../../common/strings"
 
 export type IHeaderAction = {
     icon: string,
@@ -90,10 +92,9 @@ const HeaderConfig: {
                 ? ''
                 : requestStore().currentRequest.displayId;
 
-            return `${prefix()}–${id}`
-        };
-        
-        const leftActions = [{
+            return `${requestDisplayName(prefix(), id)}`
+        },
+        leftActions: [{
             icon: 'chevron-left',
             callback: () => {
                 requestStore().tryPopRequest();
@@ -122,7 +123,7 @@ const HeaderConfig: {
         title: () => {
             const req = requestStore().currentRequest;
 
-            return `Channel for ${prefix()}–${req.displayId}`
+            return `Channel for ${requestDisplayName(prefix(), req.displayId)}`
         },
         leftActions: [{
             icon: 'chevron-left',

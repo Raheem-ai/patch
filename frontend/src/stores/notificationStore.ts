@@ -71,7 +71,7 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async handlePermissions() {
-        if (Constants.isDevice) {
+        if (Device.isDevice) {
             const perms = await Notifications.getPermissionsAsync()
         
             if (perms.status !== PermissionStatus.GRANTED) {
