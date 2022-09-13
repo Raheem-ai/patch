@@ -683,10 +683,12 @@ export default class RequestStore implements IRequestStore {
         this.requests.set(updatedReq.id, updatedReq);
     }
 
-    // NOTE: use when you're changing a property on the updated Request that
-    // 1) is an update to an array 
-    // and 
-    // 2) the property is used directly by a view (vs indirectly through computed props of the store)
+    /** 
+     * NOTE: use when you're changing a property on the updated Request that
+     * 1) is an update to an array 
+     * AND 
+     * 2) the property is used directly by a view (vs indirectly through computed props of the store)
+     * */ 
     updateRequestInternals(updatedReq: HelpRequest) {
         const req = this.requests.get(updatedReq.id);
 
