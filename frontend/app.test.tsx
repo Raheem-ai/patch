@@ -84,11 +84,12 @@ async function mockBoot() {
 async function mockSignIn() {
     const { getByTestId, ...rest } = await mockBoot();
 
-    const signInButton = await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+    // TODO: reenable when we use the landing screen again
+    // const signInButton = await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
 
-    await act(async () => {
-        fireEvent(signInButton, 'click');
-    })
+    // await act(async () => {
+    //     fireEvent(signInButton, 'click');
+    // })
    
     const emailInput = await waitFor(() => getByTestId(TestIds.signIn.email))
     const passwordInput = await waitFor(() => getByTestId(TestIds.signIn.password)) 
@@ -141,7 +142,9 @@ describe('Boot Scenarios', () => {
 
         expect(toJSON()).toMatchSnapshot();
 
-        await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+        // TODO: reenable when we use the landing screen again
+        // await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+        await waitFor(() => getByTestId(TestIds.signIn.submit))
     });
 })
 
