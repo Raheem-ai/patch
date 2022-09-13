@@ -12,6 +12,7 @@ import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputCo
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
+import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 
 type Props = {}
 
@@ -56,7 +57,7 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(organizationStore().metadata.requestPrefix + '–' + requestStore().currentRequest.displayId))
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
         
                     bottomDrawerStore().hide()
                 },
