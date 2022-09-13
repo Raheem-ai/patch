@@ -192,18 +192,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.typeLabelContainer}>
                     <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
-                {
-                    canEdit
-                        ? <View>
-                            <IconButton
-                                onPress={edit}
-                                style={styles.editIcon}
-                                icon='pencil' 
-                                color={styles.editIcon.color}
-                                size={styles.editIcon.width} />
-                        </View>
-                        : null
-                }
             </View>
         )
     }
@@ -464,7 +452,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     // notifiedUsers.delete(userId)
                 })
 
-//                const peeps = numNotified === 1 ? `person` : `people`; // TODO: generalize language patterns such as plurals
                 const notifiedLabel = STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(numNotified);
 
                 const newLabel = pendingRequests.length
@@ -692,13 +679,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             }
         }
 
+        // used for case where there are no positions defined and we want to include a button to add them
         const editAction = () => {
             const edit = () => {
                 bottomDrawerStore().show(BottomDrawerView.editRequest, true)
             }
-    
+
             const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
-    
+
             return (
                 canEdit
                     ? <View>
@@ -711,6 +699,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     : null
             )
         }
+
 
         return (
             <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>

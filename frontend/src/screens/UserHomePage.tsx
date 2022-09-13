@@ -6,6 +6,8 @@ import {parseFullName} from 'parse-full-name';
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import * as Linking from "expo-linking";
 import PatchButton from "../components/patchButton";
+import { navigateTo } from '../navigation';
+import { routerNames } from '../types';
 import { observer } from "mobx-react";
 import { URLS } from "../constants"
 import STRINGS from "../../../common/strings";
@@ -97,7 +99,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
             }
         };
       
-        return <PatchButton mode='text' label={label} onPress={handlePress} />;
+        return <PatchButton mode='text' label={label} onPress={handlePress} labelStyle={{color: Colors.text.buttonLabelSecondary}} />;
     }
 
     const comingSoon = 'coming soon';
@@ -105,18 +107,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     const defaultText = () => { 
 
         return !requestStore().myActiveRequests.length
-            ? <View>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>Welcome to Patch. Use the ☰ menu to navigate between sections:</Text>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>
-                    <Text>Document and dispatch <Text style={{ fontWeight: '900'}}>requests</Text> for help</Text>
-                </Text>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>
-                    <Text>View and manage your <Text style={{ fontWeight: '900'}}>team</Text></Text>
-                </Text>
-                <Text style={{ fontSize: 16, marginTop: 24 }}>
-                    <Text>Use <Text style={{ fontWeight: '900'}}>channels</Text> to communicate with response teams</Text>
-                </Text>
-            </View>
+            ? <Text style={{marginTop: 24, fontSize: 16}}>Welcome to Patch!</Text>    
             : null
     }
 
@@ -148,35 +139,27 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 {defaultText()}
                 {currentResponse()}
             </View>
-            <View style={{paddingTop: 12, marginTop: 12, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
+
+            <View style={{paddingTop: !requestStore().myActiveRequests.length ? 12 : 0, marginTop: !requestStore().myActiveRequests.length ? 12 : 0, marginLeft: 24, borderTopWidth: !requestStore().myActiveRequests.length ? 1 : 0, borderColor: Colors.borders.formFields}}>
+                <PatchButton 
+                    mode='text'
+                    label='Requests'
+                    onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
+                <PatchButton 
+                    mode='text'
+                    label='Channels'
+                    onPress={() => { navigateTo(routerNames.chats) }}/>
+                <PatchButton 
+                    mode='text'
+                    label='Team'
+                    onPress={() => {
+                        navigateTo(routerNames.teamList);
+                    }}/>
+            </View> 
+            <View style={{paddingTop: 12, paddingBottom: 120, marginTop: 12, marginLeft: 24, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
                 <OpenURLButton url={URLS.helpCenter} label={STRINGS.LINKS.helpCenter} />
                 <OpenURLButton url={URLS.newTicket} label={STRINGS.LINKS.newTicket} />
             </View>
-           {/*
-            <View>
-                <PatchButton 
-                    mode='contained'
-                    uppercase={false}
-                    label='Requests'
-                    style={styles.button}
-                    onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
-                <PatchButton 
-                    mode='contained'
-                    uppercase={false}r
-                    label='Team'
-                    style={styles.button}
-                    onPress={() => { navigateTo(routerNames.teamList) }}/>
-                <PatchButton 
-                    mode='contained'
-                    uppercase={false}
-                    label='Profile'
-                    style={styles.button}
-                    onPress={() => {
-                        userStore().pushCurrentUser(userStore().user);
-                        navigateTo(routerNames.userDetails);
-                    }}/>
-                </View>
-                */}
         </ScrollView>
     );
 });

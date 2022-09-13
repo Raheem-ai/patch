@@ -36,9 +36,12 @@ export default function SignInForm( { navigation } : Props) {
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                 <ScrollView
                     showsVerticalScrollIndicator={false} 
-                    style={styles.scrollContainer}>
+                    style={styles.scrollContainer}
+                    keyboardShouldPersistTaps='always' 
+                    keyboardDismissMode="none"
+                >
                     <View style={styles.titleContainer}>
-                        <Text style={styles.titleText}>Welcome back!</Text>
+                        <Text style={styles.titleText}>Welcome to Patch!</Text>
                     </View>
                     <View style={styles.inputsContainer}>
                         <TextInput
@@ -55,7 +58,8 @@ export default function SignInForm( { navigation } : Props) {
                             secureTextEntry={secureTextEntry}
                             right={
                                 <TextInput.Icon
-                                name="eye"
+                                name={secureTextEntry ? 'eye-off' : 'eye'}
+                                forceTextInputFocus={false}
                                 onPress={() => {
                                     setSecureTextEntry(!secureTextEntry);
                                     return false;
@@ -77,8 +81,11 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         >{'Sign in'}</Button>
+                        {/* 
+                        // TO DO: enable forgot your password
                         <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
                         <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
+                        */}
                     </View>
                 </ScrollView>
             </Pressable>

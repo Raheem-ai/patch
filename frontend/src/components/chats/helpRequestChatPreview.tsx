@@ -36,15 +36,15 @@ const HelpRequestChatPreview = observer(({
                     ? <View style={styles.unreadMessagesIndicator}/>
                     : <View style={styles.readMessagesIndicator}/>
                 }
-                <Text style={styles.idText}><Text>{prefix}–</Text>{id}</Text>
+                <Text style={styles.idText}>{prefix}–{id}</Text>
             </View>
         )
     }
 
     const details = () => {
         const preview = (request.chat && request.chat.messages.length)
-                        ? userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': ' + request.chat.messages[request.chat.messages.length - 1].message
-                        : '…';
+                        ? <Text style={styles.detailText}><Text style={styles.nameText}>{userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': '}</Text> {request.chat.messages[request.chat.messages.length - 1].message}</Text>
+                        : 'No messages yet';
 
         return (
             <View style={styles.detailsRow}>
@@ -72,15 +72,15 @@ export default HelpRequestChatPreview;
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
-        marginRight: 20,
-        marginVertical: 16
+        backgroundColor: Colors.backgrounds.standard,
     },
     headerRow: {
         height: 22,
         marginBottom: 0,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop: 16,
+        paddingRight: 16
     },
     idText: {
         fontSize: 16,
@@ -88,24 +88,32 @@ const styles = StyleSheet.create({
     },
     detailsRow: {
         marginTop: 4,
-        marginLeft: 60,
+        marginLeft: 56,
         flexDirection: 'row',
+        paddingBottom: 16,
+        borderBottomColor: Colors.borders.list,
+        borderBottomWidth: 1,
+        paddingRight: 16
     },
     detailText: {
         color: Colors.text.tertiary
+    },
+    nameText: {
+        color: Colors.text.tertiary,
+        fontWeight: '700',
     },
     unreadMessagesIndicator: {
         height: 12,
         width: 12,
         borderRadius: 12,
-        backgroundColor: '#5ACC7F',
-        marginHorizontal: (60 - 12)/2
+        backgroundColor: Colors.good,
+        marginHorizontal: (56 - 12)/2,
     },
     readMessagesIndicator: {
         height: 12,
         width: 12,
         borderRadius: 12,
         backgroundColor: Colors.icons.superlight,
-        marginHorizontal: (60 - 12)/2
+        marginHorizontal: (56 - 12)/2
     },
 })

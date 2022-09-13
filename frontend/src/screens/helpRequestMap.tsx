@@ -115,13 +115,19 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
     const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
 
     const goToActiveRequest = () => {
-        const activeIdx = requestStore().filteredSortedRequestsWithLocation.findIndex(r => r.id == requestStore().activeRequest?.id);
 
-        if (activeIdx != -1) {
-            console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
-            setIdx(activeIdx + 1)
-            setVisualDeltaX(-((activeIdx) * windowDimensions.width))
-            setDeltaTouchX(0)
+        if (!requestStore().activeRequest.location) {
+            requestStore().setCurrentRequest(requestStore().activeRequest)
+            navigateTo(routerNames.helpRequestDetails)
+        } else {
+            const activeIdx = requestStore().filteredSortedRequestsWithLocation.findIndex(r => r.id == requestStore().activeRequest?.id);
+
+            if (activeIdx != -1) {
+                console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
+                setIdx(activeIdx + 1)
+                setVisualDeltaX(-((activeIdx) * windowDimensions.width))
+                setDeltaTouchX(0)
+            }
         }
     }
 

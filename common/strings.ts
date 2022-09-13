@@ -8,8 +8,8 @@ const STRINGS = {
         position: `position`,
     },
     visualDelim: '·',
-    responders: (n: number) => n > 1 ? 'responders' : 'responder',
-    nResponders: (n: number) => `${n} ${STRINGS.responders(n)}`,
+    responders: (n: number) => (n > 1 || n == 0) ? 'responders' : 'responder',
+    nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
     people: (n: number) => n > 1 ? 'people' : 'person',
     nPeople: (n: number) => `${n} ${STRINGS.people(n)}`,
     daysOfWeek: {
@@ -62,6 +62,7 @@ const STRINGS = {
             leave: `Leave`,
             join: `Join`,
             request: `Request`,
+            removeUser: (userName:string) => `${userName} isn't on this position.`
         },
         TOGGLE: {
             toggleRequest: (isOpen: boolean) => isOpen ? `Close this request` : `Re-open this request`,

@@ -8,8 +8,7 @@ import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
 import STRINGS from "../../../../common/strings";
-import PatchButton from "../../components/patchButton"
-
+import PatchButton from "../../components/patchButton";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -210,9 +209,11 @@ const styles = StyleSheet.create({
     }, 
     messageBubble: {
         alignSelf: 'flex-end',
-        borderRadius: 16, 
+        borderRadius: 12,
+        borderBottomLeftRadius: 1,
         backgroundColor: 'rgba(179, 214, 226, .5)',
         padding: 12,
+        marginLeft: 2,
     }, 
     myMessageBubble: {
         backgroundColor: 'rgba(103, 49, 146, .2)'

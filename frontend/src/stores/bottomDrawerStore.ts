@@ -253,7 +253,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 // this.headerShowing = true
             })
         } else if (!this.view) {
-            console.log('hmmmmm?')
             runInAction(() => {
                 this.viewId = view
                 this.showing = true

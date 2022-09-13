@@ -121,7 +121,7 @@ export const Colors = {
         secondary: '#333',
         tertiary: '#999',
         disabled: '#999',
-        defaultReversed: '#EEE',
+        defaultReversed: '#f6f6f6',
         secondaryReversed: '#aaa',
         tertiaryReversed: '#999',
         disabledReversed: '#999',
@@ -151,6 +151,7 @@ export const Colors = {
     borders: {
         formFields: '#E0E0E0',
         filter: '#E0E0E0',
+        list: '#E0E0E0',
         menu: '#666',
     },
     good: '#55BB76',

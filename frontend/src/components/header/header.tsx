@@ -1,20 +1,16 @@
 import * as React from 'react';
-import { Animated, Dimensions, View, Image } from 'react-native';
+import { Animated, Dimensions, View } from 'react-native';
 import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
-import { useState } from 'react';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
-import { RootStackParamList, routerNames, Colors } from '../../types';
+import { routerNames, Colors } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '../../stores/interfaces';
+import { headerStore, requestStore, userStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { HeaderHeight, headerIconContainerSize, headerIconSize, InteractiveHeaderHeight, isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
-import statusAvailable from '../../../assets/statusAvailable.png';
-import statusUnavailable from '../../../assets/statusUnavailable.png';
-import statusOnshift from '../../../assets/statusOnshift.png';
 import TestIds from '../../test/ids';
 
 type Props = StackHeaderProps & {};
@@ -55,11 +51,22 @@ const Header = observer((props: Props) => {
             inputRange: [0, .2, .8, 1, 1.2, 1.8, 2],
             outputRange: [0, 0, 0, 1, 0, 0, 0],
         });
+
         const statusIcon = requestStore().myActiveRequests.length
-            ? statusOnshift
+            ? userStore().isOnDuty
+                ? 'lightning-bolt-circle'
+                : 'lightning-bolt'
             : userStore().isOnDuty
-                ? statusAvailable
-                : statusUnavailable;
+                ? 'circle'
+                : 'circle-outline';
+
+        const statusColor = requestStore().myActiveRequests.length
+            ? Colors.good
+            : userStore().isOnDuty
+                ? Colors.good
+                : Colors.icons.darkReversed;
+
+        const statusIconSize = 16;
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -76,6 +83,7 @@ const Header = observer((props: Props) => {
                                     return (
                                         <IconButton 
                                             testID={testId} 
+                                            style={styles.leftIcon}
                                             key={a.icon} 
                                             icon={a.icon} 
                                             size={headerIconSize} 
@@ -87,14 +95,10 @@ const Header = observer((props: Props) => {
                         </View>
                         : null
                     }
-                    <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 20 }]}>
+                    <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
                         <Text style={styles.title}>{title}</Text>
                     </View>
-                    { 
-                        <View style={styles.onDutyStatusContainer}>
-                            <Image source={ statusIcon } style={{ width: 24, height: 24 }} /> 
-                        </View>
-                    }
+
                     <View style={styles.rightIconContainer}>
                         {
                             rightActions.map((a) => {
@@ -111,6 +115,19 @@ const Header = observer((props: Props) => {
                             })
                         }
                     </View>
+                    {/* Add a divider line between right icons and status icon */}
+                    { rightActions.length
+                        ? <View style={{ flexDirection: 'row', height: InteractiveHeaderHeight, alignItems: 'center', paddingLeft: 6, paddingRight: 12 }}>
+                            <View style={{ borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, height: '60%' }}></View>
+                        </View>
+                        : null
+                    }
+                    { 
+                    
+                        <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
+                            <IconButton key={'status-icon'} style={{ width: statusIconSize, height: statusIconSize }} icon={statusIcon} size={statusIconSize} color={statusColor}/>
+                        </View>
+                    }
                 </View>
             </Animated.View>
             </View>
@@ -222,14 +239,23 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     leftIconContainer: {
-        width: headerIconContainerSize,
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+    },
+    leftIcon: {
+        margin: 0,
+        width: headerIconSize,
+        height: headerIconSize,
+        alignSelf: 'center',
     },
     titleContainer: {
         flex: 1,
         alignItems: 'flex-start', 
         justifyContent: 'center',
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
     },
     title: {
         color: Colors.text.defaultReversed,
@@ -239,36 +265,19 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start', 
         justifyContent: 'center',
         height: InteractiveHeaderHeight,
-        marginRight: 12
-    },
-    onDutyStatusOutline: { 
-        borderStyle: 'solid', 
-        borderWidth: 1, 
-        paddingHorizontal: 4, 
-        paddingVertical: 2, 
-        borderRadius: 4 
-    },
-    onDutyStatusText: {  
-        fontSize: 11, 
-        fontWeight: 'bold' 
-    },
-    onDuty: {
-        color: Colors.good,
-    },
-    offDuty: {
-        color: Colors.icons.darkReversed,
     },
     rightIconContainer: {
-        // width: iconContainerSize,
         flexDirection: 'row',
-        height: InteractiveHeaderHeight
+        height: InteractiveHeaderHeight,
+        paddingRight: 12,
     },
     icon: {
         margin: 0,
-        marginRight: 12,
+        marginLeft: headerIconPaddingHorizontal,
         width: headerIconSize,
         height: headerIconSize,
-        alignSelf: 'center'
+        alignSelf: 'center',
+        borderRadius: 0
     },
 
     // OPEN

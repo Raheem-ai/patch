@@ -163,6 +163,7 @@ export default class EditUser extends React.Component {
                 disabled: false,
                 props: {
                     multiSelect: true,
+                    hideAnyone: true,
                     onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
             } as ScreenFormInputConfig<'RoleList'>
@@ -172,7 +173,7 @@ export default class EditUser extends React.Component {
             val: () => editUserStore().attributes,
             onSave: (attributes) => editUserStore().attributes = attributes,
             isValid: () => true,
-            icon: 'tag-heart',
+            icon: 'tag',
             name: 'attributes'
         }) as ScreenFormInputConfig<'CategorizedItemList'>
         : null
@@ -223,7 +224,7 @@ export default class EditUser extends React.Component {
                 props: {
                     inputType: 'phone-pad',
                 },
-                icon: 'clipboard-account',
+                icon: 'card-account-phone',
                 required: true
             } as InlineFormInputConfig<'TextInput'>,
             {
@@ -255,6 +256,7 @@ export default class EditUser extends React.Component {
                     disabled: false,
                     props: {
                         multiSelect: true,
+                        hideAnyone: true,
                         onItemDeleted: (idx) => this.onItemDeleted(idx)
                     },
                 } as ScreenFormInputConfig<'RoleList'>
@@ -264,7 +266,7 @@ export default class EditUser extends React.Component {
                 val: () => editUserStore().attributes,
                 onSave: (attributes) => editUserStore().attributes = attributes,
                 isValid: () => true,
-                icon: 'tag-heart',
+                icon: 'tag',
                 name: 'attributes'
             }) as ScreenFormInputConfig<'CategorizedItemList'>
             : null

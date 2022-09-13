@@ -349,8 +349,14 @@ export default class Form extends React.Component<FormProps> {
         }
 
         return (
-                <WrappedScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-                    <Pressable testID={this.props.testID} onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
+                <WrappedScrollView 
+                    testID={this.props.testID}
+                    showsVerticalScrollIndicator={false} 
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ display: 'flex', flexGrow: 1 }} 
+                    keyboardShouldPersistTaps='always' 
+                    keyboardDismissMode='on-drag'>
+                    <Pressable onPress={onPress} style={{ flex: 1, paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(this.groupedInputs.get()) }
                         {
@@ -810,7 +816,7 @@ const styles = StyleSheet.create({
     },
     disabledSection: {
         // opacity: .5
-        // backgroundColor: '#eee'
+        // backgroundColor: '#f6f6f6'
         // backgroundColor: '#E0DEE0'
     },
     placeholder: {
