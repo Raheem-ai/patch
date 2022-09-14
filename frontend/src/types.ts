@@ -104,7 +104,7 @@ export const Colors = {
         tabs: '#111',
         tags: {
             primaryForeground: '#FFF',
-            primaryBackground: '#5D8A98',
+            primaryBackground: '#111',
             secondaryForeground: '#F0F0F0',
             secondaryBackground: '#444',
             tertiaryForeground: '#666',
@@ -144,6 +144,7 @@ export const Colors = {
     icons: {
         superlight: '#E0E0E0',
         light: '#999',
+        lighter: '#bbb',
         dark: '#666',
         superdark: '#333',
         lightReversed: '#f0f0f0',

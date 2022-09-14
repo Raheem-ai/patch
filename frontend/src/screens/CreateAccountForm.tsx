@@ -1,7 +1,7 @@
 import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { CreateAccountNavigationProp, labelNames, routerNames } from '../types';
+import { CreateAccountNavigationProp, ICONS, labelNames, routerNames } from '../types';
 import { navigateTo } from '../navigation';
 
 type Props = {
@@ -40,7 +40,7 @@ export default function CreateAccountForm( { navigation } : Props) {
                         secureTextEntry={secureTextEntry}
                         right={
                             <TextInput.Icon
-                            name="eye"
+                            name={ICONS.showPassword}
                             onPress={() => {
                                 setSecureTextEntry(!secureTextEntry);
                                 return false;

@@ -532,7 +532,7 @@ const DefaultSection = observer((props: {
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
                             icon={ICONS.openListItem} 
-                            color='rgba(60,60,67,.3)'
+                            color={Colors.icons.lighter}
                             onPress={expand}
                             size={30} />
                         : null
@@ -562,7 +562,7 @@ const DefaultSection = observer((props: {
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30 }}
                             icon={ICONS.openListItem}
-                            color='rgba(60,60,67,.3)'
+                            color={Colors.icons.lighter}
                             onPress={expand}
                             size={30} />
                         : null
@@ -681,9 +681,9 @@ const LabelSection = observer((props: {
                 </View>
                 { !props.inputConfig.disabled && !props.viewConfig.hideExpandArrow
                     ? <IconButton
-                        style={{ flex: 0, height: 30, width: 30 }}
+                        style={{ flex: 0, height: 30, width: 30, alignSelf: 'flex-start', marginTop: 14 }}
                         icon={ICONS.openListItem}
-                        color='rgba(60,60,67,.3)'
+                        color={Colors.icons.lighter}
                         onPress={autoExpand}
                         size={30} />
                     : null
@@ -765,7 +765,7 @@ const NavigationSection = observer((props: {
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon={rightIcon} 
-                        color='rgba(60,60,67,.3)'
+                        color={Colors.icons.lighter}
                         onPress={resolvedExpand}
                         size={30} />
                     : null

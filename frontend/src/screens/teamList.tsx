@@ -27,6 +27,7 @@ const TeamSortByToLabelMap: { [key in TeamSortBy] : string } = {
 const TeamList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<TeamFilter>(TeamFilter);
     const allSortBys = allEnumValues<TeamSortBy>(TeamSortBy);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         teamStore().refreshUsers();
@@ -35,6 +36,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
     const headerProps: ListHeaderProps = {
         openHeaderLabel: 'People to show',
         closedHeaderStyles: styles.closedFilterHeader,
+        viewIsScrolled: isScrolled,
 
         optionConfigs: [
             {
@@ -71,11 +73,16 @@ const TeamList = observer(({ navigation, route }: Props) => {
             navigateTo(routerNames.userDetails);
         }
     }
-    
+
+    const handleScroll = (e) => {
+        setIsScrolled(e.nativeEvent.contentOffset.y == 0
+            ? false
+            : true)}
+
     return (
         <View style={styles.container}>
             <ListHeader { ...headerProps } />
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
                     teamStore().sortedUsers.map(r => {
                         const goToDetails = goToResponder(r);
@@ -125,7 +132,7 @@ const styles = StyleSheet.create({
         margin: 0,
         padding: 0,
         marginLeft: 12,
-        alignSelf: 'center'
+        alignSelf: 'flex-start'
     },
     listItemContainer: { 
         flexDirection: 'row', 
@@ -136,6 +143,6 @@ const styles = StyleSheet.create({
         height: 1, 
         borderBottomColor: Colors.borders.list, 
         borderBottomWidth: 1, 
-        marginLeft: 56
+        marginLeft: 0
     }
 })

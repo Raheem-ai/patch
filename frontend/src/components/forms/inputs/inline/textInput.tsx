@@ -63,7 +63,7 @@ const TextInput = observer(({
                             : false }/>
                 { isPassword
                     ? <IconButton
-                        icon={secureTextEntry ? ICONS.hidePassword : ICONS.showPassword}
+                        icon={secureTextEntry ? ICONS.showPassword : ICONS.hidePassword}
                         onPress={() => {
                             setSecureTextEntry(!secureTextEntry);
                             return false;

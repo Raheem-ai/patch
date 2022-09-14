@@ -265,7 +265,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
         const admins = await this.requestAdminsInOrg(fullOrg);
 
-        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, org.requestPrefix);
+        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, org.requestPrefix, !!req.positions);
 
         const configs: SendConfig[] = usersToNotify.map(u => {
             admins.delete(u.id)
