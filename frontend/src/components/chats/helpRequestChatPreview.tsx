@@ -1,11 +1,11 @@
 import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, IconButton } from "react-native-paper";
 import { HelpRequest } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { Colors, routerNames } from "../../types";
+import { Colors, routerNames, ICONS } from "../../types";
 import { requestDisplayName } from "../../../../common/utils/requestUtils"
 
 type Props = {
@@ -38,6 +38,11 @@ const HelpRequestChatPreview = observer(({
                     : <View style={styles.readMessagesIndicator}/>
                 }
                 <Text style={styles.idText}>{requestDisplayName(prefix, id)}</Text>
+                <IconButton
+                    style={styles.goToChannelIcon}
+                    icon={ICONS.openListItem} 
+                    color={styles.goToChannelIcon.color}
+                    size={styles.goToChannelIcon.width} />
             </View>
         )
     }
@@ -86,12 +91,13 @@ const styles = StyleSheet.create({
     idText: {
         fontSize: 16,
         fontWeight: 'bold',
+        flex: 1
     },
     detailsRow: {
         marginTop: 4,
         marginLeft: 56,
         flexDirection: 'row',
-        paddingBottom: 16,
+        paddingBottom: 24,
         borderBottomColor: Colors.borders.list,
         borderBottomWidth: 1,
         paddingRight: 16
@@ -116,5 +122,14 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         backgroundColor: Colors.icons.superlight,
         marginHorizontal: (56 - 12)/2
+    },
+    goToChannelIcon: {
+        color: '#CCCACC',
+        width: 30,
+        height: 30,
+        margin: 0,
+        padding: 0,
+        marginLeft: 12,
+        alignSelf: 'center'
     },
 })
