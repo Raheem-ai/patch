@@ -105,7 +105,7 @@ const HeaderConfig: {
                 requestStore().tryPopRequest();
                 navigationRef.current.goBack();
             }
-        }];
+        }]
 
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
