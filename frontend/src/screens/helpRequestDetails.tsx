@@ -83,21 +83,15 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             ? Colors.text.bad
             : priority == RequestPriority.Medium
                 ? Colors.text.okay
-                : priority == RequestPriority.Low
-                    ? Colors.text.tertiary
-                    : null
-        
-        if (!priorityColor) {
-            return null
-        }
-        
-        return (
-            <View style={styles.priorityOutterSection}>
-                <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
-                    <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                : Colors.text.tertiary
+
+        return !!priorityLabel
+            ? <View style={styles.priorityOutterSection}>
+                    <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
+                        <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                    </View>
                 </View>
-            </View>
-        )
+            : null
     }
 
     const detailsSection = () => {
@@ -180,23 +174,25 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const header = () => {
         const types = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
+        /*
         const edit = () => {
             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
         }
 
         const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+        */
 
-        return (
-            <View style={styles.headerContainer}>
+        return types.length 
+            ? [<View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
                     <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
-            </View>
-        )
+            </View>]
+            : null
     }
 
-//     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
-//     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
 
     const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
 
@@ -205,42 +201,43 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const mapPreview = () => {
-        if (!requestStore().currentRequest.location) {
-            return null;
-        }
-        
-        const locLat = requestStore().currentRequest.location.latitude;
-        const locLong = requestStore().currentRequest.location.longitude;
+        if (requestStore().currentRequest.location) {
 
-        const initialRegion =  {
-            latitude: locLat,
-            longitude: locLong,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-        }; 
+            const locLat = requestStore().currentRequest.location.latitude;
+            const locLong = requestStore().currentRequest.location.longitude;
 
-        const mapProps: MapViewProps = {
-            provider: PROVIDER_GOOGLE,
-            pointerEvents: "none",
-            showsUserLocation: true,
-            initialRegion,
-            style: styles.mapView,
-        }
-
-        const markerProps: MarkerProps = {
-            coordinate: { 
+            const initialRegion =  {
                 latitude: locLat,
                 longitude: locLong,
-            }
-        }
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }; 
 
-        return (
-            <Pressable onPress={mapClick}>
-                <MapView {...mapProps}>
-                    <Marker {...markerProps}/>
-                </MapView>
-            </Pressable>
-        );
+            const mapProps: MapViewProps = {
+                provider: PROVIDER_GOOGLE,
+                pointerEvents: "none",
+                showsUserLocation: true,
+                initialRegion,
+                style: styles.mapView,
+            }
+
+            const markerProps: MarkerProps = {
+                coordinate: { 
+                    latitude: locLat,
+                    longitude: locLong,
+                }
+            }
+
+            return (
+                <Pressable onPress={mapClick}>
+                    <MapView {...mapProps}>
+                        <Marker {...markerProps}/>
+                    </MapView>
+                </Pressable>
+            );
+        } else {
+            return null;
+        }
     }
 
     const statusPicker = () => {
@@ -811,7 +808,7 @@ const styles = StyleSheet.create({
     timeAndPlaceSection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
-        marginVertical: 16
+        marginBottom: 16
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
@@ -1026,6 +1023,7 @@ const styles = StyleSheet.create({
         height: 48
     },
     mapView: {
-        height: 180
+        height: 180,
+        marginBottom: 16
     }
 })

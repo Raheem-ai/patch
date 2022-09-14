@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
+import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors, ICONS } from "../../types";
@@ -220,17 +220,17 @@ const HelpRequestCard = observer(({
     
     let priorityColor;
     switch(request.priority) {
-        case 1:
+        case RequestPriority.Medium:
             priorityColor = Colors.okay;
             break;
-        case 2:
+        case RequestPriority.High:
             priorityColor = Colors.bad;
             break;
-        case 0:
-            priorityColor = Colors.nocolor; // low-priority == priority not set (for now)
+        case RequestPriority.Low:
+            priorityColor = Colors.nocolor; // treat low-priority same as priority not set (for now)
             break;
         default:
-            priorityColor = Colors.nocolor; // if folks aren't using priorities, let's keep it simple
+            priorityColor = Colors.nocolor; // if folks aren't using priorities, keep it simple
     }
 
     return (
