@@ -187,8 +187,8 @@ const HeaderConfig: {
         
         return {
             title: onMyProfile 
-                ? 'My profile'
-                : 'User profile',
+                ? STRINGS.ACCOUNT.profileTitleMine
+                : STRINGS.ACCOUNT.profileTitle,
             leftActions: [{
                 icon: ICONS.navBack,
                 callback: () => {

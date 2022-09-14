@@ -38,7 +38,7 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
     return (
         <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
             {
-                <View style={{ paddingVertical: 20 - 6}}>
+                <View style={{ paddingVertical: 6 }}>
                     <Tags 
                         disabled={config.disabled}
                         verticalMargin={6} 

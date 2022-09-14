@@ -28,8 +28,12 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             }
         }
 
-        const detailsText = [
-            userStore().currentUser.pronouns,
+        const pronounsText = userStore().currentUser.pronouns;
+        const bioText = userStore().currentUser.bio 
+            ? `${pronounsText && ' ' + STRINGS.visualDelim + ' '}${userStore().currentUser.bio}`
+            : null;
+
+        const userRoles = [
             ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${STRINGS.visualDelim} `);
 
@@ -48,11 +52,18 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             <View style={styles.nameContainer}>
                 <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
             </View>
-            <View style={detailsText ? styles.detailsContainer : styles.hideContainer}>
-                <Text style={styles.detailsText}>{detailsText}</Text>
+            <View style={userRoles ? styles.detailsContainer : styles.hideContainer}>
+                <Text style={styles.rolesText}>
+                    {userRoles}
+                </Text>
             </View>
-            <View style={userStore().currentUser.bio ? styles.bioContainer : styles.hideContainer}>
-                <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
+            <View style={pronounsText || bioText ? styles.detailsContainer : styles.hideContainer}>
+                <Text style={[styles.detailsText, {fontWeight: '700'}, pronounsText ? styles.detailsContainer : styles.hideContainer]}>
+                    {pronounsText}
+                    <Text style={[styles.detailsText, bioText ? styles.detailsContainer : styles.hideContainer]}>
+                        {bioText}
+                    </Text>
+                </Text>                
             </View>
             <View style={styles.attributesContainer}>
                 <Tags 
@@ -62,23 +73,31 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                     tagTextStyle={{ color: styles.attributeTag.color }}
                     tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
             </View>
-            {/* TODO: only show contact buttons if we have contact information */}
-            <View style={styles.contactIconsContainer}>
-                <Pressable onPress={startCall} style={styles.contactIconContainer}>
-                    <IconButton
-                        style={styles.contactIcon}
-                        icon={ICONS.callPhone} 
-                        color={styles.contactIcon.color}
-                        size={styles.contactIcon.width} />
-                </Pressable>
-                <Pressable onPress={mailTo} style={styles.contactIconContainer}>
-                    <IconButton
-                        style={styles.contactIcon}
-                        icon={ICONS.sendEmail} 
-                        color={styles.contactIcon.color}
-                        size={styles.contactIcon.width} />
-                </Pressable>
-            </View>
+            {/* Only show contact buttons if we have contact information */}
+            { userStore().currentUser.phone || userStore().currentUser.email
+                ? <View style={styles.contactIconsContainer}>
+                    { userStore().currentUser.phone
+                        ? <Pressable onPress={startCall} style={styles.contactIconContainer}>
+                            <IconButton
+                                style={styles.contactIcon}
+                                icon={ICONS.callPhone} 
+                                color={styles.contactIcon.color}
+                                size={styles.contactIcon.width} />
+                        </Pressable>
+                        : null }
+
+                    { userStore().currentUser.email
+                        ? <Pressable onPress={mailTo} style={styles.contactIconContainer}>
+                            <IconButton
+                                style={styles.contactIcon}
+                                icon={ICONS.sendEmail} 
+                                color={styles.contactIcon.color}
+                                size={styles.contactIcon.width} />
+                        </Pressable>
+                        : null }
+                    </View>
+                : null
+            }
         </View>
     }
 
@@ -144,7 +163,7 @@ const styles = StyleSheet.create({
         marginTop: 38,
         height: 84,
         width: 84,
-        backgroundColor: Colors.backgrounds.secondary,
+        backgroundColor: Colors.primary.alpha,
         alignContent: 'center',
         justifyContent: 'center',
         borderRadius: 84,
@@ -155,7 +174,7 @@ const styles = StyleSheet.create({
         width: 30,
         maxWidth: 50,
         maxHeight: 50,
-        color: Colors.secondary.beta,
+        color: Colors.text.defaultReversed,
         alignSelf: 'center'
     },
     nameContainer: {
@@ -167,14 +186,20 @@ const styles = StyleSheet.create({
         fontWeight: '900',
         color: Colors.text.default,
     },
+    rolesText: {
+        fontSize: 16,
+        fontWeight: '400',
+        color: Colors.text.tertiary,
+    },
     detailsText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '400',
         color: Colors.text.secondary,
     },
     detailsContainer: {
         alignSelf: 'center',
-        marginTop: 12
+        marginTop: 12,
+        marginBottom: 6
     },
     bioContainer: {
         alignSelf: 'center',
@@ -185,8 +210,12 @@ const styles = StyleSheet.create({
         marginTop: 12,
     }, 
     attributeTag: {
-        color: Colors.backgrounds.tags.primaryForeground,
-        backgroundColor: Colors.backgrounds.tags.primaryBackground,
+        color: Colors.backgrounds.tags.tertiaryForeground,
+        backgroundColor: Colors.backgrounds.tags.tertiaryBackground,
+    },
+    roleTag: {
+        color: Colors.text.default,
+        backgroundColor: Colors.nocolor,
     },
     skillTag: {
         color: Colors.backgrounds.tags.tertiaryForeground,
@@ -202,7 +231,7 @@ const styles = StyleSheet.create({
         height: 64,
         width: 64,
         borderRadius: 64,
-        backgroundColor: Colors.uiControls.foregroundReversed,
+        backgroundColor: Colors.primary.alpha,
         justifyContent: 'center'
     },
     contactIcon: {
@@ -210,7 +239,7 @@ const styles = StyleSheet.create({
         width: 40,
         maxWidth: 60,
         maxHeight: 60,
-        color: Colors.primary.alpha,
+        color: Colors.text.defaultReversed,
         alignSelf: 'center'
     },
     currentResponseSection: {

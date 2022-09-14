@@ -23,7 +23,7 @@ const STRINGS = {
     visualDelim: '·',
     responders: (n: number) => (n > 1 || n == 0) ? 'responders' : 'responder',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
-    people: (n: number) => n > 1 ? 'people' : 'person',
+    people: (n: number) => n ==1 ? 'person' : 'people',
     nPeople: (n: number) => `${n} ${STRINGS.people(n)}`,
     daysOfWeek: {
         su: 'Sunday',
@@ -65,11 +65,12 @@ const STRINGS = {
         priority: 'Priority',
         tags: 'Tags',
         NOTIFICATIONS: {
-            notifyNResponders: (n: number) => `Notify ${STRINGS.nResponders(n)}`,
+            notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
             nPeopleNotified: (n: number) => `${STRINGS.nPeople(n)} notified`,
             nRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,
             notifyPeople: `Notify people`,
+            filterToShow: 'People to show',
             selectAll: 'select all',
             unselectAll: 'unselect all',
             SECTIONS: {
@@ -100,6 +101,8 @@ const STRINGS = {
     },
     ACCOUNT: {
         inviteTitle: `Invite to team`,
+        profileTitle: 'Profile',
+        profileTitleMine: 'My profile',
         sendInvite: `Send Invite`,
         welcomeToPatch: `Welcome to PATCH!`,
         userNotFound: (email: string) => `User with email ${email} not found`,

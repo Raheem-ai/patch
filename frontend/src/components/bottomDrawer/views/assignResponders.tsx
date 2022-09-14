@@ -1,6 +1,6 @@
 import { observable, runInAction } from "mobx"
 import { observer } from "mobx-react"
-import React from "react"
+import React, { useState } from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
@@ -18,6 +18,15 @@ const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
+
+    state = {
+        isScrolled: false
+    };
+
+    handleScroll = (e) => {
+        this.setState(e.nativeEvent.contentOffset.y == 0
+            ? { isScrolled: false }
+            : { isScrolled: true })}
 
     header = () => {
         const headerConfig: BackButtonHeaderProps = {
@@ -40,14 +49,14 @@ export default class AssignResponders extends React.Component {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().selectedResponderIds.size))
+                    alertStore().toastSuccess(STRINGS.REQUESTS.NOTIFICATIONS.nPeopleNotified(dispatchStore().selectedResponderIds.size))
 
                     bottomDrawerStore().hide()
                 },
                 label: () => {
                     const count = dispatchStore().selectedResponderIds.size;
                     
-                    return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
+                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count);
                 },
                 validator: () => {
                     return !!dispatchStore().selectedResponderIds.size
@@ -70,7 +79,7 @@ export default class AssignResponders extends React.Component {
     listHeader = () => {
 
         const headerProps: ListHeaderProps = {
-            openHeaderLabel: 'People to notify',
+            openHeaderLabel: STRINGS.REQUESTS.NOTIFICATIONS.filterToShow,
     
             optionConfigs: [
                 {
@@ -107,9 +116,9 @@ export default class AssignResponders extends React.Component {
     responderActions = () => {
         const selectAllText = dispatchStore().selectAll ? STRINGS.REQUESTS.NOTIFICATIONS.unselectAll : STRINGS.REQUESTS.NOTIFICATIONS.selectAll;
         return (
-            <View style={styles.responderActions}>
+            <View style={[styles.responderActions, this.state.isScrolled && styles.responderActionsScrolled]}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{STRINGS.nResponders(dispatchStore().assignableResponders.length)}</Text>
+                    <Text style={styles.responderCountText}>{STRINGS.nPeople(dispatchStore().assignableResponders.length)}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
@@ -133,7 +142,7 @@ export default class AssignResponders extends React.Component {
     responders = () => {
 
         return (
-            <ScrollView style={{ flex: 1 }}>
+            <ScrollView style={{ flex: 1 }} onScroll={this.handleScroll} scrollEventThrottle={120}>
                 { 
                     dispatchStore().assignableResponders.map((r) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
@@ -195,7 +204,19 @@ const styles = StyleSheet.create({
     }, 
     responderActions: {
         padding: 20,
-        paddingTop: 12
+        paddingVertical: 12,
+        backgroundColor: Colors.backgrounds.standard,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.borders.list
+    },
+    responderActionsScrolled: {
+        shadowColor: '#000',
+        shadowOpacity: .1,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
     },
     selectAllRow: {
         flexDirection: 'row',
@@ -239,8 +260,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
-        paddingHorizontal: 20
+        paddingHorizontal: 12,
+        paddingVertical: 24,
+        borderBottomColor: Colors.borders.list, 
+        borderBottomWidth: 1, 
     },
     responderRowOverride: {
         marginBottom: 0 

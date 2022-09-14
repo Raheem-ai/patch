@@ -14,6 +14,7 @@ export type ListHeaderOptionConfig<T = any> = {
 
 export type ListHeaderProps = {
     openHeaderLabel: string,
+    viewIsScrolled?: boolean
 
     optionConfigs: ListHeaderOptionConfig[]
 
@@ -69,7 +70,7 @@ const ListHeader = (props: ListHeaderProps) => {
     }
     
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, (props.viewIsScrolled && styles.containerScrolled)]}>
             {headerSection()}
             { isOpen 
                 ? props.optionConfigs.map(optionConfigToSection)
@@ -83,10 +84,19 @@ export default ListHeader
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: Colors.backgrounds.filter
+        backgroundColor: Colors.backgrounds.filter,
+        zIndex: 100
+    },
+    containerScrolled: {
+        shadowColor: '#000',
+        shadowOpacity: .1,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
     },
     headerContainer: {
-        height: 46,
         flexDirection: 'row',
         justifyContent: 'space-between',
         borderBottomColor: Colors.borders.filter,
