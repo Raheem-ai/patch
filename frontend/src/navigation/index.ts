@@ -1,8 +1,7 @@
 import { NavigationContainerRef, StackActions } from '@react-navigation/native';
 import React from 'react';
-import { IUserStore, userStore } from '../stores/interfaces';
+import { userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
-import { runningOnProd } from '../utils';
 import * as Linking from 'expo-linking';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();

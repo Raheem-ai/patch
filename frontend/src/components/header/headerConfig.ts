@@ -93,14 +93,16 @@ const HeaderConfig: {
                 : requestStore().currentRequest.displayId;
 
             return `${requestDisplayName(prefix(), id)}`
-        },
-        leftActions: [{
+        };
+
+
+        const leftActions = [{
             icon: 'chevron-left',
             callback: () => {
                 requestStore().tryPopRequest();
                 navigationRef.current.goBack();
             }
-        }];
+        }]
 
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
