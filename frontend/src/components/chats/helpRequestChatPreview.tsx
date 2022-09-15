@@ -20,7 +20,9 @@ const HelpRequestChatPreview = observer(({
 } : Props) => {
     const onCardPress = (event: GestureResponderEvent) => {
         requestStore().setCurrentRequest(request)
-        navigateTo(routerNames.helpRequestChat);
+        navigateTo(routerNames.helpRequestDetails, {
+            initialTab: 'Channel'
+        })
     }
 
     const header = () => {

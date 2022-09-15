@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
-import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, Tabs } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -37,6 +37,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const request = requestStore().currentRequest;
     const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
+    const [initialTab, setInitialTab] = useState(Tabs.Overview);
+
     const userIsOnRequest = userOnRequest(userStore().user.id, request);
     const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
     const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
@@ -48,12 +50,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             if (params && params.notification) {
                 // Need to mark the request store as loading so the header config knows not to use a stale
                 // req displayId while we are transitioning
-                await requestStore().loadUntil(async () => {
+
+                // console.log('Before loadUntil')
+                // await requestStore().loadUntil(async () => {
+                    console.log('Before pendingRequestUpdate')
                     await updateStore().pendingRequestUpdate(params.notification)
+                    console.log('Before pushRequest')
                     await requestStore().pushRequest(params.notification.params.requestId)
-                })
+                    console.log('After pushRequest')
+                // })
+                // console.log('After loadUntil')
 
                 setIsLoading(false);
+            } else if (params?.initialTab) {
+                setInitialTab(Tabs[params.initialTab])
+                setIsLoading(false)
             } else {
                 // got here through normal navigation...caller should worry about having up to date copy
                 setIsLoading(false)
@@ -751,7 +762,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     return (
         <TabbedScreen 
             bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
-            defaultTab={Tabs.Overview} 
+            defaultTab={initialTab} 
             tabs={tabs}/>
     );
 
@@ -759,11 +770,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
 export default HelpRequestDetails;
 
-enum Tabs {
-    Overview = 'Overview', 
-    Channel = 'Channel',
-    Team = 'Team'
-}
+
 
 const styles = StyleSheet.create({
     detailsContainer: {

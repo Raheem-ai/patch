@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap } from "../../../../common/models";
+import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, Tabs } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors } from "../../types";
@@ -87,6 +87,24 @@ const HelpRequestCard = observer(({
                 </Text>
             </View>
         )
+    }
+
+    const goToChat = (event: GestureResponderEvent) => {
+        event.stopPropagation();
+
+        requestStore().setCurrentRequest(request);
+        navigateTo(routerNames.helpRequestDetails, {
+            initialTab: Tabs.Channel
+        })
+    }
+
+    const goToTeam = (event: GestureResponderEvent) => {
+        event.stopPropagation();
+
+        requestStore().setCurrentRequest(request);
+        navigateTo(routerNames.helpRequestDetails, {
+            initialTab: Tabs.Team
+        })
     }
 
     const status = () => {
@@ -175,18 +193,13 @@ const HelpRequestCard = observer(({
             && (!request.chat.userReceipts[userStore().user.id] 
                 || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
-        const goToChat = (event: GestureResponderEvent) => {
-            event.stopPropagation();
-
-            requestStore().setCurrentRequest(request);
-            navigateTo(routerNames.helpRequestChat)
-        }
-
         return (
             <View style={styles.statusRow}>
                 <View style={styles.responderActions}>
-                    { assignedResponders }
-                    { unAssignedResponders }
+                    <Pressable style={{flexDirection: 'row', flex:0}} onPress={goToTeam} >
+                        { assignedResponders }
+                        { unAssignedResponders }
+                    </Pressable>
                     { hasUnreadMessages &&
                         <View>
                             <IconButton

@@ -17,7 +17,7 @@ export type RootStackParamList = {
     Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes>;
+    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes, { initialTab?: string }>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
     HelpRequestChat: undefined;
