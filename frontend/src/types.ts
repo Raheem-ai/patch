@@ -153,7 +153,7 @@ export const Colors = {
     borders: {
         formFields: '#E0E0E0',
         filter: '#E0E0E0',
-        list: '#E0E0E0',
+        list: '#eee',
         menu: '#666',
     },
     good: '#55BB76',
