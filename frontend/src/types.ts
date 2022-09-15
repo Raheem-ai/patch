@@ -213,7 +213,7 @@ export const ICONS = {
     mapMarker: 'map-marker',
     map: 'map',
     cardList: 'view-agenda',
-    newMessage: BASIC_ICONS.chatBubbleBadge,
+    newMessage: BASIC_ICONS.chatBubble,
     timeRequestCreated: BASIC_ICONS.clockOutline,
     timeCallStarted: 'phone',
     callerContactInfo: 'card-account-phone',
