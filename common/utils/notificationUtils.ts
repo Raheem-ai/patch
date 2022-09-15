@@ -25,8 +25,6 @@ const NotificationLabelMap = {
     [PatchEventType.OrganizationRoleEdited]: () => '',
     [PatchEventType.OrganizationRoleDeleted]: () => '',
 
-// fix "new request created" ... ideal: conditionalize based on if there are positions
-
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string, prefix?: string) => {
         return `New message on ${requestDisplayName(prefix, requestName)} from ${senderName}`
@@ -34,7 +32,7 @@ const NotificationLabelMap = {
     [PatchEventType.RequestRespondersNotified]: (requestName: string, prefix?: string, hasPositions?: boolean, ) => {
         return (hasPositions
             ? `Can you join ${requestDisplayName(prefix, requestName)}?`
-            : `Take a look at ${requestDisplayName(prefix, requestName)}`
+            : `You're being notified about ${requestDisplayName(prefix, requestName)}`
     )},
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string, prefix: string) => {
         return `${responderName} joined ${requestDisplayName(prefix, requestName)}`

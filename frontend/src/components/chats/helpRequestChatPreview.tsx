@@ -23,40 +23,38 @@ const HelpRequestChatPreview = observer(({
         navigateTo(routerNames.helpRequestChat);
     }
 
-    const header = () => {
-        const id = request.displayId;
-        const prefix = organizationStore().metadata.requestPrefix;
-
+    const unreadIndicator = () => {
         const hasUnreadMessages = (request.chat && request.chat.messages.length)
                                     && (!request.chat.userReceipts[userStore().user.id] 
                                     || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         return (
-            <View style={styles.headerRow}>
+            <View style={styles.indicatorContainer}>
                 { hasUnreadMessages 
                     ? <View style={styles.unreadMessagesIndicator}/>
                     : <View style={styles.readMessagesIndicator}/>
                 }
-                <Text style={styles.idText}>{requestDisplayName(prefix, id)}</Text>
-                <IconButton
-                    style={styles.goToChannelIcon}
-                    icon={ICONS.openListItem} 
-                    color={styles.goToChannelIcon.color}
-                    size={styles.goToChannelIcon.width} />
             </View>
         )
     }
 
     const details = () => {
+        const id = request.displayId;
+        const prefix = organizationStore().metadata.requestPrefix;
         const preview = (request.chat && request.chat.messages.length)
                         ? <Text style={styles.detailText}><Text style={styles.nameText}>{userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': '}</Text> {request.chat.messages[request.chat.messages.length - 1].message}</Text>
                         : 'No messages yet';
 
         return (
-            <View style={styles.detailsRow}>
-                <Text style={styles.detailText} numberOfLines={3}>
-                    {preview}
-                </Text>
+            <View style={{flexDirection: 'column', flex: 1}}>
+                <View style={styles.headerRow}>
+                    <Text style={styles.idText}>{requestDisplayName(prefix, id)}</Text>
+                </View>
+                <View style={styles.detailsRow}>
+                    <Text style={styles.detailText} numberOfLines={3}>
+                        {preview}
+                    </Text>
+                </View>
             </View>
         )
     }
@@ -68,8 +66,17 @@ const HelpRequestChatPreview = observer(({
                 styles.container, 
                 style
             ]}>
-                {header()}
-                {details()}
+                <View style={{flexDirection: 'row'}}>
+                    {unreadIndicator()}
+                    <View style={styles.detailsAndIcon}>
+                        {details()}
+                        <IconButton
+                            style={styles.goToChannelIcon}
+                            icon={ICONS.openListItem} 
+                            color={styles.goToChannelIcon.color}
+                            size={styles.goToChannelIcon.width} />
+                        </View>
+                </View>
         </Pressable>
     )
 })
@@ -80,13 +87,23 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: Colors.backgrounds.standard,
     },
+    detailsAndIcon: {
+        borderBottomColor: Colors.borders.list,
+        borderBottomWidth: 1,
+        flexDirection: 'row',
+        flex: 1,
+        paddingRight: 12,
+        paddingVertical: 16
+    },
     headerRow: {
-        height: 22,
         marginBottom: 0,
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 16,
         paddingRight: 16
+    },
+    indicatorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     idText: {
         fontSize: 16,
@@ -95,11 +112,7 @@ const styles = StyleSheet.create({
     },
     detailsRow: {
         marginTop: 4,
-        marginLeft: 56,
         flexDirection: 'row',
-        paddingBottom: 24,
-        borderBottomColor: Colors.borders.list,
-        borderBottomWidth: 1,
         paddingRight: 16
     },
     detailText: {

@@ -137,12 +137,12 @@ const styles = StyleSheet.create({
     listItemContainer: { 
         flexDirection: 'row', 
         paddingHorizontal: 12, 
-        paddingVertical: 24
+        paddingVertical: 16
     },
     divider: {
         height: 1, 
         borderBottomColor: Colors.borders.list, 
         borderBottomWidth: 1, 
-        marginLeft: 0
+        marginLeft: 56
     }
 })
