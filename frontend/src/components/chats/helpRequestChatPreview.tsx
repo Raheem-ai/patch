@@ -7,6 +7,7 @@ import { requestStore, userStore, organizationStore } from "../../stores/interfa
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames, ICONS } from "../../types";
 import { requestDisplayName } from "../../../../common/utils/requestUtils"
+import STRINGS from "../../../../common/strings";
 
 type Props = {
     request: HelpRequest,
@@ -43,7 +44,7 @@ const HelpRequestChatPreview = observer(({
         const prefix = organizationStore().metadata.requestPrefix;
         const preview = (request.chat && request.chat.messages.length)
                         ? <Text style={styles.detailText}><Text style={styles.nameText}>{userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': '}</Text> {request.chat.messages[request.chat.messages.length - 1].message}</Text>
-                        : 'No messages yet';
+                        : STRINGS.CHANNELS.noMessages;
 
         return (
             <View style={{flexDirection: 'column', flex: 1}}>

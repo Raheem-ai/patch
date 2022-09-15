@@ -1,3 +1,5 @@
+import { requestDisplayName } from './utils/requestUtils';
+
 type CaseAndNumber = {
     cap?: boolean,
     plural?: boolean
@@ -54,6 +56,7 @@ const STRINGS = {
 
     },
     REQUESTS: {
+        editRequestTitle: (prefix:string, requestName:string) => `Edit ${requestDisplayName(prefix, requestName)}`,
         description: 'Description',
         callStart: 'Call start',
         callEnd: 'Call end',
@@ -98,6 +101,9 @@ const STRINGS = {
         ACTIONS: {
             addResponders: 'Add responders',
         }
+    },
+    CHANNELS: {
+        noMessages: '...',
     },
     ACCOUNT: {
         inviteTitle: `Invite to team`,

@@ -26,7 +26,7 @@ class EditHelpRequest extends React.Component<Props> {
     }
 
     headerLabel = () => {
-        return `Edit Request ${requestStore().currentRequest.displayId}`
+        return STRINGS.REQUESTS.editRequestTitle(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId) 
     }
 
     setRef = (formRef: Form) => {
