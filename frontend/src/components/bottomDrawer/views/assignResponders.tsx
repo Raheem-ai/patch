@@ -1,6 +1,6 @@
 import { observable, runInAction } from "mobx"
 import { observer } from "mobx-react"
-import React, { useState } from "react"
+import React from "react"
 import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text, Switch } from "react-native-paper"
