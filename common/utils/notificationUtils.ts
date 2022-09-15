@@ -31,8 +31,8 @@ const NotificationLabelMap = {
     },
     [PatchEventType.RequestRespondersNotified]: (requestName: string, prefix?: string, hasPositions?: boolean, ) => {
         return (hasPositions
-            ? `Can you join ${requestDisplayName(prefix, requestName)}?`
-            : `You're being notified about ${requestDisplayName(prefix, requestName)}`
+            ? `Responders needed for ${requestDisplayName(prefix, requestName)}?`
+            : `Notification for ${requestDisplayName(prefix, requestName)}`
     )},
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string, prefix: string) => {
         return `${responderName} joined ${requestDisplayName(prefix, requestName)}`

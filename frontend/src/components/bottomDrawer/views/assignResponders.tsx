@@ -142,7 +142,7 @@ export default class AssignResponders extends React.Component {
     responders = () => {
 
         return (
-            <ScrollView style={{ flex: 1 }} onScroll={this.handleScroll} scrollEventThrottle={120}>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{paddingBottom: 24}} onScroll={this.handleScroll} scrollEventThrottle={120}>
                 { 
                     dispatchStore().assignableResponders.map((r) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
