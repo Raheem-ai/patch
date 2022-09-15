@@ -151,22 +151,25 @@ export default class AssignResponders extends React.Component {
                         const chooseResponder = () => this.toggleResponder(r.id)
 
                         return (
-                            <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
-                                <ResponderRow 
-                                    onPress={chooseResponder}
-                                    style={[styles.responderRowOverride, { maxWidth }]} 
-                                    responder={r} 
-                                    orgId={userStore().currentOrgId} 
-                                    request={requestStore().currentRequest}
-                                    isSelected={isSelected}/>
-                                <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
-                                    <IconButton
-                                        style={styles.selectResponderIcon}
-                                        icon={ICONS.check} 
-                                        color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
-                                        size={styles.selectResponderIcon.width} />
-                                </View>
-                            </Pressable>
+                            <>
+                                <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
+                                    <ResponderRow 
+                                        onPress={chooseResponder}
+                                        style={[styles.responderRowOverride, { maxWidth }]} 
+                                        responder={r} 
+                                        orgId={userStore().currentOrgId} 
+                                        request={requestStore().currentRequest}
+                                        isSelected={isSelected}/>
+                                    <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
+                                        <IconButton
+                                            style={styles.selectResponderIcon}
+                                            icon={ICONS.check} 
+                                            color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
+                                            size={styles.selectResponderIcon.width} />
+                                    </View>
+                                </Pressable>
+                                <View style={styles.divider}/>
+                            </>
                         )
                     })
                 }
@@ -261,9 +264,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 12,
-        paddingVertical: 24,
-        borderBottomColor: Colors.borders.list, 
-        borderBottomWidth: 1, 
+        paddingVertical: 16,
     },
     responderRowOverride: {
         marginBottom: 0 
@@ -288,5 +289,11 @@ const styles = StyleSheet.create({
         color: Colors.text.defaultReversed,
         borderColor: Colors.primary.alpha,
         borderWidth: 1,
+    },
+    divider: {
+        height: 1, 
+        borderBottomColor: Colors.borders.list, 
+        borderBottomWidth: 1, 
+        marginLeft: 60
     }
 })

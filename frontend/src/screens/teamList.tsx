@@ -143,6 +143,6 @@ const styles = StyleSheet.create({
         height: 1, 
         borderBottomColor: Colors.borders.list, 
         borderBottomWidth: 1, 
-        marginLeft: 56
+        marginLeft: 60
     }
 })
