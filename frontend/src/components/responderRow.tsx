@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     },
     userIconContainer: {
         marginRight: 8,
-        justifyContent: 'flex-start'
+        justifyContent: 'center'
     },
     skillDelim: {
         color: Colors.text.tertiary,

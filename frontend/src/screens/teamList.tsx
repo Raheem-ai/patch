@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
         margin: 0,
         padding: 0,
         marginLeft: 12,
-        alignSelf: 'flex-start'
+        alignSelf: 'center'
     },
     listItemContainer: { 
         flexDirection: 'row', 
