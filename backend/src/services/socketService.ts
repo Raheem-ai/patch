@@ -264,7 +264,6 @@ export class MySocketService {
         const org = await this.db.resolveOrganization(req.orgId);
         const fullOrg = await this.db.fullOrganization(org);
         const admins = await this.requestAdminsInOrg(fullOrg);
-        const usersOnRequest = await this.usersOnRequest(req, fullOrg);
 
         const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, org.requestPrefix, !!req.positions.length);
 
