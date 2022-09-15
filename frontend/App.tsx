@@ -48,7 +48,26 @@ import CreateAccountForm from './src/screens/CreateAccountForm';
 import Chats from './src/screens/chats';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Sentry from 'sentry-expo';
+import { apiHost } from './src/api';
+import * as Constants from 'expo-constants';
 
+const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
+
+// TODO: use Sentry.withProfiler with each top level screen
+Sentry.init({
+  dsn: Constants.default.manifest.extra.sentryDSN,
+  enableInExpoDevelopment: false,
+  // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+  debug: true, 
+  integrations: [
+    new Sentry.Native.ReactNativeTracing({
+      routingInstrumentation,
+      tracingOrigins: [apiHost]
+    }),
+  ],
+  tracesSampleRate: 1.0
+});
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -65,7 +84,7 @@ const theme = {
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-export default function App() {
+function App() {
     const [isLoading, setIsLoading] = useState(true);
   
   // handle store binding + initialization + splash screen loading state
@@ -116,7 +135,11 @@ export default function App() {
       // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
         <Provider container={container}>
             <PaperProvider theme={theme}>
-                <NavigationContainer ref={navigationRef} onStateChange={updateNavigationRoute}>
+                <NavigationContainer 
+                  ref={navigationRef} 
+                  onStateChange={updateNavigationRoute}
+                  onReady={instrumentNavigation}
+                >
                 {/* <GlobalErrorBoundary> */}
                   <GestureHandlerRootView style={{ flex: 1 }}>
                     <StatusBar
@@ -156,12 +179,19 @@ export default function App() {
     );
 }
 
+export default Sentry.Native.wrap(App);
+
 const userScreen = function(Component: (props) => JSX.Element) {
   return observer(function(props) {    
     return userStore().signedIn && organizationStore().isReady
       ? <Component {...props} />
       : null
   })
+}
+
+const instrumentNavigation = function () {
+  // Register the navigation container with the instrumentation
+  routingInstrumentation.registerNavigationContainer(navigationRef);
 }
 
 const updateNavigationRoute = function(state: NavigationState) {

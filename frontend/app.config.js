@@ -77,7 +77,10 @@ if (!ENV) {
 // NOTE:
 // every secret that goes here needs to be added to the build def as
 // this is build time vs runtime...which means we need to build for EACH environment
+// *** we have no way of accessing config here (vs secrets)***
+// TODO: figure out how to get config here
 const googleMapsKey = JSON.parse(process.env.GOOGLE_MAPS).api_key
+const sentrySecrets = JSON.parse(process.env.SENTRY_CREDS)
 
 const config = {
 	"expo": {
@@ -92,6 +95,22 @@ const config = {
 		"image": "./assets/splash.png",
 		"resizeMode": "contain",
 		"backgroundColor": "#ffffff"
+	  },
+	  // TODO: add if/when we move to eas build
+	  //   "plugins": [
+	  // 	"sentry-expo"
+	  //   ]
+	  "hooks": {
+		"postPublish": [
+		  {
+			"file": "sentry-expo/upload-sourcemaps",
+			"config": {
+			  "organization": "raheem-org",
+			  "project": "patch",
+			  "authToken": sentrySecrets.auth_token
+			}
+		  }
+		]
 	  },
 	  "updates": {
 		"fallbackToCacheTimeout": 0
@@ -133,7 +152,8 @@ const config = {
 		"favicon": "./assets/favicon.png"
 	  },
 	  "extra": {
-		"apiHost": apiHost
+		"apiHost": apiHost,
+		"sentryDSN": sentrySecrets.dsn
 	  }
 	}
 }

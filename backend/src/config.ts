@@ -2,7 +2,8 @@ require('module-alias/register');
 
 import config, { 
     PatchMongoDBConfig,
-    RaheemConfig, RedisConfig 
+    RaheemConfig, 
+    RedisConfig 
 } from 'infra/src/config';
 
 import {
@@ -10,7 +11,8 @@ import {
     PatchMongoDBCredentials,
     PatchSessionSecret,
     PatchTwilioSecret,
-    GoogleMapsCredentials
+    GoogleMapsCredentials,
+    SentryCredentials
 } from 'infra/src/secrets';
 import { ConfigInstance } from '../infra/src/config/configurable';
 
@@ -22,7 +24,8 @@ const environmentConfig = {
     EXPO: new ExpoCredentials(),
     TWILIO: new PatchTwilioSecret(),
     REDIS: new RedisConfig(),
-    GOOGLE_MAPS: new GoogleMapsCredentials()
+    GOOGLE_MAPS: new GoogleMapsCredentials(),
+    SENTRY_CREDS: new SentryCredentials()
 }
 
 // can formalize this pattern in the future to make it more reusable
