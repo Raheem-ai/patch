@@ -1550,6 +1550,12 @@ export enum DefaultRoleIds {
     Responder = '__responder',
 }
 
+export enum RequestDetailsTabs {
+    Overview = 'Overview', 
+    Channel = 'Channel',
+    Team = 'Team'
+}
+
 export const DefaultRoles: Role[] = [
     {
         id: DefaultRoleIds.Anyone,

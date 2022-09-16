@@ -2,7 +2,7 @@ import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
-import { HelpRequest } from "../../../../common/models";
+import { HelpRequest, RequestDetailsTabs } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames } from "../../types";
@@ -20,7 +20,9 @@ const HelpRequestChatPreview = observer(({
 } : Props) => {
     const onCardPress = (event: GestureResponderEvent) => {
         requestStore().setCurrentRequest(request)
-        navigateTo(routerNames.helpRequestChat);
+        navigateTo(routerNames.helpRequestDetails, {
+            initialTab: RequestDetailsTabs.Channel
+        })
     }
 
     const header = () => {
