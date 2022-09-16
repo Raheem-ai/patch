@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, Tabs } from "../../../../common/models";
+import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors } from "../../types";
@@ -94,7 +94,7 @@ const HelpRequestCard = observer(({
 
         requestStore().setCurrentRequest(request);
         navigateTo(routerNames.helpRequestDetails, {
-            initialTab: Tabs.Channel
+            initialTab: RequestDetailsTabs.Channel
         })
     }
 
@@ -103,7 +103,7 @@ const HelpRequestCard = observer(({
 
         requestStore().setCurrentRequest(request);
         navigateTo(routerNames.helpRequestDetails, {
-            initialTab: Tabs.Team
+            initialTab: RequestDetailsTabs.Team
         })
     }
 

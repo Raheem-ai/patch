@@ -1,5 +1,5 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes } from "../../common/models";
+import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/models";
 
 export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
     // notification?: PatchEventTypes<T>
@@ -17,7 +17,7 @@ export type RootStackParamList = {
     Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes, { initialTab?: string }>;
+    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes, { initialTab?: RequestDetailsTabs }>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
     HelpRequestChat: undefined;

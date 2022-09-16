@@ -1550,7 +1550,7 @@ export enum DefaultRoleIds {
     Responder = '__responder',
 }
 
-export enum Tabs {
+export enum RequestDetailsTabs {
     Overview = 'Overview', 
     Channel = 'Channel',
     Team = 'Team'

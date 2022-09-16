@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ScreenProps } from "../types";
-import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, Tabs } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -37,7 +37,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const request = requestStore().currentRequest;
     const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
-    const [initialTab, setInitialTab] = useState(Tabs.Overview);
+    const [initialTab, setInitialTab] = useState(RequestDetailsTabs.Overview);
 
     const userIsOnRequest = userOnRequest(userStore().user.id, request);
     const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
@@ -63,7 +63,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 setIsLoading(false);
             } else if (params?.initialTab) {
-                setInitialTab(Tabs[params.initialTab])
+                setInitialTab(params.initialTab)
                 setIsLoading(false)
             } else {
                 // got here through normal navigation...caller should worry about having up to date copy
@@ -738,7 +738,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     tabs.push(
         {
-            label: Tabs.Overview,
+            label: RequestDetailsTabs.Overview,
             view: overview
         }
     );
@@ -746,7 +746,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     if (userIsOnRequest || userHasPermissionToSeeChat) {
         tabs.push(
             {
-                label: Tabs.Channel,
+                label: RequestDetailsTabs.Channel,
                 view: channel
             }
         );
@@ -754,7 +754,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     tabs.push(
         {
-            label: Tabs.Team,
+            label: RequestDetailsTabs.Team,
             view: team
         }
     );
