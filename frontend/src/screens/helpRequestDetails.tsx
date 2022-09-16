@@ -51,15 +51,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 // Need to mark the request store as loading so the header config knows not to use a stale
                 // req displayId while we are transitioning
 
-                // console.log('Before loadUntil')
-                // await requestStore().loadUntil(async () => {
-                    console.log('Before pendingRequestUpdate')
+                await requestStore().loadUntil(async () => {
                     await updateStore().pendingRequestUpdate(params.notification)
-                    console.log('Before pushRequest')
                     await requestStore().pushRequest(params.notification.params.requestId)
-                    console.log('After pushRequest')
-                // })
-                // console.log('After loadUntil')
+                })
 
                 setIsLoading(false);
             } else if (params?.initialTab) {
