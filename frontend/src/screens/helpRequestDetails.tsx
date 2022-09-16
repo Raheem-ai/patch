@@ -59,9 +59,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 setIsLoading(false)
             }
 
-
             await requestStore().ackRequestNotification(request.id)
-
         })();
     }, []);
 

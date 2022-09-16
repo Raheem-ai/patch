@@ -92,9 +92,13 @@ const HeaderConfig: {
     },
     [routerNames.helpRequestDetails]: () => {   
         const title = () => {
+            // loading is needed for switching between two different requests on the same
+            // request details screen
             const id = requestStore().loading
                 ? ''
-                : requestStore().currentRequest.displayId;
+                // if coming from a notification, current request may not be set
+                // yet so make sure we don't throw trying to access it
+                : requestStore().currentRequest?.displayId;
 
             return `${requestDisplayName(prefix(), id)}`
         };
