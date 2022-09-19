@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -72,11 +72,18 @@ export default class UserStore implements IUserStore {
         }
     }
 
+    userInOrg = (user: Pick<User, 'organizations'>) => {
+        return !!user.organizations[this.currentOrgId]
+    }
+
     get usersInOrg() {
         return Array.from(this.users.values())
-            .filter(u => {
-                return !!u.organizations[this.currentOrgId]
-            })
+            .filter(this.userInOrg)
+    }
+
+    get usersRemovedFromOrg() {
+        return Array.from(this.users.values())
+            .filter(u => !this.userInOrg(u))
     }
 
     get isOnDuty() {

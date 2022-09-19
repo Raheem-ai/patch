@@ -114,15 +114,22 @@ const HelpRequestCard = observer(({
         
         const joinedResponders = new Set<string>();
 
+        const joinedUsersInOrg = (users: string[]) => {
+            return users.filter(u => {
+                const user = userStore().users.get(u);
+                return user && userStore().userInOrg(user);
+            })
+        }
+
         request.positions.forEach(pos => {
             respondersNeeded += pos.min;
             // it's possible that more than the minimum number of people join a position
             // we don't want to count them for a different position
-            unfilledSpotsForRequest += pos.min - Math.min(pos.min, pos.joinedUsers.length);
+            unfilledSpotsForRequest += pos.min - Math.min(pos.min, joinedUsersInOrg(pos.joinedUsers).length);
         })
 
         requestMetadata.positions.forEach(pos => {
-            pos.joinedUsers.forEach(userId => joinedResponders.add(userId))
+            joinedUsersInOrg(Array.from(pos.joinedUsers)).forEach(userId => joinedResponders.add(userId))
         })
 
         const unAssignedResponders = [];
@@ -187,7 +194,7 @@ const HelpRequestCard = observer(({
         
         const label = typeof potentialLabel == 'string'
             ? potentialLabel
-            : potentialLabel(request);
+            : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
 
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
             && (!request.chat.userReceipts[userStore().user.id] 

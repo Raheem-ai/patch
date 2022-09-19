@@ -57,7 +57,7 @@ export class DispatcherController implements APIController<
         @Required() @BodyParams('userId') userId: string,
         @Required() @BodyParams('positionId') positionId: string
     ) {
-        const res = await this.db.confirmRequestToJoinPosition(requestId, user.id, userId, positionId);
+        const res = await this.db.confirmRequestToJoinPosition(orgId, requestId, user.id, userId, positionId);
 
         await this.pubSub.sys(PatchEventType.RequestRespondersAccepted, {
             accepterId: user.id,
@@ -101,7 +101,7 @@ export class DispatcherController implements APIController<
         @Required() @BodyParams('requestId') requestId: string, 
         @Required() @BodyParams('positionId') positionId: string, 
     ) {
-        const res = await this.db.removeUserFromRequest(user.id, userId, requestId, positionId);
+        const res = await this.db.removeUserFromRequest(orgId, user.id, userId, requestId, positionId);
 
         await this.pubSub.sys(PatchEventType.RequestRespondersRemoved, {
             removerId: user.id,

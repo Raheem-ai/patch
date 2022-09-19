@@ -4,7 +4,7 @@ import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewSty
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
-import { requestStore } from "../stores/interfaces";
+import { requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
@@ -109,7 +109,7 @@ export const StatusSelector = observer(({
 } : StatusSelectorProps) => {
     const request = requestStore().requests.get(requestId)
     
-    const firstStatus = assignedResponderBasedRequestStatus(request);
+    const firstStatus = assignedResponderBasedRequestStatus(request, userStore().usersRemovedFromOrg.map(u => u.id));
 
     const dimensions = Dimensions.get('screen');
 
@@ -154,7 +154,7 @@ export const StatusSelector = observer(({
             
                     const label = typeof potentialLabel == 'string'
                         ? potentialLabel
-                        : potentialLabel(request);
+                        : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
                         
                     const oldStatusIcon = () => {
                         return <StatusIcon dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={noMarginIconStyles}/>;
@@ -225,7 +225,7 @@ export const StatusSelector = observer(({
         
                                 const label = typeof potentialLabel == 'string'
                                     ? potentialLabel
-                                    : potentialLabel(request);
+                                    : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
 
                                 // TODO: this is assuming it's always the width of the screen...take totalWidth as a prop
                                 // same thing for the padding

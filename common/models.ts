@@ -390,10 +390,10 @@ export enum RequestStatus {
     Closed
 }
 
-export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
+export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest, usersRemovedFromOrg: string[]) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => {
-        const stats = positionStats(req.positions);
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest, usersRemovedFromOrg: string[]) => {
+        const stats = positionStats(req.positions, usersRemovedFromOrg);
         return `${stats.totalMinFilled} of ${stats.totalMinToFill}`
     },
     [RequestStatus.Ready]: 'Ready',
