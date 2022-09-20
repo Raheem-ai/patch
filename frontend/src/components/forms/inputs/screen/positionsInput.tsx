@@ -12,7 +12,7 @@ import { organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
 import { observable } from "mobx"
-import { Colors } from "../../../../types";
+import { Colors, ICONS } from "../../../../types";
 import PatchButton from "../../../patchButton";
 
 export type PositionsInputProps = SectionScreenViewProps<'Positions'> 
@@ -45,7 +45,7 @@ const PositionsInput = observer(({
             isValid: () => true,
             name: 'minmax',
             type: 'Slider',
-            icon: 'account-multiple',
+            icon: ICONS.accountMultiple,
             props: {
                 maxBeforeOrMore: 10
             }
@@ -62,6 +62,7 @@ const PositionsInput = observer(({
             previewLabel: () => organizationStore().roles.get(position.get().role)?.name,
             name: 'role',
             type: 'RoleList',
+            icon: ICONS.role,
             props: {
                 onlyAddative: true
             }
@@ -73,7 +74,8 @@ const PositionsInput = observer(({
                 position.set(cpy) 
             },
             isValid: () => true,
-            name: 'attributes'
+            name: 'attributes',
+            icon: ICONS.tag
         })
     ]] as [[
         InlineFormInputConfig<'Slider'>,

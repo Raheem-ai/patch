@@ -12,6 +12,7 @@ import MangeRolesForm from "../../editRolesForm"
 import { PatchPermissions, DefaultRoleIds } from "../../../../../../common/models"
 import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
 import { organizationStore } from "../../../../stores/interfaces"
+import { ICONS } from "../../../../types"
 
 export type RoleListInputProps = SectionScreenViewProps<'RoleList'> 
 
@@ -63,7 +64,7 @@ const RoleListInput = ({
                         handler: () => {
                             navigateToScreen('edit')
                         }, 
-                        icon: 'pencil'
+                        icon: ICONS.edit
                     }
                     : null,
                 bottomBorder: true

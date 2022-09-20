@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { HelpRequestFilter, HelpRequestSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
@@ -27,9 +27,12 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<HelpRequestFilter>(HelpRequestFilter);
     const allSortBys = allEnumValues<HelpRequestSortBy>(HelpRequestSortBy)
 
+    const [isScrolled, setIsScrolled] = useState(false);
+
     const headerProps: ListHeaderProps = {
         openHeaderLabel: 'Requests to show',
         closedHeaderStyles: styles.closedFilterHeader,
+        viewIsScrolled: isScrolled,
         optionConfigs: [
             {
                 chosenOption: requestStore().filter,
@@ -54,11 +57,15 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
             ListHeaderOptionConfig<HelpRequestSortBy> 
         ]
     }
-    
+    const handleScroll = (e) => {
+        setIsScrolled(e.nativeEvent.contentOffset.y == 0
+            ? false
+            : true)}
+
     return (
         <View style={styles.container}>
             <ListHeader { ...headerProps } />
-            <ScrollView style={{ flex: 1}}>
+            <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
                     requestStore().filteredSortedRequests.map(r => {
                         return (
@@ -92,6 +99,6 @@ const styles = StyleSheet.create({
         }
     },
     closedFilterHeader: {
-        marginBottom: 12
+        // marginBottom: 12
     }
 })

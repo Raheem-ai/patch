@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
+import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
@@ -68,7 +69,7 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
                                                         titleStyle={chosen ? styles.chosenItem : styles.noop}
                                                         titleNumberOfLines={2}
                                                         style={styles.item}
-                                                        right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
+                                                        right={chosen ? props => <List.Icon color={'#000'} icon={ICONS.selectListItem} style={styles.rightCheckIcon}/> : null}/>
                                         })
 
                         return [   

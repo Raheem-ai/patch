@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColorValue, StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
-import { Colors } from '../types';
+import { Colors, ICONS } from '../types';
 import {parseFullName} from 'parse-full-name';
 
 type UserIconProps = { 
@@ -28,7 +28,7 @@ const UserIcon = ({
         return (
             <IconButton
                 style={[styles.empty, style]}
-                icon='account' 
+                icon={ICONS.responder} 
                 color={emptyIconColor || styles.empty.color}
                 size={16} />
         )
