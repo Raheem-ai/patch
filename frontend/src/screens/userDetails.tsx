@@ -30,7 +30,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
 
         const pronounsText = userStore().currentUser.pronouns;
         const bioText = userStore().currentUser.bio 
-            ? `${pronounsText && ' ' + STRINGS.visualDelim + ' '}${userStore().currentUser.bio}`
+            ? userStore().currentUser.bio
             : null;
 
         const userRoles = [
@@ -41,64 +41,71 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
         }).filter(x => !!x)
 
-        return <View style={styles.headerContainer}>
-            {/* <View style={styles.profilePhotoContainer}>
-                <IconButton
-                    style={styles.profilePhotoIcon}
-                    icon={ICONS.addPhoto} 
-                    color={styles.profilePhotoIcon.color}
-                    size={styles.profilePhotoIcon.width} />
-            </View> */}
-            <View style={styles.nameContainer}>
-                <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
-            </View>
-            <View style={userRoles ? styles.detailsContainer : styles.hideContainer}>
-                <Text style={styles.rolesText}>
-                    {userRoles}
-                </Text>
-            </View>
-            <View style={pronounsText || bioText ? styles.detailsContainer : styles.hideContainer}>
-                <Text style={[styles.detailsText, {fontWeight: '700'}, pronounsText ? styles.detailsContainer : styles.hideContainer]}>
-                    {pronounsText}
-                    <Text style={[styles.detailsText, bioText ? styles.detailsContainer : styles.hideContainer]}>
-                        {bioText}
-                    </Text>
-                </Text>                
-            </View>
-            <View style={styles.attributesContainer}>
-                <Tags 
-                    centered
-                    tags={userAttributes.map(attr => attr.name)}  
-                    verticalMargin={12} 
-                    tagTextStyle={{ color: styles.attributeTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
-            </View>
-            {/* Only show contact buttons if we have contact information */}
-            { userStore().currentUser.phone || userStore().currentUser.email
-                ? <View style={styles.contactIconsContainer}>
-                    { userStore().currentUser.phone
-                        ? <Pressable onPress={startCall} style={styles.contactIconContainer}>
-                            <IconButton
-                                style={styles.contactIcon}
-                                icon={ICONS.callPhone} 
-                                color={styles.contactIcon.color}
-                                size={styles.contactIcon.width} />
-                        </Pressable>
-                        : null }
+        return <>
+            <View style={styles.headerContainer}>
+                {/* <View style={styles.profilePhotoContainer}>
+                    <IconButton
+                        style={styles.profilePhotoIcon}
+                        icon={ICONS.addPhoto} 
+                        color={styles.profilePhotoIcon.color}
+                        size={styles.profilePhotoIcon.width} />
+                </View> */}
+                <View style={styles.nameContainer}>
+                    <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
+                </View>
+                <View style={pronounsText ? styles.detailsContainer : styles.hideContainer}>
+                    <Text style={[styles.detailsText, pronounsText ? [styles.detailsContainer, styles.pronounsText] : styles.hideContainer]}>
+                        {pronounsText}
+                    </Text>                
+                </View>
+                <View style={bioText ? styles.detailsContainer : styles.hideContainer}>
+                        <Text style={[styles.detailsText, bioText ? [styles.detailsContainer, {marginTop: 16}] : styles.hideContainer]}>
+                            {bioText}
+                        </Text>
+                </View>
+                {/* Only show contact buttons if we have contact information */}
+                { userStore().currentUser.phone || userStore().currentUser.email
+                    ? <View style={styles.contactIconsContainer}>
+                        { userStore().currentUser.phone
+                            ? <Pressable onPress={startCall} style={styles.contactIconContainer}>
+                                <IconButton
+                                    style={styles.contactIcon}
+                                    icon={ICONS.callPhone} 
+                                    color={styles.contactIcon.color}
+                                    size={styles.contactIcon.width} />
+                            </Pressable>
+                            : null }
 
-                    { userStore().currentUser.email
-                        ? <Pressable onPress={mailTo} style={styles.contactIconContainer}>
-                            <IconButton
-                                style={styles.contactIcon}
-                                icon={ICONS.sendEmail} 
-                                color={styles.contactIcon.color}
-                                size={styles.contactIcon.width} />
-                        </Pressable>
-                        : null }
+                        { userStore().currentUser.email
+                            ? <Pressable onPress={mailTo} style={styles.contactIconContainer}>
+                                <IconButton
+                                    style={styles.contactIcon}
+                                    icon={ICONS.sendEmail} 
+                                    color={styles.contactIcon.color}
+                                    size={styles.contactIcon.width} />
+                            </Pressable>
+                            : null }
+                        </View>
+                    : null
+                }
+            </View>
+            <View style={!(userRoles.length || userAttributes.length) ? styles.hideContainer : styles.metadataContainer}>
+                <View style={!userAttributes.length ? styles.hideContainer : styles.attributesContainer}>
+                    <Text style={styles.labelText}>Attributes:</Text> 
+                    <Tags 
+                        tags={userAttributes.map(attr => attr.name)}  
+                        verticalMargin={12} 
+                        tagTextStyle={{ color: styles.attributeTag.color }}
+                        tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
+                </View>
+                <View style={!userRoles.length ? styles.hideContainer : [styles.rolesContainer, userAttributes.length && {marginTop: 16}]}>
+                    <View>
+                        <Text style={[styles.labelText, {marginBottom: 8}]}>Roles:</Text>
+                        <Text style={styles.rolesText}>{userRoles}</Text>
                     </View>
-                : null
-            }
-        </View>
+                </View>
+            </View>
+        </>
     }
 
     const currentResponse = () => {
@@ -153,11 +160,10 @@ const styles = StyleSheet.create({
         display: 'none'
     },
     headerContainer: {
-        padding: 24,
-        paddingBottom: 32,
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 24,
         backgroundColor: Colors.backgrounds.secondary,
-        borderBottomColor: Colors.borders.formFields,
-        borderBottomWidth: 1,
     },
     profilePhotoContainer: {
         marginTop: 38,
@@ -179,35 +185,56 @@ const styles = StyleSheet.create({
     },
     nameContainer: {
         alignSelf: 'center',
-        paddingTop: 24
+
     },
     nameText: {
         fontSize: 32,
         fontWeight: '900',
         color: Colors.text.default,
     },
+    pronounsText: {
+        marginTop: 12,
+        color: Colors.text.secondary,
+    },
     rolesText: {
         fontSize: 16,
         fontWeight: '400',
-        color: Colors.text.tertiary,
+        color: Colors.text.secondary,
+        textAlign: 'left',
     },
     detailsText: {
         fontSize: 16,
         fontWeight: '400',
         color: Colors.text.secondary,
+        textAlign: 'center'
+    },
+    labelText: {
+        color: Colors.text.tertiary,
+        textTransform: 'uppercase'
     },
     detailsContainer: {
         alignSelf: 'center',
-        marginTop: 12,
-        marginBottom: 6
+    },
+    rolesContainer: {
+        width: '100%'
     },
     bioContainer: {
         alignSelf: 'center',
         marginVertical: 12
     },
+    metadataContainer: {
+        paddingHorizontal: 24,
+        paddingTop: 24,
+        paddingBottom: 40,
+        backgroundColor: Colors.backgrounds.secondary,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.borders.list,
+        flex: 1,
+        flexDirection: 'column',
+        alignContent: 'flex-start'
+    },
     attributesContainer: {
-        alignSelf: 'center',
-        marginTop: 12,
+        alignSelf: 'flex-start',
     }, 
     attributeTag: {
         color: Colors.backgrounds.tags.tertiaryForeground,
@@ -224,7 +251,7 @@ const styles = StyleSheet.create({
     contactIconsContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 24,
+        marginTop: 32,
     },
     contactIconContainer: {
         marginHorizontal: 24,
