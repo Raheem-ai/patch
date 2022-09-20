@@ -8,7 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import STRINGS from "../../../../../common/strings"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
-import { Colors } from "../../../types"
+import { Colors, ICONS } from "../../../types"
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
@@ -18,6 +18,15 @@ const dimensions = Dimensions.get('screen');
 
 @observer
 export default class AssignResponders extends React.Component {
+
+    state = {
+        isScrolled: false
+    };
+
+    handleScroll = (e) => {
+        this.setState(e.nativeEvent.contentOffset.y == 0
+            ? { isScrolled: false }
+            : { isScrolled: true })}
 
     header = () => {
         const headerConfig: BackButtonHeaderProps = {
@@ -40,14 +49,14 @@ export default class AssignResponders extends React.Component {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.REQUESTS.NOTIFICATIONS.nRespondersNotified(dispatchStore().selectedResponderIds.size))
+                    alertStore().toastSuccess(STRINGS.REQUESTS.NOTIFICATIONS.nPeopleNotified(dispatchStore().selectedResponderIds.size))
 
                     bottomDrawerStore().hide()
                 },
                 label: () => {
                     const count = dispatchStore().selectedResponderIds.size;
                     
-                    return `Notify ${count || 'selected'} responder` + (count == 1 ? '':'s')
+                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count);
                 },
                 validator: () => {
                     return !!dispatchStore().selectedResponderIds.size
@@ -70,7 +79,7 @@ export default class AssignResponders extends React.Component {
     listHeader = () => {
 
         const headerProps: ListHeaderProps = {
-            openHeaderLabel: 'People to notify',
+            openHeaderLabel: STRINGS.REQUESTS.NOTIFICATIONS.filterToShow,
     
             optionConfigs: [
                 {
@@ -107,13 +116,13 @@ export default class AssignResponders extends React.Component {
     responderActions = () => {
         const selectAllText = dispatchStore().selectAll ? STRINGS.REQUESTS.NOTIFICATIONS.unselectAll : STRINGS.REQUESTS.NOTIFICATIONS.selectAll;
         return (
-            <View style={styles.responderActions}>
+            <View style={[styles.responderActions, this.state.isScrolled && styles.responderActionsScrolled]}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{STRINGS.nResponders(dispatchStore().assignableResponders.length)}</Text>
+                    <Text style={styles.responderCountText}>{STRINGS.nPeople(dispatchStore().assignableResponders.length)}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             style={styles.selectAllIcon}
-                            icon={dispatchStore().selectAll ? 'check-circle' : 'check-circle-outline'}
+                            icon={dispatchStore().selectAll ? ICONS.selectedSmall : ICONS.unselectedSmall}
                             color={dispatchStore().selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
                         <Text style={styles.selectAllText}>{selectAllText}</Text>
@@ -133,7 +142,7 @@ export default class AssignResponders extends React.Component {
     responders = () => {
 
         return (
-            <ScrollView style={{ flex: 1 }}>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{paddingBottom: 24}} onScroll={this.handleScroll} scrollEventThrottle={120}>
                 { 
                     dispatchStore().assignableResponders.map((r) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
@@ -142,22 +151,25 @@ export default class AssignResponders extends React.Component {
                         const chooseResponder = () => this.toggleResponder(r.id)
 
                         return (
-                            <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
-                                <ResponderRow 
-                                    onPress={chooseResponder}
-                                    style={[styles.responderRowOverride, { maxWidth }]} 
-                                    responder={r} 
-                                    orgId={userStore().currentOrgId} 
-                                    request={requestStore().currentRequest}
-                                    isSelected={isSelected}/>
-                                <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
-                                    <IconButton
-                                        style={styles.selectResponderIcon}
-                                        icon='check' 
-                                        color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
-                                        size={styles.selectResponderIcon.width} />
-                                </View>
-                            </Pressable>
+                            <>
+                                <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
+                                    <ResponderRow 
+                                        onPress={chooseResponder}
+                                        style={[styles.responderRowOverride, { maxWidth }]} 
+                                        responder={r} 
+                                        orgId={userStore().currentOrgId} 
+                                        request={requestStore().currentRequest}
+                                        isSelected={isSelected}/>
+                                    <View style={[styles.selectResponderIconContainer, isSelected ? styles.chosenSelectResponderIcon : null ]}>
+                                        <IconButton
+                                            style={styles.selectResponderIcon}
+                                            icon={ICONS.check} 
+                                            color={isSelected ? styles.chosenSelectResponderIcon.color : styles.selectResponderIcon.color}
+                                            size={styles.selectResponderIcon.width} />
+                                    </View>
+                                </Pressable>
+                                <View style={styles.divider}/>
+                            </>
                         )
                     })
                 }
@@ -195,7 +207,19 @@ const styles = StyleSheet.create({
     }, 
     responderActions: {
         padding: 20,
-        paddingTop: 12
+        paddingVertical: 12,
+        backgroundColor: Colors.backgrounds.standard,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.borders.list
+    },
+    responderActionsScrolled: {
+        shadowColor: '#000',
+        shadowOpacity: .1,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
     },
     selectAllRow: {
         flexDirection: 'row',
@@ -239,8 +263,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
-        paddingHorizontal: 20
+        paddingHorizontal: 12,
+        paddingVertical: 16,
     },
     responderRowOverride: {
         marginBottom: 0 
@@ -265,5 +289,11 @@ const styles = StyleSheet.create({
         color: Colors.text.defaultReversed,
         borderColor: Colors.primary.alpha,
         borderWidth: 1,
+    },
+    divider: {
+        height: 1, 
+        borderBottomColor: Colors.borders.list, 
+        borderBottomWidth: 1, 
+        marginLeft: 60
     }
 })

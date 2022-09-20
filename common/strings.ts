@@ -1,3 +1,5 @@
+import { requestDisplayName } from './utils/requestUtils';
+
 type CaseAndNumber = {
     cap?: boolean,
     plural?: boolean
@@ -23,7 +25,7 @@ const STRINGS = {
     visualDelim: '·',
     responders: (n: number) => (n > 1 || n == 0) ? 'responders' : 'responder',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
-    people: (n: number) => n > 1 ? 'people' : 'person',
+    people: (n: number) => n ==1 ? 'person' : 'people',
     nPeople: (n: number) => `${n} ${STRINGS.people(n)}`,
     daysOfWeek: {
         su: 'Sunday',
@@ -53,13 +55,43 @@ const STRINGS = {
         addAnotherElement: (el?:string) => `Add another ${el}`,
 
     },
+    PAGE_TITLES: {
+        landing: 'Landing',
+        joinOrganization: 'Join Organization',
+        invitationSuccessful: 'Invitation Successful',
+        createAccount: 'Create Account',
+        signIn: 'Sign In',
+        signUp: 'Sign Up',
+        signUpThroughOrg: 'Sign Up',
+        userHomePage: 'Home',
+        helpRequestList: 'Requests',
+        helpRequestMap: 'Requests',
+        helpRequestIdWhileLoading: '',
+        helpRequestChat: (prefix:string, id:string) => `Channel for ${requestDisplayName(prefix, id)}`,
+        teamList: 'Team',
+        settings: 'Settings',
+        channels: 'Channels',
+        componentLibrary: 'Component Library'
+    },
     REQUESTS: {
+        editRequestTitle: (prefix:string, requestName:string) => `Edit ${requestDisplayName(prefix, requestName)}`,
+        description: 'Description',
+        callStart: 'Call start',
+        callEnd: 'Call end',
+        requestType: 'Type of request',
+        Location: 'Location',
+        callerName: 'Caller name',
+        callerContactInfo: 'Caller contact info',
+        positions: 'Responders needed',
+        priority: 'Priority',
+        tags: 'Tags',
         NOTIFICATIONS: {
-            notifyNResponders: (n: number) => `Notify ${STRINGS.nResponders(n)}`,
+            notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
             nPeopleNotified: (n: number) => `${STRINGS.nPeople(n)} notified`,
             nRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,
             notifyPeople: `Notify people`,
+            filterToShow: 'People to show',
             selectAll: 'select all',
             unselectAll: 'unselect all',
             SECTIONS: {
@@ -93,8 +125,13 @@ const STRINGS = {
             addResponders: 'Add responders',
         }
     },
+    CHANNELS: {
+        noMessages: '...',
+    },
     ACCOUNT: {
         inviteTitle: `Invite to team`,
+        profileTitle: 'Profile',
+        profileTitleMine: 'My profile',
         sendInvite: `Send Invite`,
         welcomeToPatch: `Welcome to PATCH!`,
         userNotFound: (email: string) => `User with email ${email} not found`,
@@ -131,6 +168,8 @@ const STRINGS = {
         rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',
         rolesIntroB: 'Each role grants the permissions needed for that role. A person can be eligible for more than one role.',
         deleteRole: 'Delete this role',
+        nameRole: 'Name this role',
+        setPermissions: 'Set permissions',
         cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',

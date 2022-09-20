@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../../common/models";
+import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
-import { routerNames, Colors } from "../../types";
+import { routerNames, Colors, ICONS } from "../../types";
 import UserIcon from "../userIcon";
 import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
@@ -17,6 +17,7 @@ type Props = {
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
+    onMapView?: boolean,
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
@@ -25,6 +26,7 @@ const HelpRequestCard = observer(({
     style,
     dark,
     minimal,
+    onMapView,
     onPress
 } : Props) => {
 
@@ -64,7 +66,7 @@ const HelpRequestCard = observer(({
                         ? <View style={styles.locationContainer}>
                             <IconButton
                                 style={styles.locationIcon}
-                                icon='map-marker' 
+                                icon={ICONS.mapMarker} 
                                 color={styles.locationIcon.color}
                                 size={styles.locationIcon.width} />
                             <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
@@ -81,7 +83,7 @@ const HelpRequestCard = observer(({
 
         return (
             <View style={styles.detailsRow}>
-                <Text numberOfLines={4} style={dark ? styles.darkDetailsText : {}}>
+                <Text numberOfLines={minimal ? 1 : onMapView ? 3 : 4} style={dark ? styles.darkDetailsText : {}}>
                     <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type}: </Text>
                     <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
                 </Text>
@@ -138,7 +140,7 @@ const HelpRequestCard = observer(({
             if (unfilledSpotsForRequest > 1) {
                 unAssignedResponders.push(<IconButton
                     style={[ styles.empty, dark && styles.emptyDark ]}
-                    icon='account' 
+                    icon={ICONS.responder} 
                     color={Colors.nocolor}
                     size={12} />);
                 unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
@@ -151,7 +153,7 @@ const HelpRequestCard = observer(({
         // show an icon for each, up to a maximum
         const maxJoinedToShow = 4;
         let i:number = 0;
-        joinedResponders.forEach((userId, idx) => {
+        joinedResponders.forEach((userId) => {
             const responder = userStore().users.get(userId); 
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
@@ -170,7 +172,7 @@ const HelpRequestCard = observer(({
             // show a "stack" icon...
             assignedResponders.push(<IconButton
                 style={[ styles.empty, dark && styles.emptyDark ]}
-                icon='account' 
+                icon={ICONS.responder} 
                 color={Colors.nocolor}
                 size={12} />);
 
@@ -204,7 +206,7 @@ const HelpRequestCard = observer(({
                         <View>
                             <IconButton
                                 style={[styles.messageIcon, dark ? styles.messageIconDark : null]}
-                                icon='message-text' 
+                                icon={ICONS.newMessage} 
                                 color={dark ? styles.messageIconDark.color : styles.messageIcon.color}
                                 onPress={goToChat}
                                 size={28}>
@@ -231,17 +233,17 @@ const HelpRequestCard = observer(({
     
     let priorityColor;
     switch(request.priority) {
-        case 1:
+        case RequestPriority.Medium:
             priorityColor = Colors.okay;
             break;
-        case 2:
+        case RequestPriority.High:
             priorityColor = Colors.bad;
             break;
-        case 0:
-            priorityColor = Colors.nocolor; // low-priority == priority not set
+        case RequestPriority.Low:
+            priorityColor = Colors.nocolor; // treat low-priority same as priority not set (for now)
             break;
         default:
-            priorityColor = Colors.nocolor; // if not using priorities, no need for any colors
+            priorityColor = Colors.nocolor; // if folks aren't using priorities, keep it simple
     }
 
     return (
@@ -286,7 +288,8 @@ const styles = StyleSheet.create({
     minimalContainer: {
         height: ActiveRequestTabHeight ,
         paddingBottom: 12,
-        justifyContent: 'space-between',
+        paddingHorizontal: 12,
+        justifyContent: 'space-evenly',
         borderTopWidth: 0,
         borderBottomWidth: 0,
 
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     statusRow: {
         margin: 12,
         marginTop: 0,
-//        height: 28, // <-- why is this set explicitly?
+        height: 28, // keeps row from collapsing when there are no positions and status selector is opened
         flexDirection: 'row',
     }, 
     responderActions: {
@@ -356,8 +359,7 @@ const styles = StyleSheet.create({
         width: 10,
         borderRadius: 8,
         borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#fff',
+        borderColor: Colors.backgrounds.standard,
         position: 'absolute',
         top: -2,
         right: 2,
@@ -371,7 +373,6 @@ const styles = StyleSheet.create({
         color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
         borderColor: Colors.backgrounds.standard,
-        borderStyle: 'solid',
         borderWidth: 1,
         marginRight: RESPONDER_SPACING_BASIC,
     }, 
@@ -379,25 +380,20 @@ const styles = StyleSheet.create({
         color: '#444144',
         backgroundColor: '#CCCACC',
         borderColor: Colors.backgrounds.dark,
-        borderStyle: 'solid',
         borderWidth: 1,
         marginRight: RESPONDER_SPACING_BASIC,
     },
     assignedResponderIcon: {
         marginRight: RESPONDER_SPACING_PILED,
         borderWidth: 1,
-        borderColor: '#FFF',
+        borderColor: Colors.backgrounds.standard,
     }, 
     assignedResponderIconDark: {
         marginRight: RESPONDER_SPACING_PILED,
-        borderWidth: 1,
-        borderColor: Colors.backgrounds.dark,
+        borderColor: Colors.icons.superdark,
     }, 
     assignedResponderIconLast: {
         marginRight: RESPONDER_SPACING_BASIC,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#FFF',
     }, 
     responderCount: {
         alignSelf: 'center',
@@ -446,13 +442,17 @@ const styles = StyleSheet.create({
         shadowColor: '#ccc',
         shadowOpacity: 1,
         shadowOffset: {
-            height: 0,
+            height: 2,
             width: 0
         },
         width: 200
     },
     darkStatusSelector: {
-        backgroundColor: '#444144',
+        backgroundColor: '#333',
+        shadowColor: '#000',
+        borderColor: '#444',
+        borderWidth: 1,
+        paddingHorizontal: 8
     },
     empty: {
         color: Colors.icons.light,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
         zIndex: -100,
     },
     emptyDark: {
-        color: Colors.icons.superdark,
-        backgroundColor: Colors.icons.superdark,
+        color: Colors.icons.darkReversed,
+        backgroundColor: Colors.icons.darkReversed,
     }
 })

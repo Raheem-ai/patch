@@ -14,6 +14,7 @@ import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNa
 import { manageAttributesStore, manageTagsStore, organizationStore } from "../stores/interfaces";
 import { TagsListInput } from "../components/forms/inputs/defaults/defaultTagListInputConfig";
 import { AttributesListInput } from "../components/forms/inputs/defaults/defaultAttributeListInputConfig";
+import { ICONS } from "../types"
 
 type Props = ScreenProps<'ComponentLib'>;
 
@@ -35,7 +36,7 @@ const lib: Library = [
             startDate: moment().hour(22).minutes(5).toDate(), // Today @ 10:05pm 
             endDate: moment().hour(22).minutes(5).add(2, 'hours').toDate(), // Tomorrow @ 12:05am 
         }),
-        icon: 'clock-outline',
+        icon: ICONS.clock,
         inputs: (state) => [RecurringDateTimeRangeInputConfig({
             onChange: (data) => {
                 state.set(data)
@@ -57,7 +58,7 @@ const lib: Library = [
     {
         name: 'Grouped Components',
         description: '',
-        icon: 'group',
+        icon: ICONS.responders,
         state: observable.box<{
             recurringDateTimeRange: RecurringDateTimeRange,
             name: string,
@@ -127,7 +128,7 @@ const lib: Library = [
         name: 'Categorized Item List',
         description: 'basis for attributes/tags selection/management',
         state: observable.box<{ attributes: CategorizedItem[], tags: CategorizedItem[]}>({ attributes: [], tags: [] }),
-        icon: 'tag',
+        icon: ICONS.tag,
         inputs: (state) => [[
             AttributesListInput({
                 onSave: (items) => {
@@ -139,7 +140,7 @@ const lib: Library = [
                 isValid: () => {
                     return true
                 },
-                icon: 'tag-heart',
+                icon: ICONS.tag,
                 name: 'attributes'
             }), 
             TagsListInput({
@@ -160,7 +161,7 @@ const lib: Library = [
         name: 'Positions input',
         description: '',
         state: observable.box<Position[]>([]),
-        icon: 'account-multiple',
+        icon: ICONS.accountMultiple,
         inputs: (state: IObservableValue<Position[]>) => [{
             onSave: (data) => {
                 console.log(data)
@@ -172,7 +173,7 @@ const lib: Library = [
             isValid: () => true,
             headerLabel: () => 'People needed',
             placeholderLabel: () => 'People needed',
-            icon: 'account-multiple',
+            icon: ICONS.accountMultiple,
             props: {},
             name: 'positions',
             type: 'Positions'

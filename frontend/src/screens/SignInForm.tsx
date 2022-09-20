@@ -1,7 +1,7 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp, Colors } from '../types';
+import { labelNames, routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
 import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
@@ -50,7 +50,7 @@ export default function SignInForm( { navigation } : Props) {
                             secureTextEntry={secureTextEntry}
                             right={
                                 <TextInput.Icon
-                                name={secureTextEntry ? 'eye-off' : 'eye'}
+                                name={secureTextEntry ? ICONS.showPassword : ICONS.hidePassword}
                                 forceTextInputFocus={false}
                                 onPress={() => {
                                     setSecureTextEntry(!secureTextEntry);

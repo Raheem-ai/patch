@@ -6,6 +6,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
 import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
+import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
@@ -17,26 +18,28 @@ const PermissionGroupListConfig: {
     groups: PatchPermissionGroups[]
 }[] = [
     {
-        icon: 'domain',
+        icon: ICONS.organization,
         groups: [
             PatchPermissionGroups.ManageOrg,
         ]
     },
     {
-        icon: 'account-multiple',
+        icon: ICONS.accountMultiple,
         groups: [
             PatchPermissionGroups.ManageTeam,
             PatchPermissionGroups.EditRoles
         ]
     },
+    /*
     {
-        icon: 'calendar-heart',
+        icon: ICONS.schedule,
         groups: [
             PatchPermissionGroups.ManageSchedule,
         ]
     },
+    */
     {
-        icon: 'file-document',
+        icon: ICONS.request,
         groups: [
             PatchPermissionGroups.ManageRequests,
             PatchPermissionGroups.ContributeToRequests,
@@ -44,14 +47,14 @@ const PermissionGroupListConfig: {
         ]
     },
     {
-        icon: 'tag',
+        icon: ICONS.tag,
         groups: [
             PatchPermissionGroups.ManageMetadata,
             PatchPermissionGroups.ExportData
         ]
     },
     {
-        icon: 'forum',
+        icon: ICONS.channels,
         groups: [
             PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.InviteToChats,
@@ -119,7 +122,7 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
         return (
             <>
                 <BackButtonHeader  {...headerProps} />
-                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1, paddingLeft: 60 }}> 
+                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1}}> 
                     {
                         PermissionGroupListConfig.map((config, i) => {
                             const isLast = (i == PermissionGroupListConfig.length - 1);
@@ -168,10 +171,10 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
                                                     </View>
                                                     <View style={styles.selectedIconContainer}>
                                                         <IconButton
-                                                            icon={'check'} 
+                                                            icon={ICONS.selectListItem} 
                                                             color={checkColor}
                                                             size={styles.selectedIconContainer.height} 
-                                                            style={{ margin: 0, padding: 0, width: styles.selectedIconContainer.height, height: styles.selectedIconContainer.height }}
+                                                            style={{ margin: 0, padding: 0, width: styles.selectedIconContainer.height, height: styles.selectedIconContainer.height, alignSelf: 'flex-start'  }}
                                                             />
                                                     </View>
                                                     { 
@@ -182,7 +185,7 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
                                                                     width: 1,
                                                                     height: '100%', 
                                                                     position: 'absolute', 
-                                                                    top: '50%', 
+                                                                    top: 20, 
                                                                     right: 30 }
                                                                 }>
                                                                     <View style={{ borderColor: '#666', borderWidth: 1, borderStyle: 'dashed', height: '100%' }}></View>
@@ -209,12 +212,14 @@ const styles = StyleSheet.create({
     rowContainer: { 
         flexDirection: 'row', 
         justifyContent: 'center', 
-        position: 'relative'
+        position: 'relative',
+        paddingLeft: 60 
     },
     selectedIconContainer: {
         marginRight: 20, 
         marginLeft: 10, 
-        alignSelf: 'center', 
+        alignSelf: 'flex-start',
+        marginTop: 18, 
         zIndex: 10, 
         backgroundColor: '#fff', 
         height: 20 
@@ -227,7 +232,7 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         alignSelf: 'flex-start',
         padding: 20,
-        left: -60
+
     },
     rightCheckIcon: {
         marginTop: 0,

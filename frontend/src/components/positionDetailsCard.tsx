@@ -7,7 +7,7 @@ import { ClientSideFormat } from "../../../common/api";
 import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
 import { resolveErrorMessage } from "../errors";
 import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
-import { Colors } from "../types";
+import { Colors, ICONS } from "../types";
 import { iHaveAllPermissions } from "../utils";
 import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
@@ -225,7 +225,7 @@ const PositionDetailsCard = observer(({
                                     { userIsRequestAdmin
                                         ? <View style={styles.removeUser}>
                                             <IconButton
-                                                icon={'close'} 
+                                                icon={ICONS.deleteItem} 
                                                 color={Colors.icons.light}
                                                 size={20} 
                                                 onPress={() => promptToRemoveUser(details.userId)}

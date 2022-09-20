@@ -13,7 +13,7 @@ import { NavigationFormInputConfig, SectionNavigationScreenViewProps } from "./t
 import UpsertRoleForm from "./upsertRoleForm"
 import { VisualArea } from '../helpers/visualArea'
 import STRINGS from "../../../../common/strings"
-import { Colors } from "../../types"
+import { Colors, ICONS } from "../../types"
 
 const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
@@ -54,7 +54,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
         const addRoleInput = {
             name: 'addRole',
-            expandIcon: 'plus',
+            expandIcon: ICONS.add,
             labelContainerStyle: {
                 borderBottomWidth: 0
             },

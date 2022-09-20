@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { View, Switch, StyleSheet, ScrollView } from "react-native";
 import { List, Text } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
-import { Colors } from "../../../../types";
+import { Colors, ICONS } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
 
 export type InlineListInputProps = SectionInlineViewProps<'InlineList'>
@@ -51,7 +51,7 @@ const InlineListInput = observer(({ config }: InlineListInputProps) => {
                                 titleNumberOfLines={2}
                                 titleStyle={chosen ? styles.chosenItem : styles.noop}
                                 style={styles.item}
-                                right={chosen ? props => <List.Icon color={'#000'} icon={'check'} style={styles.rightCheckIcon}/> : null}/>
+                                right={chosen ? props => <List.Icon color={'#000'} icon={ICONS.selectListItem} style={styles.rightCheckIcon}/> : null}/>
                 })}
             </List.Section>
         </ScrollView>

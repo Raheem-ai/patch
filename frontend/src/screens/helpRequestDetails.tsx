@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { Colors, ScreenProps } from "../types";
+import { Colors, ICONS, ScreenProps } from "../types";
 import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
@@ -87,21 +87,15 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             ? Colors.text.bad
             : priority == RequestPriority.Medium
                 ? Colors.text.okay
-                : priority == RequestPriority.Low
-                    ? Colors.text.tertiary
-                    : null
-        
-        if (!priorityColor) {
-            return null
-        }
-        
-        return (
-            <View style={styles.priorityOutterSection}>
-                <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
-                    <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                : Colors.text.tertiary
+
+        return !!priorityLabel
+            ? <View style={styles.priorityOutterSection}>
+                    <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
+                        <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                    </View>
                 </View>
-            </View>
-        )
+            : null
     }
 
     const detailsSection = () => {
@@ -118,7 +112,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <View style={styles.timeAndPlaceRow}>
                                 <IconButton
                                     style={styles.detailsIcon}
-                                    icon='map-marker' 
+                                    icon={ICONS.mapMarker} 
                                     color={styles.detailsIcon.color}
                                     size={styles.detailsIcon.width} />
                                 <Text style={styles.metadataText}>{address}</Text>
@@ -129,7 +123,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 <View style={styles.timeAndPlaceRow}>
                     <IconButton
                         style={styles.detailsIcon}
-                        icon='clock-outline' 
+                        icon={ICONS.timeRequestCreated} 
                         color={styles.detailsIcon.color}
                         size={styles.detailsIcon.width} />
                     <Text style={styles.metadataText}>{time.toLocaleString()}</Text>
@@ -139,7 +133,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={styles.detailsIcon}
-                                icon='phone-incoming' 
+                                icon={ICONS.timeCallStarted}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Text style={styles.metadataText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
@@ -151,7 +145,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={styles.detailsIcon}
-                                icon='account' 
+                                icon={ICONS.callerContactInfo}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                                 <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
@@ -167,7 +161,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                         ? <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={[styles.detailsIcon, {marginRight: 8}]}
-                                icon='tag' 
+                                icon={ICONS.tag} 
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Tags 
@@ -184,23 +178,25 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const header = () => {
         const types = requestStore().currentRequest.type.map(typ => RequestTypeToLabelMap[typ])
 
+        /*
         const edit = () => {
             bottomDrawerStore().show(BottomDrawerView.editRequest, true)
         }
 
         const canEdit = iHaveAllPermissions([PatchPermissions.EditRequestData]) && currentRequestIsOpen();
+        */
 
-        return (
-            <View style={styles.headerContainer}>
+        return types.length 
+            ? <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
                     <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
             </View>
-        )
+            : null
     }
 
-//     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
-//     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
+     // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
+     // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
 
     const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
 
@@ -211,40 +207,40 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const mapPreview = () => {
         if (!requestStore().currentRequest.location) {
             return null;
-        }
-        
-        const locLat = requestStore().currentRequest.location.latitude;
-        const locLong = requestStore().currentRequest.location.longitude;
+        } else {
+            const locLat = requestStore().currentRequest.location.latitude;
+            const locLong = requestStore().currentRequest.location.longitude;
 
-        const initialRegion =  {
-            latitude: locLat,
-            longitude: locLong,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-        }; 
-
-        const mapProps: MapViewProps = {
-            provider: PROVIDER_GOOGLE,
-            pointerEvents: "none",
-            showsUserLocation: true,
-            initialRegion,
-            style: styles.mapView,
-        }
-
-        const markerProps: MarkerProps = {
-            coordinate: { 
+            const initialRegion =  {
                 latitude: locLat,
                 longitude: locLong,
-            }
-        }
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }; 
 
-        return (
-            <Pressable onPress={mapClick}>
-                <MapView {...mapProps}>
-                    <Marker {...markerProps}/>
-                </MapView>
-            </Pressable>
-        );
+            const mapProps: MapViewProps = {
+                provider: PROVIDER_GOOGLE,
+                pointerEvents: "none",
+                showsUserLocation: true,
+                initialRegion,
+                style: styles.mapView,
+            }
+
+            const markerProps: MarkerProps = {
+                coordinate: { 
+                    latitude: locLat,
+                    longitude: locLong,
+                }
+            }
+
+            return (
+                <Pressable onPress={mapClick}>
+                    <MapView {...mapProps}>
+                        <Marker {...markerProps}/>
+                    </MapView>
+                </Pressable>
+            );
+        }
     }
 
     const statusPicker = () => {
@@ -349,7 +345,19 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     : null 
                 }
             </WrappedScrollView>
-            <View style={{ position: "relative", left: 0, bottom: 0, backgroundColor: styles.detailsContainer.backgroundColor, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
+            <View style={{ 
+                position: "relative",
+                left: 0, 
+                bottom: 0, 
+                backgroundColor: styles.detailsContainer.backgroundColor, 
+                borderTopColor: Colors.borders.filter, 
+                borderTopWidth: 1,
+                shadowColor: '#000',
+                shadowOpacity: .1,
+                shadowOffset: {
+                    height: -1,
+                    width: 0
+                } }}>
                 { currentRequestIsOpen()
                     ? statusPicker() 
                     : null 
@@ -532,12 +540,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     <IconButton
                                         color={Colors.primary.alpha}
                                         onPress={deny}
-                                        icon='close'
+                                        icon={ICONS.joinDecline}
                                         style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
                                     <IconButton
                                         color={Colors.primary.alpha}
                                         onPress={approve}
-                                        icon='check'
+                                        icon={ICONS.joinAccept}
                                         style={[styles.notifyButton, { marginLeft: 8, height: 30, width: 54 }]}></IconButton>
                                 </View>
                             </View>
@@ -578,7 +586,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
                                 <IconButton
                                     style={styles.icon}
-                                    icon={'check-circle'}
+                                    icon={ICONS.joinAccepted}
                                     color={Colors.good}
                                     size={styles.icon.width} />
                             </View>
@@ -665,7 +673,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             style={styles.largeIcon}
                             size={styles.largeIcon.height}
                             color={'#999'}
-                            icon={!eventDetailsOpen ? 'chevron-down' : 'chevron-up'}/>
+                            icon={!eventDetailsOpen ? ICONS.filterOpen : ICONS.filterClose}/>
                     </Pressable>
                     {
                         eventDetailsOpen
@@ -799,7 +807,7 @@ const styles = StyleSheet.create({
     timeAndPlaceSection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
-        marginVertical: 16
+        marginBottom: 16
     },
     timeAndPlaceRow: {
         flexDirection: 'row',
@@ -1014,6 +1022,7 @@ const styles = StyleSheet.create({
         height: 48
     },
     mapView: {
-        height: 180
+        height: 180,
+        marginBottom: 16
     }
 })
