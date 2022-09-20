@@ -55,6 +55,24 @@ const STRINGS = {
         addAnotherElement: (el?:string) => `Add another ${el}`,
 
     },
+    PAGE_TITLES: {
+        landing: 'Landing',
+        joinOrganization: 'Join Organization',
+        invitationSuccessful: 'Invitation Successful',
+        createAccount: 'Create Account',
+        signIn: 'Sign In',
+        signUp: 'Sign Up',
+        signUpThroughOrg: 'Sign Up',
+        userHomePage: 'Home',
+        helpRequestList: 'Requests',
+        helpRequestMap: 'Requests',
+        helpRequestIdWhileLoading: '',
+        helpRequestChat: (prefix:string, id:string) => `Channel for ${requestDisplayName(prefix, id)}`,
+        teamList: 'Team',
+        settings: 'Settings',
+        channels: 'Channels',
+        componentLibrary: 'Component Library'
+    },
     REQUESTS: {
         editRequestTitle: (prefix:string, requestName:string) => `Edit ${requestDisplayName(prefix, requestName)}`,
         description: 'Description',

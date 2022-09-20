@@ -389,6 +389,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.backgrounds.standard,
     }, 
     assignedResponderIconDark: {
+        marginRight: RESPONDER_SPACING_PILED,
         borderColor: Colors.icons.superdark,
     }, 
     assignedResponderIconLast: {

@@ -26,34 +26,34 @@ const HeaderConfig: {
     [route in keyof RootStackParamList]: HeaderRouteConfig | (() => HeaderRouteConfig)
  } = {
     [routerNames.home]: {
-        title: 'Home'
+        title: STRINGS.PAGE_TITLES.userHomePage
     },
     [routerNames.landing]: {
-        title: 'Landing',
+        title: STRINGS.PAGE_TITLES.landing,
         unauthenticated: true
     },
     [routerNames.joinOrganization]: {
-        title: 'Join Organization',
+        title: STRINGS.PAGE_TITLES.joinOrganization,
         unauthenticated: true
     },
     [routerNames.invitationSuccessful]: {
-        title: 'Invitation Successful',
+        title: STRINGS.PAGE_TITLES.invitationSuccessful,
         unauthenticated: true
     },
     [routerNames.createAccount]: {
-        title: 'Create Account',
+        title: STRINGS.PAGE_TITLES.createAccount,
         unauthenticated: true
     },
     [routerNames.signIn]: {
-        title: 'Sign In',
+        title: STRINGS.PAGE_TITLES.signIn,
         unauthenticated: true
     },
     [routerNames.signUp]: {
-        title: 'Sign Up',
+        title: STRINGS.PAGE_TITLES.signUp,
         unauthenticated: true
     },
     [routerNames.signUpThroughOrg]: {
-        title: 'Sign Up',
+        title: STRINGS.PAGE_TITLES.signUpThroughOrg,
         unauthenticated: true
     },
     [routerNames.userHomePage]: {
@@ -61,13 +61,13 @@ const HeaderConfig: {
             // TODO: get org name for here
             const oName = organizationStore().metadata.name;
             const orgName = oName !== undefined
-                ? oName //.slice(0,Math.min(16, oName.length)) + '…'
-                : 'Home'
+                ? oName
+                : STRINGS.PAGE_TITLES.userHomePage
             return orgName
         }
     },
     [routerNames.helpRequestList]: {
-        title: 'Requests',
+        title: STRINGS.PAGE_TITLES.helpRequestList,
         rightActions: [{
             icon: ICONS.map,
             callback: () => navigateTo(routerNames.helpRequestMap)
@@ -79,7 +79,7 @@ const HeaderConfig: {
         }]
     },
     [routerNames.helpRequestMap]: {
-        title: 'Requests',
+        title: STRINGS.PAGE_TITLES.helpRequestMap,
         rightActions: [{
             icon: ICONS.cardList,
             callback: () => navigateTo(routerNames.helpRequestList)
@@ -95,12 +95,12 @@ const HeaderConfig: {
             // loading is needed for switching between two different requests on the same
             // request details screen
             const id = requestStore().loading
-                ? ''
+                ? STRINGS.PAGE_TITLES.helpRequestIdWhileLoading
                 // if coming from a notification, current request may not be set
                 // yet so make sure we don't throw trying to access it
                 : requestStore().currentRequest?.displayId;
 
-            return `${requestDisplayName(prefix(), id)}`
+            return requestDisplayName(prefix(), id)
         };
 
         const leftActions = [{
@@ -132,7 +132,7 @@ const HeaderConfig: {
         title: () => {
             const req = requestStore().currentRequest;
 
-            return `Channel for ${requestDisplayName(prefix(), req.displayId)}`
+            return STRINGS.PAGE_TITLES.helpRequestChat(prefix(), req.displayId)
         },
         leftActions: [{
             icon: ICONS.navBack,
@@ -163,7 +163,7 @@ const HeaderConfig: {
             : [];
         
         return {
-            title: 'Team',
+            title: STRINGS.PAGE_TITLES.teamList,
             rightActions 
         }
     },
@@ -203,13 +203,13 @@ const HeaderConfig: {
         }
     },
     [routerNames.componentLib]: {
-        title: 'Component Library'
+        title: STRINGS.PAGE_TITLES.componentLibrary
     }, 
     [routerNames.settings]: {
-        title: 'Settings'
+        title: STRINGS.PAGE_TITLES.settings
     },
     [routerNames.chats]: {
-        title: 'Channels'
+        title: STRINGS.PAGE_TITLES.channels
     }
 }
 

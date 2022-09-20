@@ -187,11 +187,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         */
 
         return types.length 
-            ? [<View style={styles.headerContainer}>
+            ? <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
                     <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
-            </View>]
+            </View>
             : null
     }
 
@@ -205,8 +205,9 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     }
 
     const mapPreview = () => {
-        if (requestStore().currentRequest.location) {
-
+        if (!requestStore().currentRequest.location) {
+            return null;
+        } else {
             const locLat = requestStore().currentRequest.location.latitude;
             const locLong = requestStore().currentRequest.location.longitude;
 
@@ -239,8 +240,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     </MapView>
                 </Pressable>
             );
-        } else {
-            return null;
         }
     }
 

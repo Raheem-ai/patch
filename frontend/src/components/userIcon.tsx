@@ -4,10 +4,6 @@ import { IconButton, Text } from 'react-native-paper';
 import { Colors, ICONS } from '../types';
 import {parseFullName} from 'parse-full-name';
 
-export interface ViewStylePlus extends ViewStyle {
-    marginRight?: number | undefined;
-}
-
 type UserIconProps = { 
     user?: { 
         name: string

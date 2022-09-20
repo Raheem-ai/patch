@@ -70,18 +70,15 @@ const Header = observer((props: Props) => {
 
         const rightActionsRefs = [];
 
-        const rightActionsMap = rightActions.map((a) =>
+        const rightActionsMap = rightActions.map((a, index) =>
             <IconButton 
                 key={a.icon} 
-                style={[styles.icon, ({marginLeft: 12})]} 
+                style={[styles.icon, {marginLeft: (index == 0 ? 0 : 12)}]} 
                 icon={a.icon} 
                 size={headerIconSize} 
                 color={Colors.icons.lightReversed} 
                 onPress={a.callback}
-                />);
-
-        // is there a better way to differentiate just the first item?
-        Array.from(rightActionsMap)[0]?.props?.style?.push({marginLeft:0});
+                />);        
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -96,7 +93,7 @@ const Header = observer((props: Props) => {
                         : null
                     }
                     <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
-                        <Text style={title.length <= 16 ? styles.title : styles.titleLong}>{title}</Text>
+                        <Text style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</Text>
                     </View>
 
                     <View style={styles.rightIconContainer}>
@@ -237,7 +234,6 @@ const styles = StyleSheet.create({
     titleLong: {
         color: Colors.text.defaultReversed,
         fontSize: 16,
-        overflow: 'hidden'
     },
     onDutyStatusContainer: {
         alignItems: 'flex-start', 
