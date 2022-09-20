@@ -108,6 +108,26 @@ const UpsertRoleForm = ({
             }
         }
 
+        const promptToDeleteRole = () => {
+            alertStore().showPrompt({
+                title:  'Delete role?',
+                message: 'ya sure?',
+                actions: [
+                    {
+                        label: 'Cancel',
+                        onPress: () => {
+                            return
+                        },
+                    },
+                    {   
+                        label: 'Doit Doit',
+                        onPress: deleteRole,
+                        confirming: true
+                    }
+                ]
+            })
+        }
+
         const iHavePermissionToDelete = iHaveAllPermissions([PatchPermissions.RoleAdmin])
 
         return (
@@ -128,7 +148,7 @@ const UpsertRoleForm = ({
                                     uppercase={false} 
                                     color={Colors.primary.alpha}
                                     mode={'outlined'}
-                                    onPress={deleteRole}    
+                                    onPress={promptToDeleteRole}    
                                     style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{STRINGS.SETTINGS.deleteRole}</Button>
                             </View>
                             : null

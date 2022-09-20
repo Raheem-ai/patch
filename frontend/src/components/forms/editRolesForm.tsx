@@ -106,8 +106,8 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                 <BackButtonHeader {...headerProps}/>
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{'Use Roles to specify who does what for a Shift or Request.'}</Text>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{'Each role grants the permissions needed for that role. A person can be eligible for more than one role.'}</Text>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{STRINGS.SETTINGS.rolesIntroA}</Text>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{STRINGS.SETTINGS.rolesIntroB}</Text>
                     </View>
                     { renderInputs(inputs()) }
                 </ScrollView>

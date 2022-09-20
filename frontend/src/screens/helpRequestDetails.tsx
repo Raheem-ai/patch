@@ -489,7 +489,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                            <Text>{`${userName}`}</Text>
+                            <Text style={!userName && { fontStyle: 'italic'}}>{`${userName ? userName : STRINGS.REQUESTS.POSITIONS.removedUserName}`}</Text>
                             <Text>{dateToTimeString(timestamp)}</Text>
                         </View>
                     )

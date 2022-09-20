@@ -75,7 +75,12 @@ const STRINGS = {
             leave: `Leave`,
             join: `Join`,
             request: `Request`,
-            removeUser: (userName:string) => `${userName} isn't on this position.`
+            removeUser: (userName:string) => `${userName} isn't on this position.`,
+            removeFromPositionDialogTitle: (userName:string) =>`Remove ${userName}?`,
+            removeFromPositionDialogText: (userName:string) => `${userName} will no longer be on this position.`,
+            removeFromPositionDialogOptionNo: 'Cancel',
+            removeFromPositionDialogOptionYes:  `Remove`,    
+            removedUserName: '(Removed)',
         },
         TOGGLE: {
             toggleRequest: (isOpen: boolean) => isOpen ? `Close this request` : `Re-open this request`,
@@ -99,6 +104,11 @@ const STRINGS = {
         noOrgScope: `No org scope supplied`,
         noOrgAccess: `You do not have access to the requested org.`,
         unauthorized: `Unauthorized user`,
+        removeDialogTitle: (isMe:boolean) => isMe ? `Leave organization?` : `Remove from organization?`,
+        removeDialogText: (isMe:boolean, userName:string) => `${isMe ? 'You' : userName} will need to be reinvited to regain access to this organization.`,
+        removeDialogOptionNo: 'Cancel',
+        removeDialogOptionYes: (isMe:boolean, userName:string) => isMe ? `Leave organization` : `Remove ${userName}`,
+        removeUser: (isMe:boolean) => isMe ? 'Leave organization' : 'Remove from organization',
         notInOrg: (usersNotInOrg:string[], orgName:string) => `Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${orgName}`,
         roleRequired: `You must invite a user with at least one role.`,
         joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
@@ -118,6 +128,8 @@ const STRINGS = {
 
     },
     SETTINGS: {
+        rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',
+        rolesIntroB: 'Each role grants the permissions needed for that role. A person can be eligible for more than one role.',
         deleteRole: 'Delete this role',
         cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
