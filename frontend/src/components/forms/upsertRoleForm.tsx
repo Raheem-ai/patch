@@ -109,18 +109,19 @@ const UpsertRoleForm = ({
         }
 
         const promptToDeleteRole = () => {
+            const roleName = upsertRoleStore().name;
             alertStore().showPrompt({
-                title:  'Delete role?',
-                message: 'ya sure?',
+                title:  STRINGS.SETTINGS.removeRoleDialogTitle(roleName),
+                message: STRINGS.SETTINGS.removeRoleDialogText(roleName),
                 actions: [
                     {
-                        label: 'Cancel',
+                        label: STRINGS.SETTINGS.removeRoleDialogOptionNo,
                         onPress: () => {
                             return
                         },
                     },
                     {   
-                        label: 'Doit Doit',
+                        label: STRINGS.SETTINGS.removeRoleDialogOptionYes,
                         onPress: deleteRole,
                         confirming: true
                     }

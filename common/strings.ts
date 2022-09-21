@@ -173,6 +173,10 @@ const STRINGS = {
         cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',
+        removeRoleDialogTitle: (roleName:string) =>`Remove ${roleName} role?`,
+        removeRoleDialogText: (roleName:string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
+        removeRoleDialogOptionNo: 'Cancel',
+        removeRoleDialogOptionYes:  `Remove`, 
     }
 }
 
