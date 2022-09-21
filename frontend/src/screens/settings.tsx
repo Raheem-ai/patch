@@ -9,7 +9,7 @@ import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNa
 import MangeRolesForm from "../components/forms/editRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
-import { ScreenProps, Colors } from "../types";
+import { ScreenProps, Colors, ICONS } from "../types";
 import { alertStore, manageAttributesStore, manageTagsStore, organizationSettingsStore, organizationStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
@@ -95,6 +95,9 @@ const Settings = ({ navigation, route }: Props) => {
                     isValid: () => true,
                     onCancel: async () => {
                         // organizationSettingsStore().clear()
+                    },
+                    textTransform: (currentValue:string) => {
+                        return currentValue.toUpperCase()
                     },
                     onSave: async (val) => { 
                         try {
@@ -256,7 +259,7 @@ const Settings = ({ navigation, route }: Props) => {
                             ? <>
                                 <View style={styles.headerContainer}>
                                     <IconButton
-                                        icon={'domain'} 
+                                        icon={ICONS.organization} 
                                         color={Colors.icons.dark}
                                         size={20} 
                                         style={styles.headerIcon} />

@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { GestureResponderEvent, Pressable, StyleSheet, TextStyle, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
+import { ICONS } from "../../../types";
 
 type CategoryRowProps = {
     id: string,
@@ -67,7 +68,7 @@ const CategoryRow = observer(({
             <Pressable onPress={toggleOpen} style={styles.categoryHeaderContainer}>
                 <View style={{ marginHorizontal: 15 }}>
                     <IconButton
-                        icon={isOpen ? 'chevron-up': 'chevron-down'} 
+                        icon={isOpen ? ICONS.filterClose: ICONS.filterOpen} 
                         color='#666'
                         size={30} 
                         style={{ margin: 0, padding: 0, width: 30 }}

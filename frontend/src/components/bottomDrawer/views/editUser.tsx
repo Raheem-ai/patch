@@ -9,7 +9,7 @@ import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
 import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
-import { Colors } from "../../../types";
+import { Colors, ICONS } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { AttributesListInput } from "../../forms/inputs/defaults/defaultAttributeListInputConfig";
@@ -159,12 +159,11 @@ export default class EditUser extends React.Component {
                     }).join(),
                 name: 'roles',
                 type: 'RoleList',
-                icon: 'key',
+                icon: ICONS.permissions,
                 disabled: false,
                 props: {
                     multiSelect: true,
                     hideAnyone: true,
-                    onItemDeleted: (idx) => this.onItemDeleted(idx)
                 },
             } as ScreenFormInputConfig<'RoleList'>
             : null,
@@ -173,7 +172,7 @@ export default class EditUser extends React.Component {
             val: () => editUserStore().attributes,
             onSave: (attributes) => editUserStore().attributes = attributes,
             isValid: () => true,
-            icon: 'tag',
+            icon: ICONS.tag,
             name: 'attributes'
         }) as ScreenFormInputConfig<'CategorizedItemList'>
         : null
@@ -194,7 +193,7 @@ export default class EditUser extends React.Component {
                 name: 'name',
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
-                icon: 'account',
+                icon: ICONS.responder,
             } as InlineFormInputConfig<'TextInput'>,
             {
                 onSave: (bio) => editUserStore().bio = bio,
@@ -224,7 +223,7 @@ export default class EditUser extends React.Component {
                 props: {
                     inputType: 'phone-pad',
                 },
-                icon: 'card-account-phone',
+                icon: ICONS.callerContactInfo,
                 required: true
             } as InlineFormInputConfig<'TextInput'>,
             {
@@ -252,12 +251,11 @@ export default class EditUser extends React.Component {
                         }).join(),
                     name: 'roles',
                     type: 'RoleList',
-                    icon: 'key',
+                    icon: ICONS.permissions,
                     disabled: false,
                     props: {
                         multiSelect: true,
-                        hideAnyone: true,
-                        onItemDeleted: (idx) => this.onItemDeleted(idx)
+                        hideAnyone: true
                     },
                 } as ScreenFormInputConfig<'RoleList'>
                 : null,
@@ -266,7 +264,7 @@ export default class EditUser extends React.Component {
                 val: () => editUserStore().attributes,
                 onSave: (attributes) => editUserStore().attributes = attributes,
                 isValid: () => true,
-                icon: 'tag',
+                icon: ICONS.tag,
                 name: 'attributes'
             }) as ScreenFormInputConfig<'CategorizedItemList'>
             : null

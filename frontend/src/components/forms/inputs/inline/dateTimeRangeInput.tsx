@@ -193,7 +193,7 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
         <View style={styles.container}>
             {/* <View style={styles.iconContainer}>
                     <IconButton
-                        icon='clock-outline' 
+                        icon=ICONS.clock 
                         color='#000'
                         size={20} 
                         style={{ margin: 0, padding: 0, width: 20 }}

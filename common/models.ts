@@ -1435,7 +1435,7 @@ export enum PatchPermissionGroups {
     ManageChats = 'mc',
     InviteToChats = 'itc',
     SeeAllChats = 'sac',
-    ManageSchedule = 'ms',
+//    ManageSchedule = 'ms',
     ManageRequests = 'mr',
     ContributeToRequests = 'ctr',
     CloseRequests = 'cr'
@@ -1489,22 +1489,22 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
         ]
     },
     [PatchPermissionGroups.ManageChats]: {
-        name: 'Manage chats',
-        description: 'Create chat groups and invite people',
+        name: 'Manage channels',
+        description: 'Create channels and invite people',
         permissions: [
             PatchPermissions.ChatAdmin
         ],
         forces: [PatchPermissionGroups.InviteToChats]
     },
     [PatchPermissionGroups.InviteToChats]: {
-        name: 'Invite to chats',
-        description: `Add people to any chats you're in`,
+        name: 'Invite to channels',
+        description: `Add people to any channels you're in`,
         permissions: [
             PatchPermissions.InviteToChat
         ]
     },
     [PatchPermissionGroups.SeeAllChats]: {
-        name: 'See all chats',
+        name: 'See all channels',
         description: `View and post without being a member`,
         permissions: [
             PatchPermissions.SeeAllChats,
@@ -1512,6 +1512,7 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
             PatchPermissions.SeeShiftChats
         ]
     },
+    /*
     [PatchPermissionGroups.ManageSchedule]: {
         name: 'Manage schedule',
         description: `Create, edit, and remove shifts`,
@@ -1520,6 +1521,7 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
             PatchPermissions.SeeShiftChats
         ]
     },
+    */
     [PatchPermissionGroups.ManageRequests]: {
         name: 'Manage requests',
         description: `Create requests and notify team`,
@@ -1576,7 +1578,7 @@ export const DefaultRoles: Role[] = [
             PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.ManageMetadata,
             PatchPermissionGroups.ManageRequests,
-            PatchPermissionGroups.ManageSchedule,
+//            PatchPermissionGroups.ManageSchedule,
             PatchPermissionGroups.ManageTeam,
             PatchPermissionGroups.SeeAllChats,
             PatchPermissionGroups.ExportData,

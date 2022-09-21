@@ -20,7 +20,7 @@ export const TagsListInput = (config: TagsListInputConfig) => {
 
     // default but overrideable
     const overrideableConfig: OverrideableConfig = {
-        // icon: 'tag-heart',
+        // icon: ICONS.tag,
         placeholderLabel: () => 'Tags',
         headerLabel: () => 'Tags',
     }

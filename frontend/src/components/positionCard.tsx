@@ -7,7 +7,7 @@ import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../..
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";
-import { Colors } from "../types";
+import { Colors, ICONS } from "../types";
 
 type PositionCardProps = { 
     pos: Position,
@@ -67,25 +67,14 @@ const PositionCard = observer(({
                         }) 
                     }
                 </View>
-                { userIcons.length > 0 ? 
-                <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    {userIcons}
-                    {/* removed plus for positions without a maximum since it seems unnecessary and looks like something to press
-                        pos.max == -1
-                            ? <IconButton
-                                icon={'plus'} 
-                                color={Colors.icons.light}
-                                size={20} 
-                                style={{ margin: 0, padding: 0, width: 20 }} />
-                            : null
-                */}
-                </View>
-                : null }
+                { userIcons.length > 0 
+                    ? <View style={{ flexDirection: 'row', marginTop: 16 }}>{userIcons}</View>
+                    : null }
             </View>
             { !!edit && hasPermissions
                 ? <View style={{ alignItems: 'center', marginRight: 20, marginLeft: 20 }}>
                     <IconButton
-                        icon={'pencil'} 
+                        icon={ICONS.edit} 
                         color={Colors.icons.light}
                         size={20} 
                         style={{ margin: 0, padding: 0, width: 20, height: 20 }} />

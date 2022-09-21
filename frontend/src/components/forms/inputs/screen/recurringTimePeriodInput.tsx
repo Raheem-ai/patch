@@ -12,6 +12,7 @@ import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 import moment from 'moment'
 import { alertStore } from "../../../../stores/interfaces";
+import { ICONS } from "../../../../types";
 
 type RecurringTimePeriodInputProps = SectionScreenViewProps<'RecurringTimePeriod'>;
 
@@ -394,7 +395,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
             <View style={styles.container}>
                 <View style={styles.iconContainer}>
                         <IconButton
-                            icon='refresh' 
+                            icon={ICONS.refresh} 
                             color='#666'
                             size={20} 
                             style={{ margin: 0, padding: 0, width: 20 }}
@@ -473,7 +474,7 @@ const Row = ({  selected, label, onPress }: {
             <Text style={[styles.label, selected ? styles.selectedLabel : null]}>{label}</Text>
             { selected 
                 ? <IconButton
-                    icon='check' 
+                    icon={ICONS.selectListItem} 
                     color='#666'
                     size={styles.selectIcon.width} 
                     style={styles.selectIcon} />

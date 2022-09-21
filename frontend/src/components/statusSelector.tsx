@@ -6,6 +6,7 @@ import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../co
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
 import { requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
+import { ICONS } from "../types"
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
@@ -48,11 +49,11 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 ]}/>
         )
     },
-    [RequestStatus.Ready]: 'account-multiple',
-    [RequestStatus.OnTheWay]: 'arrow-right',
-    [RequestStatus.OnSite]: 'map-marker',
-    [RequestStatus.Done]: 'check',
-    [RequestStatus.Closed]: 'lock',
+    [RequestStatus.Ready]: ICONS.statusUnassignedOrReady,
+    [RequestStatus.OnTheWay]: ICONS.statusOnTheWay,
+    [RequestStatus.OnSite]: ICONS.statusOnSite,
+    [RequestStatus.Done]: ICONS.statusFinished,
+    [RequestStatus.Closed]: ICONS.statusClosed,
 }
 
 type StatusIconProps = { 
@@ -141,8 +142,8 @@ export const StatusSelector = observer(({
     const toGoStatusIconStyles: StyleProp<ViewStyle> = [
         noMarginIconStyles,
         { 
-            backgroundColor: dark ? styles.darkToGoStatusSelectorDivider.borderBottomColor : styles.toGoStatusSelectorDivider.borderBottomColor,
-            borderColor: dark ? styles.darkToGoStatusSelectorDivider.borderBottomColor : styles.toGoStatusSelectorDivider.borderBottomColor
+            backgroundColor: dark ? styles.darkStatusIconToGo.backgroundColor : styles.toGoStatusSelectorDivider.borderBottomColor,
+            borderColor: dark ? styles.darkStatusIconToGo.backgroundColor : styles.toGoStatusSelectorDivider.borderBottomColor
         }
     ]
 
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
         height: 28,
         borderRadius: 20,
         margin: 0,
-        marginLeft: 4,
+        marginLeft: 6,
         borderColor:'#000',
         borderStyle: 'solid',
         borderWidth: 1
@@ -277,14 +278,14 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         marginLeft: 42
     },
-    darkStatusIcon: {
+    darkStatusIcon: { 
         borderColor:'#F3F1F3',
         color: '#111',
-        backgroundColor: '#F3F1F3',
+        backgroundColor: '#F3F1F3', 
     },
     darkStatusIconToGo: {
-        color: '#999',
-        backgroundColor: '#666' // <-- kinda weird that the background of the dark togo icons follows the darkToGoStatusSelectorDivider, ideally it would be controllable separately
+        color: '#2c2c2c',
+        backgroundColor: '#555'
     },
     statusSelector: {
         flexDirection: 'row',
