@@ -60,7 +60,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     }
 
                     alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
-        
+                    createRequestStore().clear()
                     bottomDrawerStore().hide()
                 },
                 label: 'Add',
