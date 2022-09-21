@@ -136,8 +136,8 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                                     mode='outlined'
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
-                                    onPress={reopenRequest}/>
-                                : <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                                    onPress={reopenRequest()}/>
+                                : <Text style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</Text>
                             }
                     </View>
                 </View>

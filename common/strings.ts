@@ -85,6 +85,7 @@ const STRINGS = {
         positions: 'Responders needed',
         priority: 'Priority',
         tags: 'Tags',
+        requestIsClosed: 'This request has been closed.',
         NOTIFICATIONS: {
             notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,

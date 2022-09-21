@@ -260,12 +260,13 @@ export class MySocketService {
 
     async handleRespondersNotified(payload: PatchEventParams[PatchEventType.RequestRespondersNotified]) {
         const usersToNotify = await this.db.getUsersByIds(payload.userIds)
+        const notifier = await this.db.getUserById(payload.notifierId);
         const req = await this.db.resolveRequest(payload.requestId);
         const org = await this.db.resolveOrganization(req.orgId);
         const fullOrg = await this.db.fullOrganization(org);
         const admins = await this.requestAdminsInOrg(fullOrg);
 
-        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, org.requestPrefix, !!req.positions.length);
+        const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, notifier.name, org.requestPrefix, !!req.positions.length);
 
         const configs: SendConfig[] = usersToNotify.map(u => {
             admins.delete(u.id)
