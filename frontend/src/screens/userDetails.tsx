@@ -93,14 +93,15 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 <View style={!userAttributes.length ? styles.hideContainer : styles.attributesContainer}>
                     <Text style={styles.labelText}>Attributes:</Text> 
                     <Tags 
+                        centered
                         tags={userAttributes.map(attr => attr.name)}  
                         verticalMargin={12} 
                         tagTextStyle={{ color: styles.attributeTag.color }}
                         tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
                 </View>
-                <View style={!userRoles.length ? styles.hideContainer : [styles.rolesContainer, userAttributes.length && {marginTop: 16}]}>
+                <View style={!userRoles.length ? styles.hideContainer : [styles.rolesContainer, userAttributes.length && {marginTop: 24}]}>
                     <View>
-                        <Text style={[styles.labelText, {marginBottom: 8}]}>Roles:</Text>
+                        <Text style={[styles.labelText, {marginBottom: 4}]}>Roles:</Text>
                         <Text style={styles.rolesText}>{userRoles}</Text>
                     </View>
                 </View>
@@ -161,12 +162,11 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         paddingHorizontal: 24,
-        paddingTop: 40,
-        paddingBottom: 24,
+        paddingVertical: 40,
         backgroundColor: Colors.backgrounds.secondary,
     },
     profilePhotoContainer: {
-        marginTop: 38,
+        marginTop: 40,
         height: 84,
         width: 84,
         backgroundColor: Colors.primary.alpha,
@@ -196,57 +196,18 @@ const styles = StyleSheet.create({
         marginTop: 12,
         color: Colors.text.secondary,
     },
-    rolesText: {
-        fontSize: 16,
-        fontWeight: '400',
-        color: Colors.text.secondary,
-        textAlign: 'left',
-    },
     detailsText: {
         fontSize: 16,
         fontWeight: '400',
         color: Colors.text.secondary,
         textAlign: 'center'
     },
-    labelText: {
-        color: Colors.text.tertiary,
-        textTransform: 'uppercase'
-    },
     detailsContainer: {
         alignSelf: 'center',
-    },
-    rolesContainer: {
-        width: '100%'
     },
     bioContainer: {
         alignSelf: 'center',
         marginVertical: 12
-    },
-    metadataContainer: {
-        paddingHorizontal: 24,
-        paddingTop: 24,
-        paddingBottom: 40,
-        backgroundColor: Colors.backgrounds.secondary,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.borders.list,
-        flex: 1,
-        flexDirection: 'column',
-        alignContent: 'flex-start'
-    },
-    attributesContainer: {
-        alignSelf: 'flex-start',
-    }, 
-    attributeTag: {
-        color: Colors.backgrounds.tags.tertiaryForeground,
-        backgroundColor: Colors.backgrounds.tags.tertiaryBackground,
-    },
-    roleTag: {
-        color: Colors.text.default,
-        backgroundColor: Colors.nocolor,
-    },
-    skillTag: {
-        color: Colors.backgrounds.tags.tertiaryForeground,
-        backgroundColor: Colors.backgrounds.tags.tertiaryBackground
     },
     contactIconsContainer: {
         flexDirection: 'row',
@@ -268,6 +229,39 @@ const styles = StyleSheet.create({
         maxHeight: 60,
         color: Colors.text.defaultReversed,
         alignSelf: 'center'
+    },
+    metadataContainer: {
+        paddingHorizontal: 24,
+        paddingVertical: 40,
+        backgroundColor: Colors.backgrounds.secondary,
+        borderBottomWidth: 1,
+        borderTopWidth: 1,
+        borderColor: Colors.borders.formFields,
+        flex: 1,
+        flexDirection: 'column',
+        alignContent: 'center',
+    },
+    attributesContainer: {
+        alignSelf: 'center',
+    }, 
+    attributeTag: {
+        color: Colors.backgrounds.tags.tertiaryForeground,
+        backgroundColor: Colors.backgrounds.tags.tertiaryBackground,
+    },
+    rolesContainer: {
+        width: '100%'
+    },
+    labelText: {
+        color: Colors.text.tertiary,
+        textTransform: 'uppercase',
+        textAlign: 'center'
+    },
+    rolesText: {
+        fontSize: 16,
+        fontWeight: '400',
+        lineHeight: 24,
+        color: Colors.text.secondary,
+        textAlign: 'center',
     },
     currentResponseSection: {
         backgroundColor: Colors.backgrounds.standard,
