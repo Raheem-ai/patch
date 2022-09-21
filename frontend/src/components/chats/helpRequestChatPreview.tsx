@@ -46,7 +46,12 @@ const HelpRequestChatPreview = observer(({
 
     const details = () => {
         const preview = (request.chat && request.chat.messages.length)
-                        ? <Text style={styles.detailText}><Text style={styles.nameText}>{userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': '}</Text> {request.chat.messages[request.chat.messages.length - 1].message}</Text>
+                        ? <Text style={styles.detailText}>
+                            <Text style={styles.nameText}>
+                                { userStore().users.get(request.chat.messages[request.chat.messages.length - 1].userId).name + ': '}
+                            </Text> 
+                            {request.chat.messages[request.chat.messages.length - 1].message}
+                        </Text>
                         : 'No messages yet';
 
         return (
