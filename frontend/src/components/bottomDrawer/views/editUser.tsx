@@ -8,7 +8,7 @@ import STRINGS from "../../../../../common/strings";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
-import { editUserStore, userStore, alertStore, bottomDrawerStore, organizationStore } from "../../../stores/interfaces";
+import { editUserStore, userStore, alertStore, bottomDrawerStore, BottomDrawerView, organizationStore } from "../../../stores/interfaces";
 import { Colors, ICONS } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
@@ -84,8 +84,8 @@ export default class EditUser extends React.Component {
                             <PatchButton 
                                 mode='outlined'
                                 uppercase={false}
-                                label={this.onMyProfile ? 'Leave organization' : 'Remove from organization'}
-                                onPress={this.removeUserFromOrg} />
+                                label={ STRINGS.ACCOUNT.removeUser(this.onMyProfile) }
+                                onPress={this.promptToRemoveUser} />
                         </View>
                         : null
                     }
@@ -99,8 +99,8 @@ export default class EditUser extends React.Component {
 
         return {
             headerLabel: editingMe
-                ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile'`,
+                ? STRINGS.ACCOUNT.editMyProfile
+                : STRINGS.ACCOUNT.editUserProfile(editUserStore().name),
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs(),
@@ -140,6 +140,24 @@ export default class EditUser extends React.Component {
     }
 
     canRemoveUser = () => this.onMyProfile || iHaveAllPermissions([PatchPermissions.RemoveFromOrg]);
+
+    promptToRemoveUser = () => {
+        alertStore().showPrompt({
+            title:  STRINGS.ACCOUNT.removeDialogTitle(this.onMyProfile),
+            message: STRINGS.ACCOUNT.removeDialogText(this.onMyProfile, editUserStore().name),
+            actions: [
+                {
+                    label: STRINGS.ACCOUNT.removeDialogOptionNo,
+                    onPress: () => {}
+                },
+                {   
+                    label: STRINGS.ACCOUNT.removeDialogOptionYes(this.onMyProfile, editUserStore().name),
+                    onPress: this.removeUserFromOrg,
+                    confirming: true
+                }
+            ]
+        })
+    }
 
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
