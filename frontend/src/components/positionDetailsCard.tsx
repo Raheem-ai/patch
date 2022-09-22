@@ -159,6 +159,24 @@ const PositionDetailsCard = observer(({
         }
     }
 
+    const promptToRemoveUser = (userId) => {
+        alertStore().showPrompt({
+            title:  STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogTitle(userStore().user.name),
+            message: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogText(userStore().user.name),
+            actions: [
+                {
+                    label: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogOptionNo,
+                    onPress: () => {},
+                },
+                {   
+                    label: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogOptionYes,
+                    onPress: () => removeUser(userId),
+                    confirming: true
+                }
+            ]
+        })
+    }
+
     const outerStatusSize = 20;
     const innerStatusSize = 8;
     const outterStatusOffset = (60 - outerStatusSize)/2;
@@ -181,17 +199,27 @@ const PositionDetailsCard = observer(({
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>
             </View>
             { userDetails.length 
-                ? <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1, marginBottom: 20,}}>
+                ? <View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20, flexDirection: 'row' }}>
                     {
                         userDetails.map(details => {
                             return (
-                                <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
-                                    <UserIcon user={{ name: details.name }} style={{marginTop: 2}}/>
-                                    <View style={{ marginLeft: 6 }}>
+                                <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}>
+                                    <UserIcon user={{ name: details.name }} style={{marginTop: 2, flexGrow: 0}}/>
+                                    <View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}>
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {
-                                                details.attributes.map(attr => <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>)
+                                                details.attributes.map((attr, i) => {
+                                                    const addDelim = i < details.attributes.length - 1;
+                                                    return addDelim 
+                                                        ? <>
+                                                            <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
+                                                            <Text style={styles.visualDelim}>{STRINGS.visualDelim}</Text>
+                                                        </>
+                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
+                                                        
+                                                    return 
+                                                })
                                             }
                                         </View>
                                     </View>
@@ -201,7 +229,7 @@ const PositionDetailsCard = observer(({
                                                 icon={ICONS.deleteItem} 
                                                 color={Colors.icons.light}
                                                 size={20} 
-                                                onPress={() => removeUser(details.userId)}
+                                                onPress={() => promptToRemoveUser(details.userId)}
                                                 style={{ margin: 0, padding: 0, width: 20, height: 20 }} />
                                         </View>
                                         : null
@@ -230,16 +258,23 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     removeUser: {
-        flexGrow: 1,
         alignItems: 'flex-end',
-        marginRight: 12,
+        marginRight: 16
     },
     attribute: {
         color: Colors.text.tertiary, 
-        marginRight: 8
+        marginRight: 4,
+        marginTop: 2,
+        flexWrap: 'wrap' 
     },
     desiredAttribute: {
         color: Colors.text.secondary,
-        marginRight: 8,
+        marginRight: 4,
+        marginTop: 2 
+    },
+    visualDelim: {
+        color: Colors.text.tertiary,
+        alignSelf: 'center',
+        marginRight: 4,
     }
 })    

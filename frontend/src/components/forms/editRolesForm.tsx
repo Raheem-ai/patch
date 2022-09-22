@@ -61,7 +61,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             label: ({ expand }) => {
                 return (
                     <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role)}</Text>
+                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())}</Text>
                     </Pressable>
                 )
             },
@@ -80,7 +80,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                     }
                 }
 
-                return <UpsertRoleForm headerLabel={'Add role'} cancel={cancelAdd} save={save}/>
+                return <UpsertRoleForm headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} cancel={cancelAdd} save={save}/>
             }
         } as NavigationFormInputConfig
 
@@ -97,7 +97,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                 handler: back,
                 outline: true
             },
-            label: 'Roles + permissions',
+            label: STRINGS.SETTINGS.rolesAndPermissions,
             bottomBorder: true
         }
 
@@ -106,8 +106,8 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                 <BackButtonHeader {...headerProps}/>
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{'Use Roles to specify who does what for a Shift or Request.'}</Text>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{'Each role grants the permissions needed for that role. A person can be eligible for more than one role.'}</Text>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{STRINGS.SETTINGS.rolesIntroA}</Text>
+                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{STRINGS.SETTINGS.rolesIntroB}</Text>
                     </View>
                     { renderInputs(inputs()) }
                 </ScrollView>
