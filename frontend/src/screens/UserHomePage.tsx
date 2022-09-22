@@ -140,7 +140,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 {currentResponse()}
             </View>
 
-            <View style={{paddingTop: !requestStore().myActiveRequests.length ? 12 : 0, marginTop: !requestStore().myActiveRequests.length ? 12 : 0, marginLeft: 24, borderTopWidth: !requestStore().myActiveRequests.length ? 1 : 0, borderColor: Colors.borders.formFields}}>
+            <View style={{paddingTop: 12, marginTop: 12, marginLeft: 24, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
                 <PatchButton 
                     mode='text'
                     label='Requests'

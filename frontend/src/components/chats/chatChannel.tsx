@@ -9,6 +9,7 @@ import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
 import STRINGS from "../../../../common/strings";
 import PatchButton from "../../components/patchButton";
+import { ICONS, Colors } from "../../types";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -50,7 +51,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
 
                         return (
                             <View style={[styles.messageRow, isMe ? styles.myMessageRow : null]}>
-                                <UserIcon user={user} style={styles.userIcon}/>
+                                <UserIcon user={user} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/>
                                 <View style={[styles.messageBubble, isMe ? styles.myMessageBubble : null, { maxWidth: bubbleWidth }]}>
                                     <Text style={styles.messageText}>{message.message}</Text>
                                 </View>
@@ -88,7 +89,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         {/*
                         <IconButton 
                             disabled={loading}
-                            icon='paperclip'
+                            icon={ICONS.attachment}
                             style={styles.inputAction}/>
                         */}
                         <View style={styles.messageInputContainer} >
@@ -103,7 +104,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         <IconButton 
                             disabled={loading}
                             onPress={sendMessage}
-                            icon='send'
+                            icon={ICONS.sendMessage}
                             style={styles.inputAction}/>
                     </View>
                 </View>
@@ -111,7 +112,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
         )
     }
 
-    const reopenRequest = () => async () => {
+    const reopenRequest = async () => {
         await requestStore().reopenRequest(requestStore().currentRequest.id);
     }
 
@@ -136,7 +137,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
                                     onPress={reopenRequest}/>
-                                : <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                                : <Text style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</Text>
                             }
                     </View>
                 </View>
@@ -195,11 +196,11 @@ const styles = StyleSheet.create({
     },
     messageRow: {
         flexDirection: 'row',
-        direction: 'rtl',
+        direction: 'ltr',
         marginVertical: 12
     },
     myMessageRow: {
-        direction: 'ltr'
+        direction: 'rtl'
     },
     userIcon: {
         marginHorizontal: 12,
@@ -207,16 +208,20 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28
     }, 
+    myUserIcon: {
+        display: 'none',
+    },
     messageBubble: {
         alignSelf: 'flex-end',
         borderRadius: 12,
         borderBottomLeftRadius: 1,
-        backgroundColor: 'rgba(179, 214, 226, .5)',
+        backgroundColor: Colors.backgrounds.medium,
         padding: 12,
         marginLeft: 2,
     }, 
     myMessageBubble: {
-        backgroundColor: 'rgba(103, 49, 146, .2)'
+        backgroundColor: 'rgba(103, 49, 146, .2)',
+        marginLeft: 12
     },
     messageText: {
         color: '#000'

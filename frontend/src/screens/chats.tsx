@@ -30,7 +30,7 @@ const Chats = observer(({ navigation, route }: Props) => {
             {
                 getUserRequests().map((r, idx) => {
                     const style = !idx
-                                  ? { marginTop: 20 }
+                                  ? { marginTop: 12 }
                                   : null
 
                     return (

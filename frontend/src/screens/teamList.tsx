@@ -1,12 +1,12 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
-import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, View, Text } from "react-native";
 import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ITeamStore, IUserStore, teamStore, userStore } from "../stores/interfaces";
-import { ScreenProps, routerNames } from "../types";
+import { ScreenProps, routerNames, ICONS, Colors } from "../types";
 import { IconButton } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { navigateTo } from "../navigation";
@@ -28,6 +28,7 @@ const TeamSortByToLabelMap: { [key in TeamSortBy] : string } = {
 const TeamList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<TeamFilter>(TeamFilter);
     const allSortBys = allEnumValues<TeamSortBy>(TeamSortBy);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         teamStore().refreshUsers();
@@ -36,6 +37,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
     const headerProps: ListHeaderProps = {
         openHeaderLabel: 'People to show',
         closedHeaderStyles: styles.closedFilterHeader,
+        viewIsScrolled: isScrolled,
 
         optionConfigs: [
             {
@@ -72,24 +74,32 @@ const TeamList = observer(({ navigation, route }: Props) => {
             navigateTo(routerNames.userDetails);
         }
     }
-    
+
+    const handleScroll = (e) => {
+        setIsScrolled(e.nativeEvent.contentOffset.y == 0
+            ? false
+            : true)}
+
     return (
         <View style={styles.container} testID={TestIds.team.screen}>
             <ListHeader { ...headerProps } />
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
                     teamStore().sortedUsers.map(r => {
                         const goToDetails = goToResponder(r);
 
                         return (
-                            <Pressable onPress={goToDetails} style={styles.listItemContainer}>
-                                <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
-                                <IconButton
-                                    style={styles.goToResponderIcon}
-                                    icon='chevron-right' 
-                                    color={styles.goToResponderIcon.color}
-                                    size={styles.goToResponderIcon.width} />
-                            </Pressable>
+                            <>
+                                <Pressable onPress={goToDetails} style={styles.listItemContainer}>
+                                    <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
+                                    <IconButton
+                                        style={styles.goToResponderIcon}
+                                        icon={ICONS.openListItem} 
+                                        color={styles.goToResponderIcon.color}
+                                        size={styles.goToResponderIcon.width} />
+                                </Pressable>
+                                <View style={styles.divider}/>
+                            </>
                         )
                     })
                 } 
@@ -103,12 +113,11 @@ export default TeamList
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.backgrounds.standard,
         flex: 1,
     },
     scrollView: { 
-        flex: 1, 
-        paddingTop: 20 
+        flex: 1 
     },
     responderRow: {
         flex: 1,
@@ -129,6 +138,12 @@ const styles = StyleSheet.create({
     listItemContainer: { 
         flexDirection: 'row', 
         paddingHorizontal: 12, 
-        marginBottom: 30 
+        paddingVertical: 16
+    },
+    divider: {
+        height: 1, 
+        borderBottomColor: Colors.borders.list, 
+        borderBottomWidth: 1, 
+        marginLeft: 60
     }
 })

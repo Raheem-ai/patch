@@ -1,4 +1,5 @@
 import { DateTimeRange, RecurringTimeConstraints } from "../../../../../../common/models";
+import { ICONS } from "../../../../types";
 import { CompoundFormInputFactory, CompoundFormInputFactoryParams, InlineFormInputConfig, ScreenFormInputConfig } from "../../types";
 
 const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDateTimeRange'> = (params: CompoundFormInputFactoryParams) => {
@@ -44,7 +45,7 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                 type: 'DateTimeRange',
                 disabled: params.disabled,
                 required: params.required,
-                icon: 'clock-outline'
+                icon: ICONS.clock
             },
             {
                 onSave: setRecurringTimeConstraintsVal,
@@ -65,7 +66,7 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                 type: 'RecurringTimePeriod',
                 disabled: params.disabled,
                 required: params.required,
-                icon: 'refresh'
+                icon: ICONS.refresh
             }] as [ 
                 InlineFormInputConfig<'DateTimeRange'>, 
                 ScreenFormInputConfig<'RecurringTimePeriod'>

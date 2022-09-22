@@ -4,7 +4,7 @@ import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
-import { routerNames, Colors } from '../../types';
+import { RootStackParamList, routerNames, Colors, ICONS } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { headerStore, requestStore, userStore } from '../../stores/interfaces';
@@ -40,7 +40,7 @@ const Header = observer((props: Props) => {
 
         const leftActions = config.leftActions && config.leftActions.length
             ? config.leftActions
-            : [{ icon: 'menu', callback: openHeader }];
+            : [{ icon: ICONS.menu, callback: openHeader }];
 
         const rightActions = config.rightActions && config.rightActions.length
             ? config.rightActions
@@ -54,11 +54,11 @@ const Header = observer((props: Props) => {
 
         const statusIcon = requestStore().myActiveRequests.length
             ? userStore().isOnDuty
-                ? 'lightning-bolt-circle'
-                : 'lightning-bolt'
+                ? ICONS.userStatusOnRequestOnDuty
+                : ICONS.userStatusOnRequestOffDuty
             : userStore().isOnDuty
-                ? 'circle'
-                : 'circle-outline';
+                ? ICONS.userStatusOnDuty
+                : ICONS.userStatusOffDuty;
 
         const statusColor = requestStore().myActiveRequests.length
             ? Colors.good
@@ -67,6 +67,21 @@ const Header = observer((props: Props) => {
                 : Colors.icons.darkReversed;
 
         const statusIconSize = 16;
+
+        const rightActionsRefs = [];
+
+        const rightActionsMap = rightActions.map((a, index) => {
+            return (
+                <IconButton 
+                    testID={a.testId}
+                    key={a.icon} 
+                    style={[styles.icon, {marginLeft: (index == 0 ? 0 : 12)}]} 
+                    icon={a.icon} 
+                    size={headerIconSize} 
+                    color={Colors.icons.lightReversed} 
+                    onPress={a.callback}/>
+            )
+        })   
 
         return (
             <View style={{ backgroundColor: styles.container.backgroundColor }}>
@@ -96,24 +111,11 @@ const Header = observer((props: Props) => {
                         : null
                     }
                     <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
-                        <Text style={styles.title}>{title}</Text>
+                        <Text style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</Text>
                     </View>
 
                     <View style={styles.rightIconContainer}>
-                        {
-                            rightActions.map((a) => {
-                                return (
-                                    <IconButton 
-                                        testID={a.testId}
-                                        key={a.icon} 
-                                        style={styles.icon} 
-                                        icon={a.icon} 
-                                        size={headerIconSize} 
-                                        color={Colors.icons.lightReversed} 
-                                        onPress={a.callback}/>
-                                )
-                            })
-                        }
+                        {rightActionsMap}
                     </View>
                     {/* Add a divider line between right icons and status icon */}
                     { rightActions.length
@@ -200,7 +202,7 @@ const Header = observer((props: Props) => {
         <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
-                    <IconButton icon='close' size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
+                    <IconButton icon={ICONS.navCancel} size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
                     <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
@@ -261,6 +263,10 @@ const styles = StyleSheet.create({
         color: Colors.text.defaultReversed,
         fontSize: 20
     },
+    titleLong: {
+        color: Colors.text.defaultReversed,
+        fontSize: 16,
+    },
     onDutyStatusContainer: {
         alignItems: 'flex-start', 
         justifyContent: 'center',
@@ -273,7 +279,6 @@ const styles = StyleSheet.create({
     },
     icon: {
         margin: 0,
-        marginLeft: headerIconPaddingHorizontal,
         width: headerIconSize,
         height: headerIconSize,
         alignSelf: 'center',

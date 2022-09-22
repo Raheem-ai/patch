@@ -6,7 +6,7 @@ import { IconButton, Text } from "react-native-paper";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import Tags from "../components/tags";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
-import { Colors, ScreenProps } from "../types";
+import { Colors, ICONS, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
 
 
@@ -28,8 +28,12 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             }
         }
 
-        const detailsText = [
-            userStore().currentUser.pronouns,
+        const pronounsText = userStore().currentUser.pronouns;
+        const bioText = userStore().currentUser.bio 
+            ? userStore().currentUser.bio
+            : null;
+
+        const userRoles = [
             ...organizationStore().userRoles.get(userStore().currentUser.id).map(role => role.name)
         ].filter(text => !!text).join(` ${STRINGS.visualDelim} `);
 
@@ -37,49 +41,72 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             return manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
         }).filter(x => !!x)
 
-        return <View style={styles.headerContainer}>
-            {/* <View style={styles.profilePhotoContainer}>
-                <IconButton
-                    style={styles.profilePhotoIcon}
-                    icon='camera-plus' 
-                    color={styles.profilePhotoIcon.color}
-                    size={styles.profilePhotoIcon.width} />
-            </View> */}
-            <View style={styles.nameContainer}>
-                <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
-            </View>
-            <View style={detailsText ? styles.detailsContainer : styles.hideContainer}>
-                <Text style={styles.detailsText}>{detailsText}</Text>
-            </View>
-            <View style={userStore().currentUser.bio ? styles.bioContainer : styles.hideContainer}>
-                <Text style={styles.detailsText}>{userStore().currentUser.bio}</Text>
-            </View>
-            <View style={styles.attributesContainer}>
-                <Tags 
-                    centered
-                    tags={userAttributes.map(attr => attr.name)}  
-                    verticalMargin={12} 
-                    tagTextStyle={{ color: styles.attributeTag.color }}
-                    tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
-            </View>
-            {/* TODO: only show contact buttons if we have contact information */}
-            <View style={styles.contactIconsContainer}>
-                <Pressable onPress={startCall} style={styles.contactIconContainer}>
+        return <>
+            <View style={styles.headerContainer}>
+                {/* <View style={styles.profilePhotoContainer}>
                     <IconButton
-                        style={styles.contactIcon}
-                        icon='phone' 
-                        color={styles.contactIcon.color}
-                        size={styles.contactIcon.width} />
-                </Pressable>
-                <Pressable onPress={mailTo} style={styles.contactIconContainer}>
-                    <IconButton
-                        style={styles.contactIcon}
-                        icon='email' 
-                        color={styles.contactIcon.color}
-                        size={styles.contactIcon.width} />
-                </Pressable>
+                        style={styles.profilePhotoIcon}
+                        icon={ICONS.addPhoto} 
+                        color={styles.profilePhotoIcon.color}
+                        size={styles.profilePhotoIcon.width} />
+                </View> */}
+                <View style={styles.nameContainer}>
+                    <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
+                </View>
+                <View style={pronounsText ? styles.detailsContainer : styles.hideContainer}>
+                    <Text style={[styles.detailsText, pronounsText ? [styles.detailsContainer, styles.pronounsText] : styles.hideContainer]}>
+                        {pronounsText}
+                    </Text>                
+                </View>
+                <View style={bioText ? styles.detailsContainer : styles.hideContainer}>
+                        <Text style={[styles.detailsText, bioText ? [styles.detailsContainer, {marginTop: 16}] : styles.hideContainer]}>
+                            {bioText}
+                        </Text>
+                </View>
+                {/* Only show contact buttons if we have contact information */}
+                { userStore().currentUser.phone || userStore().currentUser.email
+                    ? <View style={styles.contactIconsContainer}>
+                        { userStore().currentUser.phone
+                            ? <Pressable onPress={startCall} style={styles.contactIconContainer}>
+                                <IconButton
+                                    style={styles.contactIcon}
+                                    icon={ICONS.callPhone} 
+                                    color={styles.contactIcon.color}
+                                    size={styles.contactIcon.width} />
+                            </Pressable>
+                            : null }
+
+                        { userStore().currentUser.email
+                            ? <Pressable onPress={mailTo} style={styles.contactIconContainer}>
+                                <IconButton
+                                    style={styles.contactIcon}
+                                    icon={ICONS.sendEmail} 
+                                    color={styles.contactIcon.color}
+                                    size={styles.contactIcon.width} />
+                            </Pressable>
+                            : null }
+                        </View>
+                    : null
+                }
             </View>
-        </View>
+            <View style={!(userRoles.length || userAttributes.length) ? styles.hideContainer : styles.metadataContainer}>
+                <View style={!userAttributes.length ? styles.hideContainer : styles.attributesContainer}>
+                    <Text style={styles.labelText}>Attributes:</Text> 
+                    <Tags 
+                        centered
+                        tags={userAttributes.map(attr => attr.name)}  
+                        verticalMargin={12} 
+                        tagTextStyle={{ color: styles.attributeTag.color }}
+                        tagContainerStyle={{ backgroundColor: styles.attributeTag.backgroundColor }}/>
+                </View>
+                <View style={!userRoles.length ? styles.hideContainer : [styles.rolesContainer, userAttributes.length && {marginTop: 24}]}>
+                    <View>
+                        <Text style={[styles.labelText, {marginBottom: 4}]}>Roles:</Text>
+                        <Text style={styles.rolesText}>{userRoles}</Text>
+                    </View>
+                </View>
+            </View>
+        </>
     }
 
     const currentResponse = () => {
@@ -134,17 +161,15 @@ const styles = StyleSheet.create({
         display: 'none'
     },
     headerContainer: {
-        padding: 24,
-        paddingBottom: 32,
+        paddingHorizontal: 24,
+        paddingVertical: 40,
         backgroundColor: Colors.backgrounds.secondary,
-        borderBottomColor: Colors.borders.formFields,
-        borderBottomWidth: 1,
     },
     profilePhotoContainer: {
-        marginTop: 38,
+        marginTop: 40,
         height: 84,
         width: 84,
-        backgroundColor: Colors.backgrounds.secondary,
+        backgroundColor: Colors.primary.alpha,
         alignContent: 'center',
         justifyContent: 'center',
         borderRadius: 84,
@@ -155,54 +180,46 @@ const styles = StyleSheet.create({
         width: 30,
         maxWidth: 50,
         maxHeight: 50,
-        color: Colors.secondary.beta,
+        color: Colors.text.defaultReversed,
         alignSelf: 'center'
     },
     nameContainer: {
         alignSelf: 'center',
-        paddingTop: 24
+
     },
     nameText: {
         fontSize: 32,
         fontWeight: '900',
         color: Colors.text.default,
     },
+    pronounsText: {
+        marginTop: 12,
+        color: Colors.text.secondary,
+    },
     detailsText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '400',
         color: Colors.text.secondary,
+        textAlign: 'center'
     },
     detailsContainer: {
         alignSelf: 'center',
-        marginTop: 12
     },
     bioContainer: {
         alignSelf: 'center',
         marginVertical: 12
     },
-    attributesContainer: {
-        alignSelf: 'center',
-        marginTop: 12,
-    }, 
-    attributeTag: {
-        color: Colors.backgrounds.tags.primaryForeground,
-        backgroundColor: Colors.backgrounds.tags.primaryBackground,
-    },
-    skillTag: {
-        color: Colors.backgrounds.tags.tertiaryForeground,
-        backgroundColor: Colors.backgrounds.tags.tertiaryBackground
-    },
     contactIconsContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginTop: 24,
+        marginTop: 32,
     },
     contactIconContainer: {
         marginHorizontal: 24,
         height: 64,
         width: 64,
         borderRadius: 64,
-        backgroundColor: Colors.uiControls.foregroundReversed,
+        backgroundColor: Colors.primary.alpha,
         justifyContent: 'center'
     },
     contactIcon: {
@@ -210,8 +227,41 @@ const styles = StyleSheet.create({
         width: 40,
         maxWidth: 60,
         maxHeight: 60,
-        color: Colors.primary.alpha,
+        color: Colors.text.defaultReversed,
         alignSelf: 'center'
+    },
+    metadataContainer: {
+        paddingHorizontal: 24,
+        paddingVertical: 40,
+        backgroundColor: Colors.backgrounds.secondary,
+        borderBottomWidth: 1,
+        borderTopWidth: 1,
+        borderColor: Colors.borders.formFields,
+        flex: 1,
+        flexDirection: 'column',
+        alignContent: 'center',
+    },
+    attributesContainer: {
+        alignSelf: 'center',
+    }, 
+    attributeTag: {
+        color: Colors.backgrounds.tags.tertiaryForeground,
+        backgroundColor: Colors.backgrounds.tags.tertiaryBackground,
+    },
+    rolesContainer: {
+        width: '100%'
+    },
+    labelText: {
+        color: Colors.text.tertiary,
+        textTransform: 'uppercase',
+        textAlign: 'center'
+    },
+    rolesText: {
+        fontSize: 16,
+        fontWeight: '400',
+        lineHeight: 24,
+        color: Colors.text.secondary,
+        textAlign: 'center',
     },
     currentResponseSection: {
         backgroundColor: Colors.backgrounds.standard,

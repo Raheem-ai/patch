@@ -167,16 +167,6 @@ export default class RequestStore implements IRequestStore {
         return this.orgUserRequestMetadata.get(userId)?.get(requestId)?.positions.get(positionId);
     }
 
-    getRequestScopedMetadata(userId: string, requestId: string): RequestScopedMetadata {
-        const { unseenNotification, notificationsSentTo, notificationsViewedBy } = this.orgUserRequestMetadata.get(userId)?.get(requestId);
-
-        return {
-            unseenNotification,
-            notificationsSentTo, 
-            notificationsViewedBy
-        }
-    }
-
     // TODO: later...optimize to handle computing request vs position scoped events in one iteration
     // ...note: collapsing the position scoped one is more important cuz that's teamEvents.length X positions.length
     // vs teamEvents.length x 2 diff metadata scopes 
@@ -584,7 +574,7 @@ export default class RequestStore implements IRequestStore {
     }
 
     async ackRequestNotification(requestId: string) {
-        const unseenNotification = this.getRequestScopedMetadata(userStore().user.id, requestId).unseenNotification;
+        const unseenNotification = this.orgUserRequestMetadata.get(userStore().user.id)?.get(requestId)?.unseenNotification;
 
         // team events say there aren't any unseen or we've seen it this session
         if (!unseenNotification || this.seenRequests.has(requestId)) {
@@ -683,6 +673,12 @@ export default class RequestStore implements IRequestStore {
         this.requests.set(updatedReq.id, updatedReq);
     }
 
+    /** 
+     * NOTE: use when you're changing a property on the updated Request that
+     * 1) is an update to an array 
+     * AND 
+     * 2) the property is used directly by a view (vs indirectly through computed props of the store)
+     * */ 
     updateRequestInternals(updatedReq: HelpRequest) {
         const req = this.requests.get(updatedReq.id);
 

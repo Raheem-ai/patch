@@ -27,11 +27,6 @@ export default class NotificationStore implements INotificationStore {
     private notificationsSub = null;
     private notificationResponseSub = null;
 
-    // keep copy in secure store and never delete it so we'll know when it needs to be updated
-    // ie. reinstalls
-    @securelyPersistent() expoPushToken = null;
-    @securelyPersistent() expoPushTokenUserId: string = null;
-    
     constructor() { 
         makeAutoObservable(this);
     }
@@ -71,7 +66,7 @@ export default class NotificationStore implements INotificationStore {
     }
 
     async handlePermissions() {
-        if (Constants.isDevice) {
+        if (Device.isDevice) {
             const perms = await Notifications.getPermissionsAsync()
         
             if (perms.status !== PermissionStatus.GRANTED) {
@@ -109,14 +104,7 @@ export default class NotificationStore implements INotificationStore {
         const currentPushToken = (await Notifications.getExpoPushTokenAsync()).data;
         const token = userStore().authToken;
 
-        if (this.expoPushToken != currentPushToken || this.expoPushTokenUserId != userStore().user.id) {
-            await api().reportPushToken({ token }, currentPushToken);
-            
-            runInAction(() => {
-                this.expoPushToken = currentPushToken
-                this.expoPushTokenUserId = userStore().user.id
-            });
-        }
+        await api().reportPushToken({ token }, currentPushToken);
     }
 
     setup() {

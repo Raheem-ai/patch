@@ -12,6 +12,8 @@ import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputCo
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
+import { ICONS } from "../../../types";
+import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 
 type Props = {}
 
@@ -24,7 +26,7 @@ class EditHelpRequest extends React.Component<Props> {
     }
 
     headerLabel = () => {
-        return `Edit Request ${requestStore().currentRequest.displayId}`
+        return STRINGS.REQUESTS.editRequestTitle(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId) 
     }
 
     setRef = (formRef: Form) => {
@@ -56,7 +58,7 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(organizationStore().metadata.requestPrefix + '–' + requestStore().currentRequest.displayId))
+                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
         
                     bottomDrawerStore().hide()
                 },
@@ -97,7 +99,7 @@ class EditHelpRequest extends React.Component<Props> {
                             return !!editRequestStore().notes
                         },
                         name: 'description',
-                        icon: 'human-greeting-variant',
+                        icon: ICONS.request,
                         previewLabel: () => editRequestStore().notes,
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
@@ -124,26 +126,21 @@ class EditHelpRequest extends React.Component<Props> {
                             setDefaultClosed: true
                         }
                     },
-                    // Priority
+                    // Location
                     {
-                        onSave: (priorities) => editRequestStore().priority = priorities[0],
+                        onSave: (location) => editRequestStore().location = location,
                         val: () => {
-                            return typeof editRequestStore().priority == 'number'
-                                ? [editRequestStore().priority]
-                                : []
+                            return editRequestStore().location
                         },
                         isValid: () => {
-                            return !!editRequestStore().priority 
+                            return editRequestStore().locationValid
                         },
-                        name: 'priority',
-                        previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
-                        headerLabel: () => 'Priority',
-                        placeholderLabel: () => 'Priority',
-                        type: 'List',
-                        props: {
-                            options: allEnumValues(RequestPriority),
-                            optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
-                        },
+                        name: 'location',
+                        previewLabel: () => editRequestStore().location?.address,
+                        headerLabel: () => 'Location',
+                        placeholderLabel: () => 'Location',
+                        type: 'Map',
+                        // required: true
                     },
                 ],
                 [
@@ -159,7 +156,7 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'callStart',
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
-                        icon: 'phone-incoming'
+                        icon: ICONS.timeCallStarted,
                         // required: true
                     },
                     // Call End
@@ -175,8 +172,6 @@ class EditHelpRequest extends React.Component<Props> {
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
                     },
-                ],
-                [
                     // Caller Name
                     {
                         onChange: (callerName) => editRequestStore().callerName = callerName,
@@ -189,7 +184,6 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
-                        icon: 'card-account-phone'
                         // required: true
                     },
                     // Caller Contact Info
@@ -206,23 +200,6 @@ class EditHelpRequest extends React.Component<Props> {
                         type: 'TextInput',
                     },
                 ],
-                // Location
-                {
-                    onSave: (location) => editRequestStore().location = location,
-                    val: () => {
-                        return editRequestStore().location
-                    },
-                    isValid: () => {
-                        return editRequestStore().locationValid
-                    },
-                    name: 'location',
-                    icon: 'map-marker',
-                    previewLabel: () => editRequestStore().location?.address,
-                    headerLabel: () => 'Location',
-                    placeholderLabel: () => 'Location',
-                    type: 'Map',
-                    // required: true
-                },
                 // Positions
                 {
                     onSave: (data) => {
@@ -234,12 +211,38 @@ class EditHelpRequest extends React.Component<Props> {
                     isValid: () => true,
                     headerLabel: () => 'Responders needed',
                     placeholderLabel: () => 'Responders needed',
-                    icon: 'account-multiple',
+                    icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
                     },
                     name: 'positions',
                     type: 'Positions'
+                },
+                // Priority
+                {
+                    onSave: (priorities) => editRequestStore().priority = priorities[0],
+                    val: () => {
+                        return typeof editRequestStore().priority == 'number'
+                            ? [editRequestStore().priority]
+                            : []
+                    },
+                    isValid: () => {
+                        return !!editRequestStore().priority 
+                    },
+                    name: 'priority',
+                    icon: editRequestStore().priority == 2 
+                        ? ICONS.priority3 
+                        : editRequestStore().priority == 1
+                            ? ICONS.priority2
+                            : ICONS.priority1,
+                    previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
+                    headerLabel: () => 'Priority',
+                    placeholderLabel: () => 'Priority',
+                    type: 'List',
+                    props: {
+                        options: allEnumValues(RequestPriority),
+                        optionToPreviewLabel: (opt) => RequestPriorityToLabelMap[opt]
+                    }
                 },
                 // Tags
                 TagsListInput({
@@ -252,25 +255,24 @@ class EditHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return true
                     },
-                    icon: 'tag',
+                    icon: ICONS.tag,
                     name: 'tags'
                 })
             ] as [
                 [
                     ScreenFormInputConfig<'TextArea'>,
                     ScreenFormInputConfig<'CategorizedItemList'>,
-                    ScreenFormInputConfig<'List'>
+                    ScreenFormInputConfig<'Map'>, 
                 ],
                 [
                     InlineFormInputConfig<'TextInput'>,
-                    InlineFormInputConfig<'TextInput'>
-                ],
-                [
+                    InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>,
                     InlineFormInputConfig<'TextInput'>
                 ],
-                ScreenFormInputConfig<'Map'>, 
                 ScreenFormInputConfig<'Positions'>,
+                ScreenFormInputConfig<'List'>,
+
                 ScreenFormInputConfig<'CategorizedItemList'>
             ]
         }

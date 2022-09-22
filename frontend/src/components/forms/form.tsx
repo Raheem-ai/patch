@@ -5,7 +5,7 @@ import { observer } from "mobx-react";
 import { computed, observable, runInAction } from "mobx";
 import { FormInputConfig, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
 import { unwrap } from "../../../../common/utils";
-import { Colors } from "../../types";
+import { Colors, ICONS } from "../../types";
 import { nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
@@ -348,6 +348,7 @@ export default class Form extends React.Component<FormProps> {
             return <CustomHomeScreen {...customProps} />
         }
 
+        // where in the app does this get returned?
         return (
                 <WrappedScrollView 
                     testID={this.props.testID}
@@ -532,8 +533,8 @@ const DefaultSection = observer((props: {
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
-                            icon='chevron-right' 
-                            color='rgba(60,60,67,.3)'
+                            icon={ICONS.openListItem} 
+                            color={Colors.icons.lighter}
                             onPress={expand}
                             size={30} />
                         : null
@@ -562,8 +563,8 @@ const DefaultSection = observer((props: {
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30 }}
-                            icon='chevron-right' 
-                            color='rgba(60,60,67,.3)'
+                            icon={ICONS.openListItem}
+                            color={Colors.icons.lighter}
                             onPress={expand}
                             size={30} />
                         : null
@@ -682,9 +683,9 @@ const LabelSection = observer((props: {
                 </View>
                 { !props.inputConfig.disabled && !props.viewConfig.hideExpandArrow
                     ? <IconButton
-                        style={{ flex: 0, height: 30, width: 30 }}
-                        icon='chevron-right' 
-                        color='rgba(60,60,67,.3)'
+                        style={{ flex: 0, height: 30, width: 30, alignSelf: 'flex-start', marginTop: 14 }}
+                        icon={ICONS.openListItem}
+                        color={Colors.icons.lighter}
                         onPress={autoExpand}
                         size={30} />
                     : null
@@ -739,7 +740,7 @@ const NavigationSection = observer((props: {
 
     const rightIcon = props.inputConfig.expandIcon
         ? unwrap(props.inputConfig.expandIcon)
-        : 'chevron-right'
+        : ICONS.openListItem
 
     return (
         <>
@@ -766,7 +767,7 @@ const NavigationSection = observer((props: {
                     ? <IconButton
                         style={{ flex: 0, height: 30, width: 30 }}
                         icon={rightIcon} 
-                        color='rgba(60,60,67,.3)'
+                        color={Colors.icons.lighter}
                         onPress={resolvedExpand}
                         size={30} />
                     : null

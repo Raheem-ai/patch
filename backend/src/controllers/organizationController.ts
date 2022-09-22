@@ -146,7 +146,10 @@ export class OrganizationController implements APIController<
             return specificMembers
 
         } else {
-            return orgMembers
+            return [
+                ...orgMembers,
+                ...removedOrgMembers
+            ]
         }
     }
 

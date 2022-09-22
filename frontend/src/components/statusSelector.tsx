@@ -4,8 +4,9 @@ import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewSty
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
-import { requestStore } from "../stores/interfaces";
+import { requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
+import { ICONS } from "../types"
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
@@ -48,11 +49,11 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
                 ]}/>
         )
     },
-    [RequestStatus.Ready]: 'account-multiple',
-    [RequestStatus.OnTheWay]: 'arrow-right',
-    [RequestStatus.OnSite]: 'map-marker',
-    [RequestStatus.Done]: 'check',
-    [RequestStatus.Closed]: 'lock',
+    [RequestStatus.Ready]: ICONS.statusUnassignedOrReady,
+    [RequestStatus.OnTheWay]: ICONS.statusOnTheWay,
+    [RequestStatus.OnSite]: ICONS.statusOnSite,
+    [RequestStatus.Done]: ICONS.statusFinished,
+    [RequestStatus.Closed]: ICONS.statusClosed,
 }
 
 type StatusIconProps = { 
@@ -109,7 +110,7 @@ export const StatusSelector = observer(({
 } : StatusSelectorProps) => {
     const request = requestStore().requests.get(requestId)
     
-    const firstStatus = assignedResponderBasedRequestStatus(request);
+    const firstStatus = assignedResponderBasedRequestStatus(request, userStore().usersRemovedFromOrg.map(u => u.id));
 
     const dimensions = Dimensions.get('screen');
 
@@ -141,8 +142,8 @@ export const StatusSelector = observer(({
     const toGoStatusIconStyles: StyleProp<ViewStyle> = [
         noMarginIconStyles,
         { 
-            backgroundColor: dark ? styles.darkToGoStatusSelectorDivider.borderBottomColor : styles.toGoStatusSelectorDivider.borderBottomColor,
-            borderColor: dark ? styles.darkToGoStatusSelectorDivider.borderBottomColor : styles.toGoStatusSelectorDivider.borderBottomColor
+            backgroundColor: dark ? styles.darkStatusIconToGo.backgroundColor : styles.toGoStatusSelectorDivider.borderBottomColor,
+            borderColor: dark ? styles.darkStatusIconToGo.backgroundColor : styles.toGoStatusSelectorDivider.borderBottomColor
         }
     ]
 
@@ -154,7 +155,7 @@ export const StatusSelector = observer(({
             
                     const label = typeof potentialLabel == 'string'
                         ? potentialLabel
-                        : potentialLabel(request);
+                        : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
                         
                     const oldStatusIcon = () => {
                         return <StatusIcon dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={noMarginIconStyles}/>;
@@ -225,7 +226,7 @@ export const StatusSelector = observer(({
         
                                 const label = typeof potentialLabel == 'string'
                                     ? potentialLabel
-                                    : potentialLabel(request);
+                                    : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
 
                                 // TODO: this is assuming it's always the width of the screen...take totalWidth as a prop
                                 // same thing for the padding
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
         height: 28,
         borderRadius: 20,
         margin: 0,
-        marginLeft: 4,
+        marginLeft: 6,
         borderColor:'#000',
         borderStyle: 'solid',
         borderWidth: 1
@@ -277,14 +278,14 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         marginLeft: 42
     },
-    darkStatusIcon: {
+    darkStatusIcon: { 
         borderColor:'#F3F1F3',
         color: '#111',
-        backgroundColor: '#F3F1F3',
+        backgroundColor: '#F3F1F3', 
     },
     darkStatusIconToGo: {
-        color: '#999',
-        backgroundColor: '#666' // <-- kinda weird that the background of the dark togo icons follows the darkToGoStatusSelectorDivider, ideally it would be controllable separately
+        color: '#2c2c2c',
+        backgroundColor: '#555'
     },
     statusSelector: {
         flexDirection: 'row',

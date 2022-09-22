@@ -2,7 +2,7 @@ import { autoAction } from "mobx/dist/internal";
 import React from "react";
 import { StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Button } from 'react-native-paper';
-import { Colors } from "../types";
+import { Colors, ICONS } from "../types";
 
 export type PatchButtonProps = {
     label: string,

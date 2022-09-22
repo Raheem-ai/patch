@@ -21,7 +21,7 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
 
     // default but overrideable
     const overrideableConfig: OverrideableConfig = {
-        // icon: 'tag-heart',
+        // icon: ICONS.tag,
         placeholderLabel: () => 'Attributes',
         headerLabel: () => 'Attributes',
     }

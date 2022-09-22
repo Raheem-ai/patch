@@ -2,8 +2,10 @@ import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/mo
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import TestIds from "../../test/ids"
-import { RootStackParamList, routerNames } from "../../types"
+import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
+import { requestDisplayName } from "../../../../common/utils/requestUtils"
+import STRINGS from "../../../../common/strings"
 
 export type IHeaderAction = {
     icon: string,
@@ -27,62 +29,66 @@ const HeaderConfig: {
     [route in keyof RootStackParamList]: HeaderRouteConfig | (() => HeaderRouteConfig)
  } = {
     [routerNames.home]: {
-        title: 'Home'
+        title: STRINGS.PAGE_TITLES.userHomePage
     },
     [routerNames.landing]: {
-        title: 'Landing',
+        title: STRINGS.PAGE_TITLES.landing,
         unauthenticated: true
     },
     [routerNames.joinOrganization]: {
-        title: 'Join Organization',
+        title: STRINGS.PAGE_TITLES.joinOrganization,
         unauthenticated: true
     },
     [routerNames.invitationSuccessful]: {
-        title: 'Invitation Successful',
+        title: STRINGS.PAGE_TITLES.invitationSuccessful,
         unauthenticated: true
     },
     [routerNames.createAccount]: {
-        title: 'Create Account',
+        title: STRINGS.PAGE_TITLES.createAccount,
         unauthenticated: true
     },
     [routerNames.signIn]: {
-        title: 'Sign In',
+        title: STRINGS.PAGE_TITLES.signIn,
         unauthenticated: true
     },
     [routerNames.signUp]: {
-        title: 'Sign Up',
+        title: STRINGS.PAGE_TITLES.signUp,
         unauthenticated: true
     },
     [routerNames.signUpThroughOrg]: {
-        title: 'Sign Up',
+        title: STRINGS.PAGE_TITLES.signUpThroughOrg,
         unauthenticated: true
     },
     [routerNames.userHomePage]: {
         title: () => {
             // TODO: get org name for here
-            return 'Home'
+            const oName = organizationStore().metadata.name;
+            const orgName = oName !== undefined
+                ? oName
+                : STRINGS.PAGE_TITLES.userHomePage
+            return orgName
         }
     },
     [routerNames.helpRequestList]: {
-        title: 'Requests',
+        title: STRINGS.PAGE_TITLES.helpRequestList,
         rightActions: [{
-            icon: 'map',
+            icon: ICONS.map,
             callback: () => navigateTo(routerNames.helpRequestMap)
         }, {
             testId: TestIds.header.actions.createRequest,
-            icon: 'plus',
+            icon: ICONS.add,
             callback: () => {
                 bottomDrawerStore().show(BottomDrawerView.createRequest, true);
             }
         }]
     },
     [routerNames.helpRequestMap]: {
-        title: 'Requests',
+        title: STRINGS.PAGE_TITLES.helpRequestMap,
         rightActions: [{
-            icon: 'view-agenda',
+            icon: ICONS.cardList,
             callback: () => navigateTo(routerNames.helpRequestList)
         }, {
-            icon: 'plus',
+            icon: ICONS.add,
             callback: () => {
                 bottomDrawerStore().show(BottomDrawerView.createRequest, true);
             }
@@ -90,25 +96,29 @@ const HeaderConfig: {
     },
     [routerNames.helpRequestDetails]: () => {   
         const title = () => {
+            // loading is needed for switching between two different requests on the same
+            // request details screen
             const id = requestStore().loading
-                ? ''
-                : requestStore().currentRequest.displayId;
+                ? STRINGS.PAGE_TITLES.helpRequestIdWhileLoading
+                // if coming from a notification, current request may not be set
+                // yet so make sure we don't throw trying to access it
+                : requestStore().currentRequest?.displayId;
 
-            return `${prefix()}–${id}`
+            return requestDisplayName(prefix(), id)
         };
-        
+
         const leftActions = [{
-            icon: 'chevron-left',
+            icon: ICONS.navBack,
             callback: () => {
                 requestStore().tryPopRequest();
                 navigationRef.current.goBack();
             }
-        }];
+        }]
 
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
                 {
-                    icon: 'pencil',
+                    icon: ICONS.edit,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.editRequest, true);
                     }
@@ -126,10 +136,10 @@ const HeaderConfig: {
         title: () => {
             const req = requestStore().currentRequest;
 
-            return `Channel for ${prefix()}–${req.displayId}`
+            return STRINGS.PAGE_TITLES.helpRequestChat(prefix(), req.displayId)
         },
         leftActions: [{
-            icon: 'chevron-left',
+            icon: ICONS.navBack,
             callback: () => {
                 navigationRef.current.goBack();
 
@@ -140,7 +150,7 @@ const HeaderConfig: {
             }
         }],
         rightActions: [{
-            icon: 'human-greeting-variant',
+            icon: ICONS.request,
             callback: () => navigateTo(routerNames.helpRequestDetails)
         }],
     },
@@ -148,7 +158,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
-                    icon: 'plus',
+                    icon: ICONS.add,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.inviteUserToOrg, true);
                     }
@@ -157,7 +167,7 @@ const HeaderConfig: {
             : [];
         
         return {
-            title: 'Team',
+            title: STRINGS.PAGE_TITLES.teamList,
             rightActions 
         }
     },
@@ -169,7 +179,7 @@ const HeaderConfig: {
         const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
-                    icon: 'pencil',
+                    icon: ICONS.edit,
                     callback: async () => {
                         if (onMyProfile) {
                             editUserStore().loadMe(userStore().user);
@@ -185,10 +195,10 @@ const HeaderConfig: {
         
         return {
             title: onMyProfile 
-                ? 'My profile'
-                : 'User profile',
+                ? STRINGS.ACCOUNT.profileTitleMine
+                : STRINGS.ACCOUNT.profileTitle,
             leftActions: [{
-                icon: 'chevron-left',
+                icon: ICONS.navBack,
                 callback: () => {
                     navigationRef.current.goBack();
                 }
@@ -197,13 +207,13 @@ const HeaderConfig: {
         }
     },
     [routerNames.componentLib]: {
-        title: 'Component Library'
+        title: STRINGS.PAGE_TITLES.componentLibrary
     }, 
     [routerNames.settings]: {
-        title: 'Settings'
+        title: STRINGS.PAGE_TITLES.settings
     },
     [routerNames.chats]: {
-        title: 'Channels'
+        title: STRINGS.PAGE_TITLES.channels
     }
 }
 

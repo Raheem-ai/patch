@@ -8,7 +8,7 @@ import React, { useRef } from "react";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader"
 import { Pressable, ScrollView, View } from "react-native"
 import { Button, Text } from "react-native-paper"
-import { Colors } from "../../types"
+import { Colors, ICONS } from "../../types"
 import { resolveErrorMessage } from "../../errors"
 import { iHaveAllPermissions } from "../../utils"
 import KeyboardAwareArea from "../helpers/keyboardAwareArea"
@@ -35,13 +35,13 @@ const UpsertRoleForm = ({
         name: 'name',
         required: true,
         type: 'TextInput',
-        icon: 'clipboard-account',
+        icon: ICONS.role,
         val: () => upsertRoleStore().name,
         isValid: upsertRoleStore().nameIsValid,
         onChange: (val) => {
             upsertRoleStore().name = val
         },
-        placeholderLabel: () => 'Name this role'
+        placeholderLabel: () => STRINGS.SETTINGS.nameRole
     } as InlineFormInputConfig<'TextInput'>;
 
     const permissionsInput = {
@@ -54,14 +54,14 @@ const UpsertRoleForm = ({
         },
         name: 'permissionGroups',
         headerLabel: () => 'Permissions',
-        placeholderLabel: () => 'Set permissions',
+        placeholderLabel: () => STRINGS.SETTINGS.setPermissions,
         previewLabel: () => {
             return upsertRoleStore().permissionGroups.map(p => {
                 return PermissionGroupMetadata[p].name
             }).join(', ')
         },
         type: 'PermissionGroupList',
-        icon: 'key',
+        icon: ICONS.permissions,
         required: true,
         disabled: isAdminRole,
         props: {
@@ -108,6 +108,25 @@ const UpsertRoleForm = ({
             }
         }
 
+        const promptToDeleteRole = () => {
+            const roleName = upsertRoleStore().name;
+            alertStore().showPrompt({
+                title:  STRINGS.SETTINGS.removeRoleDialogTitle(roleName),
+                message: STRINGS.SETTINGS.removeRoleDialogText(roleName),
+                actions: [
+                    {
+                        label: STRINGS.SETTINGS.removeRoleDialogOptionNo,
+                        onPress: () => {},
+                    },
+                    {   
+                        label: STRINGS.SETTINGS.removeRoleDialogOptionYes,
+                        onPress: deleteRole,
+                        confirming: true
+                    }
+                ]
+            })
+        }
+
         const iHavePermissionToDelete = iHaveAllPermissions([PatchPermissions.RoleAdmin])
 
         return (
@@ -128,7 +147,7 @@ const UpsertRoleForm = ({
                                     uppercase={false} 
                                     color={Colors.primary.alpha}
                                     mode={'outlined'}
-                                    onPress={deleteRole}    
+                                    onPress={promptToDeleteRole}    
                                     style={{ borderRadius: 32, borderColor: Colors.primary.alpha, borderWidth: 1, padding: 4 }}>{STRINGS.SETTINGS.deleteRole}</Button>
                             </View>
                             : null

@@ -4,7 +4,7 @@ import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { Button, IconButton, Text } from "react-native-paper"
 import { unwrap } from "../../../../../common/utils"
 import { BottomDrawerHandleHeight, bottomDrawerStore, nativeEventStore } from "../../../stores/interfaces"
-import { Colors } from "../../../types"
+import { Colors, ICONS } from "../../../types"
 
 export type BackButtonHeaderProps = { 
     cancel?: {
@@ -73,7 +73,7 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
                 <IconButton
                     onPress={this.toggleExpanded}
                     style={styles.toggleExpandedIcon}
-                    icon={ bottomDrawerStore().expanded ? 'chevron-down' : 'chevron-up'} 
+                    icon={ bottomDrawerStore().expanded ? ICONS.filterOpen : ICONS.filterClose} 
                     color={styles.toggleExpandedIcon.color}
                     size={styles.toggleExpandedIcon.width} />
             </View>
@@ -87,7 +87,7 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
                     testID={this.props.cancel.testID}
                     onPress={this.cancel}
                     style={styles.closeIcon}
-                    icon='close' 
+                    icon={ICONS.navCancel} 
                     color={styles.closeIcon.color}
                     size={styles.closeIcon.width} />
             </View>

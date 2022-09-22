@@ -1,5 +1,5 @@
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes } from "../../common/models";
+import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/models";
 
 export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
     // notification?: PatchEventTypes<T>
@@ -17,7 +17,7 @@ export type RootStackParamList = {
     Home: undefined;
     SignUp: undefined;
     UserHomePage: undefined;
-    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes>;
+    HelpRequestDetails: NotificationRouteParams<RequestTeamEventTypes, { initialTab?: RequestDetailsTabs }>;
     HelpRequestMap: undefined;
     HelpRequestList: undefined;
     HelpRequestChat: undefined;
@@ -96,16 +96,17 @@ export const Colors = {
         settings: '#F0EDF0',
         secondary: '#F6F4F6',
         signIn: '#F0EDF0',
-        dark: '#3F3C3F',
+        dark: '#111',
+        medium: '#ddd',
         filter: '#F0F0F0',
         filterSelectedItem: '#999',
         menu: '#111',
         tabs: '#111',
         tags: {
             primaryForeground: '#FFF',
-            primaryBackground: '#5D8A98',
+            primaryBackground: '#111',
             secondaryForeground: '#F0F0F0',
-            secondaryBackground: '#111',
+            secondaryBackground: '#444',
             tertiaryForeground: '#666',
             tertiaryBackground: '#E0E0E0',
         },
@@ -143,6 +144,7 @@ export const Colors = {
     icons: {
         superlight: '#E0E0E0',
         light: '#999',
+        lighter: '#bbb',
         dark: '#666',
         superdark: '#333',
         lightReversed: '#f0f0f0',
@@ -151,7 +153,7 @@ export const Colors = {
     borders: {
         formFields: '#E0E0E0',
         filter: '#E0E0E0',
-        list: '#E0E0E0',
+        list: '#eee',
         menu: '#666',
     },
     good: '#55BB76',
@@ -159,4 +161,84 @@ export const Colors = {
     bad: '#E55300',
     neutral: '#CCCCCC',
     nocolor: 'rgba(255, 255, 255, 0)'
+}
+
+enum BASIC_ICONS {
+    minus = 'minus',
+    plus = 'plus',
+    check = 'check',
+    checkCircle = 'check-circle',
+    chevronRight = 'chevron-right',
+    chevronLeft = 'chevron-left',
+    chevronUp = 'chevron-up',
+    chevronDown = 'chevron-down',
+    xMark = 'close',
+    chatBubble = 'message',
+    chatBubbleBadge = 'message-badge',
+    chatBubbleText = 'message-text',
+    clockOutline = 'clock-outline',
+    phone = 'phone',
+    email = 'email',
+}
+
+export const ICONS = {
+    menu: 'menu',
+    accountMultiple: 'account-multiple',
+    tag: 'tag',
+    filterClose: BASIC_ICONS.chevronUp,
+    filterOpen: BASIC_ICONS.chevronDown,
+    add: 'plus',
+    edit: 'pencil',
+    role: 'clipboard-account',
+    clock: 'clock-outline',
+    removeUser: 'close',
+    deleteItem: 'close',
+    deleteCategory: 'delete',
+    responder: 'account',
+    responders: 'group',
+    unselectedSmall: 'check-circle-outline',
+    selectedSmall: 'check-circle',
+    check: BASIC_ICONS.check,
+    attachment: 'paperclip',
+    sendMessage: 'send',
+    removeCategorizedItem: BASIC_ICONS.minus,
+    openListItem: BASIC_ICONS.chevronRight,
+    selectListItem: BASIC_ICONS.check,
+    navCancel: BASIC_ICONS.xMark,
+    navBack: BASIC_ICONS.chevronLeft,
+    showPassword: 'eye',
+    hidePassword: 'eye-off',
+    textInputClear: BASIC_ICONS.xMark,
+    refresh: 'refresh',
+    mapMarker: 'map-marker',
+    map: 'map',
+    cardList: 'view-agenda',
+    newMessage: BASIC_ICONS.chatBubble,
+    timeRequestCreated: BASIC_ICONS.clockOutline,
+    timeCallStarted: 'phone',
+    callerContactInfo: 'card-account-phone',
+    joinDecline: BASIC_ICONS.xMark,
+    joinAccept: BASIC_ICONS.check,
+    joinAccepted: BASIC_ICONS.checkCircle,
+    returnToActiveRequest: 'keyboard-return',
+    organization: 'domain',
+    addPhoto: 'camera-plus',
+    callPhone: BASIC_ICONS.phone,
+    sendEmail: BASIC_ICONS.email,
+    request: 'human-greeting-variant',
+    permissions: 'key',
+    schedule: 'calendar',
+    channels: 'forum',
+    userStatusOnRequestOnDuty: 'lightning-bolt-circle',
+    userStatusOnRequestOffDuty: 'lightning-bolt',
+    userStatusOnDuty: 'circle',
+    userStatusOffDuty: 'circle-outline',
+    statusUnassignedOrReady: 'account-multiple',
+    statusOnTheWay: 'arrow-right',
+    statusOnSite: 'map-marker',
+    statusFinished: 'check', 
+    statusClosed: 'lock',
+    priority1: 'chevron-up',
+    priority2: 'chevron-double-up',
+    priority3: 'chevron-triple-up',
 }
