@@ -8,7 +8,15 @@ type CaseAndNumber = {
 const STRINGS = {
     // GLOBAL
     ELEMENTS: {
-        role: 'role',
+        // To do: refactor role and request props to be simpler
+        role: (props?:CaseAndNumber) => (props?.cap 
+            ? props?.plural
+                ? 'Roles'
+                : 'Role'
+            : props?.plural
+                ? 'roles'
+                : 'role'
+        ),
         shift: 'shift',
         attribute: 'attributes',
         tag: 'tag',
@@ -132,6 +140,8 @@ const STRINGS = {
         inviteTitle: `Invite to team`,
         profileTitle: 'Profile',
         profileTitleMine: 'My profile',
+        editUserProfile: (userName: string) => `Edit ${userName}'s profile`,
+        editMyProfile: 'Edit my profile',
         sendInvite: `Send Invite`,
         welcomeToPatch: `Welcome to PATCH!`,
         userNotFound: (email: string) => `User with email ${email} not found`,
@@ -170,6 +180,7 @@ const STRINGS = {
         deleteRole: 'Delete this role',
         nameRole: 'Name this role',
         setPermissions: 'Set permissions',
+        rolesAndPermissions: 'Roles + permissions',
         cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',

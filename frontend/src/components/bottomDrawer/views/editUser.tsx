@@ -99,8 +99,8 @@ export default class EditUser extends React.Component {
 
         return {
             headerLabel: editingMe
-                ? 'Edit my profile'
-                : `Edit ${editUserStore().name}'s profile`,
+                ? STRINGS.ACCOUNT.editMyProfile
+                : STRINGS.ACCOUNT.editUserProfile(editUserStore().name),
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs(),

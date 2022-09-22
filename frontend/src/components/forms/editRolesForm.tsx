@@ -61,7 +61,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             label: ({ expand }) => {
                 return (
                     <Pressable style={{ paddingVertical: 12}} onPress={expand}>
-                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role)}</Text>
+                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())}</Text>
                     </Pressable>
                 )
             },
@@ -80,7 +80,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                     }
                 }
 
-                return <UpsertRoleForm headerLabel={'Add role'} cancel={cancelAdd} save={save}/>
+                return <UpsertRoleForm headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} cancel={cancelAdd} save={save}/>
             }
         } as NavigationFormInputConfig
 
@@ -97,7 +97,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                 handler: back,
                 outline: true
             },
-            label: 'Roles + permissions',
+            label: STRINGS.SETTINGS.rolesAndPermissions,
             bottomBorder: true
         }
 
