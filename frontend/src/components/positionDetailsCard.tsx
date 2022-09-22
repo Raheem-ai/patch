@@ -34,7 +34,10 @@ const PositionDetailsCard = observer(({
     const requestIsClosed = request.status == RequestStatus.Closed
 
     const positionMetadata = requestStore().getPositionScopedMetadata(userStore().user.id, requestId, pos.id);
-    const joinedUsers = Array.from(positionMetadata.joinedUsers.values());
+    const joinedUsers = Array.from(positionMetadata.joinedUsers.values()).filter(userId => {
+        const user = userStore().users.get(userId);
+        return user && userStore().userInOrg(user)
+    });
 
     const status = joinedUsers.length
         ? joinedUsers.length >= pos.min
@@ -65,7 +68,7 @@ const PositionDetailsCard = observer(({
     }[] = joinedUsers.map(userId => {
         const user = userStore().users.get(userId);
 
-        if (!user) {
+        if (!user || !userStore().userInOrg(user)) {
             return null;
         }
 

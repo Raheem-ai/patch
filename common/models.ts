@@ -390,10 +390,10 @@ export enum RequestStatus {
     Closed
 }
 
-export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest) => string) } = {
+export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest, usersRemovedFromOrg: string[]) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest) => {
-        const stats = positionStats(req.positions);
+    [RequestStatus.PartiallyAssigned]: (req: HelpRequest, usersRemovedFromOrg: string[]) => {
+        const stats = positionStats(req.positions, usersRemovedFromOrg);
         return `${stats.totalMinFilled} of ${stats.totalMinToFill}`
     },
     [RequestStatus.Ready]: 'Ready',
@@ -1209,6 +1209,7 @@ export type PatchEventParams = {
         refreshToken: string
     },
     [PatchEventType.UserCreated]: {
+        // orgId: string,
         userId: string
     }
     [PatchEventType.UserEdited]: {
@@ -1216,6 +1217,7 @@ export type PatchEventParams = {
         orgId: string
     },
     [PatchEventType.UserDeleted]: {
+        // orgId: string,
         userId: string
     }, 
     [PatchEventType.UserAddedToOrg]: {
@@ -1251,11 +1253,13 @@ export type PatchEventParams = {
         requestId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {
+        // orgId: string,
         requestId: string,
         notifierId: string,
         userIds: string[]
     },
     [PatchEventType.RequestRespondersNotificationAck]: {
+        // orgId: string,
         requestId: string
     },
     [PatchEventType.RequestRespondersRequestToJoin]: {

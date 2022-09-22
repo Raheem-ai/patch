@@ -48,10 +48,15 @@ const HelpRequestChatPreview = observer(({
         const lastMessageUser = userStore().users.get(request.chat?.messages[request.chat.messages.length - 1].userId);
 
         const preview = (request.chat && request.chat.messages.length)
-                        ? <Text style={styles.detailText}><Text style={styles.nameText}>{lastMessageUser 
-                            ? lastMessageUser.name + ': ' 
-                            : ''}
-                        </Text> {request.chat.messages[request.chat.messages.length - 1].message}</Text>
+                        ? <Text style={styles.detailText}>
+                            <Text style={styles.nameText}>
+                                { lastMessageUser 
+                                    ? lastMessageUser.name + ': ' 
+                                    : ''
+                                }
+                            </Text> 
+                            { request.chat.messages[request.chat.messages.length - 1].message }
+                        </Text>
                         : STRINGS.CHANNELS.noMessages;
 
         return (

@@ -581,6 +581,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 const joinedSection = () => {
 
+                    // TODO: should we change the icon here if the user is no longer in the org?
                     const joinedIcon = () => {
                         return (
                             <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>

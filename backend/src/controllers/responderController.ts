@@ -65,7 +65,7 @@ export class ResponderController implements APIController<
         const req = await this.db.resolveRequest(requestId);
 
         if (userCanJoinRequestPosition(req, positionId, user, orgId)) {
-            const res = await this.db.joinRequest(requestId, user.id, positionId);
+            const res = await this.db.joinRequest(orgId, requestId, user.id, positionId);
 
             await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {
                 responderId: user.id,
@@ -89,7 +89,7 @@ export class ResponderController implements APIController<
         @Required() @BodyParams('requestId') requestId: string,
         @Required() @BodyParams('positionId') positionId: string
     ) {
-        const res = await this.db.leaveRequest(requestId, user.id, positionId)
+        const res = await this.db.leaveRequest(orgId, requestId, user.id, positionId)
 
         await this.pubSub.sys(PatchEventType.RequestRespondersLeft, {
             responderId: user.id,
