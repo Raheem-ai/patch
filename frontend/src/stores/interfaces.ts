@@ -20,6 +20,7 @@ export interface IUserStore extends IBaseStore {
     currentOrgId: string;
     users: Map<string, ClientSideFormat<ProtectedUser>>
     usersInOrg: ClientSideFormat<ProtectedUser>[]
+    usersRemovedFromOrg: ClientSideFormat<ProtectedUser>[]
     currentUser: ClientSideFormat<ProtectedUser>
     loadingCurrentUser: boolean
 
@@ -37,6 +38,8 @@ export interface IUserStore extends IBaseStore {
     removeMyselfFromOrg: () => Promise<void>
     editUser: (userId: string, user: Partial<AdminEditableUser>) => Promise<void>
     editMe: (user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) => Promise<void>
+
+    userInOrg: (user: Pick<User, 'organizations'>) => boolean
 }
 
 export namespace IUserStore {
@@ -234,7 +237,6 @@ export interface IRequestStore extends IBaseStore {
     removeUserFromRequest(userId: string, reqId: string, positionId: string): Promise<void>
     getRequestMetadata(userId: string, requestId: string): RequestMetadata
     getPositionScopedMetadata(userId: string, requestId: string, positionId: string): PositionScopedMetadata
-    getRequestScopedMetadata(userId: string, requestId: string): RequestScopedMetadata
 
     approveRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>
     denyRequestToJoinRequest(userId: string, requestId: string, positionId: string): Promise<void>

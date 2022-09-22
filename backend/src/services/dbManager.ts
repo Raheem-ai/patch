@@ -49,6 +49,17 @@ export class DBManager {
         return user
     }
 
+    removedUser(user: ProtectedUser): ProtectedUser {
+        return { 
+            id: user.id,
+            name: user.name,
+            organizations: user.organizations,
+            phone: '',
+            email: '',
+            displayColor: ''
+        }
+    }
+
     me(user: UserDoc): Me {
         const pubUser = user.toObject({ virtuals: true });
 
@@ -76,7 +87,7 @@ export class DBManager {
         const jsonOrg = org.toJSON() as Organization;
 
         jsonOrg.members = jsonOrg.members.map(this.protectedUser);
-        jsonOrg.removedMembers = jsonOrg.removedMembers.map(this.protectedUser);
+        jsonOrg.removedMembers = jsonOrg.removedMembers.map(this.protectedUser).map(this.removedUser);
 
         return jsonOrg;
     }
@@ -324,7 +335,10 @@ export class DBManager {
         }), 1)
 
         org.removedMembers ||= []
-        org.removedMembers.push(userId);
+
+        if (!org.removedMembers.includes(userId)) {
+            org.removedMembers.push(userId);
+        }
 
         // save both
         return this.transaction(async (session) => {
@@ -1368,7 +1382,7 @@ export class DBManager {
         return await request.save();
     }
 
-    async confirmRequestToJoinPosition(requestId: string | HelpRequestDoc, approverId: string, userId: string, positionId: string) {
+    async confirmRequestToJoinPosition(orgId: string | OrganizationDoc, requestId: string | HelpRequestDoc, approverId: string, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
 
         const position = request.positions.find(pos => pos.id == positionId);
@@ -1397,12 +1411,14 @@ export class DBManager {
             position: positionId
         } as RequestTeamEvent<PatchEventType.RequestRespondersAccepted>)
 
-        request.status = resolveRequestStatus(request)
+        const org = await this.resolveOrganization(orgId);
+
+        request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save()
     }
 
-    async leaveRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
+    async leaveRequest(orgId: string | OrganizationDoc, requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
 
         const position = request.positions.find(pos => pos.id == positionId);
@@ -1429,7 +1445,9 @@ export class DBManager {
             position: positionId
         } as RequestTeamEvent<PatchEventType.RequestRespondersLeft>)
 
-        request.status = resolveRequestStatus(request)
+        const org = await this.resolveOrganization(orgId);
+
+        request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save()
     }
@@ -1461,7 +1479,7 @@ export class DBManager {
         return await request.save()
     }
 
-    async joinRequest(requestId: string | HelpRequestDoc, userId: string, positionId: string) {
+    async joinRequest(orgId: string | OrganizationDoc, requestId: string | HelpRequestDoc, userId: string, positionId: string) {
         const request = await this.resolveRequest(requestId);
 
         const position = request.positions.find(pos => pos.id == positionId);
@@ -1489,7 +1507,9 @@ export class DBManager {
             position: positionId
         } as RequestTeamEvent<PatchEventType.RequestRespondersJoined>)
 
-        request.status = resolveRequestStatus(request)
+        const org = await this.resolveOrganization(orgId);
+
+        request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save()
     }
@@ -1515,7 +1535,7 @@ export class DBManager {
         return await request.save()
     }
 
-    async removeUserFromRequest(revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
+    async removeUserFromRequest(orgId: string | OrganizationDoc, revokerId: string, userId: string, requestId: string, positionId: string): Promise<HelpRequestDoc> {
         const request = await this.resolveRequest(requestId);
         const position = request.positions.find(pos => pos.id == positionId);
         const prefix = (await this.resolveOrganization(request.orgId)).requestPrefix;
@@ -1543,7 +1563,9 @@ export class DBManager {
             position: positionId
         } as RequestTeamEvent<PatchEventType.RequestRespondersRemoved>)
 
-        request.status = resolveRequestStatus(request)
+        const org = await this.resolveOrganization(orgId);
+
+        request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save();
     }
@@ -1931,7 +1953,7 @@ export class DBManager {
             reqWithMessage = await this.ackRequestNotification(reqWithMessage, user2.id);
 
             // join
-            reqWithMessage = await this.joinRequest(reqWithMessage, user4.id, reqWithMessage.positions[0].id)
+            reqWithMessage = await this.joinRequest(org.id, reqWithMessage, user4.id, reqWithMessage.positions[0].id)
 
             // leave
 
@@ -1949,7 +1971,7 @@ export class DBManager {
             ])
 
             // accept
-            reqWithMessage =  await this.confirmRequestToJoinPosition(reqWithMessage, user1.id, user5.id, reqWithMessage.positions[0].id)
+            reqWithMessage =  await this.confirmRequestToJoinPosition(org.id, reqWithMessage, user1.id, user5.id, reqWithMessage.positions[0].id)
 
             // deny request
             reqWithMessage =  await this.declineRequestToJoinPosition(reqWithMessage, user1.id, user3.id, reqWithMessage.positions[0].id)
