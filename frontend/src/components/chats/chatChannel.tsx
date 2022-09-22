@@ -112,7 +112,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
         )
     }
 
-    const reopenRequest = () => async () => {
+    const reopenRequest = async () => {
         await requestStore().reopenRequest(requestStore().currentRequest.id);
     }
 
@@ -137,7 +137,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
                                     onPress={reopenRequest}/>
-                                : <Text style={styles.disabledChatMessage}>{'This request has been closed.'}</Text>
+                                : <Text style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</Text>
                             }
                     </View>
                 </View>

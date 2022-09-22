@@ -29,10 +29,10 @@ const NotificationLabelMap = {
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string, prefix?: string) => {
         return `New message on ${requestDisplayName(prefix, requestName)} from ${senderName}`
     },
-    [PatchEventType.RequestRespondersNotified]: (requestName: string, prefix?: string, hasPositions?: boolean ) => {
+    [PatchEventType.RequestRespondersNotified]: (requestName: string, notifierName: string, prefix?: string, hasPositions?: boolean ) => {
         return (hasPositions
-            ? `Responders needed for ${requestDisplayName(prefix, requestName)}?`
-            : `Notification for ${requestDisplayName(prefix, requestName)}`
+            ? `Responders needed for ${requestDisplayName(prefix, requestName)}`
+            : `${notifierName} notified you about ${requestDisplayName(prefix, requestName)}`
     )},
     [PatchEventType.RequestRespondersJoined]: (requestName: string, responderName: string, prefix: string) => {
         return `${responderName} joined ${requestDisplayName(prefix, requestName)}`

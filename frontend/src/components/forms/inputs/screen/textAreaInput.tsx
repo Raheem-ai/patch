@@ -65,8 +65,8 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
                         multiline
                         autoFocus
                         value={val}
-                        onChangeText={(s) => {
-                            const newValue:string = config.textTransform ? config.textTransform(s) : s;
+                        onChangeText={(s: string) => {
+                            const newValue = config.textTransform ? config.textTransform(s) : s;
                             setVal(newValue)
                         }}/>
                 </View>
