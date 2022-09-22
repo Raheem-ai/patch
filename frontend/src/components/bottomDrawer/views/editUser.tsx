@@ -161,8 +161,6 @@ export default class EditUser extends React.Component {
         })
     }
 
-    // ==========================================
-
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
         const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
