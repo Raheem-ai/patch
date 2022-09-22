@@ -1431,7 +1431,7 @@ export enum PatchPermissionGroups {
     ManageChats = 'mc',
     InviteToChats = 'itc',
     SeeAllChats = 'sac',
-//    ManageSchedule = 'ms',
+    ManageSchedule = 'ms',
     ManageRequests = 'mr',
     ContributeToRequests = 'ctr',
     CloseRequests = 'cr'
@@ -1508,7 +1508,6 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
             PatchPermissions.SeeShiftChats
         ]
     },
-    /*
     [PatchPermissionGroups.ManageSchedule]: {
         name: 'Manage schedule',
         description: `Create, edit, and remove shifts`,
@@ -1517,7 +1516,6 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
             PatchPermissions.SeeShiftChats
         ]
     },
-    */
     [PatchPermissionGroups.ManageRequests]: {
         name: 'Manage requests',
         description: `Create requests and notify team`,
@@ -1574,7 +1572,7 @@ export const DefaultRoles: Role[] = [
             PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.ManageMetadata,
             PatchPermissionGroups.ManageRequests,
-//            PatchPermissionGroups.ManageSchedule,
+            PatchPermissionGroups.ManageSchedule,
             PatchPermissionGroups.ManageTeam,
             PatchPermissionGroups.SeeAllChats,
             PatchPermissionGroups.ExportData,
