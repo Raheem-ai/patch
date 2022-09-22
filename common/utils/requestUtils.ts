@@ -1,20 +1,20 @@
 import { CategorizedItem, DefaultRoleIds, HelpRequest, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 import STRINGS from "../strings";
 
-export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>): RequestStatus {
+export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>, usersRemovedFromOrg: string[]): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
         || request.status == RequestStatus.PartiallyAssigned
         || request.status == RequestStatus.Ready;
 
     if (shouldAutoUpdate) {
-        return assignedResponderBasedRequestStatus(request);
+        return assignedResponderBasedRequestStatus(request, usersRemovedFromOrg);
     } else {
         return request.status;
     }
 }
 
-export function assignedResponderBasedRequestStatus(request: Pick<HelpRequest, 'positions'>): RequestStatus {
-    const stats = positionStats(request.positions);
+export function assignedResponderBasedRequestStatus(request: Pick<HelpRequest, 'positions'>, usersRemovedFromOrg: string[]): RequestStatus {
+    const stats = positionStats(request.positions, usersRemovedFromOrg);
     
     return !stats.totalMinFilled 
         ? RequestStatus.Unassigned
@@ -40,15 +40,21 @@ type AggregatePositionStats = {
     totalFilled: number
 }
 
-export function positionStats(positions: Position[]): AggregatePositionStats {
+export function positionStats(positions: Position[], usersRemovedFromOrg?: string[]): AggregatePositionStats {
     let totalMinFilled = 0;
     let totalMinToFill = 0;
     let totalFilled = 0;
 
     for (const position of positions) {
+        const joinedUsersInOrg = usersRemovedFromOrg && usersRemovedFromOrg.length
+            ? position.joinedUsers.filter(userId => {
+                return !usersRemovedFromOrg.includes(userId)
+            })
+            : position.joinedUsers;
+
         totalMinToFill += position.min
-        totalMinFilled += Math.min(position.joinedUsers.length, position.min)
-        totalFilled += position.joinedUsers.length
+        totalMinFilled += Math.min(joinedUsersInOrg.length, position.min)
+        totalFilled += joinedUsersInOrg.length
     }
 
     return {

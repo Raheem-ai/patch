@@ -157,7 +157,10 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @User() user: UserDoc,
         @HelpReq() helpRequest: HelpRequestDoc,
     ) {
-        helpRequest.status = assignedResponderBasedRequestStatus(helpRequest);
+        const org = await this.db.resolveOrganization(orgId);
+        const usersRemovedFromOrg = org.removedMembers as string[];
+
+        helpRequest.status = assignedResponderBasedRequestStatus(helpRequest, usersRemovedFromOrg);
         
         const res = await helpRequest.save();
 

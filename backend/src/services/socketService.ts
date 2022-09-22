@@ -634,6 +634,7 @@ export class MySocketService {
     }
 
     async send(
+        orgId: string | OrganizationDoc,
         configs: SendConfig[], 
         packet: PatchEventPacket
     ): Promise<void> 
@@ -641,7 +642,15 @@ export class MySocketService {
         const notifications: NotificationMetadata<any>[] = [];
         const socketAttempts = [];
 
+        const org = await this.db.resolveOrganization(orgId);
+
         for (const config of configs) {
+            if (!org.members.includes(config.userId)) {
+                // filter out user's no longer in the org
+                console.error(`Error Sending Notification: user ${config.userId} is not in org ${org.id}`)
+                continue;
+            }
+
             const sockets = await this.adapter.fetchSockets({
                 rooms: new Set([config.userId])
             })
