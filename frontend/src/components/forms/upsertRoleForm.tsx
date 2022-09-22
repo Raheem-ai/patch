@@ -116,9 +116,7 @@ const UpsertRoleForm = ({
                 actions: [
                     {
                         label: STRINGS.SETTINGS.removeRoleDialogOptionNo,
-                        onPress: () => {
-                            return
-                        },
+                        onPress: () => {},
                     },
                     {   
                         label: STRINGS.SETTINGS.removeRoleDialogOptionYes,

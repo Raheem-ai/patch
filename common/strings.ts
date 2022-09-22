@@ -9,7 +9,7 @@ const STRINGS = {
     // GLOBAL
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
-        role: (props?:CaseAndNumber) => (props?.cap 
+        role: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
                 ? 'Roles'
                 : 'Role'
@@ -21,7 +21,7 @@ const STRINGS = {
         attribute: 'attributes',
         tag: 'tag',
         position: `position`,
-        request: (props?:CaseAndNumber) => (props?.cap 
+        request: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
                 ? 'Requests'
                 : 'Request'
@@ -58,9 +58,9 @@ const STRINGS = {
         newTicket: 'Report an issue',
     },
     INTERFACE: {
-        addElement: (el?:string) => `Add${el ? ' ' + el : ''}`,
-        addCategory: (el?:string) => `Add${el ? ' ' + el : ''} category`,
-        addAnotherElement: (el?:string) => `Add another ${el}`,
+        addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
+        addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
+        addAnotherElement: (el?: string) => `Add another ${el}`,
 
     },
     PAGE_TITLES: {
@@ -75,14 +75,14 @@ const STRINGS = {
         helpRequestList: 'Requests',
         helpRequestMap: 'Requests',
         helpRequestIdWhileLoading: '',
-        helpRequestChat: (prefix:string, id:string) => `Channel for ${requestDisplayName(prefix, id)}`,
+        helpRequestChat: (prefix: string, id: string) => `Channel for ${requestDisplayName(prefix, id)}`,
         teamList: 'Team',
         settings: 'Settings',
         channels: 'Channels',
         componentLibrary: 'Component Library'
     },
     REQUESTS: {
-        editRequestTitle: (prefix:string, requestName:string) => `Edit ${requestDisplayName(prefix, requestName)}`,
+        editRequestTitle: (prefix: string, requestName: string) => `Edit ${requestDisplayName(prefix, requestName)}`,
         description: 'Description',
         callStart: 'Call start',
         callEnd: 'Call end',
@@ -115,9 +115,9 @@ const STRINGS = {
             leave: `Leave`,
             join: `Join`,
             request: `Request`,
-            removeUser: (userName:string) => `${userName} isn't on this position.`,
-            removeFromPositionDialogTitle: (userName:string) =>`Remove ${userName}?`,
-            removeFromPositionDialogText: (userName:string) => `${userName} will no longer be on this position.`,
+            removeUser: (userName: string) => `${userName} isn't on this position.`,
+            removeFromPositionDialogTitle: (userName: string) =>`Remove ${userName}?`,
+            removeFromPositionDialogText: (userName: string) => `${userName} will no longer be on this position.`,
             removeFromPositionDialogOptionNo: 'Cancel',
             removeFromPositionDialogOptionYes:  `Remove`,    
             removedUserName: '(Removed)',
@@ -151,27 +151,27 @@ const STRINGS = {
         noOrgScope: `No org scope supplied`,
         noOrgAccess: `You do not have access to the requested org.`,
         unauthorized: `Unauthorized user`,
-        removeDialogTitle: (isMe:boolean) => isMe ? `Leave organization?` : `Remove from organization?`,
-        removeDialogText: (isMe:boolean, userName:string) => `${isMe ? 'You' : userName} will need to be reinvited to regain access to this organization.`,
+        removeDialogTitle: (isMe: boolean) => isMe ? `Leave organization?` : `Remove from organization?`,
+        removeDialogText: (isMe: boolean, userName: string) => `${isMe ? 'You' : userName} will need to be reinvited to regain access to this organization.`,
         removeDialogOptionNo: 'Cancel',
-        removeDialogOptionYes: (isMe:boolean, userName:string) => isMe ? `Leave organization` : `Remove ${userName}`,
-        removeUser: (isMe:boolean) => isMe ? 'Leave organization' : 'Remove from organization',
-        notInOrg: (usersNotInOrg:string[], orgName:string) => `Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${orgName}`,
+        removeDialogOptionYes: (isMe: boolean, userName: string) => isMe ? `Leave organization` : `Remove ${userName}`,
+        removeUser: (isMe: boolean) => isMe ? 'Leave organization' : 'Remove from organization',
+        notInOrg: (usersNotInOrg: string[], orgName: string) => `Users with ids: ${usersNotInOrg.join(', ')} are not in org: ${orgName}`,
         roleRequired: `You must invite a user with at least one role.`,
-        joinOrg: (orgName:string, link:string, existingUser:boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
+        joinOrg: (orgName: string, link: string, existingUser: boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
         alreadyInOrg: (orgName: string) => `You are already a member of ${orgName}!`,
-        invitationSuccessful: (email:string, phone:string) => `Invitation sent to email ${email} and phone ${phone}.`,
+        invitationSuccessful: (email: string, phone: string) => `Invitation sent to email ${email} and phone ${phone}.`,
         inviteNotFound: (userEmail: string, orgName: string) => `Invite for user with email ${userEmail} to join '${orgName}' not found`,
-        twilioError: (msg:string) => `Twilio Error: ${msg}`,
+        twilioError: (msg: string) => `Twilio Error: ${msg}`,
         
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
-        removedUserSuccess: (name:string) => `Successfully removed ${name} from your organization.`,
-        updatedProfileSuccess: (name?:string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
-        updatedRequestSuccess: (req:string) => `Successfully updated ${req}.`,
-        createdRequestSuccess: (req:string) => `Successfully created ${req}.`,
+        removedUserSuccess: (name: string) => `Successfully removed ${name} from your organization.`,
+        updatedProfileSuccess: (name?: string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
+        updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
+        createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
 
     },
     SETTINGS: {
@@ -181,11 +181,11 @@ const STRINGS = {
         nameRole: 'Name this role',
         setPermissions: 'Set permissions',
         rolesAndPermissions: 'Roles + permissions',
-        cannotEditRole: (roleName:string) => `The ${roleName} role cannot be edited`,
-        cannotDeleteRole: (roleName:string) => `The ${roleName} role cannot be deleted`,
+        cannotEditRole: (roleName: string) => `The ${roleName} role cannot be edited`,
+        cannotDeleteRole: (roleName: string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',
-        removeRoleDialogTitle: (roleName:string) =>`Remove ${roleName} role?`,
-        removeRoleDialogText: (roleName:string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
+        removeRoleDialogTitle: (roleName: string) =>`Remove ${roleName} role?`,
+        removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
         removeRoleDialogOptionNo: 'Cancel',
         removeRoleDialogOptionYes:  `Remove`, 
     }

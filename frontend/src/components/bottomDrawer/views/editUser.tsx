@@ -148,9 +148,7 @@ export default class EditUser extends React.Component {
             actions: [
                 {
                     label: STRINGS.ACCOUNT.removeDialogOptionNo,
-                    onPress: () => {
-                        bottomDrawerStore().show(this.onMyProfile ? BottomDrawerView.editMe : BottomDrawerView.editUser, true)
-                    },
+                    onPress: () => {}
                 },
                 {   
                     label: STRINGS.ACCOUNT.removeDialogOptionYes(this.onMyProfile, editUserStore().name),
