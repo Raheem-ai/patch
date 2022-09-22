@@ -228,7 +228,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const usersOnRequest = await this.orgMembersOnRequest(request, fullOrg);
 
         const responderName = usersOnRequest.has(payload.responderId)
             ? usersOnRequest.get(payload.responderId).userName
@@ -238,6 +238,11 @@ export class MySocketService {
         const configs: SendConfig[] = [];
 
         for (const admin of Array.from(requestAdmins.values())) {
+            // dedup
+            if (admin.userId == payload.responderId) {
+                continue;
+            }
+            
             admin.body = body
             configs.push(admin as SendConfig)
         }
@@ -268,23 +273,38 @@ export class MySocketService {
 
         const body = notificationLabel(PatchEventType.RequestRespondersNotified, req.displayId, notifier.name, org.requestPrefix, !!req.positions.length);
 
-        const configs: SendConfig[] = usersToNotify.map(u => {
-            admins.delete(u.id)
+        const configs: SendConfig[] = [];
 
-            return {
-                userId: u.id,
-                userName: u.name,
-                pushToken: u.push_token,
-                body
+        for (const user of usersToNotify) {
+            // dedup admins
+            admins.delete(user.id)
+
+            // make sure user hasn't been removed from org
+            if (!(await this.userInOrg(org, user.id))) {
+                continue;
             }
-        })
 
-        const adminConfigs: SendConfig[] = Array.from(admins.values()).map(conf => {
-            return {
-                ...conf,
+            configs.push({
+                userId: user.id,
+                userName: user.name,
+                pushToken: user.push_token,
+                body
+            })
+        }
+
+        const adminConfigs: SendConfig[] = [];
+
+        for (const adminConf of admins.values()) {
+            // dedup notifier
+            if (payload.notifierId == adminConf.userId) {
+                continue;
+            }
+
+            adminConfigs.push({
+                ...adminConf,
                 body: ''
-            } as SendConfig
-        })
+            } as SendConfig)
+        }
 
         await this.send(configs, {
             event: PatchEventType.RequestRespondersNotified,
@@ -302,20 +322,31 @@ export class MySocketService {
         const org = await this.db.resolveOrganization(payload.orgId)
         const fullOrg = await this.db.fullOrganization(org)
         const request = await this.db.resolveRequest(payload.requestId)
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const orgMembersOnRequest = await this.orgMembersOnRequest(request, fullOrg);
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-        const senderName = usersOnRequest.get(payload.userId)?.userName || requestAdmins.get(payload.userId)?.userName || ''
+        const senderName = orgMembersOnRequest.get(payload.userId)?.userName || requestAdmins.get(payload.userId)?.userName || ''
         const body = notificationLabel(PatchEventType.RequestChatNewMessage, request.displayId, senderName, org.requestPrefix)
         const configs: SendConfig[] = [];
 
-        for (const user of Array.from(usersOnRequest.values())) {
-            user.body = body
-            configs.push(user as SendConfig)
+        for (const orgMember of Array.from(orgMembersOnRequest.values())) {
+            // dedup admins
+            requestAdmins.delete(orgMember.userId)
 
-            requestAdmins.delete(user.userId)
+            // dedup sender
+            if (payload.userId == orgMember.userId) {
+                continue;
+            }
+
+            orgMember.body = body
+            configs.push(orgMember as SendConfig)
         }
 
         for (const admin of Array.from(requestAdmins.values())) {
+            // dedup sender
+            if (payload.userId == admin.userId) {
+                continue;
+            }
+
             admin.body = body
             configs.push(admin as SendConfig)
         }
@@ -329,7 +360,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const usersOnRequest = await this.orgMembersOnRequest(request, fullOrg);
 
         const responderName = usersOnRequest.has(payload.responderId)
             ? usersOnRequest.get(payload.responderId).userName
@@ -338,19 +369,22 @@ export class MySocketService {
         const body = notificationLabel(PatchEventType.RequestRespondersLeft, request.displayId, responderName, org.requestPrefix);
         const configs: SendConfig[] = [];
 
-        for (const admin of Array.from(requestAdmins.values())) {
-            admin.body = body
-            configs.push(admin as SendConfig)
-        }
-
         for (const responder of Array.from(usersOnRequest.values())) {
-            // dedup
-            if (responder.userId == payload.responderId || requestAdmins.has(responder.userId)) {
+            //dedup admins
+            requestAdmins.delete(responder.userId)
+
+            // dedup responder that left
+            if (responder.userId == payload.responderId) {
                 continue;
             }
 
             responder.body = body
             configs.push(responder as SendConfig)
+        }
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            admin.body = body
+            configs.push(admin as SendConfig)
         }
 
         await this.send(configs, {
@@ -365,7 +399,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const usersOnRequest = await this.orgMembersOnRequest(request, fullOrg);
 
         const joinedConfigs: SendConfig[] = [];
         let acceptedConfig: SendConfig;
@@ -373,6 +407,12 @@ export class MySocketService {
         const responderName = usersOnRequest.get(params.responderId)?.userName 
             || requestAdmins.get(params.responderId)?.userName
             || (await this.db.resolveUser(params.responderId)).name
+
+        // make sure user hasn't been removed from org
+        if (!(await this.userInOrg(org, params.responderId))) {
+            // if they have, the acceptance is a noop
+            return
+        }
 
         let accepter = requestAdmins.get(params.accepterId);
 
@@ -429,7 +469,7 @@ export class MySocketService {
         const fullOrg = await this.db.fullOrganization(org);
 
         const requestAdmins = await this.requestAdminsInOrg(fullOrg);
-        const usersOnRequest = await this.usersOnRequest(request, fullOrg);
+        const usersOnRequest = await this.orgMembersOnRequest(request, fullOrg);
 
         const leftConfigs: SendConfig[] = [];
         let removedConfig: SendConfig;
@@ -492,6 +532,11 @@ export class MySocketService {
         const decliner = await this.db.resolveUser(params.declinerId)
         const request = await this.db.resolveRequest(params.requestId)
         const org = await this.db.resolveOrganization(params.orgId);
+
+        // make sure user hasn't been removed from org
+        if (!(await this.userInOrg(org, params.responderId))) {
+            return;
+        }
 
         await this.send([
             {
@@ -592,7 +637,7 @@ export class MySocketService {
         return users;
     }
 
-    async usersOnRequest(req: HelpRequestDoc, org: OrganizationDoc) {
+    async orgMembersOnRequest(req: HelpRequestDoc, org: OrganizationDoc) {
         const users = new Map<string, Partial<SendConfig>>()
 
         const userIds = usersAssociatedWithRequest(req);
@@ -634,8 +679,12 @@ export class MySocketService {
         return admins;
     }
 
+    async userInOrg(orgId: string | OrganizationDoc, userId: string) {
+        const org = await this.db.resolveOrganization(orgId);
+        return org.members.includes(userId)
+    }
+
     async send(
-        orgId: string | OrganizationDoc,
         configs: SendConfig[], 
         packet: PatchEventPacket
     ): Promise<void> 
@@ -643,14 +692,7 @@ export class MySocketService {
         const notifications: NotificationMetadata<any>[] = [];
         const socketAttempts = [];
 
-        const org = await this.db.resolveOrganization(orgId);
-
         for (const config of configs) {
-            if (!org.members.includes(config.userId)) {
-                // filter out user's no longer in the org
-                console.error(`Error Sending Notification: user ${config.userId} is not in org ${org.id}`)
-                continue;
-            }
 
             const sockets = await this.adapter.fetchSockets({
                 rooms: new Set([config.userId])
