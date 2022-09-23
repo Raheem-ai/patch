@@ -122,7 +122,7 @@ const CategorizedItemListInput = ({
             onChange: (val) => setSearchText(val),
             isValid: () => !!searchText,
             type: 'TextInput',
-            name: `search`
+            name: `search`,
         }
 
         const searchListArea = () => {
@@ -174,14 +174,16 @@ const CategorizedItemListInput = ({
         const selectedListArea = () => {
             return (
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                    <View style={{ }}>
+                    <View style={{ paddingBottom: 40 }}>
                     {
                         Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
-                                    color: '#666',
-                                    fontWeight: 'normal'
+                                    color: Colors.text.secondary,
+                                    fontWeight: '700',
+                                    fontSize: 16,
+                                    textTransform: 'uppercase'
                                 }
                             }
 
@@ -190,7 +192,7 @@ const CategorizedItemListInput = ({
                                     
                                 return isSelected
                                     ? { fontWeight: 'bold' }
-                                    : { color: '#666'}
+                                    : { color: Colors.text.secondary}
                             }
 
                             const itemIcon = (categoryId: string, itemId: string) => {
@@ -203,7 +205,7 @@ const CategorizedItemListInput = ({
                                 return (
                                     <IconButton
                                         icon={ICONS.check} 
-                                        color={'#000'}
+                                        color={Colors.icons.dark}
                                         size={30} 
                                         style={{ margin: 0, padding: 0, width: 30 }}
                                         />
@@ -244,12 +246,21 @@ const CategorizedItemListInput = ({
                 </ScrollView>
             )
         }
+        const clearSearch = () => {
+            setSearchText('');
+        }
 
         const searchBox = () => {
 
             return (
-                <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20 }}>
-                    <TextInput style={{paddingHorizontal: 40, fontSize: 16 }} config={searchItemsInputConfig}/>
+                <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20, display: 'flex', flexDirection: 'row' }}>
+                    <TextInput style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
+                    <IconButton
+                                style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0, display: searchText ? 'flex' : 'none' }}
+                                icon={ICONS.textInputClear} 
+                                color={Colors.icons.lighter}
+                                onPress={clearSearch}
+                                size={25} />
                 </View>
             )
         }

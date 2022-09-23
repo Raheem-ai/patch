@@ -1,12 +1,13 @@
 import { observer } from "mobx-react";
 import React, { useRef, useState } from "react";
-import { Keyboard, Pressable, ScrollView, View, TextInput as RNTextInput, StyleSheet } from "react-native";
+import { Keyboard, Pressable, ScrollView, View, TextStyle, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { IconButton } from "react-native-paper";
 import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view";
+import STRINGS from "../../../../common/strings";
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
-import { ICONS } from "../../types";
+import { ICONS, Colors } from "../../types";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import CategoryRow from "./common/categoryRow";
 import BackButtonHeader, { BackButtonHeaderProps } from "./inputs/backButtonHeader";
@@ -87,7 +88,7 @@ export const EditCategorizedItemForm = observer(({
             <IconButton
                 onPress={() => store.removeItemFromCategory(categoryId, itemId)}
                 icon={ICONS.removeCategorizedItem} 
-                color='#999'
+                color={Colors.icons.lighter}
                 size={20} 
                 style={{ margin: 0, padding: 0, width: 20 }}
                 />
@@ -117,7 +118,7 @@ export const EditCategorizedItemForm = observer(({
 
     const categoryLabel = (props: { id: string, name: string }) => {
         const editCategoryInputConfig: InlineFormInputConfig<'TextInput'> = {
-            val: () =>  props.name,
+            val: () =>  props.name.toUpperCase(),
             onChange: (val) => store.editCategory(props.id, val),
             isValid: () => !!props.name,
             type: 'TextInput',
@@ -126,7 +127,7 @@ export const EditCategorizedItemForm = observer(({
 
         return (
             <TextInput 
-                style={{ fontSize: 18, fontWeight: 'bold' }} 
+                style={{ fontSize: 16, fontWeight: 'bold', textTransform: 'uppercase' }} 
                 config={editCategoryInputConfig}/>
         )
     }
@@ -136,12 +137,12 @@ export const EditCategorizedItemForm = observer(({
             <BackButtonHeader {...headerProps}/>
             
             {/* add category */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 60, paddingLeft: 60, borderBottomWidth: 1, borderColor: Colors.borders.list }}>
                 <TextInput config={addCategoryInputConfig} onSubmitEditing={onKeyboardSubmit} disableAutoCorrect/>
             </View>
             
             {/* categories + items (add/remove) */}
-            <WrappedScrollView style={{  }} showsVerticalScrollIndicator={false}>
+            <WrappedScrollView style={{  }} contentContainerStyle={{paddingBottom: 40}} showsVerticalScrollIndicator={false}>
                 {
                     // reverse so the newest one is always at the top
                     Array.from(store.categories.entries()).reverse().map(([categoryId, category]) => {
@@ -162,7 +163,7 @@ export const EditCategorizedItemForm = observer(({
                                     addItemPlaceholderLabel={addItemPlaceholderLabel}/>
                             )
                         }
-                   
+
                         return (
                             <CategoryRow 
                                 key={categoryId}

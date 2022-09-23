@@ -36,7 +36,7 @@ const TextInput = observer(({
                     marginRight: 12,
                 }}>
                 <RNTextInput 
-                    placeholderTextColor={'#aaa'}
+                    placeholderTextColor={Colors.text.tertiary}
                     style={[
                         { 
                             fontSize: styles.label.fontSize,
@@ -79,7 +79,7 @@ export default TextInput;
 
 const styles = StyleSheet.create({
     label: {
-        color: '#000',
+        color: Colors.text.default,
         fontSize: 16
     },
     notes: {

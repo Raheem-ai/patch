@@ -1,6 +1,7 @@
 import { AtLeast } from "../../../../../../common";
 import { manageTagsStore } from "../../../../stores/interfaces";
 import { ScreenFormInputConfig } from "../../types";
+import STRINGS from "../../../../../../common/strings"
 
 type RequiredFields = 'onSave' | 'val' | 'isValid' | 'name'
 type DisabledFields = 'type'
@@ -21,8 +22,8 @@ export const TagsListInput = (config: TagsListInputConfig) => {
     // default but overrideable
     const overrideableConfig: OverrideableConfig = {
         // icon: ICONS.tag,
-        placeholderLabel: () => 'Tags',
-        headerLabel: () => 'Tags',
+        placeholderLabel: () => STRINGS.ELEMENTS.tag({cap: true, plural: true}),
+        headerLabel: () => STRINGS.ELEMENTS.tag({cap: true, plural: true}),
     }
 
     // default but overrideable props
@@ -36,11 +37,11 @@ export const TagsListInput = (config: TagsListInputConfig) => {
             return items.filter(item => !!manageTagsStore().getTag(item.categoryId, item.itemId));
         },
         editStore: manageTagsStore().editStore,
-        editHeaderLabel: 'Edit tags',
-        addCategoryPlaceholderLabel: 'Add tag category',
-        addItemPlaceholderLabel: 'Add tag',
+        editHeaderLabel: STRINGS.INTERFACE.editElement(STRINGS.ELEMENTS.tag({plural: true})),
+        addCategoryPlaceholderLabel: STRINGS.INTERFACE.addCategory(),
+        addItemPlaceholderLabel: STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.tag()),
         editPermissions: manageTagsStore().editPermissions,
-        onSaveToastLabel: 'Successfully updated Tags' 
+        onSaveToastLabel: STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.tag({cap: false, plural: true}))
     }
 
     const resolvedEditConfig = Object.assign({}, overrideableEditConfig, config.props?.editConfig || {})
