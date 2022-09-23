@@ -9813,9 +9813,9 @@ __metadata:
     "@react-native-async-storage/async-storage": ~1.17.3
     "@react-navigation/native": ^6.0.6
     "@react-navigation/stack": ^6.0.11
+    "@sentry/react-native": ^3.1.1
     "@testing-library/jest-native": ^4.0.11
     "@testing-library/react-native": ^11.0.0
-    "@sentry/react-native": ^3.1.1
     "@types/google.maps": ^3.45.6
     "@types/jest": ^28.1.8
     "@types/lodash": ^4.14.178
@@ -13098,6 +13098,8 @@ __metadata:
     prelude-ls: ~1.1.2
     type-check: ~0.3.2
   checksum: 0d084a524231a8246bb10fec48cdbb35282099f6954838604f3c7fc66f2e16fa66fd9cc2f3f20a541a113c4dafdf181e822c887c8a319c9195444e6c64ac395e
+  languageName: node
+  linkType: hard
 
 "lie@npm:3.1.1":
   version: 3.1.1
@@ -13302,7 +13304,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:>=3.5 <5, lodash@npm:^4.17.11, lodash@npm:^4.17.12, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.17.5", lodash@npm:^4.7.0":
+"lodash@npm:>=3.5 <5, lodash@npm:^4.17.11, lodash@npm:^4.17.12, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.17.5, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -19894,7 +19896,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedarray-to-buffer@npm:^3.1.5":
+"typedarray-to-buffer@npm:^3.1.2, typedarray-to-buffer@npm:^3.1.5":
   version: 3.1.5
   resolution: "typedarray-to-buffer@npm:3.1.5"
   dependencies:
