@@ -12,6 +12,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
         return (
             <PartiallyAssignedIcon 
+                id={RequestStatus[RequestStatus.Unassigned]}
                 frontColor={dark ? styles.darkStatusIcon.backgroundColor : styles.statusIcon.backgroundColor} 
                 backColor={dark ? styles.darkStatusIcon.color : styles.statusIcon.color} 
                 innerSize={large ? 28 : 16} 
@@ -32,6 +33,7 @@ export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPres
     [RequestStatus.PartiallyAssigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
         return (
             <PartiallyAssignedIcon 
+                id={RequestStatus[RequestStatus.PartiallyAssigned]}
                 frontColor={(dark ? styles.darkStatusIcon : styles.statusIcon).backgroundColor} 
                 backColor={dark ? '#fff' : '#999'} 
                 innerSize={large ? 28 : 16} 
@@ -77,6 +79,7 @@ export const StatusIcon = ({
 
     return typeof potentialIcon == 'string' 
         ? <IconButton
+            key={potentialIcon}
             onPress={onPress}
             style={[styles.statusIcon, large ? styles.largeStatusIcon : null , dark ? styles.darkStatusIcon : null , style]}
             icon={potentialIcon} 
@@ -158,20 +161,20 @@ export const StatusSelector = observer(({
                         : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
                         
                     const oldStatusIcon = () => {
-                        return <StatusIcon dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={noMarginIconStyles}/>;
+                        return <StatusIcon key='oldStatusIcon' dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={noMarginIconStyles}/>;
                     }
 
                     const oldIconDivider = () => {
-                        return <View style={[styles.statusSelectorDivider, large ? styles.largeStatusSelectorDivider : null, dark ? styles.darkStatusSelectorDivider : null]}/>
+                        return <View  key="oldIconDivider" style={[styles.statusSelectorDivider, large ? styles.largeStatusSelectorDivider : null, dark ? styles.darkStatusSelectorDivider : null]}/>
                     }
 
                     const toGoStatusIcon = () => {
-                        return <StatusIcon toGo dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={toGoStatusIconStyles}/>
+                        return <StatusIcon key="toGoStatusIcon" toGo dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={toGoStatusIconStyles}/>
                     }
 
                     const toGoIconDivider = () => {
                         return (
-                            <View style={[styles.statusSelectorDivider, styles.toGoStatusSelectorDivider, dark ? styles.darkToGoStatusSelectorDivider : null, large ? styles.largeToGoStatusSelectorDivider : null ]}>
+                            <View key="toGoIconDivider" style={[styles.statusSelectorDivider, styles.toGoStatusSelectorDivider, dark ? styles.darkToGoStatusSelectorDivider : null, large ? styles.largeToGoStatusSelectorDivider : null ]}>
                                 <View style={[{ 
                                     height: large 
                                         ? styles.largeToGoStatusSelectorDivider.borderBottomWidth 

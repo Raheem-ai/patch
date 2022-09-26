@@ -4,20 +4,23 @@ import { Dimensions, Pressable, StyleSheet, View } from "react-native"
 import { Button, IconButton, Text } from "react-native-paper"
 import { unwrap } from "../../../../../common/utils"
 import { BottomDrawerHandleHeight, bottomDrawerStore, nativeEventStore } from "../../../stores/interfaces"
+import TestIds from "../../../test/ids"
 import { Colors, ICONS } from "../../../types"
 
 export type BackButtonHeaderProps = { 
+    /**
+     * The testID of the context (Form, BottomDrawerView, etc.) that this header instance is being used in
+     */
+    testID: string
     cancel?: {
         handler: () => void, 
         label?: string | (() => string)
-        testID?: string
     }
     save?: {
         handler: () => void, 
         label?: string | (() => string)
         outline?: boolean
         validator?: () => boolean
-        testID?: string
     }
     label?: string | (() => string),
     labelDecoration?: {
@@ -36,6 +39,24 @@ const dimensions = Dimensions.get('screen')
 
 @observer
 export default class BackButtonHeader extends React.Component<BackButtonHeaderProps> {
+
+    get expandHideId() {
+        return bottomDrawerStore().expanded 
+            ? TestIds.bottomDrawerMinimizeButton(this.props.testID)
+            : TestIds.bottomDrawerExpandButton(this.props.testID)
+    }
+
+    get cancelId() {
+        return this.props.testID 
+            ? TestIds.cancelButton(this.props.testID) 
+            : null
+    }
+
+    get saveId() {
+        return this.props.testID 
+            ? TestIds.saveButton(this.props.testID) 
+            : null
+    }
 
     cancel = async () => {
         // hiding the bottomdrawer hides the keyboard but we can't await on that and the 
@@ -71,6 +92,8 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
                 top: -10
             }}>
                 <IconButton
+                    sentry-label={this.expandHideId}
+                    testID={this.expandHideId}
                     onPress={this.toggleExpanded}
                     style={styles.toggleExpandedIcon}
                     icon={ bottomDrawerStore().expanded ? ICONS.filterOpen : ICONS.filterClose} 
@@ -84,7 +107,8 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
         return this.props.cancel && this.props.cancel.handler
             ? <View style={{ position: "absolute", left: 0, width: 60}}>
                 <IconButton
-                    testID={this.props.cancel.testID}
+                    sentry-label={this.cancelId}
+                    testID={this.cancelId}
                     onPress={this.cancel}
                     style={styles.closeIcon}
                     icon={ICONS.navCancel} 
@@ -99,7 +123,8 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
 
         return this.props.save && this.props.save.handler
             ? <Button
-                testID={this.props.save.testID}
+                sentry-label={this.saveId}
+                testID={this.saveId}
                 uppercase={false} 
                 color={Colors.primary.alpha}
                 mode={this.props.save.outline ? 'outlined' : 'contained'}

@@ -8,6 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import STRINGS from "../../../../../common/strings"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
+import TestIds from "../../../test/ids"
 import { Colors, ICONS } from "../../../types"
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
@@ -30,6 +31,7 @@ export default class AssignResponders extends React.Component {
 
     header = () => {
         const headerConfig: BackButtonHeaderProps = {
+            testID: TestIds.assignResponders.view,
             cancel: {
                 handler: async () => {
                     dispatchStore().clear()

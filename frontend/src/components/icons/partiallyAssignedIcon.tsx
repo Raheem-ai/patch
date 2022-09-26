@@ -6,6 +6,7 @@ import { Colors } from '../../types';
 
 type Props = {
     frontColor: string,
+    id: string,
     backColor: string
     innerSize: number,
     totalSize: number,
@@ -18,7 +19,7 @@ export default function PartiallyAssignedIcon(props: Props) {
     const viewBox = `0 0 14 14`;
     
     return (
-        <Pressable style={[{
+        <Pressable key={props.id} style={[{
             height: props.totalSize,
             width: props.totalSize,
             justifyContent: 'center',

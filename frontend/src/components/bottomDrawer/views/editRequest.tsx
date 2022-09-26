@@ -14,6 +14,7 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
 import { requestDisplayName } from "../../../../../common/utils/requestUtils";
+import TestIds from "../../../test/ids";
 
 type Props = {}
 
@@ -41,6 +42,7 @@ class EditHelpRequest extends React.Component<Props> {
         inputs
     }: CustomFormHomeScreenProps) => {
         const headerConfig: BackButtonHeaderProps = {
+            testID: TestIds.editRequest.form,
             cancel: {
                 handler: async () => {
                     editRequestStore().clear();
@@ -87,6 +89,7 @@ class EditHelpRequest extends React.Component<Props> {
         return {
             headerLabel: this.headerLabel(), 
             homeScreen: this.formHomeScreen,
+            testID: TestIds.editRequest.form,
             inputs: [
                 [
                     // Description
@@ -98,6 +101,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return !!editRequestStore().notes
                         },
+                        testID: TestIds.editRequest.inputs.description,
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: () => editRequestStore().notes,
@@ -118,6 +122,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return editRequestStore().typeValid
                         },
+                        testID: TestIds.editRequest.inputs.type,
                         name: 'type',
                         // required: true,
                         props: {
@@ -135,6 +140,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return editRequestStore().locationValid
                         },
+                        testID: TestIds.editRequest.inputs.location,
                         name: 'location',
                         previewLabel: () => editRequestStore().location?.address,
                         headerLabel: () => 'Location',
@@ -153,6 +159,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.editRequest.inputs.callStart,
                         name: 'callStart',
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
@@ -168,6 +175,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.editRequest.inputs.callEnd,
                         name: 'callEnd',
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
@@ -181,6 +189,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.editRequest.inputs.callerName,
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
@@ -195,6 +204,7 @@ class EditHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.editRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
                         placeholderLabel: () => 'Caller contact info',
                         type: 'TextInput',
@@ -215,6 +225,7 @@ class EditHelpRequest extends React.Component<Props> {
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
                     },
+                    testID: TestIds.editRequest.inputs.positions,
                     name: 'positions',
                     type: 'Positions'
                 },
@@ -229,6 +240,7 @@ class EditHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return !!editRequestStore().priority 
                     },
+                    testID: TestIds.editRequest.inputs.priority,
                     name: 'priority',
                     icon: editRequestStore().priority == 2 
                         ? ICONS.priority3 
@@ -256,6 +268,7 @@ class EditHelpRequest extends React.Component<Props> {
                         return true
                     },
                     icon: ICONS.tag,
+                    testID: TestIds.editRequest.inputs.tags,
                     name: 'tags'
                 })
             ] as [

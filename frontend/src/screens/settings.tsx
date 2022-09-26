@@ -15,6 +15,7 @@ import { iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 import { RequestPrefixCharMax } from '../../../common/constants'
 import { resolveErrorMessage } from "../errors";
+import TestIds from "../test/ids";
 
 type Props = ScreenProps<'Settings'>;
 
@@ -126,7 +127,7 @@ const Settings = ({ navigation, route }: Props) => {
                                     description={'Decide who can do what'} />
                     },
                     screen: ({ back }) => {
-                        return <MangeRolesForm back={back} />
+                        return <MangeRolesForm testID={TestIds.settings.form} back={back} />
                     }
                 } as NavigationFormInputConfig
                 : null,
@@ -142,7 +143,8 @@ const Settings = ({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return (
                             <VisualArea>
-                                <EditCategorizedItemForm 
+                                <EditCategorizedItemForm
+                                    testID={TestIds.settings.form} 
                                     back={back}
                                     onSaveToastLabel={'Successfully updated Attributes'} 
                                     editHeaderLabel='Edit attributes'
@@ -166,7 +168,8 @@ const Settings = ({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return (
                             <VisualArea>
-                                <EditCategorizedItemForm 
+                                <EditCategorizedItemForm
+                                    testID={TestIds.settings.form} 
                                     back={back} 
                                     onSaveToastLabel={'Successfully updated Tags'} 
                                     editHeaderLabel='Edit tags'
@@ -279,6 +282,7 @@ const Settings = ({ navigation, route }: Props) => {
 
     return (
         <Form 
+            testID={TestIds.settings.form}
             inputs={[ personalSettings(), organizationSettings() ]} 
             homeScreen={homeScreen}/>
     )

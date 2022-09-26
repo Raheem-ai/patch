@@ -57,7 +57,7 @@ const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation(
 
 // TODO: use Sentry.withProfiler with each top level screen
 Sentry.init({
-  dsn: Constants.default.manifest.extra.sentryDSN,
+  dsn: Constants.default.manifest.extra?.sentryDSN,
   enableInExpoDevelopment: false,
   // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
   debug: true, 
@@ -116,7 +116,7 @@ function App() {
     return (
       // TODO: because we're using our own container with getStore() I don't think this provider is actually needed
       // unless we want an ergonomic way to switch out components in the future for ab testing ie. <Inject id='TestComponentId' />
-        <Provider container={container}>
+        <Provider sentry-label='Patch App' container={container}>
             <PaperProvider theme={theme}>
                 <NavigationContainer 
                   ref={navigationRef} 
@@ -140,17 +140,17 @@ function App() {
                         {/* TO DO: Deprecate SignUpForm, SignUpThroughOrg, and WelcomePage */}
                         <Stack.Screen name={routerNames.signUp} component={SignUpForm} />
                         <Stack.Screen name={routerNames.signUpThroughOrg} component={SignUpThroughOrg} />
-                        <Stack.Screen name={routerNames.home} component={userScreen(WelcomePage)} />
-                        <Stack.Screen name={routerNames.userHomePage} component={userScreen(UserHomePage)} />
-                        <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(HelpRequestDetails)}/>
-                        <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(HelpRequestMap)}/>
-                        <Stack.Screen name={routerNames.helpRequestList} component={userScreen(visualArea(HelpRequestList))}/>
-                        <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(HelpRequestChat)}/>
-                        <Stack.Screen name={routerNames.teamList} component={userScreen(visualArea(TeamList))}/>
-                        <Stack.Screen name={routerNames.componentLib} component={userScreen(visualArea(ComponentLibrary))}/>
-                        <Stack.Screen name={routerNames.userDetails} component={userScreen(visualArea(UserDetails))}/>
-                        <Stack.Screen name={routerNames.settings} component={userScreen(Settings)}/>
-                        <Stack.Screen name={routerNames.chats} component={userScreen(visualArea(Chats))}/>
+                        <Stack.Screen name={routerNames.home} component={userScreen(routerNames.home, WelcomePage)} />
+                        <Stack.Screen name={routerNames.userHomePage} component={userScreen(routerNames.userHomePage, UserHomePage)} />
+                        <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(routerNames.helpRequestDetails, HelpRequestDetails)}/>
+                        <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(routerNames.helpRequestMap, HelpRequestMap)}/>
+                        <Stack.Screen name={routerNames.helpRequestList} component={userScreen(routerNames.helpRequestList, visualArea(HelpRequestList))}/>
+                        <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(routerNames.helpRequestChat, HelpRequestChat)}/>
+                        <Stack.Screen name={routerNames.teamList} component={userScreen(routerNames.teamList, visualArea(TeamList))}/>
+                        <Stack.Screen name={routerNames.componentLib} component={userScreen(routerNames.componentLib, visualArea(ComponentLibrary))}/>
+                        <Stack.Screen name={routerNames.userDetails} component={userScreen(routerNames.userDetails, visualArea(UserDetails))}/>
+                        <Stack.Screen name={routerNames.settings} component={userScreen(routerNames.settings, Settings)}/>
+                        <Stack.Screen name={routerNames.chats} component={userScreen(routerNames.chats, visualArea(Chats))}/>
                     </Stack.Navigator>
                     <Alerts/>
                     <GlobalBottomDrawer/>
@@ -164,10 +164,10 @@ function App() {
 
 export default Sentry.Native.wrap(App);
 
-const userScreen = function(Component: (props) => JSX.Element) {
+const userScreen = function(route: keyof RootStackParamList, Component: (props) => JSX.Element) {
   return observer(function(props) {    
     return userStore().signedIn && organizationStore().isReady
-      ? <Component {...props} />
+      ? <Component sentry-label={route} {...props} />
       : null
   })
 }

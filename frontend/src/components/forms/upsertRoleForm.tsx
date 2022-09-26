@@ -13,14 +13,17 @@ import { resolveErrorMessage } from "../../errors"
 import { iHaveAllPermissions } from "../../utils"
 import KeyboardAwareArea from "../helpers/keyboardAwareArea"
 import STRINGS from "../../../../common/strings"
+import TestIds from "../../test/ids"
 
 type UpsertRoleFormProps = {
+    testID: string,
     cancel: () => void,
     save: () => void, 
     headerLabel: string | (() => string) 
 }
 
 const UpsertRoleForm = ({
+    testID,
     cancel,
     save,
     headerLabel
@@ -31,7 +34,10 @@ const UpsertRoleForm = ({
     const isAdminRole = upsertRoleStore().id == DefaultRoleIds.Admin
     const isCreating = !upsertRoleStore().id;
 
+    const wrappedTestID = TestIds.upsertRolesForm.wrapper(testID);
+
     const nameInput = {
+        testID: TestIds.upsertRolesForm.inputs.name(wrappedTestID),
         name: 'name',
         required: true,
         type: 'TextInput',
@@ -52,6 +58,7 @@ const UpsertRoleForm = ({
         isValid: () => {
             return !!upsertRoleStore().permissionGroups.length
         },
+        testID: TestIds.upsertRolesForm.inputs.permissionGroups(wrappedTestID),
         name: 'permissionGroups',
         headerLabel: () => 'Permissions',
         placeholderLabel: () => STRINGS.SETTINGS.setPermissions,
@@ -87,6 +94,7 @@ const UpsertRoleForm = ({
     }: CustomFormHomeScreenProps) => {
         
         const headerProps: BackButtonHeaderProps = {
+            testID: wrappedTestID,
             cancel: {
                 handler: cancel
             },
@@ -158,7 +166,7 @@ const UpsertRoleForm = ({
         )
     }
 
-    return <Form ref={formRef} inputs={inputs} homeScreen={homeScreen}/>
+    return <Form testID={wrappedTestID} ref={formRef} inputs={inputs} homeScreen={homeScreen}/>
 }
 
 export default UpsertRoleForm;

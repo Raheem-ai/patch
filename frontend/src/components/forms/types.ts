@@ -260,10 +260,10 @@ export type AdHocScreenConfig = {
 
 type BaseFormInputConfig = {
     name: string
+    testID: string
     disabled?: boolean
     required?: boolean
     icon?: string
-    testID?: string
 }
 
 export type ScreenFormInputType = keyof ScreenFormInputOptions

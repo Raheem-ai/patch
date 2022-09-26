@@ -9,6 +9,7 @@ import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/
 import { resolveErrorMessage } from "../../../errors";
 import { navigationRef } from "../../../navigation";
 import { editUserStore, userStore, alertStore, bottomDrawerStore, BottomDrawerView, organizationStore } from "../../../stores/interfaces";
+import TestIds from "../../../test/ids";
 import { Colors, ICONS } from "../../../types";
 import { iHaveAllPermissions } from "../../../utils";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
@@ -25,6 +26,12 @@ export default class EditUser extends React.Component {
         return editUserStore().id == userStore().user.id;
     }
 
+    get formIds() {
+        return this.onMyProfile
+            ? TestIds.editMe
+            : TestIds.editUser
+    }
+
     setRef = (formRef: Form) => {
         runInAction(() => {
             this.formInstance.set(formRef)
@@ -37,6 +44,7 @@ export default class EditUser extends React.Component {
         inputs
     }: CustomFormHomeScreenProps) => {
         const headerConfig: BackButtonHeaderProps = {
+            testID: this.formIds.form,
             cancel: {
                 handler: async () => {
                     editUserStore().clear();
@@ -98,6 +106,7 @@ export default class EditUser extends React.Component {
         const editingMe = this.onMyProfile;
 
         return {
+            testID: this.formIds.form,
             headerLabel: editingMe
                 ? STRINGS.ACCOUNT.editMyProfile
                 : STRINGS.ACCOUNT.editUserProfile(editUserStore().name),
@@ -162,38 +171,41 @@ export default class EditUser extends React.Component {
     editUserInputs = () => {
         const canEditAttributes = iHaveAllPermissions([PatchPermissions.AssignAttributes]);
         const canEditRoles = iHaveAllPermissions([PatchPermissions.AssignRoles]);
+        
         const inputs = [
             canEditRoles
-            ? {
-                val: () => editUserStore().roles,
-                onSave: (roles) => editUserStore().roles = roles,
-                isValid: () => {
-                    return editUserStore().rolesValid
-                },
-                headerLabel: 'Roles',
-                placeholderLabel: 'Roles',
-                previewLabel: () => editUserStore().roles.map(roleId => {
-                        return organizationStore().roles.get(roleId)?.name
-                    }).join(),
-                name: 'roles',
-                type: 'RoleList',
-                icon: ICONS.permissions,
-                disabled: false,
-                props: {
-                    multiSelect: true,
-                    hideAnyone: true,
-                },
-            } as ScreenFormInputConfig<'RoleList'>
-            : null,
-        canEditAttributes
-        ? AttributesListInput({
-            val: () => editUserStore().attributes,
-            onSave: (attributes) => editUserStore().attributes = attributes,
-            isValid: () => true,
-            icon: ICONS.tag,
-            name: 'attributes'
-        }) as ScreenFormInputConfig<'CategorizedItemList'>
-        : null
+                ? {
+                    val: () => editUserStore().roles,
+                    onSave: (roles) => editUserStore().roles = roles,
+                    isValid: () => {
+                        return editUserStore().rolesValid
+                    },
+                    headerLabel: 'Roles',
+                    placeholderLabel: 'Roles',
+                    previewLabel: () => editUserStore().roles.map(roleId => {
+                            return organizationStore().roles.get(roleId)?.name
+                        }).join(),
+                    testID: this.formIds.inputs.roles,
+                    name: 'roles',
+                    type: 'RoleList',
+                    icon: ICONS.permissions,
+                    disabled: false,
+                    props: {
+                        multiSelect: true,
+                        hideAnyone: true,
+                    },
+                } as ScreenFormInputConfig<'RoleList'>
+                : null,
+            canEditAttributes
+                ? AttributesListInput({
+                    val: () => editUserStore().attributes,
+                    onSave: (attributes) => editUserStore().attributes = attributes,
+                    isValid: () => true,
+                    icon: ICONS.tag,
+                    name: 'attributes',
+                    testID: this.formIds.inputs.attributes
+                }) as ScreenFormInputConfig<'CategorizedItemList'>
+                : null
         ].filter(v => !!v);
 
         return inputs;
@@ -208,6 +220,7 @@ export default class EditUser extends React.Component {
                 onChange: (name) => editUserStore().name = name,
                 val: () => editUserStore().name,
                 isValid: () => editUserStore().nameValid,
+                testID: this.formIds.inputs.name,
                 name: 'name',
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
@@ -217,6 +230,7 @@ export default class EditUser extends React.Component {
                 onSave: (bio) => editUserStore().bio = bio,
                 val: () => editUserStore().bio,
                 isValid: () => editUserStore().bioValid,
+                testID: this.formIds.inputs.bio,
                 name: 'bio',
                 previewLabel: () => editUserStore().bio,
                 headerLabel: () => 'Bio',
@@ -227,6 +241,7 @@ export default class EditUser extends React.Component {
                 onChange: (pronouns) => editUserStore().pronouns = pronouns,
                 val: () => editUserStore().pronouns,
                 isValid: () => editUserStore().pronounsValid,
+                testID: this.formIds.inputs.pronouns,
                 name: 'pronouns',
                 placeholderLabel: () => 'Pronouns',
                 type: 'TextInput',
@@ -235,6 +250,7 @@ export default class EditUser extends React.Component {
                 onChange: (phone) => editUserStore().phone = phone,
                 val: () => editUserStore().phone,
                 isValid: () => editUserStore().phoneValid,
+                testID: this.formIds.inputs.phone,
                 name: 'phone',
                 placeholderLabel: () => 'Phone',
                 type: 'TextInput',
@@ -248,6 +264,7 @@ export default class EditUser extends React.Component {
                 onChange: (email) => editUserStore().email = email,
                 val: () => editUserStore().email,
                 isValid: () => editUserStore().emailValid,
+                testID: this.formIds.inputs.email,
                 name: 'email',
                 placeholderLabel: () => 'Email',
                 type: 'TextInput',
@@ -267,6 +284,7 @@ export default class EditUser extends React.Component {
                     previewLabel: () => editUserStore().roles.map(roleId => {
                             return organizationStore().roles.get(roleId)?.name
                         }).join(),
+                    testID: this.formIds.inputs.roles,
                     name: 'roles',
                     type: 'RoleList',
                     icon: ICONS.permissions,
@@ -283,7 +301,8 @@ export default class EditUser extends React.Component {
                 onSave: (attributes) => editUserStore().attributes = attributes,
                 isValid: () => true,
                 icon: ICONS.tag,
-                name: 'attributes'
+                name: 'attributes',
+                testID: this.formIds.inputs.attributes
             }) as ScreenFormInputConfig<'CategorizedItemList'>
             : null
         ].filter(v => !!v);

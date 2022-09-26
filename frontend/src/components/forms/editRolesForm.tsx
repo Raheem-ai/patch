@@ -14,8 +14,14 @@ import UpsertRoleForm from "./upsertRoleForm"
 import { VisualArea } from '../helpers/visualArea'
 import STRINGS from "../../../../common/strings"
 import { Colors, ICONS } from "../../types"
+import TestIds from "../../test/ids"
 
-const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
+type ManageRolesFormProps = SectionNavigationScreenViewProps & {
+    testID: string
+}
+
+const MangeRolesForm = ({ back, testID }: ManageRolesFormProps) => {
+    const wrappedTestID = TestIds.editRolesForm.wrapper(testID);
 
     const roleInputs = () => {
         const editRoleInputs = organizationStore().metadata.roleDefinitions.map(def => {
@@ -47,7 +53,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                         }
                     }
 
-                    return <UpsertRoleForm headerLabel={def.name} cancel={cancelEdit} save={saveEdit}/>
+                    return <UpsertRoleForm testID={wrappedTestID} headerLabel={def.name} cancel={cancelEdit} save={saveEdit}/>
                 }
             } as NavigationFormInputConfig
         })
@@ -80,7 +86,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                     }
                 }
 
-                return <UpsertRoleForm headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} cancel={cancelAdd} save={save}/>
+                return <UpsertRoleForm testID={wrappedTestID} headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} cancel={cancelAdd} save={save}/>
             }
         } as NavigationFormInputConfig
 
@@ -93,6 +99,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
     }: CustomFormHomeScreenProps) => {
 
         const headerProps: BackButtonHeaderProps = {
+            testID: wrappedTestID,
             save: {
                 handler: back,
                 outline: true
@@ -117,7 +124,11 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
     return (
         <VisualArea>
-            <Form inputs={roleInputs} homeScreen={homeScreen}/>
+            <Form 
+                testID={wrappedTestID} 
+                inputs={roleInputs} 
+                homeScreen={homeScreen}
+            />
         </VisualArea>
     )
 }

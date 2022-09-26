@@ -25,17 +25,12 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
     }
 
     const headerProps: BackButtonHeaderProps = {
+        testID: config.testID,
         cancel: {
-            handler: cancel,
-            testID: config.testID 
-                ? TestIds.screenInputCancelButton(config.testID)
-                : null
+            handler: cancel
         },
         save: {
-            handler: save,
-            testID: config.testID 
-                ? TestIds.screenInputSaveButton(config.testID)
-                : null
+            handler: save
         },
         label: config.headerLabel
     }
