@@ -77,6 +77,10 @@ const STRINGS = {
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
         addAnotherElement: (el?: string) => `Add another ${el}`,
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
+        available: (cap?: boolean) => cap ? `Available` : `available`, 
+        unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
+        availabilityAlertTitle: `Set your status`,
+        availabilityAlertMessage: (onDuty: boolean) => `You are currently ${onDuty ? STRINGS.INTERFACE.available() : STRINGS.INTERFACE.unavailable()}.`, 
     },
     PAGE_TITLES: {
         landing: 'Landing',
