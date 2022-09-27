@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { Dimensions, Pressable, StyleSheet, View } from "react-native";
+import { Dimensions, Pressable, StyleSheet, View, GestureResponderEvent } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
@@ -9,6 +9,11 @@ import { Colors } from "../../types";
 
 export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
+
+    const backgroundTap = (event: GestureResponderEvent) => {
+        alertStore().hidePrompt();
+        event.stopPropagation();
+    }
 
     const prompt = () => {
         const dimensions = Dimensions.get('screen');
@@ -21,7 +26,8 @@ export const Alerts = observer(() => {
         // const singleAction = alertStoreInst().prompt.actions.length == 1;
 
         return !!alertStore().prompt
-            ? <View style={[styles.promptContainer, { width, top, left }]}>
+            ? <> 
+            <View style={[styles.promptContainer, { width, top, left }]}>
                 <View style={[styles.promptTitleContainer]}>
                     <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
                 </View>
@@ -47,6 +53,8 @@ export const Alerts = observer(() => {
                     }
                 </View>
             </View>
+            <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
+            </>
             : null
     }
 
@@ -57,11 +65,15 @@ export const Alerts = observer(() => {
         const left = 20;
 
         return !!alertStore().toast
-            ? <View style={[styles.toastContainer, { width, top, left }]}>
+            ? <>
+            <View style={[styles.toastContainer, { width, top, left }]}>
                 <ScrollView>
                     <Text style={{ color: Colors.text.defaultReversed }}>{alertStore().toast.message}</Text>
                 </ScrollView>
             </View>
+            <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
+            </>
+
             : null
     }
 
@@ -83,13 +95,15 @@ export const Alerts = observer(() => {
 
 export default Alerts;
 
+const zIdx = 1000 * 10;
+
 const styles = StyleSheet.create({
     promptContainer: {
         position: 'absolute',
         padding: 16,
         paddingBottom: 0,
-        backgroundColor: 'rgba(17, 17, 17, .8)',
-        zIndex: 1000 * 10,
+        backgroundColor: 'rgba(17, 17, 17, .85)',
+        zIndex: zIdx,
         borderRadius: 8, 
         shadowColor: '#000',
         shadowOpacity: .15,
@@ -103,8 +117,8 @@ const styles = StyleSheet.create({
     toastContainer: {
         position: 'absolute',
         padding: 20,
-        backgroundColor: 'rgba(17, 17, 17, .8)',
-        zIndex: 1000 * 10,
+        backgroundColor: 'rgba(17, 17, 17, .85)',
+        zIndex: zIdx,
         borderRadius: 8, 
         shadowColor: '#000',
         shadowOpacity: .15,
@@ -142,5 +156,14 @@ const styles = StyleSheet.create({
     },
     promptConfirmActionLabel: {
         fontWeight: '900'
+    },
+    promptBackground: {
+        position: 'absolute', 
+        left: 0, 
+        top: 0, 
+        width: '100%', 
+        height: '100%', 
+        backgroundColor:'rgba(0,0,0,0.3)', 
+        zIndex: zIdx - 1
     }
 })
