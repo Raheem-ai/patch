@@ -208,7 +208,7 @@ export const ICONS = {
     navBack: BASIC_ICONS.chevronLeft,
     showPassword: 'eye',
     hidePassword: 'eye-off',
-    textInputClear: BASIC_ICONS.xMark,
+    textInputClear: 'close-circle',
     refresh: 'refresh',
     mapMarker: 'map-marker',
     map: 'map',

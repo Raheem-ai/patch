@@ -1,5 +1,5 @@
 import { observer } from "mobx-react"
-import React, { useState, useRef } from "react"
+import React, { useState } from "react"
 import { Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
@@ -17,7 +17,6 @@ import reactStringReplace from 'react-string-replace';
 import { Colors, ICONS } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
-import { isIos } from "../../../../constants"
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -152,7 +151,7 @@ const CategorizedItemListInput = ({
             }
 
             return (
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingVertical: (styles.itemContainer.height - fontSize) / 2 }}>
                         {
                             searchResults.map(([itemName, itemHandle]) => {
@@ -174,7 +173,7 @@ const CategorizedItemListInput = ({
 
         const selectedListArea = () => {
             return (
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingBottom: 40 }}>
                     {
                         Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
@@ -238,7 +237,7 @@ const CategorizedItemListInput = ({
 
         const searchPillArea = () => {
             return (
-                <ScrollView style={{ flexGrow: 0, paddingHorizontal: 20, paddingVertical: (20 - 6)}} horizontal={true} showsHorizontalScrollIndicator={false}>
+                <ScrollView style={{ flexGrow: 0, paddingHorizontal: 20, paddingVertical: (20 - 6)}} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <Tags 
                         verticalMargin={6} 
                         horizontalTagMargin={6}
@@ -248,38 +247,30 @@ const CategorizedItemListInput = ({
             )
         }
 
-        const searchBoxRef = useRef(null);
-
         const clearSearch = () => {
             setSearchText('');
-            // this blur/focus is the only way I've managed to reset the input so that:
-            // 1) the keyboard is still active; and
-            // 2) a tap outside the input will close the keyboard
-            searchBoxRef.current.blur();
-            searchBoxRef.current.focus();
         }
 
         const searchBox = () => {
 
             return (
                 <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20, display: 'flex', flexDirection: 'row' }}>
-                    <TextInput nativeRef={searchBoxRef} iosClearButton={true} style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
-                    {isIos
-                        ? null
-                        : <IconButton
-                            style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0, display: searchText ? 'flex' : 'none' }}
+                    <TextInput style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
+                        <IconButton
+                            style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0}}
                             icon={ICONS.textInputClear} 
-                            color={Colors.icons.lighter}
+                            color={searchText ? Colors.icons.lighter : Colors.nocolor}
                             onPress={clearSearch}
-                            size={25} />}
+                            size={25} />
                 </View>
             )
         }
 
         return (
             <KeyboardAwareArea>
-                <BackButtonHeader {...headerProps}/>
-                
+                <View onTouchStart={Keyboard.dismiss}>
+                    <BackButtonHeader {...headerProps}/>
+                </View>
                 {/* search area */}
                 { searchBox() }
 
