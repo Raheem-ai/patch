@@ -7,10 +7,11 @@ import { SectionInlineViewProps } from "../../types";
 import { Colors, ICONS } from "../../../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
-    style?: TextStyle
-    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void
+    style?: TextStyle,
+    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void,
     dontBlurOnSubmit?: boolean,
     disableAutoCorrect?: boolean,
+    iosClearButton?: boolean,
     nativeRef?: Ref<RNTextInput>
 }
 
@@ -20,7 +21,8 @@ const TextInput = observer(({
     onSubmitEditing,
     dontBlurOnSubmit,
     disableAutoCorrect,
-    nativeRef
+    nativeRef,
+    iosClearButton
 }: Props) => {
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
@@ -57,6 +59,7 @@ const TextInput = observer(({
                     onChangeText={(s: string) => config.onChange?.(s)}
                     onSubmitEditing={onSubmitEditing || null}
                     blurOnSubmit={!dontBlurOnSubmit}
+                    clearButtonMode={iosClearButton ? 'while-editing' : 'never'}
                     secureTextEntry={
                         isPassword 
                             ? secureTextEntry 

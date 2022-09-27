@@ -1,5 +1,5 @@
 import { observer } from "mobx-react"
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
@@ -17,6 +17,7 @@ import reactStringReplace from 'react-string-replace';
 import { Colors, ICONS } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
+import { isIos } from "../../../../constants"
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -111,7 +112,7 @@ const CategorizedItemListInput = ({
         }).filter(x => !!x)
 
 
-        const onItemDelted = (filteredIdx: number) => {
+        const onItemDeleted = (filteredIdx: number) => {
             const actualIndex = itemInfo[filteredIdx][1]
             const itemToUnselect = selectedItems[actualIndex];
             toggleItem(itemToUnselect.categoryId, itemToUnselect.itemId)
@@ -242,25 +243,35 @@ const CategorizedItemListInput = ({
                         verticalMargin={6} 
                         horizontalTagMargin={6}
                         tags={itemInfo.map(i => i[0])}
-                        onTagDeleted={onItemDelted}/>
+                        onTagDeleted={onItemDeleted}/>
                 </ScrollView>
             )
         }
+
+        const searchBoxRef = useRef(null);
+
         const clearSearch = () => {
             setSearchText('');
+            // this blur/focus is the only way I've managed to reset the input so that:
+            // 1) the keyboard is still active; and
+            // 2) a tap outside the input will close the keyboard
+            searchBoxRef.current.blur();
+            searchBoxRef.current.focus();
         }
 
         const searchBox = () => {
 
             return (
                 <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20, display: 'flex', flexDirection: 'row' }}>
-                    <TextInput style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
-                    <IconButton
-                                style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0, display: searchText ? 'flex' : 'none' }}
-                                icon={ICONS.textInputClear} 
-                                color={Colors.icons.lighter}
-                                onPress={clearSearch}
-                                size={25} />
+                    <TextInput nativeRef={searchBoxRef} iosClearButton={true} style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
+                    {isIos
+                        ? null
+                        : <IconButton
+                            style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0, display: searchText ? 'flex' : 'none' }}
+                            icon={ICONS.textInputClear} 
+                            color={Colors.icons.lighter}
+                            onPress={clearSearch}
+                            size={25} />}
                 </View>
             )
         }
