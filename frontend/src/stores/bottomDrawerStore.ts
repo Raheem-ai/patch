@@ -196,7 +196,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         const onActiveRequestDetails = navigationStore().currentRoute == routerNames.helpRequestDetails 
             && requestStore().currentRequest.id == requestStore().activeRequest.id;
 
-        return !onDisabledRoute && !onActiveRequestDetails
+        return !this.drawerShowing && !this.expanded && !onDisabledRoute && !onActiveRequestDetails
     }
 
     get drawerShouldShow() {
