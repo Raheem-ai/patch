@@ -51,7 +51,15 @@ export default class AlertStore implements IAlertStore {
 
     hidePrompt() {
         this.prompt = null;
+    }
+
+    hideToast() {
         this.toast = null;
+    }
+
+    hideAlerts() {
+        this.hidePrompt();
+        this.hideToast();
     }
 
     clear() {

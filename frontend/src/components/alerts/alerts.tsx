@@ -11,7 +11,7 @@ export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
 
     const backgroundTap = (event: GestureResponderEvent) => {
-        alertStore().hidePrompt();
+        alertStore().hideAlerts();
         event.stopPropagation();
     }
 
