@@ -84,7 +84,7 @@ const HelpRequestCard = observer(({
         return (
             <View style={styles.detailsRow}>
                 <Text numberOfLines={minimal ? 1 : onMapView ? 3 : 4} style={dark ? styles.darkDetailsText : {}}>
-                    <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type}: </Text>
+                    <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type ? type + ': ' : null}</Text>
                     <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
                 </Text>
             </View>
