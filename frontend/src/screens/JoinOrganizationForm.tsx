@@ -1,8 +1,9 @@
 import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { JoinOrganizationNavigationProp, labelNames, routerNames, Colors, ScreenProps } from '../types';
+import { JoinOrganizationNavigationProp, routerNames, Colors, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
+import STRINGS from '../../../common/strings';
 
 type Props = {
     navigation: JoinOrganizationNavigationProp;
@@ -21,7 +22,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
                     <TextInput
                         mode="flat"
                         style={styles.input}
-                        label={labelNames.invitationCode}
+                        label={STRINGS.INTERFACE.invitationCode}
                         value={inivitationCode}
                         onChangeText={inivitationCode => setInvitationCode(inivitationCode)}/>
                 </View>

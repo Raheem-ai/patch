@@ -61,7 +61,12 @@ const STRINGS = {
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
         addAnotherElement: (el?: string) => `Add another ${el}`,
-
+        username: 'Username',
+        password: 'Password',
+        firstname: 'First Name',
+        lastname: 'Last Name',
+        email: 'Email',
+        invitationCode: 'Invitation code'
     },
     PAGE_TITLES: {
         landing: 'Landing',

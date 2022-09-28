@@ -13,6 +13,7 @@ export type RootStackParamList = {
     InvitationSuccessful: undefined;
     CreateAccount: undefined;
     SignIn: undefined;
+    ResetPassword: undefined;
     // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
     Home: undefined;
     SignUp: undefined;
@@ -42,6 +43,7 @@ export const routerNames: TypedRouterNames = {
     createAccount: "CreateAccount",
     home: "Home",
     signUp: "SignUp",
+    resetPassword: "ResetPassword",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
     userDetails: "UserDetails",
@@ -65,16 +67,6 @@ export type CreateAccountNavigationProp = StackNavigationProp<RootStackParamList
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
-
-// TODO: fully flush out using resource strings so we can translate :)
-export const labelNames = {
-    username: 'Username',
-    password: 'Password',
-    firstname: 'First Name',
-    lastname: 'Last Name',
-    email: 'Email',
-    invitationCode: 'Invitation code'
-};
 
 export const Colors = {
     primary: {
