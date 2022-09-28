@@ -48,6 +48,10 @@ const HeaderConfig: {
         title: STRINGS.PAGE_TITLES.signIn,
         unauthenticated: true
     },
+    [routerNames.resetPassword]: {
+        title: STRINGS.PAGE_TITLES.resetPassword,
+        unauthenticated: true
+    },
     [routerNames.signUp]: {
         title: STRINGS.PAGE_TITLES.signUp,
         unauthenticated: true

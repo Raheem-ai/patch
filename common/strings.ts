@@ -74,6 +74,7 @@ const STRINGS = {
         invitationSuccessful: 'Invitation Successful',
         createAccount: 'Create Account',
         signIn: 'Sign In',
+        resetPassword: 'Reset password',
         signUp: 'Sign Up',
         signUpThroughOrg: 'Sign Up',
         userHomePage: 'Home',

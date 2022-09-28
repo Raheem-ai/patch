@@ -1,18 +1,18 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
-import { alertStore, notificationStore, userStore } from '../stores/interfaces';
+import { routerNames, ResetPasswordNavigationProp, Colors, ICONS } from '../types';
+import { alertStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
 
 type Props = {
-    navigation: SignInNavigationProp;
+    navigation: ResetPasswordNavigationProp;
 };
 
-export default function SignInForm( { navigation } : Props) {
+export default function ResetPasswordForm( { navigation } : Props) {
     const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
@@ -35,16 +35,9 @@ export default function SignInForm( { navigation } : Props) {
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                 <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                     <View style={styles.titleContainer}>
-                        <Text style={styles.titleText}>Welcome to Patch!</Text>
+                        <Text style={styles.titleText}>Reset password</Text>
                     </View>
                     <View style={styles.inputsContainer}>
-                        <TextInput
-                            mode="flat"
-                            style={styles.input}
-                            label={STRINGS.INTERFACE.email}
-                            value={username}
-                            keyboardType='email-address'
-                            onChangeText={username => setTextUser(username)}/>
                         <TextInput
                             mode="flat"
                             secureTextEntry={secureTextEntry}
@@ -66,12 +59,7 @@ export default function SignInForm( { navigation } : Props) {
                             onSubmitEditing={signIn}/>
                     </View>
                     <View style={styles.bottomContainer}>
-                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
-                        {/* 
-                        // TO DO: enable forgot your password
-                        <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                        <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
-                        */}
+                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Reset password'}</Button>
                     </View>
                 </ScrollView>
             </Pressable>

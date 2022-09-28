@@ -49,7 +49,7 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
     {
       name: 'Team',
       routeTo: 'teamList'
-    },
+    }
   ]
 
   // if (!runningOnProd) {

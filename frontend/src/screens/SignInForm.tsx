@@ -26,7 +26,7 @@ export default function SignInForm( { navigation } : Props) {
             return
         }
 
-        navigateTo(routerNames.userHomePage)
+        navigateTo(routerNames.resetPassword)
     }
 
     return(

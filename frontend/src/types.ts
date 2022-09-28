@@ -14,6 +14,7 @@ export type RootStackParamList = {
     CreateAccount: undefined;
     SignIn: undefined;
     ResetPassword: undefined;
+    
     // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
     Home: undefined;
     SignUp: undefined;
@@ -67,6 +68,9 @@ export type CreateAccountNavigationProp = StackNavigationProp<RootStackParamList
 export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'SignIn'>;
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
+export type ResetPasswordNavigationProp = StackNavigationProp<RootStackParamList, 'ResetPassword'>;
+
 
 export const Colors = {
     primary: {

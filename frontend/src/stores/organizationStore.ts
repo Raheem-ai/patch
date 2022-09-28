@@ -24,7 +24,7 @@ export default class OrganizationStore implements IOrganizationStore {
     get roles()  {
         const roleMapping = new Map<string, Role>()
 
-        this.metadata.roleDefinitions.forEach(def => {
+        this.metadata?.roleDefinitions?.forEach(def => {
             roleMapping.set(def.id, def);
         })
 
