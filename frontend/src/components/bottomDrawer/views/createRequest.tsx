@@ -15,6 +15,7 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
 import { requestDisplayName } from "../../../../../common/utils/requestUtils";
+import { dateToTimeString } from "../../../../../common/utils";
 
 type Props = {}
 
@@ -39,6 +40,7 @@ class CreateHelpRequest extends React.Component<Props> {
         renderInputs,
         inputs
     }: CustomFormHomeScreenProps) => {
+
         const headerConfig: BackButtonHeaderProps = {
             cancel: {
                 handler: async () => {
@@ -87,12 +89,21 @@ class CreateHelpRequest extends React.Component<Props> {
         )
     })
 
+    // made a separate function in anticipation of adding an action 
+    // that places the current time into call start or call end fields
+    rightNow = () => {
+        const time = dateToTimeString(new Date());
+        return time;
+    }
+
     formProps = (): FormProps => {
+
+        createRequestStore().callStartedAt = this.rightNow();
+
         return {
             headerLabel: this.headerLabel(), 
             homeScreen: this.formHomeScreen,
             inputs: [
-                
                 [
                     // Description
                     {
