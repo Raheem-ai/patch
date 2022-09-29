@@ -2,10 +2,10 @@ import { observer } from "mobx-react";
 import React from "react";
 import { Dimensions, Pressable, StyleSheet, View, GestureResponderEvent } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Text } from "react-native-paper";
+import { Text, IconButton } from "react-native-paper";
 import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
 import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
-import { Colors } from "../../types";
+import { Colors, ICONS } from "../../types";
 
 export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
@@ -65,15 +65,17 @@ export const Alerts = observer(() => {
         const left = 20;
 
         return !!alertStore().toast
-            ? <>
-            <View style={[styles.toastContainer, { width, top, left }]}>
+            ? <View style={[styles.toastContainer, { width, top, left }]} onTouchStart={() => alertStore().hideToast()}>
                 <ScrollView>
-                    <Text style={{ color: Colors.text.defaultReversed }}>{alertStore().toast.message}</Text>
+                    <Text style={styles.toastText}>{alertStore().toast.message}</Text>
                 </ScrollView>
+                <IconButton
+                    style={styles.toastDismissButton}
+                    icon={ICONS.dismissAlert} 
+                    color={Colors.icons.lighter}
+                    onPress={() => alertStore().hideToast()}
+                    size={25} />
             </View>
-            <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
-            </>
-
             : null
     }
 
@@ -116,6 +118,8 @@ const styles = StyleSheet.create({
     },  
     toastContainer: {
         position: 'absolute',
+        display: 'flex',
+        flexDirection: 'row',
         padding: 20,
         backgroundColor: 'rgba(17, 17, 17, .85)',
         zIndex: zIdx,
@@ -128,6 +132,18 @@ const styles = StyleSheet.create({
             height: 4
         },
         maxHeight: 240
+    },
+    toastText: { 
+        color: Colors.text.defaultReversed,
+        padding: 0,
+        marginVertical: 4,
+        alignSelf: 'flex-start'
+    },
+    toastDismissButton: {
+        height: 'auto', 
+        margin: 0, 
+        marginLeft: 8, 
+        width: 25, 
     },
     promptActionsContainer: {
         minHeight: 60,

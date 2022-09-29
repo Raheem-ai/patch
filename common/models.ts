@@ -1613,7 +1613,7 @@ export enum EligibilityOption {
 
 // DEFAULT TAGS
 
-export enum DefaultTagCategories {
+export enum DefaultTagCategoryIds {
     CommunicationType = '__communicationtype',
     Context = '__context',
     Equipment = '__equipment',
@@ -1622,70 +1622,70 @@ export enum DefaultTagCategories {
     Referral = '__referral',
 }
 
-export const DefaultTags: TagCategory[] = [
+export const DefaultTagCategories: TagCategory[] = [
     {
-        id: DefaultTagCategories.Referral,
+        id: DefaultTagCategoryIds.Referral,
         name: 'Referred to',
         tags: [
-            { name: 'Shelter', id: DefaultTagCategories.Referral + Delimiters.Enum + 'ref01' },
-            { name: 'Hospital', id: DefaultTagCategories.Referral + Delimiters.Enum + 'ref02' },
-            { name: 'Legal aid', id: DefaultTagCategories.Referral + Delimiters.Enum + 'ref03' },
-            { name: 'Child care', id: DefaultTagCategories.Referral + Delimiters.Enum + 'ref04' },
-            { name: 'Other resource', id: DefaultTagCategories.Referral + Delimiters.Enum + 'ref05' },
+            { name: 'Shelter', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref01' },
+            { name: 'Hospital', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref02' },
+            { name: 'Legal aid', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref03' },
+            { name: 'Child care', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref04' },
+            { name: 'Other resource', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref05' },
         ]
     },
     {
-        id: DefaultTagCategories.Resolution,
+        id: DefaultTagCategoryIds.Resolution,
         name: 'Resolution',
         tags: [
-            { name: 'Food/water provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res01' },
-            { name: 'First aid provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res02' },
-            { name: 'Mental health first aid provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res03' },
-            { name: 'Move out assistance provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res04' },
-            { name: 'Referral provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res05' },
-            { name: 'Transportation provided', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res06' },
-            { name: 'Refused assistance', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res07' },
-            { name: 'Did not find', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res08' },
-            { name: 'Request canceled', id: DefaultTagCategories.Resolution + Delimiters.Enum + 'res09' },
+            { name: 'Food/water provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res01' },
+            { name: 'First aid provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res02' },
+            { name: 'Mental health first aid provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res03' },
+            { name: 'Move out assistance provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res04' },
+            { name: 'Referral provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res05' },
+            { name: 'Transportation provided', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res06' },
+            { name: 'Refused assistance', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res07' },
+            { name: 'Did not find', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res08' },
+            { name: 'Request canceled', id: DefaultTagCategoryIds.Resolution + Delimiters.Enum + 'res09' },
         ]
     },
     {
-        id: DefaultTagCategories.Medication,
+        id: DefaultTagCategoryIds.Medication,
         name: 'Medication needed',
         tags: [
-            { name: 'Albuterol', id: DefaultTagCategories.Medication + Delimiters.Enum + 'med01' },
-            { name: 'Epinephrine', id: DefaultTagCategories.Medication + Delimiters.Enum + 'med02' },
-            { name: 'Naloxone', id: DefaultTagCategories.Medication + Delimiters.Enum + 'med03' },
+            { name: 'Albuterol', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med01' },
+            { name: 'Epinephrine', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med02' },
+            { name: 'Naloxone', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med03' },
         ]
     },
     {
-        id: DefaultTagCategories.Equipment,
+        id: DefaultTagCategoryIds.Equipment,
         name: 'Equipment needed',
         tags: [
-            { name: 'AED Defribrillator', id: DefaultTagCategories.Equipment + Delimiters.Enum + 'equip01' },
-            { name: 'Nebulizer', id: DefaultTagCategories.Equipment + Delimiters.Enum + 'equip02' },
-            { name: 'Vehicle', id: DefaultTagCategories.Equipment + Delimiters.Enum + 'equip03' },
+            { name: 'AED Defribrillator', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip01' },
+            { name: 'Nebulizer', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip02' },
+            { name: 'Vehicle', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip03' },
         ]
     },
     {
-        id: DefaultTagCategories.Context,
+        id: DefaultTagCategoryIds.Context,
         name: 'Location',
         tags: [
-            { name: 'Weapon present', id: DefaultTagCategories.Context + Delimiters.Enum + 'con01' },
-            { name: 'Police present', id: DefaultTagCategories.Context + Delimiters.Enum + 'con02' },
-            { name: 'Unsafe location', id: DefaultTagCategories.Context + Delimiters.Enum + 'con03' },
-            { name: 'Crowd at location', id: DefaultTagCategories.Context + Delimiters.Enum + 'con04' },
+            { name: 'Weapon present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con01' },
+            { name: 'Police present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con02' },
+            { name: 'Unsafe location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con03' },
+            { name: 'Crowd at location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con04' },
         ]
     },
     {
-        id: DefaultTagCategories.CommunicationType,
+        id: DefaultTagCategoryIds.CommunicationType,
         name: 'Request method',
         tags: [
-            { name: 'Phone', id: DefaultTagCategories.CommunicationType + Delimiters.Enum + 'com01' },
-            { name: 'Text', id: DefaultTagCategories.CommunicationType + Delimiters.Enum + 'com02' },
-            { name: 'Social media', id: DefaultTagCategories.CommunicationType + Delimiters.Enum + 'com03' },
-            { name: 'Staff-initiated', id: DefaultTagCategories.CommunicationType + Delimiters.Enum + 'com04' },
-            { name: 'On behalf of another person', id: DefaultTagCategories.CommunicationType + Delimiters.Enum + 'com05' },
+            { name: 'Phone', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com01' },
+            { name: 'Text', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com02' },
+            { name: 'Social media', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com03' },
+            { name: 'Staff-initiated', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com04' },
+            { name: 'On behalf of another person', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com05' },
         ]
     },
 ]

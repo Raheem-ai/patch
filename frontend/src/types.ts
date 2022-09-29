@@ -190,6 +190,7 @@ export const ICONS = {
     add: 'plus',
     edit: 'pencil',
     role: 'clipboard-account',
+    dismissAlert: 'close',
     clock: 'clock-outline',
     removeUser: 'close',
     deleteItem: 'close',

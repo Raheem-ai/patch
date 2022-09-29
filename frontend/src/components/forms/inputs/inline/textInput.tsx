@@ -11,7 +11,6 @@ type Props = SectionInlineViewProps<'TextInput'> & {
     onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void,
     dontBlurOnSubmit?: boolean,
     disableAutoCorrect?: boolean,
-    iosClearButton?: boolean,
     nativeRef?: Ref<RNTextInput>
 }
 
@@ -21,8 +20,7 @@ const TextInput = observer(({
     onSubmitEditing,
     dontBlurOnSubmit,
     disableAutoCorrect,
-    nativeRef,
-    iosClearButton
+    nativeRef
 }: Props) => {
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
@@ -59,7 +57,6 @@ const TextInput = observer(({
                     onChangeText={(s: string) => config.onChange?.(s)}
                     onSubmitEditing={onSubmitEditing || null}
                     blurOnSubmit={!dontBlurOnSubmit}
-                    clearButtonMode={iosClearButton ? 'while-editing' : 'never'}
                     secureTextEntry={
                         isPassword 
                             ? secureTextEntry 

@@ -1,5 +1,5 @@
 import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributes, DefaultTags, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributes as DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -206,8 +206,8 @@ export class DBManager {
                 lastRequestId: 0, 
                 // lastDayTimestamp: new Date().toISOString(),
                 roleDefinitions: DefaultRoles,
-                attributeCategories: DefaultAttributes,
-                tagCategories: DefaultTags
+                attributeCategories: DefaultAttributeCategories,
+                tagCategories: DefaultTagCategories
             }
 
             newOrg.requestPrefix ||= this.orgRequestPrefixFromName(minOrg.name);
@@ -1664,48 +1664,28 @@ export class DBManager {
     // util for us running scripts against an environmeent
     // TODO: need way to run scripts using dbmanager without having to run the whole 
     // server
+
+    // @Every('5 minutes')
     async createOrg(
         partialAdmin: Partial<User>,
         users: Partial<User>[],
         orgName: string
     ) {
-        let admin = await this.createUser(partialAdmin)
-
-        let [ heartOrg, admin1 ] = await this.createOrganization({
-            name: orgName
-        }, admin.id);
-
-
-        for (const user of users) {
-            let newUser = await this.createUser(user);
-            [heartOrg, newUser] = await this.addUserToOrganization(heartOrg, newUser, [DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder], [])
-        }
-    }
-
-    // @Every('5 minutes')
-    async createBasicOrg() {
-        console.log('Creating new org...');
-
         try {
-            // define initial admin user ...
-            let user1 = await this.createUser({ 
-                email: 'nadav@decipher.org', 
-                password: 'Test', 
-                displayColor: "#25db00",
-                name: "Lil Nadav",
-                phone: "4153368895",
-            });
-
-            console.log('Added new user: ', user1);
-
-            // ... and name of new organization
-            let newOrg = await this.createOrganization({
-                name: `A New Org`
-            }, user1.id);
-
+            console.log('Creating new org. Adding admin...');
+            let admin = await this.createUser(partialAdmin)
+            console.log('Adding org...');
+            let [ newOrg, admin1 ] = await this.createOrganization({
+                name: orgName
+            }, admin.id);
+            console.log('Org created: ', newOrg);
+            console.log('Adding new users: ', users);
+            for (const user of users) {
+                let newUser = await this.createUser(user);
+                [newOrg, newUser] = await this.addUserToOrganization(newOrg, newUser, [DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder], [])
+            }
             console.log('Added new org: ', newOrg);
             console.log('* * * Remove script from dbManager.ts * * *');
-
         } catch (e) {
             console.error(e)
         }
