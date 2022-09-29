@@ -180,6 +180,22 @@ export class APIClient implements IAPIService {
         return tokens;
     }
 
+    async updatePassword(orgId: string, userId: string, credentials: BasicCredentials): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.updatePassword()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { 
+            orgId,
+            userId,
+            credentials
+        })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
     async refreshAuth(refreshToken: string): Promise<string> {
         const url = `${apiHost}${API.client.refreshAuth()}`;
 

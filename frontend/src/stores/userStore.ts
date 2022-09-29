@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -165,6 +165,11 @@ export default class UserStore implements IUserStore {
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
         const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)        
+        await this.afterSignIn(authTokens);
+    }
+
+    async updatePassword(orgId: string, userId: string, credentials: BasicCredentials) {
+        const authTokens = await this.api.updatePassword(orgId, userId, credentials)        
         await this.afterSignIn(authTokens);
     }
 

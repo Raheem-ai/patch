@@ -75,27 +75,34 @@ export type SubMenuOption = ({
 })
 
 export const SubMenuOptions: SubMenuOption[] = [
-  {
-    name: 'Profile',
-    onPress: () => {
-      userStore().pushCurrentUser(userStore().user);
-      navigateTo(routerNames.userDetails);
+    {
+        name: 'Reset Password',
+        onPress: () => {
+            userStore().pushCurrentUser(userStore().user);
+            navigateTo(routerNames.updatePassword);
+        }
+    },         
+    {
+        name: 'Profile',
+        onPress: () => {
+        userStore().pushCurrentUser(userStore().user);
+        navigateTo(routerNames.userDetails);
+        }
+    }, 
+    {
+        name: 'Settings',
+        routeTo: 'settings',
+    }, 
+    {
+        name: 'Help',
+        onPress: () => {
+        Linking.openURL('https://help.getpatch.org/');
+        }
+    }, 
+    {
+        name: 'Sign out',
+        onPress: () => {
+        userStore().signOut();
+        }
     }
-  }, 
-  {
-    name: 'Settings',
-    routeTo: 'settings',
-  }, 
-  {
-    name: 'Help',
-    onPress: () => {
-      Linking.openURL('https://help.getpatch.org/');
-    }
-  }, 
-  {
-    name: 'Sign out',
-    onPress: () => {
-      userStore().signOut();
-    }
-  }
 ]

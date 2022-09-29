@@ -108,6 +108,7 @@ export class UsersController implements APIController<
     | 'signUpThroughOrg'
     | 'editMe'
     | 'editUser'
+    | 'updatePassword'
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
@@ -339,6 +340,39 @@ export class UsersController implements APIController<
 
         return res;
     }
+
+    @Post(API.server.updatePassword())
+    async updatePassword(
+        @Required() @BodyParams('orgId') orgId: string,
+        @BodyParams('userId') userId: string,
+        @Required() @BodyParams('credentials') credentials: BasicCredentials,
+    ) {
+        const org = await this.db.resolveOrganization(orgId);
+        const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
+
+        if (!user) {
+          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
+        }
+
+        const res = await this.db.updateUserPassword(orgId, userId, credentials);
+
+        await this.pubSub.sys(PatchEventType.UserEdited, { 
+            userId,
+            orgId
+        })
+
+        // return auth tokens
+        const accessToken = await createAccessToken(user.id, user.auth_etag)
+        const refreshToken = await createRefreshToken(user.id, user.auth_etag)
+
+        return {
+            accessToken,
+            refreshToken
+        }
+
+//        return res;
+    }
 }
+
 
 
