@@ -1692,7 +1692,7 @@ export const DefaultTagCategories: TagCategory[] = [
 
 // DEFAULT ATTRIBUTES
 
-export enum DefaultAttributeCategories {
+export enum DefaultAttributeCategoryIds {
     Languages = '__languages',
     Skills = '__skills',
     Trainings = '__trainings',
@@ -1700,48 +1700,48 @@ export enum DefaultAttributeCategories {
 
 export const DefaultAttributes: AttributeCategory[] = [
     {
-        id: DefaultAttributeCategories.Languages,
+        id: DefaultAttributeCategoryIds.Languages,
         name: 'Languages',
         attributes: [
-            { name: 'Amharic', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan01' },
-            { name: 'Arabic', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan02' },
-            { name: 'Bengali', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan03' },
-            { name: 'Cantonese', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan04' },
-            { name: 'Hatian Creole', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan05' },
-            { name: 'Jamaican Creole', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan06' },
-            { name: 'Other Creole', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan07' },
-            { name: 'French', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan08' },
-            { name: 'Hindi', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan09' },
-            { name: 'Korean', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan10' },
-            { name: 'Mandarin', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan11' },
-            { name: 'Portuguese', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan12' },
-            { name: 'Spanish', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan13' },
-            { name: 'Tagalog', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan14' },
-            { name: 'Vietnamese', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan15' },
-            { name: 'Yoruba', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan16' },
-            { name: 'Oromo', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan17' },
-            { name: 'Swahili', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan18' },
-            { name: 'Other language', id: DefaultAttributeCategories.Languages + Delimiters.Enum + 'lan99' },
+            { name: 'Amharic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan01' },
+            { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
+            { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
+            { name: 'Cantonese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan04' },
+            { name: 'Hatian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
+            { name: 'Jamaican Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan06' },
+            { name: 'Other Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan07' },
+            { name: 'French', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan08' },
+            { name: 'Hindi', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan09' },
+            { name: 'Korean', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan10' },
+            { name: 'Mandarin', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan11' },
+            { name: 'Portuguese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan12' },
+            { name: 'Spanish', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan13' },
+            { name: 'Tagalog', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan14' },
+            { name: 'Vietnamese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan15' },
+            { name: 'Yoruba', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan16' },
+            { name: 'Oromo', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan17' },
+            { name: 'Swahili', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan18' },
+            { name: 'Other language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan99' },
         ]
     },
     {
-        id: DefaultAttributeCategories.Skills,
+        id: DefaultAttributeCategoryIds.Skills,
         name: 'Capabilities',
         attributes: [
-            { name: 'conflict resolution', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills01' },
-            { name: 'de-escalation', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills02' },
-            { name: 'first aid', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills03' },
-            { name: 'mental health first aid', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills04' },
-            { name: 'substance use support', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills05' },
-            { name: 'strenuous physical activity', id: DefaultAttributeCategories.Skills + Delimiters.Enum + 'skills06' },
+            { name: 'conflict resolution', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills01' },
+            { name: 'de-escalation', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills02' },
+            { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
+            { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
+            { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
+            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
         ]
     },
     {
-        id: DefaultAttributeCategories.Trainings,
+        id: DefaultAttributeCategoryIds.Trainings,
         name: 'Trainings',
         attributes: [
-            { name: 'CPR', id: DefaultAttributeCategories.Trainings + Delimiters.Enum + 'train01' },
-            { name: 'Stop the Bleed', id: DefaultAttributeCategories.Trainings + Delimiters.Enum + 'train02' },
+            { name: 'CPR', id: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train01' },
+            { name: 'Stop the Bleed', id: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train02' },
         ]
     }
 ]
