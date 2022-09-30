@@ -7,7 +7,7 @@ type CaseAndNumber = {
 
 const STRINGS = {
     // GLOBAL
-    cap: (str: string) => { return str.replace(/^./, str => str.toUpperCase())},
+    cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
         role: (isPlural?: boolean) => (isPlural 
@@ -76,9 +76,12 @@ const STRINGS = {
         teamList: 'Team',
         settings: 'Settings',
         channels: 'Channels',
-        componentLibrary: 'Component Library'
+        componentLibrary: 'Component Library',
+        createRequest: 'Create Request',
     },
     REQUESTS: {
+        updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
+        createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
         editRequestTitle: (prefix: string, requestName: string) => `Edit ${requestDisplayName(prefix, requestName)}`,
         description: 'Description',
         callStart: 'Call start',
@@ -169,9 +172,6 @@ const STRINGS = {
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
         removedUserSuccess: (name: string) => `Successfully removed ${name} from your organization.`,
         updatedProfileSuccess: (name?: string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
-        updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
-        createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
-
     },
     SETTINGS: {
         rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',

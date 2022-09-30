@@ -241,4 +241,5 @@ export const ICONS = {
     priority1: 'chevron-up',
     priority2: 'chevron-double-up',
     priority3: 'chevron-triple-up',
+    timestamp: 'clock-plus-outline',
 }

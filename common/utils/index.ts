@@ -18,6 +18,11 @@ export function timestampToTimeString(timestamp: number) {
     return dateToTimeString(new Date(timestamp))
 }
 
+export function rightNow() {
+    const time = dateToTimeString(new Date());
+    return time;
+}
+
 // '9:12 AM'
 export function dateToTimeString(date: Date) {
     // https://www.jsman.net/manual/Standard-Global-Objects/Date/toLocaleTimeString
