@@ -27,12 +27,12 @@ export default function UpdatePasswordForm( { navigation } : Props) {
         try {
             await userStore().updatePassword(password);
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e), false, true)
+            alertStore().toastError(resolveErrorMessage(e), false, false);
             return
         }
 
-        // TODO: toast to tell them it was successful
-        navigateTo(routerNames.userHomePage)
+        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated);
+        setTimeout(() => navigateTo(routerNames.userHomePage), 1000)
     }
 
     return(
