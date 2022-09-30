@@ -173,7 +173,7 @@ const CategorizedItemListInput = ({
 
         const selectedListArea = () => {
             return (
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                <ScrollView style={{ flex: 1, marginTop: -24 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingBottom: 40 }}>
                     {
                         Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
@@ -181,9 +181,8 @@ const CategorizedItemListInput = ({
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
                                     color: Colors.text.secondary,
-                                    fontWeight: '700',
-                                    fontSize: 16,
-                                    textTransform: 'uppercase'
+                                    fontWeight: '800',
+                                    fontSize: 16
                                 }
                             }
 
@@ -191,8 +190,8 @@ const CategorizedItemListInput = ({
                                 const isSelected = selectedItems.findIndex((i) => i.categoryId == categoryId && i.itemId == itemId) != -1;
                                     
                                 return isSelected
-                                    ? { fontWeight: 'bold' }
-                                    : { color: Colors.text.secondary}
+                                    ? { color: Colors.text.default, fontWeight: '500' }
+                                    : { color: Colors.text.secondaryplus}
                             }
 
                             const itemIcon = (categoryId: string, itemId: string) => {
@@ -237,7 +236,7 @@ const CategorizedItemListInput = ({
 
         const searchPillArea = () => {
             return (
-                <ScrollView style={{ flexGrow: 0, paddingHorizontal: 20, paddingVertical: (20 - 6)}} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                <ScrollView style={styles.searchPillContainer} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <Tags 
                         verticalMargin={6} 
                         horizontalTagMargin={6}
@@ -300,5 +299,11 @@ const styles = StyleSheet.create({
         paddingLeft: 60,
         paddingRight: 20,
         height: 48
+    },
+    searchPillContainer: { 
+        flexGrow: 0, 
+        paddingHorizontal: 20, 
+        height: 56,
+        paddingTop: 6
     }
 })

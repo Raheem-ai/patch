@@ -125,9 +125,9 @@ const styles = StyleSheet.create({
         flex: 1
     }, 
     categoryLabel: {
-        textTransform: 'uppercase',
         fontSize: 16,
         fontWeight: '700'
+
     },
     itemContainer: {
         flexDirection: 'row',

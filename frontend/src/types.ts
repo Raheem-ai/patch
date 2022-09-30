@@ -120,6 +120,7 @@ export const Colors = {
     text: {
         default: '#111',
         secondary: '#444',
+        secondaryplus: '#666',
         tertiary: '#999',
         disabled: '#999',
         defaultReversed: '#f6f6f6',

@@ -105,7 +105,7 @@ export const EditCategorizedItemForm = observer(({
         
         return (
             <View key={item.id} style={styles.itemContainer}>
-                <TextInput config={editItemInputConfig} />
+                <TextInput config={editItemInputConfig} style={{color: Colors.text.secondaryplus}}/>
                 {
                     itemIcon 
                         ? itemIcon(categoryId, item.id)
@@ -117,7 +117,7 @@ export const EditCategorizedItemForm = observer(({
 
     const categoryLabel = (props: { id: string, name: string }) => {
         const editCategoryInputConfig: InlineFormInputConfig<'TextInput'> = {
-            val: () =>  props.name.toUpperCase(),
+            val: () =>  props.name,
             onChange: (val) => store.editCategory(props.id, val),
             isValid: () => !!props.name,
             type: 'TextInput',
