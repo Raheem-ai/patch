@@ -3,7 +3,7 @@ import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { routerNames, UpdatePasswordNavigationProp, Colors, ICONS } from '../types';
 import { alertStore, userStore, editUserStore, organizationStore } from '../stores/interfaces';
-import { navigateTo } from '../navigation';
+import { navigateTo, navigationRef } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
@@ -18,31 +18,22 @@ export default function UpdatePasswordForm( { navigation } : Props) {
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
-    // not sure if this is necessary here, but ran into cases where orgId was undefined
-    // may have had to do with Expo issues, though.
-    organizationStore().init();
-
     const updatePassword = async () => {
-
-        if (password.length < 4) {
+        if (password.length < 1) {
+            // TODO:
+            // set a minimum length (and, potentially other requirements?)
+            // if it fails, let the user know it failed and why
             return
         }
 
-        const updatedUser: BasicCredentials = {
-            email: userStore().user.email,
-            password: password
-        }
-
-        const userId = userStore().user.id;
-        const orgId = organizationStore().metadata.id;
-
         try {
-            await userStore().updatePassword(orgId, userId, updatedUser)
+            await userStore().updatePassword(password);
         } catch(e) {
             alertStore().toastError(resolveErrorMessage(e), false, true)
             return
         }
 
+        // TODO: toast to tell them it was successful
         navigateTo(routerNames.userHomePage)
     }
 
@@ -52,7 +43,7 @@ export default function UpdatePasswordForm( { navigation } : Props) {
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                 <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                     <View style={styles.titleContainer}>
-                        <Text style={styles.titleText}>Reset password</Text>
+                        <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
                     </View>
                     <View style={styles.inputsContainer}>
                         <TextInput
@@ -77,6 +68,7 @@ export default function UpdatePasswordForm( { navigation } : Props) {
                     </View>
                     <View style={styles.bottomContainer}>
                         <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{'Reset password'}</Button>
+                        <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
                     </View>
                 </ScrollView>
             </Pressable>
@@ -139,7 +131,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         textAlign: 'center'     
     },
-    invitationCodeText: {
+    cancelLink: {
         fontStyle: 'normal',
         fontWeight: '700',
         fontSize: 14,

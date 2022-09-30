@@ -286,10 +286,9 @@ export class DBManager {
         return await user.save()
     }
 
-    async updateUserPassword(orgId: string, userId: string, credentials: BasicCredentials) {
+    async updateUserPassword(userId: (string | UserDoc), password: string) {
         const user = await this.resolveUser(userId);
-
-        user['password'] = credentials.password;
+        user.password = password;
 
         return await user.save()
     }

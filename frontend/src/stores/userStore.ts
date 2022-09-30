@@ -168,9 +168,9 @@ export default class UserStore implements IUserStore {
         await this.afterSignIn(authTokens);
     }
 
-    async updatePassword(orgId: string, userId: string, credentials: BasicCredentials) {
-        const authTokens = await this.api.updatePassword(orgId, userId, credentials)        
-        await this.afterSignIn(authTokens);
+    async updatePassword(password: string) {
+        const token = this.authToken;
+        await this.api.updatePassword( {token}, password)        
     }
 
     async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {

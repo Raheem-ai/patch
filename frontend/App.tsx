@@ -12,6 +12,7 @@ import { Provider } from 'inversify-react';
 // // component imports
 import LandingPage from './src/screens/landingPage';
 import SignInForm from './src/screens/SignInForm';
+import UpdatePassword from './src/screens/UpdatePassword';
 import WelcomePage from './src/screens/WelcomePage';
 import SignUpForm from './src/screens/SignUpForm';
 import UserHomePage from './src/screens/UserHomePage';
@@ -151,6 +152,7 @@ function App() {
                         {/* <Stack.Screen name={routerNames.landing} component={LandingPage} /> */}
                         <Stack.Screen name={routerNames.landing} component={SignInForm} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />
+                        <Stack.Screen name={routerNames.updatePassword} component={UpdatePassword} />
                         <Stack.Screen name={routerNames.joinOrganization} component={JoinOrganizationForm} />
                         <Stack.Screen name={routerNames.invitationSuccessful} component={InvitationSuccessfulPage} />
                         <Stack.Screen name={routerNames.createAccount} component={CreateAccountForm} />

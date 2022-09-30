@@ -342,33 +342,12 @@ export class UsersController implements APIController<
     }
 
     @Post(API.server.updatePassword())
+    @Authenticate()
     async updatePassword(
-        @Required() @BodyParams('orgId') orgId: string,
-        @BodyParams('userId') userId: string,
-        @Required() @BodyParams('credentials') credentials: BasicCredentials,
+        @User() user: UserDoc,
+        @Required() @BodyParams('password') password: string,
     ) {
-        const org = await this.db.resolveOrganization(orgId);
-        const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
-
-        if (!user) {
-          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
-        }
-
-        const res = await this.db.updateUserPassword(orgId, userId, credentials);
-
-        await this.pubSub.sys(PatchEventType.UserEdited, { 
-            userId,
-            orgId
-        })
-
-        // return auth tokens
-        const accessToken = await createAccessToken(user.id, user.auth_etag)
-        const refreshToken = await createRefreshToken(user.id, user.auth_etag)
-
-        return {
-            accessToken,
-            refreshToken
-        }
+        const res = await this.db.updateUserPassword(user, password);
 
 //        return res;
     }

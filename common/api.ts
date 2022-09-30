@@ -84,8 +84,6 @@ export interface IApiClient {
     signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
     refreshAuth: (refreshToken: string) => Promise<string>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
-    updatePassword: (orgId: string, userId: string, user: BasicCredentials) => Promise<AuthTokens>
-
     
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -94,6 +92,8 @@ export interface IApiClient {
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
+
+    updatePassword: Authenticated<(password: string) => Promise<void>>
 
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
