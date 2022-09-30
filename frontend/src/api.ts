@@ -229,7 +229,7 @@ export class APIClient implements IAPIService {
         });
     }
 
-    async updatePassword(ctx: TokenContext, password: string) {
+    async updatePassword(ctx: TokenContext, password: string): Promise<void> {
         const url = `${apiHost}${API.client.updatePassword()}`;
 
         await this.tryPost(url, {password}, {
