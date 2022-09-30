@@ -8,6 +8,7 @@ import { ICONS, Colors } from "../../../types";
 type CategoryRowProps = {
     id: string,
     name: string,
+    isFirst?: boolean,
     defaultClosed?: boolean,
     items: {
         id: string, 
@@ -32,6 +33,7 @@ const CategoryRow = observer(({
     items,
     categoryAction,
     defaultClosed,
+    isFirst,
     categoryFooter,
     categoryLabelStyle,
     itemLabelStyle,
@@ -66,7 +68,7 @@ const CategoryRow = observer(({
 
     return (
         <View>
-            <Pressable onPress={toggleOpen} style={styles.categoryHeaderContainer}>
+            <Pressable onPress={toggleOpen} style={[ styles.categoryHeaderContainer, isFirst ? styles.categoryHeaderContainerFirst : null]}>
                 <View style={{ marginHorizontal: 15 }}>
                     <IconButton
                         icon={isOpen ? ICONS.filterClose: ICONS.filterOpen} 
@@ -120,6 +122,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: 48,
         marginTop: 24
+    }, 
+    categoryHeaderContainerFirst: {
+        marginTop: 8
     }, 
     categoryLabelContainer: {
         flex: 1

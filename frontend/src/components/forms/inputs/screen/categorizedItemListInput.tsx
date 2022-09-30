@@ -14,7 +14,7 @@ import Tags from "../../../tags"
 import EditCategorizedItemForm from "../../editCategorizedItemForm"
 import CategoryRow from "../../common/categoryRow"
 import reactStringReplace from 'react-string-replace';
-import { Colors, ICONS } from '../../../../types';
+import { Colors, ICONS, globalStyles } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
 
@@ -173,10 +173,10 @@ const CategorizedItemListInput = ({
 
         const selectedListArea = () => {
             return (
-                <ScrollView style={{ flex: 1, marginTop: -24 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                <ScrollView style={ styles.selectedListArea } showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingBottom: 40 }}>
                     {
-                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
+                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category], index) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
@@ -219,6 +219,7 @@ const CategorizedItemListInput = ({
                                 <CategoryRow 
                                     key={category.name}
                                     name={category.name}
+                                    isFirst={index == 0 ? true : false}
                                     items={category.items}
                                     defaultClosed={!!config.props?.setDefaultClosed}
                                     id={categoryId}
@@ -236,13 +237,15 @@ const CategorizedItemListInput = ({
 
         const searchPillArea = () => {
             return (
-                <ScrollView style={styles.searchPillContainer} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
-                    <Tags 
-                        verticalMargin={6} 
-                        horizontalTagMargin={6}
-                        tags={itemInfo.map(i => i[0])}
-                        onTagDeleted={onItemDeleted}/>
-                </ScrollView>
+                <View style={selectedItems.length ? styles.hasSelectedItems : {}}>
+                    <ScrollView style={styles.searchPillContainer} contentContainerStyle={styles.searchPillContents} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                            <Tags 
+                                verticalMargin={6} 
+                                horizontalTagMargin={6}
+                                tags={itemInfo.map(i => i[0])}
+                                onTagDeleted={onItemDeleted}/>
+                    </ScrollView>
+                </View>
             )
         }
 
@@ -301,9 +304,19 @@ const styles = StyleSheet.create({
         height: 48
     },
     searchPillContainer: { 
-        flexGrow: 0, 
+        flexGrow: 0,
+        flexShrink: 1, 
         paddingHorizontal: 20, 
-        height: 56,
-        paddingTop: 6
+        paddingVertical: 8,
+    },
+    hasSelectedItems: {
+        borderBottomWidth: 1,
+        borderColor: Colors.borders.list
+    },
+    searchPillContents: {
+        alignItems: 'center',
+    },
+    selectedListArea: { 
+        flex: 1,
     }
 })

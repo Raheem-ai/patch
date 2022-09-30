@@ -1,3 +1,4 @@
+import { StyleSheet } from "react-native";
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/models";
 
@@ -244,3 +245,17 @@ export const ICONS = {
     priority2: 'chevron-double-up',
     priority3: 'chevron-triple-up',
 }
+
+export const globalStyles = StyleSheet.create({
+    basicShadow: {
+        shadowColor: '#000',
+        shadowOpacity: .1,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        elevation: 1,
+        backgroundColor: Colors.backgrounds.standard
+    }
+})
