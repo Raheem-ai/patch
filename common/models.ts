@@ -1698,7 +1698,7 @@ export enum DefaultAttributeCategoryIds {
     Trainings = '__trainings',
 }
 
-export const DefaultAttributes: AttributeCategory[] = [
+export const DefaultAttributeCategories: AttributeCategory[] = [
     {
         id: DefaultAttributeCategoryIds.Languages,
         name: 'Languages',
