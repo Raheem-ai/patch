@@ -78,7 +78,6 @@ export const SubMenuOptions: SubMenuOption[] = [
     {
         name: 'Reset Password',
         onPress: () => {
-            userStore().pushCurrentUser(userStore().user);
             navigateTo(routerNames.updatePassword);
         }
     },         

@@ -2,19 +2,17 @@ import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, 
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { routerNames, UpdatePasswordNavigationProp, Colors, ICONS } from '../types';
-import { alertStore, userStore, editUserStore, organizationStore } from '../stores/interfaces';
+import { alertStore, userStore } from '../stores/interfaces';
 import { navigateTo, navigationRef } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
-import { BasicCredentials } from '../../../common/models';
 
 type Props = {
     navigation: UpdatePasswordNavigationProp;
 };
 
 export default function UpdatePasswordForm( { navigation } : Props) {
-    const [username, setTextUser] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
