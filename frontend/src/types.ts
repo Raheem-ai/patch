@@ -69,7 +69,7 @@ export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'Sign
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
-export type UpdatePasswordNavigationProp = StackNavigationProp<RootStackParamList, 'UpdatePassword'>;
+// export type UpdatePasswordNavigationProp = StackNavigationProp<RootStackParamList, 'UpdatePassword'>;
 
 
 export const Colors = {

@@ -155,6 +155,8 @@ const STRINGS = {
         userNotFound: (email: string) => `User with email ${email} not found`,
         userExists: (email: string) => `User with email ${email} already exists.`,
         wrongPassword: `Password is incorrect`,
+        updatePasswordButton: `Set password`,
+        passwordTooShort: 'Use at least 4 characters.',
         passwordUpdated: 'Successfully updated password.',
         signInForAPI: `You must be signed in to call this api`,
         noOrgScope: `No org scope supplied`,

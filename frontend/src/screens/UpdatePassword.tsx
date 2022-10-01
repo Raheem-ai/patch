@@ -1,18 +1,15 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { routerNames, UpdatePasswordNavigationProp, Colors, ICONS } from '../types';
+import { routerNames, Colors, ICONS } from '../types';
 import { alertStore, userStore } from '../stores/interfaces';
 import { navigateTo, navigationRef } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
+import ValidatableTextInput from '../components/validatableTextInput';
 
-type Props = {
-    navigation: UpdatePasswordNavigationProp;
-};
-
-export default function UpdatePasswordForm( { navigation } : Props) {
+export default function UpdatePasswordForm() {
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
@@ -44,28 +41,17 @@ export default function UpdatePasswordForm( { navigation } : Props) {
                         <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
                     </View>
                     <View style={styles.inputsContainer}>
-                        <TextInput
-                            mode="flat"
-                            secureTextEntry={secureTextEntry}
-                            right={
-                                <TextInput.Icon
-                                name={secureTextEntry ? ICONS.showPassword : ICONS.hidePassword}
-                                forceTextInputFocus={false}
-                                onPress={() => {
-                                    setSecureTextEntry(!secureTextEntry);
-                                    return false;
-                                }}
-                                color={Colors.icons.dark}
-                                />
-                            }
+                        <ValidatableTextInput
+                            password={true}
                             style={styles.input}
                             label={STRINGS.INTERFACE.password}
                             value={password}
-                            onChangeText={password =>setPassword(password)}
+                            errorText={ (password.length >= 4 || password.length == 0) ? null : STRINGS.ACCOUNT.passwordTooShort }
+                            onChangeText={password => setPassword(password)}
                             onSubmitEditing={updatePassword}/>
                     </View>
                     <View style={styles.bottomContainer}>
-                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{'Reset password'}</Button>
+                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
                         <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
                     </View>
                 </ScrollView>
@@ -84,8 +70,8 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         alignSelf: 'center',
-        paddingTop: 200,
-        paddingBottom: 100,
+        paddingTop: 80,
+        marginBottom: 64
     },
     titleText: {
         fontStyle: 'normal',
@@ -93,12 +79,11 @@ const styles = StyleSheet.create({
         fontSize: 21,
         lineHeight: 25,
         textAlign: 'center',
-        color: Colors.text.signInTitle
+        color: Colors.text.signInTitle,
     },
     inputsContainer: {
         alignSelf: 'center',
-        marginBottom: 48,
-        height: 50,
+        marginBottom: 24,
         width: 296
     },
     input: {
@@ -106,28 +91,15 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         alignSelf: 'center',
-        marginVertical: 48
+        marginVertical: 12
     },
     signInButton: {
         borderRadius: 24,
         backgroundColor: Colors.primary.alpha,
         justifyContent: 'center',
-        marginVertical: 24,
+        marginVertical: 12,
         width: 296,
         height: 48
-    },
-    forgotPasswordText: {
-        fontStyle: 'normal',
-        fontWeight: '400',
-        fontSize: 14,
-        lineHeight: 24,
-        color: Colors.text.buttonLabelSecondary,
-        marginBottom: 24,
-        
-        /* identical to box height, or 171% */
-        display: 'flex',
-        alignItems: 'center',
-        textAlign: 'center'     
     },
     cancelLink: {
         fontStyle: 'normal',
