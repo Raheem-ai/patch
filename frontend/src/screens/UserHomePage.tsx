@@ -82,7 +82,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     //     await dispatchStore.assignRequest('fake', [ userStoreInst().user.id ]);
     // }
 
-    const userName = parseFullName(userStore().user.name);
+    const userName = parseFullName(userStore().user.name, 'all', 0); // third argument stops from "fixing" case
 
     // single names resolve as last name for some reason?!?!
     const firstName = userName.first || userName.last;

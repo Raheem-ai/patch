@@ -50,7 +50,7 @@ const HeaderConfig: {
     },
     [routerNames.updatePassword]: {
         title: STRINGS.PAGE_TITLES.updatePassword,
-        unauthenticated: false
+        unauthenticated: true
     },
     [routerNames.signUp]: {
         title: STRINGS.PAGE_TITLES.signUp,

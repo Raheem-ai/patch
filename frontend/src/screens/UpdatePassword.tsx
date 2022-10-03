@@ -8,6 +8,7 @@ import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
 import ValidatableTextInput from '../components/validatableTextInput';
+import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 
 export default function UpdatePasswordForm() {
     const [password, setPassword] = React.useState('');
@@ -33,30 +34,34 @@ export default function UpdatePasswordForm() {
     }
 
     return(
-        <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-            <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
-                <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
-                    </View>
-                    <View style={styles.inputsContainer}>
-                        <ValidatableTextInput
-                            password={true}
-                            style={styles.input}
-                            label={STRINGS.INTERFACE.password}
-                            value={password}
-                            errorText={ (password.length >= 4 || password.length == 0) ? null : STRINGS.ACCOUNT.passwordTooShort }
-                            onChangeText={password => setPassword(password)}
-                            onSubmitEditing={updatePassword}/>
-                    </View>
-                    <View style={styles.bottomContainer}>
-                        <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                        <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
-                    </View>
-                </ScrollView>
-            </Pressable>
-        </KeyboardAvoidingView>
+        // TODO
+        // Setting the background color here to hide the fact that an extra space is added
+        // Fix KeyboardAwareArea: https://linear.app/raheem/issue/RAH-632/keyboardavoidingview-not-working-on-updatepassword
+        <View style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>
+            <KeyboardAwareArea>
+                <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
+                    <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
+                        </View>
+                        <View style={styles.inputsContainer}>
+                            <ValidatableTextInput
+                                password={true}
+                                style={styles.input}
+                                label={STRINGS.INTERFACE.password}
+                                value={password}
+                                errorText={ (password.length >= 4 || password.length == 0) ? null : STRINGS.ACCOUNT.passwordTooShort }
+                                onChangeText={password => setPassword(password)}
+                                onSubmitEditing={updatePassword}/>
+                        </View>
+                        <View style={styles.bottomContainer}>
+                            <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
+                            <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
+                        </View>
+                    </ScrollView>
+                </Pressable>
+            </KeyboardAwareArea>
+        </View>
     );
 };
 
@@ -70,7 +75,7 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         alignSelf: 'center',
-        paddingTop: 80,
+        paddingTop: 280,
         marginBottom: 64
     },
     titleText: {

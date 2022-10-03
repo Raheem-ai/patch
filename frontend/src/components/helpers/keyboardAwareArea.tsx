@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, StyleProp, ViewStyle } from 'react-native';
 import { HeaderHeight, InteractiveHeaderHeight, TabbedScreenHeaderHeight } from '../../constants';
-import { bottomDrawerStore } from '../../stores/interfaces';
+import { bottomDrawerStore, navigationStore } from '../../stores/interfaces';
 
 type KeyboardAwareProps = React.PropsWithChildren<{
     insideTabView?: boolean;
