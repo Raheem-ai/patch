@@ -14,6 +14,7 @@ export type RootStackParamList = {
     CreateAccount: undefined;
     SignIn: undefined;
     UpdatePassword: undefined;
+    ForgotPassword: undefined;
 
     // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
     Home: undefined;
@@ -45,6 +46,7 @@ export const routerNames: TypedRouterNames = {
     home: "Home",
     signUp: "SignUp",
     updatePassword: "UpdatePassword",
+    forgotPassword: "ForgotPassword",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
     userDetails: "UserDetails",

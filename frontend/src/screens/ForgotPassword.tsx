@@ -9,32 +9,33 @@ import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
 import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
-import { isPasswordValid } from '../../../common/constants';
 
-export default function UpdatePasswordForm() {
-    const [password, setPassword] = React.useState('');
-    const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+import { isEmailValid } from '../../../common/constants';
 
-    const res = isPasswordValid(password);
-    const errorMessage = res.isValid || password.length == 0 
+export default function ForgotPasswordForm() {
+    const [email, setEmail] = React.useState('');
+
+    const res = isEmailValid(email);
+    const errorMessage = res.isValid || email.length == 0 
         ? null 
         : res.msg
 
-    const updatePassword = async () => {
-        if (!isPasswordValid(password)) {
+    const sendCode = async () => {
+        if (!isEmailValid) {
             // TODO:
             // if it fails, let the user know it failed and why in a toast?
             return
         }
 
         try {
-            await userStore().updatePassword(password);
+            // is there a user?
+            // if so, construct and send code
         } catch(e) {
             alertStore().toastError(resolveErrorMessage(e), false, false);
             return
         }
 
-        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent);
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
 
@@ -48,20 +49,19 @@ export default function UpdatePasswordForm() {
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
-                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
+                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.forgotPassword}</Text>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
-                                password={true}
                                 style={styles.input}
-                                label={STRINGS.INTERFACE.password}
-                                value={password}
+                                label={STRINGS.INTERFACE.email}
+                                value={email}
                                 errorText={errorMessage}
-                                onChangeText={password => setPassword(password)}
-                                onSubmitEditing={updatePassword}/>
+                                onChangeText={email => setEmail(email)}
+                                onSubmitEditing={sendCode}/>
                         </View>
                         <View style={styles.bottomContainer}>
-                            <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
+                            <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={sendCode}>{STRINGS.ACCOUNT.forgotPasswordButton}</Button>
                             <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>

@@ -1,4 +1,5 @@
 import { requestDisplayName } from './utils/requestUtils';
+import { minPasswordLength } from '../common/constants';
 
 type CaseAndNumber = {
     cap?: boolean,
@@ -76,6 +77,7 @@ const STRINGS = {
         createAccount: 'Create Account',
         signIn: 'Sign In',
         updatePassword: 'Set a new password',
+        forgotPassword: 'Reset password',
         signUp: 'Sign Up',
         signUpThroughOrg: 'Sign Up',
         userHomePage: 'Home',
@@ -156,8 +158,11 @@ const STRINGS = {
         userExists: (email: string) => `User with email ${email} already exists.`,
         wrongPassword: `Password is incorrect`,
         updatePasswordButton: `Set password`,
-        passwordTooShort: 'Use at least 4 characters.',
+        forgotPasswordButton: `Send login code`,
+        passwordTooShort: `Use at least ${minPasswordLength} characters.`,
         passwordUpdated: 'Successfully updated password.',
+        emailProbablyNotRight: `That doesn't look like an email address.`,
+        resetPasswordCodeSent: `Check your email for a link to reset your password.`,
         signInForAPI: `You must be signed in to call this api`,
         noOrgScope: `No org scope supplied`,
         noOrgAccess: `You do not have access to the requested org.`,

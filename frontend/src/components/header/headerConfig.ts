@@ -52,6 +52,10 @@ const HeaderConfig: {
         title: STRINGS.PAGE_TITLES.updatePassword,
         unauthenticated: true
     },
+    [routerNames.forgotPassword]: {
+        title: STRINGS.PAGE_TITLES.forgotPassword,
+        unauthenticated: true
+    },
     [routerNames.signUp]: {
         title: STRINGS.PAGE_TITLES.signUp,
         unauthenticated: true
