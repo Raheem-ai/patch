@@ -7,8 +7,8 @@ import { SectionInlineViewProps } from "../../types";
 import { Colors, ICONS } from "../../../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
-    style?: TextStyle
-    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void
+    style?: TextStyle,
+    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void,
     dontBlurOnSubmit?: boolean,
     disableAutoCorrect?: boolean,
     nativeRef?: Ref<RNTextInput>
@@ -36,7 +36,7 @@ const TextInput = observer(({
                     marginRight: 12,
                 }}>
                 <RNTextInput 
-                    placeholderTextColor={'#aaa'}
+                    placeholderTextColor={Colors.text.tertiary}
                     style={[
                         { 
                             fontSize: styles.label.fontSize,
@@ -79,7 +79,7 @@ export default TextInput;
 
 const styles = StyleSheet.create({
     label: {
-        color: '#000',
+        color: Colors.text.default,
         fontSize: 16
     },
     notes: {

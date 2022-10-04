@@ -11,7 +11,7 @@ import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
-import { ICONS } from "../../../../types";
+import { Colors, ICONS } from "../../../../types";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const mapsService = getService<IMapsService>(IMapsService);
@@ -179,7 +179,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             <IconButton
                                 style={{ alignSelf: 'center', margin: 0 , width: 35}}
                                 icon={ICONS.navBack} 
-                                color='#000'
+                                color={Colors.icons.light}
                                 onPress={cancel}
                                 size={35} />
                             <RNTextInput 
@@ -199,7 +199,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             <IconButton
                                 style={{ alignSelf: 'center', margin: 0 , marginRight: 12, width: 25}}
                                 icon={ICONS.textInputClear} 
-                                color={searchText ? '#666' : '#fff'}
+                                color={searchText ? Colors.icons.lighter : Colors.nocolor}
                                 onPress={clear}
                                 size={25} />
                         </View>

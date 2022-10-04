@@ -17,9 +17,23 @@ const STRINGS = {
                 ? 'roles'
                 : 'role'
         ),
+        attribute: (props?: CaseAndNumber) => (props?.cap 
+            ? props?.plural
+                ? 'Attributes'
+                : 'Attribute'
+            : props?.plural
+                ? 'attributes'
+                : 'attribute'
+        ),
         shift: 'shift',
-        attribute: 'attributes',
-        tag: 'tag',
+        tag: (props?: CaseAndNumber) => (props?.cap 
+            ? props?.plural
+                ? 'Tags'
+                : 'Tag'
+            : props?.plural
+                ? 'tags'
+                : 'tag'
+        ),
         position: `position`,
         request: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
@@ -59,9 +73,14 @@ const STRINGS = {
     },
     INTERFACE: {
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
+        editElement: (el?: string) => `Edit${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
         addAnotherElement: (el?: string) => `Add another ${el}`,
-
+        successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
+        available: (cap?: boolean) => cap ? `Available` : `available`, 
+        unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
+        availabilityAlertTitle: `Set your status`,
+        availabilityAlertMessage: (onDuty: boolean) => `You are currently ${onDuty ? STRINGS.INTERFACE.available() : STRINGS.INTERFACE.unavailable()}.`, 
     },
     PAGE_TITLES: {
         landing: 'Landing',
