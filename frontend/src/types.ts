@@ -217,8 +217,8 @@ export const ICONS = {
     map: 'map',
     cardList: 'view-agenda',
     newMessage: BASIC_ICONS.chatBubble,
-    timeRequestCreated: BASIC_ICONS.clockOutline,
-    timeCallStarted: 'phone',
+    timeRequestCreated: 'phone-in-talk',
+    timeCallStarted: 'phone-in-talk',
     callerContactInfo: 'card-account-phone',
     joinDecline: BASIC_ICONS.xMark,
     joinAccept: BASIC_ICONS.check,
@@ -244,6 +244,7 @@ export const ICONS = {
     priority1: 'chevron-up',
     priority2: 'chevron-double-up',
     priority3: 'chevron-triple-up',
+    timestamp: 'clock-plus-outline',
 }
 
 export const globalStyles = StyleSheet.create({

@@ -7,15 +7,12 @@ type CaseAndNumber = {
 
 const STRINGS = {
     // GLOBAL
+    cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
-        role: (props?: CaseAndNumber) => (props?.cap 
-            ? props?.plural
-                ? 'Roles'
-                : 'Role'
-            : props?.plural
-                ? 'roles'
-                : 'role'
+        role: (isPlural?: boolean) => (isPlural 
+            ? 'roles'
+            : 'role'
         ),
         attribute: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
@@ -35,17 +32,17 @@ const STRINGS = {
                 : 'tag'
         ),
         position: `position`,
-        request: (props?: CaseAndNumber) => (props?.cap 
-            ? props?.plural
-                ? 'Requests'
-                : 'Request'
-            : props?.plural
-                ? 'requests'
-                : 'request'
-        ) 
+        request: (isPlural?: boolean) => (isPlural 
+            ? 'requests'
+            : 'request'
+        ),
+        responder: (isPlural?: boolean) => (isPlural 
+            ? 'responders'
+            : 'responder'
+        ),
     },
     visualDelim: '·',
-    responders: (n: number) => (n > 1 || n == 0) ? 'responders' : 'responder',
+    responders: (n: number) => (n == 1) ? 'responder' : 'responders',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
     people: (n: number) => n ==1 ? 'person' : 'people',
     nPeople: (n: number) => `${n} ${STRINGS.people(n)}`,
@@ -98,9 +95,12 @@ const STRINGS = {
         teamList: 'Team',
         settings: 'Settings',
         channels: 'Channels',
-        componentLibrary: 'Component Library'
+        componentLibrary: 'Component Library',
+        createRequest: 'Create Request',
     },
     REQUESTS: {
+        updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
+        createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
         editRequestTitle: (prefix: string, requestName: string) => `Edit ${requestDisplayName(prefix, requestName)}`,
         description: 'Description',
         callStart: 'Call start',
@@ -113,6 +113,7 @@ const STRINGS = {
         priority: 'Priority',
         tags: 'Tags',
         requestIsClosed: 'This request has been closed.',
+        noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
         NOTIFICATIONS: {
             notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
@@ -190,9 +191,6 @@ const STRINGS = {
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
         removedUserSuccess: (name: string) => `Successfully removed ${name} from your organization.`,
         updatedProfileSuccess: (name?: string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
-        updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
-        createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
-
     },
     SETTINGS: {
         rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',

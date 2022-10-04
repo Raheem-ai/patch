@@ -184,5 +184,5 @@ export function userOnRequest(userId: string, req: Pick<HelpRequest, 'positions'
 export function requestDisplayName(prefix, requestId) {
     return !!(prefix && requestId)
         ? prefix + '–' + requestId
-        : STRINGS.ELEMENTS.request({cap:true});
+        : STRINGS.cap(STRINGS.ELEMENTS.request());
 }

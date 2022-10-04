@@ -14,6 +14,7 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
 import { requestDisplayName } from "../../../../../common/utils/requestUtils";
+import { rightNow } from "../../../../../common/utils";
 
 type Props = {}
 
@@ -58,7 +59,7 @@ class EditHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
         
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
+                    alertStore().toastSuccess(STRINGS.REQUESTS.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
         
                     bottomDrawerStore().hide()
                 },
@@ -171,6 +172,12 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'callEnd',
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
+                        props: {
+                            inlineAction: {
+                                icon: ICONS.timestamp,
+                                action: () => runInAction(() => {editRequestStore().callEndedAt = rightNow()} )
+                            }
+                        }
                     },
                     // Caller Name
                     {

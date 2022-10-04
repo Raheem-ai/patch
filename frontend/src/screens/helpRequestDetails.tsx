@@ -74,7 +74,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         
         return (
             <View style={styles.notesSection}>
-                <Text>{notes}</Text>
+                <Text selectable={true}>{notes}</Text>
             </View>
         )
     }
@@ -90,7 +90,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 : Colors.text.tertiary
 
         return !!priorityLabel
-            ? <View style={styles.priorityOutterSection}>
+            ? <View style={styles.priorityOuterSection}>
                     <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
                         <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
                     </View>
@@ -101,7 +101,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const detailsSection = () => {
         const address = requestStore().currentRequest.location?.address.split(',').slice(0, 2).join();
 
-        const time = new Date(requestStore().currentRequest.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const time = dateToTimeString(new Date(requestStore().currentRequest.createdAt));
         const tags = requestStore().currentRequest.tagHandles.map(item => manageTagsStore().getTag(item.categoryId, item.itemId)?.name).filter(x => !!x);
 
         return (
@@ -115,30 +115,27 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     icon={ICONS.mapMarker} 
                                     color={styles.detailsIcon.color}
                                     size={styles.detailsIcon.width} />
-                                <Text style={styles.metadataText}>{address}</Text>
+                                <Text selectable={true} style={styles.metadataText}>{address}</Text>
                             </View>
                         </Pressable>
                         : null
                 }
-                <View style={styles.timeAndPlaceRow}>
-                    <IconButton
-                        style={styles.detailsIcon}
-                        icon={ICONS.timeRequestCreated} 
-                        color={styles.detailsIcon.color}
-                        size={styles.detailsIcon.width} />
-                    <Text style={styles.metadataText}>{time.toLocaleString()}</Text>
-                </View>
                 { 
-                    requestStore().currentRequest.callStartedAt && requestStore().currentRequest.callEndedAt
-                        ? <View style={styles.timeAndPlaceRow}>
+                    <View style={styles.timeAndPlaceRow}>
                             <IconButton
                                 style={styles.detailsIcon}
                                 icon={ICONS.timeCallStarted}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
-                            <Text style={styles.metadataText}>{requestStore().currentRequest.callStartedAt + ' - ' +requestStore().currentRequest.callEndedAt}</Text>
+                            <Text selectable={true} style={styles.metadataText}>
+                                {requestStore().currentRequest.callStartedAt // use user-set start time if it exists, else request creation time
+                                    ? requestStore().currentRequest.callStartedAt
+                                    : time }
+                                {requestStore().currentRequest.callEndedAt // add end time if it's been set
+                                    ? ' - ' + requestStore().currentRequest.callEndedAt
+                                    : '' }
+                            </Text>
                         </View>
-                        : null
                 }
                 { 
                     requestStore().currentRequest.callerName || requestStore().currentRequest.callerContactInfo
@@ -148,19 +145,19 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 icon={ICONS.callerContactInfo}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
-                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerContactInfo 
-                                    ? ' ' + STRINGS.visualDelim 
+                                <Text selectable={true} style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerName && requestStore().currentRequest.callerContactInfo 
+                                    ? ' ' + STRINGS.visualDelim + ' '
                                     : null}
+                                    <Text>{requestStore().currentRequest.callerContactInfo}</Text>
                                 </Text>
-                                <Text style={styles.metadataText}>{requestStore().currentRequest.callerContactInfo}</Text>
                         </View>
                         : null
                 }
                 { 
                     tags.length != 0
-                        ? <View style={styles.timeAndPlaceRow}>
+                        ? <View style={[styles.timeAndPlaceRow, {marginTop: 8}]}>
                             <IconButton
-                                style={[styles.detailsIcon, {marginRight: 8}]}
+                                style={[styles.detailsIcon, {marginRight: 8, marginTop: 8}]}
                                 icon={ICONS.tag} 
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
@@ -189,7 +186,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return types.length 
             ? <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
+                    <Text selectable={true} style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
                 </View>
             </View>
             : null
@@ -727,8 +724,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             )
                         })
                         : <View style={{ padding: 20, paddingBottom: 0 }}>
-                            <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>Responders</Text>
-                            <Text style={{lineHeight: 18}}>No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.</Text>
+                            <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>{ STRINGS.cap(STRINGS.ELEMENTS.responder(true)) }</Text>
+                            <Text style={{lineHeight: 18}}>{STRINGS.REQUESTS.noRespondersDefined}</Text>
                             <View style={{ marginTop: 20 }}>{ editAction() }</View>
                         </View>
                 }
@@ -795,7 +792,7 @@ const styles = StyleSheet.create({
     notesSection: {
         marginBottom: 16
     },
-    priorityOutterSection: {
+    priorityOuterSection: {
         marginBottom: 16,
         // makes the inner section hug the text vs trying to dill the space of its container
         flexDirection: 'row' 
@@ -815,10 +812,12 @@ const styles = StyleSheet.create({
         marginVertical: 2
     },
     detailsIcon: { 
-        width: 14,
+        width: 16,
         color: Colors.icons.dark,
-        alignSelf: 'center',
-        marginRight: 4
+        alignSelf: 'flex-start',
+        marginRight: 4,
+        marginLeft: 0,
+        paddingLeft: 0,
     },
     metadataText: {
         fontSize: 14,
@@ -845,28 +844,6 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         margin: 0
     },
-    chatContainer: {
-        
-    },
-    chatLabelContainer: {
-        flexDirection: 'row',
-        marginBottom: 4
-    },
-    chatLabel: {
-        marginLeft: 4,
-        alignSelf: 'center',
-        color: '#111',
-        fontWeight: 'bold'
-    },
-    chatIcon: {
-        width: 20,
-        color: '#333',
-        alignSelf: 'center',
-        margin: 0
-    },
-    chatAuthorLabel: {
-        fontWeight: 'bold'
-    },
     newLabelContainer: {
         borderRadius: 2,
         justifyContent:'center',        
@@ -877,114 +854,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 11,
         fontWeight: 'bold'
-    },
-    chatPreviewContainer: {
-        padding: 12,
-        borderColor: '#ddd',
-        borderRadius: 6,
-        borderWidth: 2,
-        borderStyle: 'solid',
-        maxHeight: 300
-    }, 
-    chatPreviewHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 6
-    },
-    teamSection: {
-        flex: 1,
-        backgroundColor: '#F3F1F3',
-        padding: 16,
-        paddingTop: 30,
-    },
-    teamLabelContainer: {
-        flexDirection: 'row',
-        marginBottom: 4
-    },
-    teamLabel: {
-        marginLeft: 4,
-        alignSelf: 'center',
-        color: '#111',
-        fontWeight: 'bold'
-    },
-    teamIcon: {
-        width: 20,
-        height: 20,
-        color: '#333',
-        alignSelf: 'center',
-        margin: 0
-    },
-    addResponderIcon: {
-        width: 20,
-        height: 20,
-        color: '#999',
-        alignSelf: 'center',
-        margin: 0
-    },
-    responderRowActionIcon: {
-        width: 20,
-        height: 20,
-        color: '#fff',
-        backgroundColor: '#999',
-        alignSelf: 'center',
-        margin: 0
-    },
-    teamHeader: {
-        flexDirection: "row",
-        justifyContent: 'space-between',
-        marginBottom: 12
-    },
-    addResponderButton: {
-        height: 48,
-        borderRadius: 24,
-        color: '#fff',
-        backgroundColor: Colors.primary.alpha,
-        justifyContent: 'center',
-        marginTop: 12
-    },
-    respondersContainer: {
-        flex: 1
-    },
-    responderRow: {
-        flexDirection: 'row',
-        alignContent: 'center',
-        marginBottom: 12
-    },
-    dispatcherContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        height: 18,
-        marginLeft: 4
-    },
-    dispatchIcon: {
-        color: '#7F7C7F',
-        width: 12,
-        margin: 0,
-        alignSelf: 'center',
-    },
-    dispatcherLabelContainer: {
-        justifyContent: 'center',
-        marginLeft: 4
-    },
-    dispatcherLabel: {
-        color: '#7F7C7F',
-        fontSize: 12,
-    },
-    responderLabel: {
-        fontWeight: 'bold',
-        fontSize: 14
-    },
-    responderHeader: {
-        flexDirection: 'row',
-        alignContent: 'center',
-        height: 18
-    },
-    userIconContainer: {
-        marginRight: 4
-    },
-    skillLabel: {
-        color: '#7F7C7F',
-        fontSize: 12
     },
     notifyButton: {
         borderWidth: 1,

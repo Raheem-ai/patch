@@ -15,6 +15,7 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
 import { requestDisplayName } from "../../../../../common/utils/requestUtils";
+import { rightNow } from "../../../../../common/utils";
 
 type Props = {}
 
@@ -24,8 +25,14 @@ class CreateHelpRequest extends React.Component<Props> {
 
     static minimizable = true;
 
+    componentDidMount() {
+        runInAction(() => {
+            createRequestStore().callStartedAt = rightNow();
+        })
+    }
+
     headerLabel = () => {
-        return 'Create Request'
+        return STRINGS.PAGE_TITLES.createRequest
     }
 
     setRef = (formRef: Form) => {
@@ -39,6 +46,7 @@ class CreateHelpRequest extends React.Component<Props> {
         renderInputs,
         inputs
     }: CustomFormHomeScreenProps) => {
+
         const headerConfig: BackButtonHeaderProps = {
             cancel: {
                 handler: async () => {
@@ -59,7 +67,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.ACCOUNT.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
+                    alertStore().toastSuccess(STRINGS.REQUESTS.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
                     createRequestStore().clear()
                     bottomDrawerStore().hide()
                 },
@@ -87,12 +95,16 @@ class CreateHelpRequest extends React.Component<Props> {
         )
     })
 
+    // made a separate function in anticipation of adding an action 
+    // that places the current time into call start or call end fields
+
+
     formProps = (): FormProps => {
+
         return {
             headerLabel: this.headerLabel(), 
             homeScreen: this.formHomeScreen,
             inputs: [
-                
                 [
                     // Description
                     {
@@ -161,7 +173,13 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callStart',
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
-                        icon: ICONS.timeCallStarted
+                        icon: ICONS.timeCallStarted,
+                        props: {
+                            inlineAction: {
+                                icon: ICONS.timestamp,
+                                action: () => runInAction(() => {createRequestStore().callStartedAt = rightNow()} )
+                            }
+                        }
                         // required: true
                     },
                     // Call End
@@ -176,6 +194,12 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'callEnd',
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
+                        props: {
+                            inlineAction: {
+                                icon: ICONS.timestamp,
+                                action: () => runInAction(() => {createRequestStore().callEndedAt = rightNow()} )
+                            }
+                        }
                     },
                     // Caller Name
                     {
