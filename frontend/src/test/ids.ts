@@ -144,7 +144,8 @@ const TestIds = {
         screen: 'requestListScreen',
     },
     requestDetails: {
-        notes: 'requestDetailsNotes'
+        notes: 'requestDetails::notes',
+        tags: 'requestDetails::tags'
     },
     team: {
         screen: 'teamScreen'
