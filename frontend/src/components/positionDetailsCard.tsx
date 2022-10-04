@@ -9,7 +9,6 @@ import { resolveErrorMessage } from "../errors";
 import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ICONS } from "../types";
 import { iHaveAllPermissions } from "../utils";
-import CategoryRow from "./forms/common/categoryRow";
 import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";

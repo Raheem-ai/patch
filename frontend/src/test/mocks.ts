@@ -6,20 +6,28 @@ export function MockSecrets(): AppSecrets {
     }
 }
 
-export function MockRequests(): Partial<HelpRequest>[] {
+export function MockRequests(): HelpRequest[] {
     return [
         {
             id: 'xxx-req1-xxx',
             orgId: MockOrgMetadata().id,
             notes: 'mock description 1',
             displayId: '1',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
             dispatcherId: MockUsers()[0].id, 
             type: [],
             positions: [],
             tagHandles: [],
             status: RequestStatus.Unassigned,
             teamEvents: [],
-            statusEvents: []
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: null,
+            priority: null
         }
     ]
 }

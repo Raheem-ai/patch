@@ -12,8 +12,11 @@ import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import { ICONS } from "../../../../types";
+import TestIds from "../../../../test/ids";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
+    const wrappedTestID = TestIds.inputs.mapInput.wrapper(config.testID)
+
     const mapsService = getService<IMapsService>(IMapsService);
 
     const [suggestions, setSuggestions] = useState<PlaceAutocompleteResult[]>([]);
@@ -145,6 +148,8 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         <KeyboardAwareArea>
             <View style={{ flex: 1, position: 'relative'}}>
                 <MapView 
+                    testID={TestIds.inputs.mapInput.map(wrappedTestID)}
+                    sentry-label={TestIds.inputs.mapInput.map(wrappedTestID)}
                     provider={PROVIDER_GOOGLE} 
                     showsUserLocation={true}
                     initialRegion={initialRegion}
@@ -153,6 +158,8 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                     style={{ flex: 1 }}>
                         { targetCoords 
                             ? <Marker
+                                testID={TestIds.inputs.mapInput.marker(wrappedTestID)}
+                                sentry-label={TestIds.inputs.mapInput.marker(wrappedTestID)}
                                 coordinate={{ latitude: targetCoords.lat, longitude: targetCoords.lng }}
                                 title={chosenSuggestion ? chosenSuggestion.structured_formatting.main_text : undefined }
                                 description={chosenSuggestion ?chosenSuggestion.structured_formatting.secondary_text : undefined}
@@ -177,12 +184,16 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                             flex: 1
                         }}>
                             <IconButton
+                                testID={TestIds.inputs.mapInput.cancel(wrappedTestID)}
+                                sentry-label={TestIds.inputs.mapInput.cancel(wrappedTestID)}
                                 style={{ alignSelf: 'center', margin: 0 , width: 35}}
                                 icon={ICONS.navBack} 
                                 color='#000'
                                 onPress={cancel}
                                 size={35} />
                             <RNTextInput 
+                                testID={TestIds.inputs.mapInput.searchText(wrappedTestID)}
+                                sentry-label={TestIds.inputs.mapInput.searchText(wrappedTestID)}
                                 onChangeText={onTextUpdated}
                                 value={searchText}
                                 onFocus={textInputFocused}
@@ -197,6 +208,8 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                                     fontSize: 16
                                 }}/>
                             <IconButton
+                                testID={TestIds.inputs.mapInput.clearText(wrappedTestID)}
+                                sentry-label={TestIds.inputs.mapInput.clearText(wrappedTestID)}
                                 style={{ alignSelf: 'center', margin: 0 , marginRight: 12, width: 25}}
                                 icon={ICONS.textInputClear} 
                                 color={searchText ? '#666' : '#fff'}
@@ -215,13 +228,21 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                                 top: -22,
                                 zIndex: -1                                
                             }}>
-                                {suggestions.map(s => {
-                                    return <Suggestion suggestion={s} onPress={() => chooseSuggestion(s)}/>
+                                {suggestions.map((s, idx) => {
+                                    return (
+                                        <Suggestion 
+                                            testID={TestIds.inputs.mapInput.suggestionN(wrappedTestID, idx)}
+                                            sentry-label={TestIds.inputs.mapInput.suggestionN(wrappedTestID, idx)}
+                                            suggestion={s} 
+                                            onPress={() => chooseSuggestion(s)}/>
+                                    )
                                 })}
                             </View>
                             : null }
                 </View>
                 <Pressable 
+                    testID={TestIds.inputs.mapInput.save(wrappedTestID)}
+                    sentry-label={TestIds.inputs.mapInput.save(wrappedTestID)}
                     onPress={save}
                     style={{
                         backgroundColor: '#000', 
@@ -246,12 +267,12 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
 
 export default MapInput;
 
-const Suggestion = ({ suggestion, onPress }: { suggestion: PlaceAutocompleteResult, onPress: () => void }) => {
+const Suggestion = ({ suggestion, onPress, testID }: { suggestion: PlaceAutocompleteResult, onPress: () => void, testID: string }) => {
     return (
         <View style={{
             marginBottom: 16,
             paddingHorizontal: 16
-        }} onTouchStart={onPress}>
+        }} onTouchStart={onPress} testID={testID}>
             <Text style={{
                 fontSize: 16
             }}>{suggestion.structured_formatting.main_text}</Text>

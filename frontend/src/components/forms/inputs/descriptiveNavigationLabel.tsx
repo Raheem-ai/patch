@@ -11,6 +11,7 @@ type DescriptiveNavigationLabelProps = SectionNavigationLabelViewProps & {
 }
 
 const DescriptiveNavigationLabel = ({ 
+    testID,
     expand,
     name,
     description,
@@ -43,7 +44,12 @@ const DescriptiveNavigationLabel = ({
     }
 
     return (
-        <Pressable style={{ paddingVertical: 12}} onPress={expand}>
+        <Pressable 
+            sentry-label={testID}
+            testID={testID}
+            style={{ paddingVertical: 12}} 
+            onPress={expand}
+        >
             { text() }
         </Pressable>
     )

@@ -27,7 +27,7 @@ export type SectionScreenViewProps<Type extends ScreenFormInputType = ScreenForm
 // all it needs from form implementation is a way to switch screens
 export type SectionNavigationLabelViewProps = {
     expand: () => void
-}
+} & Pick<BaseFormInputConfig, 'testID'>
 
 // navigation input config decides completely how to render the screen component
 // all it needs from form implementation is a way to go back to the form's home screen

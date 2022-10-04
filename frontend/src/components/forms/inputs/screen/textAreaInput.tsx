@@ -57,7 +57,7 @@ const TextAreaInput = observer(({ back, config }: SectionScreenViewProps<'TextAr
                 <View style={styles.notes}>
                     { charLimitIndicator() }
                     <RNTextInput 
-                        testID={config.testID ? TestIds.expandedFormInput(config.testID) : null}
+                        testID={TestIds.expandedFormInput(config.testID)}
                         style={{ lineHeight: styles.label.lineHeight, fontSize: styles.label.fontSize }}
                         maxLength={config.props?.maxChar}
                         multiline

@@ -24,6 +24,7 @@ export type BackButtonHeaderProps = {
     }
     label?: string | (() => string),
     labelDecoration?: {
+        name: string,
         handler: () => void,
         icon: string | (()  => string)
     }
@@ -42,19 +43,25 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
 
     get expandHideId() {
         return bottomDrawerStore().expanded 
-            ? TestIds.bottomDrawerMinimizeButton(this.props.testID)
-            : TestIds.bottomDrawerExpandButton(this.props.testID)
+            ? TestIds.backButtonHeader.minimize(this.props.testID)
+            : TestIds.backButtonHeader.expand(this.props.testID)
     }
 
     get cancelId() {
         return this.props.testID 
-            ? TestIds.cancelButton(this.props.testID) 
+            ? TestIds.backButtonHeader.cancel(this.props.testID) 
             : null
     }
 
     get saveId() {
         return this.props.testID 
-            ? TestIds.saveButton(this.props.testID) 
+            ? TestIds.backButtonHeader.save(this.props.testID) 
+            : null
+    }
+
+    get decorationId() {
+        return this.props.labelDecoration
+            ? TestIds.backButtonHeader.labelDecoration(this.props.testID, this.props.labelDecoration.name)
             : null
     }
 
@@ -143,6 +150,8 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
                 {
                     this.props.labelDecoration 
                         ? <IconButton
+                            sentry-label={this.decorationId}
+                            testID={this.decorationId}
                             onPress={this.props.labelDecoration.handler}
                             icon={this.props.labelDecoration.icon} 
                             color={'#666'}

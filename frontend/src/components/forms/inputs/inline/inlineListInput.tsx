@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { View, Switch, StyleSheet, ScrollView } from "react-native";
 import { List, Text } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
+import TestIds from "../../../../test/ids";
 import { Colors, ICONS } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
 
@@ -37,7 +38,7 @@ const InlineListInput = observer(({ config }: InlineListInputProps) => {
     return (
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1}}> 
             <List.Section style={{margin: 0}}>
-                {config.props.options.map(opt => {
+                {config.props.options.map((opt, idx) => {
                     const chosen = vals.has(opt);
                     
                     const title = config.props.optionToListLabel
@@ -45,6 +46,8 @@ const InlineListInput = observer(({ config }: InlineListInputProps) => {
                         : config.props.optionToPreviewLabel(opt);
 
                     return <List.Item 
+                                testID={TestIds.inputs.list.optionN(config.testID, idx)}
+                                sentry-label={TestIds.inputs.list.optionN(config.testID, idx)}
                                 key={opt} 
                                 onPress={() => toggleVal(opt)} 
                                 title={title}

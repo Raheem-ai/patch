@@ -1,9 +1,11 @@
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
+import TestIds from '../test/ids';
 import { Colors, ICONS } from '../types';
 
 type Props = {
+    testID: string,
     tags: string[],
     verticalMargin: number,
     dark?: boolean,
@@ -60,6 +62,8 @@ export default function Tags(props: Props) {
                             {   
                                 props.onTagDeleted 
                                     ? <IconButton
+                                        testID={TestIds.tags.deleteN(props.testID, idx)}
+                                        sentry-label={TestIds.tags.deleteN(props.testID, idx)}
                                         style={styles.closeIcon}
                                         icon={ICONS.deleteItem} 
                                         color={props.dark ? styles.dark.color : styles.light.color}

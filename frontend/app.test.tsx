@@ -7,12 +7,11 @@ import boot from './src/boot';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockUsers } from './src/test/mocks';
-import { container } from './src/meta';
-import { headerStore, IUserStore, navigationStore } from './src/stores/interfaces';
+import { headerStore, navigationStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
-import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
-import { StorageController } from 'mobx-persist-store';
+// import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
+// import { StorageController } from 'mobx-persist-store';
 import { AppState } from 'react-native';
 import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
@@ -274,17 +273,17 @@ describe('Signed in Scenarios', () => {
 
         await waitFor(() => getByTestId(TestIds.createRequest.form));
         
-        let createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.createRequest.submit));
+        let createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.form)));
 
         expect(createRequestSubmitButton).toBeDisabled();
 
-        const descriptionInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.description));
+        const descriptionInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.description));
 
         await act(async() => {
             fireEvent(descriptionInputLabel, 'press')
         })
 
-        const descriptionInput = await waitFor(() => getByTestId(TestIds.expandedFormInput(TestIds.createRequest.description)));
+        const descriptionInput = await waitFor(() => getByTestId(TestIds.expandedFormInput(TestIds.createRequest.inputs.description)));
 
         const mockRequest = MockRequests()[0];
 
@@ -292,13 +291,13 @@ describe('Signed in Scenarios', () => {
             fireEvent.changeText(descriptionInput, mockRequest.notes)
         })
 
-        const saveDescriptionButton = await waitFor(() => getByTestId(TestIds.screenInputSaveButton(TestIds.createRequest.description)));
+        const saveDescriptionButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.inputs.description)));
 
         await act(async() => {
             fireEvent(saveDescriptionButton, 'press')
         })
 
-        await waitForElementToBeRemoved(() => getByTestId(TestIds.screenInputSaveButton(TestIds.createRequest.description)));
+        await waitForElementToBeRemoved(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.inputs.description)));
 
         expect(createRequestSubmitButton).not.toBeDisabled();
 

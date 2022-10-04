@@ -14,22 +14,13 @@
 const TestIds = {
     expandedFormInput: (testId: string) => `${testId} (expanded)`,
     
-    saveButton: (testId: string) => `${testId} (save)`,
-    cancelButton: (testId: string) => `${testId} (cancel)`,
-    bottomDrawerMinimizeButton: (testId: string) => `${testId} (minimize)`,
-    bottomDrawerExpandButton: (testId: string) => `${testId} (expand)`,
-    // TODO: if we need to differentiate between
-    // these on different screens we can add a 'context'
-    // param on this function and pass a testID to the RequestCard
-    // so it can pass that as the 'context' param
-    requestCard: (reqId: string) => `requestCard-${reqId}`,
-    landingScreen: {
-        signInButton: 'landingScreenSignInButton'
-    },
-    signIn: {
-        email: 'signInEmail',
-        password: 'signInPassword',
-        submit: 'signInSubmit'
+    // Built into visual framework
+    backButtonHeader: {
+        save: (testId: string) => `${testId} (save)`,
+        cancel: (testId: string) => `${testId} (cancel)`,
+        minimize: (testId: string) => `${testId} (minimize)`,
+        expand: (testId: string) => `${testId} (expand)`,
+        labelDecoration: (testId: string, name: string) => `${testId} (${name})`,
     },
     header: {
         menu: 'headerMenu',
@@ -42,6 +33,109 @@ const TestIds = {
         actions: {
             createRequest: 'headerActionsCreateRequest'
         }
+    },
+
+    // reuasable component internals
+
+    categoryRow: {
+        wrapper: (testID: string) => `categoryRow(${testID})`,
+        toggleOpen: (testID: string) => `${testID}::toggleOpen`,
+        label: (testID: string) => `${testID}::label`,
+        categoryAction: (testID: string) => `${testID}::categoryAction`,
+        footer: (testID: string) => `${testID}::footer`,
+        itemRowN: (testID: string, idx: number) => `${testID}::itemRow[${idx}]`,
+    },
+    tags: {
+        deleteN: (testID: string, idx: number) => `${testID}::delete[${idx}]`,
+    },
+    // TODO: if we need to differentiate between
+    // these on different screens we can add a 'context'
+    // param on this function and pass a testID to the RequestCard
+    // so it can pass that as the 'context' param
+    requestCard: (reqId: string) => `requestCard-${reqId}`,
+    // can return the field syntax as this isn't using a form internally
+    // so we don't have to worry about nesting
+    editCategorizedItemForm: {
+        wrapper: (testID: string) => `editCategorizedItemForm(${testID})`,
+        addCategory: (testID: string) => `${testID}::addCategory`,
+        editCategory: (testID: string) => `${testID}::editCategory`,
+        addItem: (testID: string) => `${testID}::addItem`,
+        editItem: (testID: string) => `${testID}::editItem`,
+    },
+    editRolesForm: {
+        wrapper: (testID: string) => `editRolesForm(${testID})`,
+        navInputs: {
+            roleOption: (testID: string) => `${testID}::option`,
+            roleOptionN: (testID: string, idx: number) => `${testID}::option[${idx}]`,
+            addRole: (testID: string) => `${testID}::addRole`
+        }
+    },
+    upsertRolesForm: {
+        wrapper: (testID: string) => `upsertRolesForm(${testID})`,
+        inputs: {
+            permissionGroups: (testID: string) => `${testID}::permissionGroups`,
+            name: (testID: string) => `${testID}::name`
+        }
+    },
+
+    // input internals
+    inputs: {
+        // TODO: finish this later when we actually use the component
+        recurringTimePeriod: {
+            wrapper: (testID: string) => `recurringTimePeriod(${testID})`
+        },
+        mapInput: {
+            wrapper: (testID: string) => `mapInput(${testID})`,
+            map: (testID: string) => `${testID}::map`,
+            marker: (testID: string) => `${testID}::marker`,
+            clearText: (testID: string) => `${testID}::clearText`,
+            searchText: (testID: string) => `${testID}::searchText`,
+            cancel: (testID: string) => `${testID}::cancel`,
+            save: (testID: string) => `${testID}::save`,
+            suggestionN: (testID: string, idx: number) => `${testID}::suggestion[${idx}]`,
+        },
+        list: {
+            optionN: (testID: string, idx: number) => `${testID}::option[${idx}]`,
+        },
+        roleList: {
+            edit: (testID: string) => `${testID}::edit`
+        },
+        positions: {
+            wrapper: (testID: string) => `positions(${testID})`,
+            delete: (testID: string) => `${testID}::delete`,
+            inputs: {
+                roles: (testID: string) => `${testID}::roles`,
+                minMax: (testID: string) => `${testID}::minMax`,
+                attributes: (testID: string) => `${testID}::attributes`,
+            }
+        },
+        categorizedItemList: {
+            wrapper: (testID: string) => `categorizedItemList(${testID})`,
+            edit: (testID: string) => `${testID}::edit`,
+            search: (testID: string) => `${testID}::search`,
+            searchResultN: (testID: string, idx: number) => `${testID}::searchResult[${idx}]`,
+            
+            categoryRowN: (testID: string, idx: number) => `${testID}::categoryRowN[${idx}]`,
+            pills: (testID: string) => `${testID}::pills`,
+        },
+        permissionGroupList: {
+            wrapper: (testID: string) => `permissionGroupList(${testID})`,
+            groupN: (testID: string, idx: number) => `${testID}::group[${idx}]`,
+        },
+        nestedListInput: {
+            wrapper: (testID: string) => `nestedListInput(${testID})`,
+            optionN: (testID: string, categoryIdx: number, itemIdx: number) => `${testID}::option[${categoryIdx}][${itemIdx}]`,
+        }
+    },
+    
+    // top level screen internals
+    landingScreen: {
+        signInButton: 'landingScreenSignInButton'
+    },
+    signIn: {
+        email: 'signInEmail',
+        password: 'signInPassword',
+        submit: 'signInSubmit'
     },
     home: {
         screen: 'homeScreen'
@@ -58,6 +152,21 @@ const TestIds = {
     channels: {
         screen: 'channelScreen'
     },
+    settings: {
+        form: 'settingsForm',
+        inputs: {
+            orgName: 'settingsForm::orgName',
+            requestPrefix: 'settingsForm::requestPrefix',
+            createRequestChats: 'settingsForm::createRequestChats'
+        },
+        navInputs: {
+            manageRoles: 'settingsForm::manageRoles',
+            manageAttributes: 'settingsForm::manageAttributes',
+            manageTags: 'settingsForm::manageTags'
+        }
+    },
+
+    // BottomDrawer views
     createRequest: {
         form: 'createRequestForm',
         inputs: {
@@ -123,27 +232,6 @@ const TestIds = {
     assignResponders: {
         view: 'assignResponders'
     },
-    // can return the field syntax as this isn't using a form internally
-    // so we don't have to worry about nesting
-    editCategorizedItemForm: {
-        addCategory: (testID: string) => `${testID}::addCategory`,
-        editCategory: (testID: string) => `${testID}::editCategory`,
-        addItem: (testID: string) => `${testID}::addItem`,
-        editItem: (testID: string) => `${testID}::editItem`,
-    },
-    editRolesForm: {
-        wrapper: (testID: string) => `editRolesForm(${testID})`
-    },
-    upsertRolesForm: {
-        wrapper: (testID: string) => `upsertRolesForm(${testID})`,
-        inputs: {
-            permissionGroups: (testID: string) => `${testID}::permissionGroups`,
-            name: (testID: string) => `${testID}::name`
-        }
-    },
-    settings: {
-        form: 'settings'
-    }
 }
 
 export default TestIds;

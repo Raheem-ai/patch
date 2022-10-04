@@ -19,6 +19,7 @@ export type PatchButtonProps = {
     | 'contentStyle'
     | 'labelStyle'
     | 'onPress'
+    | 'testID'
   >;
 
 const PatchButton = ( props:PatchButtonProps) => {
@@ -27,6 +28,7 @@ const PatchButton = ( props:PatchButtonProps) => {
         width,
         small,
         style,
+        testID,
         ...rest
     } = props;
 
@@ -51,6 +53,8 @@ const PatchButton = ( props:PatchButtonProps) => {
     return(
         <Button 
             {...rest}
+            testID={testID}
+            sentry-label={testID}
             style={[ 
                 styles.button, 
                 (width 

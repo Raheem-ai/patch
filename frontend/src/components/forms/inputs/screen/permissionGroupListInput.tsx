@@ -6,6 +6,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
 import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
 import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
+import TestIds from "../../../../test/ids";
 import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
@@ -103,7 +104,10 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
     }
 
     render(): React.ReactNode {
+        const wrappedTestID = TestIds.inputs.permissionGroupList.wrapper(this.props.config.testID)
+
         const headerProps: BackButtonHeaderProps = {
+            testID: wrappedTestID,
             cancel: {
                 handler: () => {
                     this.props.config.onCancel?.()
@@ -157,6 +161,8 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
 
                                             return (
                                                 <Pressable 
+                                                    testID={TestIds.inputs.permissionGroupList.groupN(wrappedTestID, j)}
+                                                    sentry-label={TestIds.inputs.permissionGroupList.groupN(wrappedTestID, j)}
                                                     style={styles.rowContainer} 
                                                     onPress={() => this.toggleGroup(group)}>
 

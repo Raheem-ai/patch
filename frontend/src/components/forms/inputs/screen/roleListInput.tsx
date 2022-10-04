@@ -13,6 +13,7 @@ import { PatchPermissions, DefaultRoleIds } from "../../../../../../common/model
 import InlineListInput, { InlineListInputProps } from "../inline/inlineListInput"
 import { organizationStore } from "../../../../stores/interfaces"
 import { ICONS } from "../../../../types"
+import TestIds from "../../../../test/ids"
 
 export type RoleListInputProps = SectionScreenViewProps<'RoleList'> 
 
@@ -25,7 +26,7 @@ const RoleListInput = ({
         name: 'edit',
         screen: ({ back: backToSelecting }) => {
             return (
-                <MangeRolesForm back={backToSelecting} />
+                <MangeRolesForm testID={TestIds.inputs.roleList.edit(config.testID)} back={backToSelecting} />
             )
         }
     } 
@@ -45,6 +46,7 @@ const RoleListInput = ({
 
         const header = () => {
             const headerProps: BackButtonHeaderProps = {
+                testID: config.testID,
                 save: {
                     handler: () => {
                         config.onSave(selectedItems);
@@ -61,6 +63,7 @@ const RoleListInput = ({
                 label: unwrap(config.headerLabel),
                 labelDecoration: iCanEdit 
                     ? {
+                        name: 'edit',
                         handler: () => {
                             navigateToScreen('edit')
                         }, 
@@ -81,6 +84,7 @@ const RoleListInput = ({
 
         const inlineListProps: InlineListInputProps = {
             config: {
+                testID: config.testID,
                 val: () => selectedItems,
                 onChange: (val) => setSelectedItems(val),
                 isValid: () => {
@@ -107,7 +111,8 @@ const RoleListInput = ({
     })
 
     return (
-        <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
+        // TODO: differentiate when this is actually a noop  for testID on a form
+        <Form testID={config.testID} inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
     )
 }
 
