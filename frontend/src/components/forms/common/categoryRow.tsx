@@ -2,11 +2,13 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { GestureResponderEvent, Pressable, StyleSheet, TextStyle, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { ICONS } from "../../../types";
+import STRINGS from "../../../../../common/strings";
+import { ICONS, Colors } from "../../../types";
 
 type CategoryRowProps = {
     id: string,
     name: string,
+    isFirst?: boolean,
     defaultClosed?: boolean,
     items: {
         id: string, 
@@ -31,6 +33,7 @@ const CategoryRow = observer(({
     items,
     categoryAction,
     defaultClosed,
+    isFirst,
     categoryFooter,
     categoryLabelStyle,
     itemLabelStyle,
@@ -65,7 +68,7 @@ const CategoryRow = observer(({
 
     return (
         <View>
-            <Pressable onPress={toggleOpen} style={styles.categoryHeaderContainer}>
+            <Pressable onPress={toggleOpen} style={[ styles.categoryHeaderContainer, isFirst ? styles.categoryHeaderContainerFirst : null]}>
                 <View style={{ marginHorizontal: 15 }}>
                     <IconButton
                         icon={isOpen ? ICONS.filterClose: ICONS.filterOpen} 
@@ -77,7 +80,7 @@ const CategoryRow = observer(({
                 <View style={styles.categoryLabelContainer}>
                     { categoryLabel
                         ? categoryLabel({ id, name })
-                        : <Text style={[{ fontSize: 16, fontWeight: 'bold' }, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name.toUpperCase()}</Text>
+                        : <Text style={[styles.categoryLabel, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name}</Text>
                     }   
                 </View>
                 {
@@ -86,7 +89,7 @@ const CategoryRow = observer(({
                             <IconButton
                                 onPress={categoryActionPressed}
                                 icon={categoryAction.icon} 
-                                color='#666'
+                                color={Colors.icons.dark}
                                 size={20} 
                                 style={{ margin: 0, padding: 0, width: 20 }}
                                 />
@@ -117,11 +120,20 @@ const styles = StyleSheet.create({
     categoryHeaderContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 60
+        height: 48,
+        marginTop: 24
+    }, 
+    categoryHeaderContainerFirst: {
+        marginTop: 8
     }, 
     categoryLabelContainer: {
         flex: 1
     }, 
+    categoryLabel: {
+        fontSize: 16,
+        fontWeight: '700'
+
+    },
     itemContainer: {
         flexDirection: 'row',
         alignItems: 'center',

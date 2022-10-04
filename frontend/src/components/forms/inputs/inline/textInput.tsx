@@ -7,11 +7,11 @@ import { SectionInlineViewProps } from "../../types";
 import { Colors, ICONS } from "../../../../types";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
-    style?: TextStyle
-    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void
+    style?: TextStyle,
+    onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void,
     dontBlurOnSubmit?: boolean,
     disableAutoCorrect?: boolean,
-    nativeRef?: Ref<RNTextInput>
+    nativeRef?: Ref<RNTextInput>,
 }
 
 const TextInput = observer(({ 
@@ -20,11 +20,12 @@ const TextInput = observer(({
     onSubmitEditing,
     dontBlurOnSubmit,
     disableAutoCorrect,
-    nativeRef
+    nativeRef,
 }: Props) => {
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
     const isPassword = !!config.props?.password ? config.props?.password : false;
+    const inlineAction = config.props?.inlineAction;
 
     return (
             <View 
@@ -36,7 +37,7 @@ const TextInput = observer(({
                     marginRight: 12,
                 }}>
                 <RNTextInput 
-                    placeholderTextColor={'#aaa'}
+                    placeholderTextColor={Colors.text.tertiary}
                     style={[
                         { 
                             fontSize: styles.label.fontSize,
@@ -71,6 +72,14 @@ const TextInput = observer(({
                         color={Colors.icons.dark}
 />
                     : null }
+                { inlineAction
+                    ? <IconButton
+                        icon={inlineAction.icon}
+                        onPress={inlineAction.action}
+                        color={Colors.primary.alpha}
+                        style={{margin: 0, marginRight: -4, borderRadius: 0}}
+/>
+                    : null }
             </View>
         )
 })
@@ -79,7 +88,7 @@ export default TextInput;
 
 const styles = StyleSheet.create({
     label: {
-        color: '#000',
+        color: Colors.text.default,
         fontSize: 16
     },
     notes: {

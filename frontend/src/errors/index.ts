@@ -22,6 +22,6 @@ export function resolveErrorMessage(e: AxiosError): string {
             return e.response.data.message;
     
         default:
-            return JSON.stringify(e?.response?.data || e);
+            return `Something went wrong. Make sure you're online and, if it persists, email help@getpatch.org. \n\n ${JSON.stringify(e?.response?.data || e)}`;
     }
 }

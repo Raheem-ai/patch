@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.backgrounds.tags.secondaryBackground,
     }, 
     light: {
-        color: '#666',
-        backgroundColor: '#e0e0e0'
+        color: Colors.backgrounds.tags.tertiaryForeground,
+        backgroundColor: Colors.backgrounds.tags.tertiaryBackground
     },
     darkDisabled: {
         color: '#e0e0e0',

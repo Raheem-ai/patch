@@ -75,7 +75,7 @@ const TeamList = observer(({ navigation, route }: Props) => {
     }
 
     const handleScroll = (e) => {
-        setIsScrolled(e.nativeEvent.contentOffset.y == 0
+        setIsScrolled(e.nativeEvent.contentOffset.y <= 4
             ? false
             : true)}
 
