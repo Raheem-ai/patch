@@ -478,6 +478,8 @@ export interface IAlertStore extends IBaseStore {
 
     showPrompt(config: PromptConfig): void
     hidePrompt(): void
+    hideToast(): void
+    hideAlerts(): void
 }
 
 export namespace ISocketStore {

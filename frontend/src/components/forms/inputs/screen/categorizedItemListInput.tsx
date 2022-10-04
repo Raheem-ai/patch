@@ -14,7 +14,7 @@ import Tags from "../../../tags"
 import EditCategorizedItemForm from "../../editCategorizedItemForm"
 import CategoryRow from "../../common/categoryRow"
 import reactStringReplace from 'react-string-replace';
-import { Colors, ICONS } from '../../../../types';
+import { Colors, ICONS, globalStyles } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
 
@@ -111,7 +111,7 @@ const CategorizedItemListInput = ({
         }).filter(x => !!x)
 
 
-        const onItemDelted = (filteredIdx: number) => {
+        const onItemDeleted = (filteredIdx: number) => {
             const actualIndex = itemInfo[filteredIdx][1]
             const itemToUnselect = selectedItems[actualIndex];
             toggleItem(itemToUnselect.categoryId, itemToUnselect.itemId)
@@ -122,7 +122,7 @@ const CategorizedItemListInput = ({
             onChange: (val) => setSearchText(val),
             isValid: () => !!searchText,
             type: 'TextInput',
-            name: `search`
+            name: `search`,
         }
 
         const searchListArea = () => {
@@ -151,7 +151,7 @@ const CategorizedItemListInput = ({
             }
 
             return (
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingVertical: (styles.itemContainer.height - fontSize) / 2 }}>
                         {
                             searchResults.map(([itemName, itemHandle]) => {
@@ -173,15 +173,16 @@ const CategorizedItemListInput = ({
 
         const selectedListArea = () => {
             return (
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                    <View style={{ }}>
+                <ScrollView style={ styles.selectedListArea } showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                    <View style={{ paddingBottom: 40 }}>
                     {
-                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category]) => {
+                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category], index) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
-                                    color: '#666',
-                                    fontWeight: 'normal'
+                                    color: Colors.text.secondary,
+                                    fontWeight: '800',
+                                    fontSize: 16
                                 }
                             }
 
@@ -189,8 +190,8 @@ const CategorizedItemListInput = ({
                                 const isSelected = selectedItems.findIndex((i) => i.categoryId == categoryId && i.itemId == itemId) != -1;
                                     
                                 return isSelected
-                                    ? { fontWeight: 'bold' }
-                                    : { color: '#666'}
+                                    ? { color: Colors.text.default, fontWeight: '500' }
+                                    : { color: Colors.text.secondaryplus}
                             }
 
                             const itemIcon = (categoryId: string, itemId: string) => {
@@ -203,7 +204,7 @@ const CategorizedItemListInput = ({
                                 return (
                                     <IconButton
                                         icon={ICONS.check} 
-                                        color={'#000'}
+                                        color={Colors.icons.dark}
                                         size={30} 
                                         style={{ margin: 0, padding: 0, width: 30 }}
                                         />
@@ -218,6 +219,7 @@ const CategorizedItemListInput = ({
                                 <CategoryRow 
                                     key={category.name}
                                     name={category.name}
+                                    isFirst={index == 0 ? true : false}
                                     items={category.items}
                                     defaultClosed={!!config.props?.setDefaultClosed}
                                     id={categoryId}
@@ -235,29 +237,42 @@ const CategorizedItemListInput = ({
 
         const searchPillArea = () => {
             return (
-                <ScrollView style={{ flexGrow: 0, paddingHorizontal: 20, paddingVertical: (20 - 6)}} horizontal={true} showsHorizontalScrollIndicator={false}>
-                    <Tags 
-                        verticalMargin={6} 
-                        horizontalTagMargin={6}
-                        tags={itemInfo.map(i => i[0])}
-                        onTagDeleted={onItemDelted}/>
-                </ScrollView>
+                <View style={selectedItems.length ? styles.hasSelectedItems : {}}>
+                    <ScrollView style={styles.searchPillContainer} contentContainerStyle={styles.searchPillContents} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
+                            <Tags 
+                                verticalMargin={6} 
+                                horizontalTagMargin={6}
+                                tags={itemInfo.map(i => i[0])}
+                                onTagDeleted={onItemDeleted}/>
+                    </ScrollView>
+                </View>
             )
+        }
+
+        const clearSearch = () => {
+            setSearchText('');
         }
 
         const searchBox = () => {
 
             return (
-                <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20 }}>
-                    <TextInput style={{paddingHorizontal: 40, fontSize: 16 }} config={searchItemsInputConfig}/>
+                <View style={{ height: 48, borderWidth: 1, borderColor: '#E0DEE0', borderRadius: 30, marginHorizontal: 20, display: 'flex', flexDirection: 'row' }}>
+                    <TextInput style={{paddingLeft: 40, marginRight: 0, fontSize: 16, flex: 1 }} config={searchItemsInputConfig}/>
+                        <IconButton
+                            style={{ alignSelf: 'center', marginVertical: 0, marginRight: 12, marginLeft: 0, width: 25, flexGrow: 0}}
+                            icon={ICONS.textInputClear} 
+                            color={searchText ? Colors.icons.lighter : Colors.nocolor}
+                            onPress={clearSearch}
+                            size={25} />
                 </View>
             )
         }
 
         return (
             <KeyboardAwareArea>
-                <BackButtonHeader {...headerProps}/>
-                
+                <View onTouchStart={Keyboard.dismiss}>
+                    <BackButtonHeader {...headerProps}/>
+                </View>
                 {/* search area */}
                 { searchBox() }
 
@@ -287,5 +302,21 @@ const styles = StyleSheet.create({
         paddingLeft: 60,
         paddingRight: 20,
         height: 48
+    },
+    searchPillContainer: { 
+        flexGrow: 0,
+        flexShrink: 1, 
+        paddingHorizontal: 20, 
+        paddingVertical: 8,
+    },
+    hasSelectedItems: {
+        borderBottomWidth: 1,
+        borderColor: Colors.borders.list
+    },
+    searchPillContents: {
+        alignItems: 'center',
+    },
+    selectedListArea: { 
+        flex: 1,
     }
 })

@@ -1624,41 +1624,14 @@ export enum DefaultTagCategoryIds {
 
 export const DefaultTagCategories: TagCategory[] = [
     {
-        id: DefaultTagCategoryIds.CommunicationType,
-        name: 'Request method',
+        id: DefaultTagCategoryIds.Referral,
+        name: 'Referred to',
         tags: [
-            { name: 'Phone', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com01' },
-            { name: 'Text', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com02' },
-            { name: 'Social media', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com03' },
-            { name: 'Staff-initiated', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com04' },
-        ]
-    },
-    {
-        id: DefaultTagCategoryIds.Context,
-        name: 'Location',
-        tags: [
-            { name: 'Weapon present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con01' },
-            { name: 'Police present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con02' },
-            { name: 'Unsafe location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con03' },
-            { name: 'Crowd at location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con04' },
-        ]
-    },
-    {
-        id: DefaultTagCategoryIds.Equipment,
-        name: 'Equipment needed',
-        tags: [
-            { name: 'AED Defribrillator', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip01' },
-            { name: 'Nebulizer', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip02' },
-            { name: 'Vehicle', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip03' },
-        ]
-    },
-    {
-        id: DefaultTagCategoryIds.Medication,
-        name: 'Medication needed',
-        tags: [
-            { name: 'Albuterol', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med01' },
-            { name: 'Epinephrine', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med02' },
-            { name: 'Naloxone', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med03' },
+            { name: 'Shelter', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref01' },
+            { name: 'Hospital', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref02' },
+            { name: 'Legal aid', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref03' },
+            { name: 'Child care', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref04' },
+            { name: 'Other resource', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref05' },
         ]
     },
     {
@@ -1677,14 +1650,42 @@ export const DefaultTagCategories: TagCategory[] = [
         ]
     },
     {
-        id: DefaultTagCategoryIds.Referral,
-        name: 'Referred to',
+        id: DefaultTagCategoryIds.Medication,
+        name: 'Medication needed',
         tags: [
-            { name: 'Shelter', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref01' },
-            { name: 'Hospital', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref02' },
-            { name: 'Legal aid', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref03' },
-            { name: 'Child care', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref04' },
-            { name: 'Other resource', id: DefaultTagCategoryIds.Referral + Delimiters.Enum + 'ref05' },
+            { name: 'Albuterol', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med01' },
+            { name: 'Epinephrine', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med02' },
+            { name: 'Naloxone', id: DefaultTagCategoryIds.Medication + Delimiters.Enum + 'med03' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Equipment,
+        name: 'Equipment needed',
+        tags: [
+            { name: 'AED Defribrillator', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip01' },
+            { name: 'Nebulizer', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip02' },
+            { name: 'Vehicle', id: DefaultTagCategoryIds.Equipment + Delimiters.Enum + 'equip03' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.Context,
+        name: 'Location',
+        tags: [
+            { name: 'Weapon present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con01' },
+            { name: 'Police present', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con02' },
+            { name: 'Unsafe location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con03' },
+            { name: 'Crowd at location', id: DefaultTagCategoryIds.Context + Delimiters.Enum + 'con04' },
+        ]
+    },
+    {
+        id: DefaultTagCategoryIds.CommunicationType,
+        name: 'Request method',
+        tags: [
+            { name: 'Phone', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com01' },
+            { name: 'Text', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com02' },
+            { name: 'Social media', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com03' },
+            { name: 'Staff-initiated', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com04' },
+            { name: 'On behalf of another person', id: DefaultTagCategoryIds.CommunicationType + Delimiters.Enum + 'com05' },
         ]
     },
 ]
@@ -1694,23 +1695,10 @@ export const DefaultTagCategories: TagCategory[] = [
 export enum DefaultAttributeCategoryIds {
     Languages = '__languages',
     Skills = '__skills',
+    Trainings = '__trainings',
 }
 
 export const DefaultAttributeCategories: AttributeCategory[] = [
-    {
-        id: DefaultAttributeCategoryIds.Skills,
-        name: 'Capabilities',
-        attributes: [
-            { name: 'conflict resolution', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills01' },
-            { name: 'CPR', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills02' },
-            { name: 'de-escalation', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
-            { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
-            { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
-            { name: 'Stop the Bleed', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
-            { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills07' },
-            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills08' },
-        ]
-    },
     {
         id: DefaultAttributeCategoryIds.Languages,
         name: 'Languages',
@@ -1736,4 +1724,24 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
             { name: 'Other language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan99' },
         ]
     },
+    {
+        id: DefaultAttributeCategoryIds.Skills,
+        name: 'Capabilities',
+        attributes: [
+            { name: 'conflict resolution', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills01' },
+            { name: 'de-escalation', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills02' },
+            { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
+            { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
+            { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
+            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
+        ]
+    },
+    {
+        id: DefaultAttributeCategoryIds.Trainings,
+        name: 'Trainings',
+        attributes: [
+            { name: 'CPR', id: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train01' },
+            { name: 'Stop the Bleed', id: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train02' },
+        ]
+    }
 ]

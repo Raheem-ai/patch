@@ -1,4 +1,5 @@
 import { AtLeast } from "../../../../../../common";
+import STRINGS from "../../../../../../common/strings";
 import { manageAttributesStore } from "../../../../stores/interfaces";
 import { ScreenFormInputConfig } from "../../types";
 
@@ -22,8 +23,8 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
     // default but overrideable
     const overrideableConfig: OverrideableConfig = {
         // icon: ICONS.tag,
-        placeholderLabel: () => 'Attributes',
-        headerLabel: () => 'Attributes',
+        placeholderLabel: () => STRINGS.ELEMENTS.attribute({cap: true, plural: true}),
+        headerLabel: () => STRINGS.ELEMENTS.attribute({cap: true, plural: true}),
     }
 
     // default but overrideable props
@@ -38,10 +39,10 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
         },
         editStore: manageAttributesStore().editStore,
         editHeaderLabel: 'Edit attributes',
-        addCategoryPlaceholderLabel: 'Add attribute category',
-        addItemPlaceholderLabel: 'Add attribute',
+        addCategoryPlaceholderLabel: STRINGS.INTERFACE.addCategory(),
+        addItemPlaceholderLabel: STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.attribute()),
         editPermissions: manageAttributesStore().editPermissions,
-        onSaveToastLabel: 'Successfully updated Attributes' 
+        onSaveToastLabel: STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.attribute({cap: false, plural: true}))
     }
 
     const resolvedEditConfig = Object.assign({}, overrideableEditConfig, config.props?.editConfig || {})

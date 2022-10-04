@@ -18,10 +18,15 @@ export function timestampToTimeString(timestamp: number) {
     return dateToTimeString(new Date(timestamp))
 }
 
-// '09:12 AM'
+export function rightNow() {
+    const time = dateToTimeString(new Date());
+    return time;
+}
+
+// '9:12 AM'
 export function dateToTimeString(date: Date) {
     // https://www.jsman.net/manual/Standard-Global-Objects/Date/toLocaleTimeString
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
 // 'Wednesday, Mar 30'
