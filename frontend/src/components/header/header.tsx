@@ -8,10 +8,11 @@ import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOpti
 import { RootStackParamList, routerNames, Colors, ICONS } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, requestStore, userStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, headerIconPaddingVertical, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
+import STRINGS from '../../../../common/strings';
 
 type Props = StackHeaderProps & {};
 
@@ -66,6 +67,24 @@ const Header = observer((props: Props) => {
                 ? Colors.good
                 : Colors.icons.darkReversed;
 
+        const promptToToggleAvailability = () => {
+            alertStore().showPrompt({
+                title:  STRINGS.INTERFACE.availabilityAlertTitle,
+                message: STRINGS.INTERFACE.availabilityAlertMessage(userStore().isOnDuty),
+                actions: [
+                    {
+                        label: `${userStore().isOnDuty ? STRINGS.INTERFACE.available(true) : STRINGS.INTERFACE.unavailable(true)}`,
+                        onPress: () => {}
+                    },
+                    {   
+                        label: `${userStore().isOnDuty ? STRINGS.INTERFACE.unavailable(true) : STRINGS.INTERFACE.available(true)}`,
+                        onPress: () => userStore().toggleOnDuty(),
+                        confirming: true
+                    }
+                ]
+            })
+        }
+
         const statusIconSize = 16;
 
         const rightActionsRefs = [];
@@ -109,7 +128,13 @@ const Header = observer((props: Props) => {
                     { 
                     
                         <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
-                            <IconButton key={'status-icon'} style={{ width: statusIconSize, height: statusIconSize }} icon={statusIcon} size={statusIconSize} color={statusColor}/>
+                            <IconButton 
+                                key={'status-icon'} 
+                                style={{ width: statusIconSize, height: statusIconSize }} 
+                                icon={statusIcon} 
+                                size={statusIconSize} 
+                                color={statusColor}
+                                onPress={promptToToggleAvailability}/>
                         </View>
                     }
                 </View>

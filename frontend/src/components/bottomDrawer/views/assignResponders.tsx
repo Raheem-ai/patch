@@ -8,7 +8,7 @@ import { EligibilityOption, HelpRequest, StatusOption } from "../../../../../com
 import STRINGS from "../../../../../common/strings"
 import { resolveErrorMessage } from "../../../errors"
 import { alertStore, bottomDrawerStore, dispatchStore, IAlertStore, IBottomDrawerStore, IDispatchStore, IRequestStore, IUserStore, requestStore, userStore } from "../../../stores/interfaces"
-import { Colors, ICONS } from "../../../types"
+import { Colors, ICONS, globalStyles } from "../../../types"
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader"
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
@@ -24,7 +24,7 @@ export default class AssignResponders extends React.Component {
     };
 
     handleScroll = (e) => {
-        this.setState(e.nativeEvent.contentOffset.y == 0
+        this.setState(e.nativeEvent.contentOffset.y <= 4
             ? { isScrolled: false }
             : { isScrolled: true })}
 
@@ -212,15 +212,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: Colors.borders.list
     },
-    responderActionsScrolled: {
-        shadowColor: '#000',
-        shadowOpacity: .1,
-        shadowRadius: 2,
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
-    },
+    responderActionsScrolled: globalStyles.basicShadow,
     selectAllRow: {
         flexDirection: 'row',
         alignItems: 'center',
