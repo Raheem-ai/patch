@@ -31,7 +31,7 @@ export const isEmailValid = (email: string) => {
             isValid: false, 
             msg: STRINGS.ACCOUNT.emailProbablyNotRight
         };
-    } else if (dot < 2) { // the domain name is less than 2 characters
+    } else if (dot < 1) { // there's no domain name
         return {
             isValid: false, 
             msg: STRINGS.ACCOUNT.emailProbablyNotRight
