@@ -74,13 +74,7 @@ export type SubMenuOption = ({
     onPress?: undefined 
 })
 
-export const SubMenuOptions: SubMenuOption[] = [
-    {
-        name: 'Reset Password',
-        onPress: () => {
-            navigateTo(routerNames.updatePassword);
-        }
-    },         
+export const SubMenuOptions: SubMenuOption[] = [    
     {
         name: 'Profile',
         onPress: () => {
