@@ -16,6 +16,7 @@ import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm
 import { RequestPrefixCharMax } from '../../../common/constants'
 import { resolveErrorMessage } from "../errors";
 import TestIds from "../test/ids";
+import STRINGS from "../../../common/strings"
 
 type Props = ScreenProps<'Settings'>;
 
@@ -141,7 +142,7 @@ const Settings = ({ navigation, route }: Props) => {
                         return <DescriptiveNavigationLabel 
                                     testID={TestIds.settings.navInputs.manageAttributes}
                                     expand={expand} 
-                                    name={'Attributes'} 
+                                    name={STRINGS.ELEMENTS.attribute({cap: true, plural: true})} 
                                     description={'Describe team members'} />
                     },
                     screen: ({ back }) => {
@@ -150,10 +151,10 @@ const Settings = ({ navigation, route }: Props) => {
                                 <EditCategorizedItemForm
                                     testID={TestIds.settings.navInputs.manageAttributes} 
                                     back={back}
-                                    onSaveToastLabel={'Successfully updated Attributes'} 
+                                    onSaveToastLabel={STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.attribute({plural: true}))} 
                                     editHeaderLabel='Edit attributes'
-                                    addCategoryPlaceholderLabel='ADD ATTRIBUTE CATEGORY'
-                                    addItemPlaceholderLabel={'Add attribute'}
+                                    addCategoryPlaceholderLabel={STRINGS.INTERFACE.addCategory()}
+                                    addItemPlaceholderLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.attribute())}
                                     store={manageAttributesStore().editStore}/>
                             </VisualArea>
                         )
@@ -176,9 +177,9 @@ const Settings = ({ navigation, route }: Props) => {
                                 <EditCategorizedItemForm
                                     testID={TestIds.settings.navInputs.manageTags} 
                                     back={back} 
-                                    onSaveToastLabel={'Successfully updated Tags'} 
+                                    onSaveToastLabel={STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.tag({plural: true}))} 
                                     editHeaderLabel='Edit tags'
-                                    addCategoryPlaceholderLabel='ADD TAG CATEGORY'
+                                    addCategoryPlaceholderLabel={STRINGS.INTERFACE.addCategory()}
                                     addItemPlaceholderLabel={'Add tag'}
                                     store={manageTagsStore().editStore} />
                             </VisualArea>

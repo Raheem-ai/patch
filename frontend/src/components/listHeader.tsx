@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
-import { Colors, ICONS } from "../types";
+import { Colors, ICONS, globalStyles } from "../types";
 import STRINGS from "../../../common/strings";
 
 export type ListHeaderOptionConfig<T = any> = {
@@ -87,15 +87,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.backgrounds.filter,
         zIndex: 100
     },
-    containerScrolled: {
-        shadowColor: '#000',
-        shadowOpacity: .1,
-        shadowRadius: 2,
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
-    },
+    containerScrolled: globalStyles.basicShadow,
     headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',

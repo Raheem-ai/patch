@@ -1,3 +1,4 @@
+import { StyleSheet } from "react-native";
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/models";
 
@@ -119,7 +120,8 @@ export const Colors = {
     },
     text: {
         default: '#111',
-        secondary: '#333',
+        secondary: '#444',
+        secondaryplus: '#666',
         tertiary: '#999',
         disabled: '#999',
         defaultReversed: '#f6f6f6',
@@ -190,6 +192,7 @@ export const ICONS = {
     add: 'plus',
     edit: 'pencil',
     role: 'clipboard-account',
+    dismissAlert: 'close',
     clock: 'clock-outline',
     removeUser: 'close',
     deleteItem: 'close',
@@ -208,14 +211,14 @@ export const ICONS = {
     navBack: BASIC_ICONS.chevronLeft,
     showPassword: 'eye',
     hidePassword: 'eye-off',
-    textInputClear: BASIC_ICONS.xMark,
+    textInputClear: 'close-circle',
     refresh: 'refresh',
     mapMarker: 'map-marker',
     map: 'map',
     cardList: 'view-agenda',
     newMessage: BASIC_ICONS.chatBubble,
-    timeRequestCreated: BASIC_ICONS.clockOutline,
-    timeCallStarted: 'phone',
+    timeRequestCreated: 'phone-in-talk',
+    timeCallStarted: 'phone-in-talk',
     callerContactInfo: 'card-account-phone',
     joinDecline: BASIC_ICONS.xMark,
     joinAccept: BASIC_ICONS.check,
@@ -241,4 +244,19 @@ export const ICONS = {
     priority1: 'chevron-up',
     priority2: 'chevron-double-up',
     priority3: 'chevron-triple-up',
+    timestamp: 'clock-plus-outline',
 }
+
+export const globalStyles = StyleSheet.create({
+    basicShadow: {
+        shadowColor: '#000',
+        shadowOpacity: .1,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        elevation: 1,
+        backgroundColor: Colors.backgrounds.standard
+    }
+})

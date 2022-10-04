@@ -45,7 +45,7 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
                         return null;
                     }
 
-                    const categoryName = category.name;
+                    const categoryName = category.name.toUpperCase();
                     const isLast = (idx == arr.length - 1);
 
                     const itemNames = itemIds.map(selectedItemId => {
@@ -54,7 +54,7 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
 
                     return (
                         <View style={{ paddingTop: 20, paddingBottom: isLast ? (20 - 6) : 0 }}>
-                            <Text style={{ color: '#999' }}>{categoryName.toUpperCase()}</Text>
+                            <Text style={{ color: '#999' }}>{categoryName}</Text>
                             <Tags 
                                 disabled={config.disabled}
                                 dark={config.props.dark}

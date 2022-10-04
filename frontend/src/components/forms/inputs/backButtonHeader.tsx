@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     },
     bottomBorder: {
         borderStyle: 'solid',
-        borderBottomColor: '#ccc',
+        borderBottomColor: Colors.borders.list,
         borderBottomWidth: 1,
     },
     headerCancelButton: {
