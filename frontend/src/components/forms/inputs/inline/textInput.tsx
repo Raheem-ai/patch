@@ -25,7 +25,7 @@ const TextInput = observer(({
 
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
     const isPassword = !!config.props?.password ? config.props?.password : false;
-    const inlineAction = !!config.props?.inlineAction ? config.props?.inlineAction : false;
+    const inlineAction = config.props?.inlineAction;
 
     return (
             <View 
