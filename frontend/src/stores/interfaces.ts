@@ -26,6 +26,7 @@ export interface IUserStore extends IBaseStore {
 
     signIn(email: string, password: string): Promise<void>
     updatePassword(password: string): Promise<void>
+    sendResetCode(email: string, baseUrl: string): Promise<void>
     signUp(minUser: MinUser): Promise<void>
     signOut(): Promise<void>
     onSignOut: (route?: keyof RootStackParamList) => void

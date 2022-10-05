@@ -2,7 +2,7 @@ import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, 
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { routerNames, Colors, ICONS } from '../types';
-import { alertStore, userStore } from '../stores/interfaces';
+import { alertStore, userStore, linkingStore } from '../stores/interfaces';
 import { navigationRef } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -29,6 +29,7 @@ export default function ForgotPasswordForm() {
 
         try {
             // is there a user?
+            await userStore().sendResetCode(email, linkingStore().baseUrl);
             // if so, construct and send code
         } catch(e) {
             alertStore().toastError(resolveErrorMessage(e), false, false);
@@ -56,6 +57,7 @@ export default function ForgotPasswordForm() {
                                 style={styles.input}
                                 label={STRINGS.INTERFACE.email}
                                 value={email}
+                                keyboardType='email-address'
                                 errorText={errorMessage}
                                 onChangeText={email => setEmail(email)}
                                 onSubmitEditing={sendCode}/>

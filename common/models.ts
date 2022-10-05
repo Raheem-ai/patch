@@ -145,6 +145,12 @@ export type PendingUser = {
     pendingId: string
 }
 
+export type AuthCode = {
+    userId: string
+    createdAt: string
+    code: string
+}
+
 export enum UserRole {
     Admin,
     Dispatcher,
@@ -986,7 +992,8 @@ export type AppSecrets = {
 
 export enum LinkExperience {
     SignUpThroughOrganization = 'suto',
-    JoinOrganization = 'jo'
+    JoinOrganization = 'jo',
+    SendResetCode = 'src'
 }
 
 export type LinkParams = {
@@ -999,6 +1006,9 @@ export type LinkParams = {
         orgId: string,
         email: string,
         pendingId: string
+    } ,
+    [LinkExperience.SendResetCode]: {
+        code: string
     } 
 } 
 

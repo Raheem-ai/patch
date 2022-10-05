@@ -11,10 +11,13 @@ type Props = {
     password?: boolean
     errorText?: string
     style?: TextStyle
+    keyboardType?: KeyboardType
     nativeRef?: typeof PaperTextInput
     onSubmitEditing?: (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void
     onChangeText?: (s: string) => void
 }
+
+export type KeyboardType = 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad' | 'decimal-pad';
 
 const ValidatableTextInput = ( props: Props) => {
 
@@ -41,6 +44,7 @@ const ValidatableTextInput = ( props: Props) => {
                 style={[styles.input, props.style ? props.style : null]}
                 label={props.label}
                 value={props.value}
+                keyboardType={props.keyboardType}
                 onChangeText={(s: string) => props.onChangeText?.(s)}
                 onSubmitEditing={(e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => props.onSubmitEditing?.(e)}
             />

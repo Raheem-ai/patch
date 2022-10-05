@@ -1,6 +1,7 @@
 require('module-alias/register');
 
 import config, { 
+    EmailConfig,
     PatchMongoDBConfig,
     RaheemConfig, 
     RedisConfig 
@@ -12,8 +13,10 @@ import {
     PatchSessionSecret,
     PatchTwilioSecret,
     GoogleMapsCredentials,
-    SentryCredentials
+    SentryCredentials,
+    MailgunCredentials
 } from 'infra/src/secrets';
+
 import { ConfigInstance } from '../infra/src/config/configurable';
 
 const environmentConfig = {
@@ -25,7 +28,9 @@ const environmentConfig = {
     TWILIO: new PatchTwilioSecret(),
     REDIS: new RedisConfig(),
     GOOGLE_MAPS: new GoogleMapsCredentials(),
-    SENTRY_CREDS: new SentryCredentials()
+    SENTRY_CREDS: new SentryCredentials(),
+    MAILGUN_CREDS: new MailgunCredentials(),
+    EMAIL: new EmailConfig()
 }
 
 // can formalize this pattern in the future to make it more reusable

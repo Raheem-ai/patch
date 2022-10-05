@@ -44,7 +44,7 @@ export const isEmailValid = (email: string) => {
     } else {
         return {
             isValid: true,
-            msg: `everything's fine`
+            msg: `It's fine. Everything's fine.`
         }; 
     }
 }

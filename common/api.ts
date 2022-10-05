@@ -84,6 +84,7 @@ export interface IApiClient {
     signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
     refreshAuth: (refreshToken: string) => Promise<string>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
+    sendResetCode: (email: string, baseUrl: string) => Promise<void>
     
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -304,6 +305,9 @@ type ApiRoutes = {
         updatePassword: () => {
             return `/updatePassword`
         },
+        sendResetCode: () => {
+            return `/sendResetCode`
+        },
     }
 
     client: ApiRoutes = {
@@ -316,6 +320,9 @@ type ApiRoutes = {
         },
         updatePassword: () => {
             return `${this.base}${this.namespaces.users}${this.server.updatePassword()}`
+        },
+        sendResetCode: () => {
+            return `${this.base}${this.namespaces.users}${this.server.sendResetCode()}`
         },
         signIn: () => {
             return `${this.base}${this.namespaces.users}${this.server.signIn()}`

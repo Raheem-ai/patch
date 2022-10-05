@@ -52,7 +52,7 @@ const HeaderConfig: {
         title: STRINGS.PAGE_TITLES.updatePassword,
         unauthenticated: true
     },
-    [routerNames.forgotPassword]: {
+    [routerNames.sendResetCode]: {
         title: STRINGS.PAGE_TITLES.forgotPassword,
         unauthenticated: true
     },

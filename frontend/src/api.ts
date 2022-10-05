@@ -237,6 +237,11 @@ export class APIClient implements IAPIService {
         });
     }
 
+    async sendResetCode(email: string, baseUrl: string): Promise<void> {
+        const url = `${apiHost}${API.client.sendResetCode()}`;
+        await axios.post<void>(url, { email, baseUrl }, {});
+    }
+
     async reportLocation(ctx: TokenContext, locations: Location[]) {
         const url = `${apiHost}${API.client.reportLocation()}`;
 

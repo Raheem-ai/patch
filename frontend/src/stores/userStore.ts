@@ -173,6 +173,10 @@ export default class UserStore implements IUserStore {
         await this.api.updatePassword( {token}, password)        
     }
 
+    async sendResetCode(email: string, baseUrl: string) {
+        await this.api.sendResetCode(email, baseUrl)        
+    }
+
     async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {
         const users = await this.api.getTeamMembers(orgCtx || this.orgContext(), userIds);
 

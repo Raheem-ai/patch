@@ -66,7 +66,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         routerNames.helpRequestChat,
         routerNames.userHomePage,
         routerNames.updatePassword,
-        routerNames.forgotPassword
+        routerNames.sendResetCode
     ]
 
     private disabledDrawerRoutes: (keyof RootStackParamList)[] = [

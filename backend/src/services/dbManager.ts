@@ -1,8 +1,8 @@
 import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, BasicCredentials, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, UserRole } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda, Every } from "@tsed/agenda";
+import { Agenda } from "@tsed/agenda";
 import {MongooseService} from "@tsed/mongoose";
 import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
@@ -12,6 +12,7 @@ import { AtLeast } from "common";
 import { BadRequest } from "@tsed/exceptions";
 import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
+import { AuthCodeModel } from "../models/authCode";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -21,7 +22,8 @@ export class DBManager {
     
     @Inject(UserModel) users: Model<UserModel>;
     @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
-    @Inject(HelpRequestModel) requests: Model<HelpRequestModel>
+    @Inject(HelpRequestModel) requests: Model<HelpRequestModel>;
+    @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>;
 
     @Inject(MongooseService) db: MongooseService;
 
@@ -1243,6 +1245,19 @@ export class DBManager {
     namesAreEqual(first: string, second: string): boolean {
         // Case insensitive matching for now.
         return first.toLowerCase() == second.toLowerCase();
+    }
+
+    // AuthCodes
+
+    async createAuthCode(userId: string): Promise<string> {
+        const authCode = new this.authCodes({
+            userId,
+            code: uuid.v1()
+        });
+
+        await authCode.save();
+
+        return authCode.code;
     }
 
     // Requests

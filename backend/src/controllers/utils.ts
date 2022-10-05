@@ -1,9 +1,10 @@
 import { Forbidden } from "@tsed/exceptions";
-import { PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata, Role } from "common/models";
+import { LinkExperience, LinkParams, PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata, Role } from "common/models";
 import { OrganizationDoc } from "../models/organization";
 import { UserDoc } from "../models/user";
 import { resolvePermissionsFromRoles } from 'common/utils/permissionUtils'
 import STRINGS from "../../../common/strings"
+import * as querystring from 'querystring'
 
 export async function userHasPermissions(user: UserDoc, org: OrganizationDoc, requiredPermissions: PatchPermissions[]): Promise<boolean> {
     const orgConfig = user.organizations && user.organizations[org.id];
@@ -33,4 +34,12 @@ export async function userHasPermissions(user: UserDoc, org: OrganizationDoc, re
 
     // If we make it here then all required permissions were found.
     return true;
+}
+
+export function getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
+    const expoSection = baseUrl.startsWith('exp')
+        ? '--/'
+        :'';
+
+    return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
 }

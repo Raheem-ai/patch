@@ -175,7 +175,7 @@ const STRINGS = {
         editMyProfile: 'Edit my profile',
         sendInvite: `Send Invite`,
         welcomeToPatch: `Welcome to PATCH!`,
-        userNotFound: (email: string) => `User with email ${email} not found`,
+        userNotFound: (email: string) => `No account found with that email and password.`,
         userExists: (email: string) => `User with email ${email} already exists.`,
         wrongPassword: `Password is incorrect`,
         updatePasswordButton: `Set password`,

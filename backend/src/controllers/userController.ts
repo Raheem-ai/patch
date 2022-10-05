@@ -4,7 +4,7 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
+import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, LinkExperience, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -14,9 +14,10 @@ import { OrganizationController } from "./organizationController";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
-import { userHasPermissions } from "./utils";
+import { userHasPermissions, getLinkUrl } from "./utils";
 import config from "../config";
 import STRINGS from "../../../common/strings";
+import { EmailService } from "../services/emailService"; 
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -108,11 +109,13 @@ export class UsersController implements APIController<
     | 'signUpThroughOrg'
     | 'editMe'
     | 'editUser'
+    | 'sendResetCode'
     | 'updatePassword'
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(PubSubService) pubSub: PubSubService;
+    @Inject(EmailService) emailService: EmailService;
 
     @Post(API.server.refreshAuth())
     async refreshAuth(
@@ -348,10 +351,23 @@ export class UsersController implements APIController<
         @Required() @BodyParams('password') password: string,
     ) {
         const res = await this.db.updateUserPassword(user, password);
+    }
 
-//        return res;
+    @Post(API.server.sendResetCode())
+    async sendResetCode(
+        @Required() @BodyParams('email') email: string,
+        @Required() @BodyParams('baseUrl') baseUrl: string,
+    ) {
+        const user = await this.users.findOne({ email: new RegExp(email, 'i') });
+
+        if (!user) {
+            return
+        }
+
+        const code = await this.db.createAuthCode(user.id);
+        const link = getLinkUrl(baseUrl, LinkExperience.SendResetCode, {code});
+
+        await this.emailService.sendResetPasswordEmail(link, email);
+
     }
 }
-
-
-

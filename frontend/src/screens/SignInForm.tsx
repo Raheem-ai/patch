@@ -67,7 +67,7 @@ export default function SignInForm( { navigation } : Props) {
                     </View>
                     <View style={styles.bottomContainer}>
                         <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={signIn}>{'Sign in'}</Button>
-                        <Text style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.forgotPassword)}>Forgot your password?</Text>
+                        <Text style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
                         {/*}
                             <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
                         */}
