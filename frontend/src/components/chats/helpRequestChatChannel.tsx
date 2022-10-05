@@ -2,13 +2,13 @@ import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { PatchPermissions, RequestStatus } from "../../../models";
+import { PatchPermissions, RequestStatus } from "../../../../common/models";
 import { requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
-import STRINGS from "../../../strings";
-import PatchButton from "../patchButton";
+import STRINGS from "../../../../common/strings";
+import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
 import TestIds from "../../test/ids";
 

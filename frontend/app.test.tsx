@@ -313,7 +313,7 @@ describe('Signed in Scenarios', () => {
             notes: mockRequest.notes,
             callerName: '',
             callerContactInfo: '',
-            callStartedAt: '',
+            callStartedAt: '', // TODO: fix this test now that we set callStartDate automatically
             callEndedAt: '',
             priority: null,
             tagHandles: [],

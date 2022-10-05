@@ -21,4 +21,6 @@ build_temp () {
 if build_temp ; then
     # if built successfully save image for cache
     docker push $IMAGE
+else 
+    exit $?
 fi
