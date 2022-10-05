@@ -46,6 +46,8 @@ RUN yarn install
 
 COPY frontend .
 
+RUN yarn run test
+
 # /app
 WORKDIR ..
 
