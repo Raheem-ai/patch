@@ -15,7 +15,7 @@ import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { resolveErrorMessage } from "../errors";
-import ChatChannel from "../components/chats/chatChannel";
+import RequestChatChannel from "../components/chats/helpRequestChatChannel";
 import MapView, { MapViewProps, Marker, MarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
@@ -260,6 +260,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={styles.toggleRequestContainer}>
                 <PatchButton 
+                    testID={currentRequestOpen ? TestIds.requestDetails.closeRequest : TestIds.requestDetails.reopenRequest}
                     mode='outlined'
                     uppercase={false}
                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
@@ -369,7 +370,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const channel = () => {
         return (
             <View>
-                <ChatChannel inTabbedScreen={true}/>
+                <RequestChatChannel inTabbedScreen={true}/>
             </View>
         )
     }
@@ -387,6 +388,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 return <View style={{ padding: 20, paddingBottom: 0 }}>
                     <PatchButton 
+                        testID={TestIds.requestDetails.notifyPeople}
                         mode='outlined'
                         uppercase={false}
                         label={STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}
@@ -702,6 +704,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 canEdit
                     ? <View>
                         <PatchButton 
+                            testID={TestIds.requestDetails.addResponders}
                             mode='contained'
                             uppercase={false}
                             label={STRINGS.REQUESTS.ACTIONS.addResponders}

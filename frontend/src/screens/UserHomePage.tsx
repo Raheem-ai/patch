@@ -99,7 +99,14 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
             }
         };
       
-        return <PatchButton mode='text' label={label} onPress={handlePress} labelStyle={{color: Colors.text.buttonLabelSecondary}} />;
+        return (
+            <PatchButton 
+                testID={TestIds.userHome.linkTo(label)}
+                mode='text' 
+                label={label} 
+                onPress={handlePress} 
+                labelStyle={{color: Colors.text.buttonLabelSecondary}} />
+        )
     }
 
     const comingSoon = 'coming soon';
@@ -142,14 +149,17 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
 
             <View style={{paddingTop: 12, marginTop: 12, marginLeft: 24, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
                 <PatchButton 
+                    testID={TestIds.userHome.goToRequests}
                     mode='text'
                     label='Requests'
                     onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
                 <PatchButton 
+                    testID={TestIds.userHome.goToRequests}
                     mode='text'
                     label='Channels'
                     onPress={() => { navigateTo(routerNames.chats) }}/>
                 <PatchButton 
+                    testID={TestIds.userHome.goToTeam}
                     mode='text'
                     label='Team'
                     onPress={() => {

@@ -36,7 +36,16 @@ const TestIds = {
     },
 
     // reuasable component internals
-
+    positionDetailsCard: {
+        join: 'positionDetailsCard::join',
+        leave: 'positionDetailsCard::leave',
+        requestToJoin: 'positionDetailsCard::requestToJoin'
+    },
+    requestChatChannel: {
+        textInput: 'requestChatChannel::textInput',
+        reopen: 'requestChatChannel::reopen',
+        send: 'requestChatChannel::send',
+    },
     categoryRow: {
         wrapper: (testID: string) => `categoryRow(${testID})`,
         toggleOpen: (testID: string) => `${testID}::toggleOpen`,
@@ -145,13 +154,27 @@ const TestIds = {
     },
     requestDetails: {
         notes: 'requestDetails::notes',
-        tags: 'requestDetails::tags'
+        tags: 'requestDetails::tags',
+        addResponders: 'requestDetails::addResponders',
+        notifyPeople: 'requestDetails::notifyPeople',
+        closeRequest: 'requestDetails::closeRequest',
+        reopenRequest: 'requestDetails::reopenRequest',
     },
     team: {
         screen: 'teamScreen'
     },
     channels: {
         screen: 'channelScreen'
+    },
+    userHome: {
+        goToRequests: 'userHomePage::goToRequests',
+        goToChannels: 'userHomePage::goToChannels',
+        goToTeam: 'userHomePage::goToTeam',
+        linkTo: (link: string) => `userHomePage::linkTo(${link})`,
+    },
+    welcome: {
+        goToSignIn: 'userHomePage::goToSignIn',
+        goToSignUps: 'userHomePage::goToSignUps',
     },
     settings: {
         form: 'settingsForm',
@@ -208,6 +231,7 @@ const TestIds = {
     },
     editUser: {
         form: 'editUserForm',
+        removeUser: 'editUserForm::removeUser',
         inputs: {
             email: 'editUserForm::email',
             phone: 'editUserForm::phone',
@@ -220,6 +244,7 @@ const TestIds = {
     },
     editMe: {
         form: 'editMeForm',
+        removeUser: 'editMeForm::removeUser',
         inputs: {
             email: 'editMeForm::email',
             phone: 'editMeForm::phone',

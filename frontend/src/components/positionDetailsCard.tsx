@@ -13,6 +13,7 @@ import PositionCard from "./positionCard";
 import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
+import TestIds from "../test/ids";
 
 type PositionDetailsCardProps = { 
     requestId: string,
@@ -125,6 +126,7 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canLeave) {
             return <PatchButton 
+                testID={TestIds.positionDetailsCard.leave}
                 mode='contained'
                 label={STRINGS.REQUESTS.POSITIONS.leave}
                 small={true}
@@ -133,12 +135,14 @@ const PositionDetailsCard = observer(({
 
         if (positionMetadata.canJoin) {
             return <PatchButton 
+                testID={TestIds.positionDetailsCard.join}
                 mode='contained'
                 label={STRINGS.REQUESTS.POSITIONS.join}
                 small={true}
                 onPress={join} />
         } else if (positionMetadata.canRequestToJoin) {
-            return <PatchButton 
+            return <PatchButton
+                testID={TestIds.positionDetailsCard.requestToJoin}
                 mode='outlined'
                 label={STRINGS.REQUESTS.POSITIONS.request}
                 small={true}

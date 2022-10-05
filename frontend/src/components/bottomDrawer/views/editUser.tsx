@@ -90,6 +90,7 @@ export default class EditUser extends React.Component {
                     { this.canRemoveUser()
                         ? <View style={styles.actionButtonsContainer}>
                             <PatchButton 
+                                testID={this.formIds.removeUser}
                                 mode='outlined'
                                 uppercase={false}
                                 label={ STRINGS.ACCOUNT.removeUser(this.onMyProfile) }
