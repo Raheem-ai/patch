@@ -16,11 +16,14 @@
     ],
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "**/*.{js,jsx}",
+      "**/*.{js,jsx,ts,tsx}",
       "!**/coverage/**",
       "!**/node_modules/**",
       "!**/babel.config.js",
-      "!**/jest.setup.js"
+      "!**/jest.setup.js", 
+      "!**/app.config.js", 
+      "!**/index.js",
+      "!**/metro.config.js"
     ],
     "coverageDirectory": "./tests/coverage",
     "setupFiles": [

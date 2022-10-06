@@ -16,6 +16,7 @@ import { AppState } from 'react-native';
 import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
+import * as commonUtils from '../common/utils';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -265,6 +266,10 @@ describe('Signed in Scenarios', () => {
             return getByTestId(TestIds.requestList.screen)
         });
 
+        const mockRightNow = () => { return '2:30 PM' };
+
+        jest.spyOn(commonUtils, 'rightNow').mockImplementation(mockRightNow)
+
         const createRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.createRequest))
 
         await act(async() => {
@@ -313,7 +318,7 @@ describe('Signed in Scenarios', () => {
             notes: mockRequest.notes,
             callerName: '',
             callerContactInfo: '',
-            callStartedAt: '', // TODO: fix this test now that we set callStartDate automatically
+            callStartedAt: mockRightNow(), // TODO: fix this test now that we set callStartDate automatically
             callEndedAt: '',
             priority: null,
             tagHandles: [],
