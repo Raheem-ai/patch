@@ -24,4 +24,6 @@ if build_rc ; then
     # if built successfully save image with build specific and latest rc tag
     docker push $RC_IMAGE
     docker push $LATEST_RC_IMAGE
+else 
+    exit $?
 fi
