@@ -19,6 +19,7 @@ const ListInput = observer(({
     }
 
     const headerProps: BackButtonHeaderProps = {
+        testID: config.testID,
         cancel: {
             handler: () => {
                 config.onCancel?.()
@@ -34,6 +35,7 @@ const ListInput = observer(({
 
     const inlineListConfig: InlineListInputProps = {
         config: {
+            testID: config.testID,
             val: () => vals,
             onChange: setVals,
             isValid: config.isValid,

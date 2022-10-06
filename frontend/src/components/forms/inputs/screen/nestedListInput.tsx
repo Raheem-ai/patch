@@ -3,11 +3,13 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { List } from "react-native-paper";
+import TestIds from "../../../../test/ids";
 import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 
 const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'NestedList' | 'NestedTagList'>) => {
+    const wrappedTestID = TestIds.inputs.nestedListInput.wrapper(config.testID)
 
     const [vals, setVals] = useState(new Set(config.val()))
 
@@ -35,6 +37,7 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
     }
 
     const headerProps: BackButtonHeaderProps = {
+        testID: wrappedTestID,
         cancel: {
             handler: () => {
                 config.onCancel?.()
@@ -52,10 +55,10 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
             <BackButtonHeader  {...headerProps} />
             <ScrollView style={{ flex: 1}}>
                 <List.Section style={{margin: 0}}>
-                    {config.props.categories.map((cat) => {
+                    {config.props.categories.map((cat, catIdx) => {
 
                         const items = config.props.optionsFromCategory(cat)
-                                        .map(opt => {
+                                        .map((opt, optIdx) => {
                                             const chosen = vals.has(opt);
 
                                             const title = config.props.optionToListLabel
@@ -63,6 +66,8 @@ const NestedListInput = observer(({ back, config }: SectionScreenViewProps<'Nest
                                                 : config.props.optionToPreviewLabel(opt);
 
                                             return <List.Item 
+                                                        testID={TestIds.inputs.nestedListInput.optionN(wrappedTestID, catIdx, optIdx)}
+                                                        sentry-label={TestIds.inputs.nestedListInput.optionN(wrappedTestID, catIdx, optIdx)}
                                                         key={opt} 
                                                         onPress={() => toggleVal(opt)} 
                                                         title={title}

@@ -61,7 +61,7 @@ const TabbedScreen: React.FC<Props> = ({
                     : i == 0;
 
             return (
-                <Pressable onPress={() => setSelectedTab(t)} style={[
+                <Pressable key={t.label} onPress={() => setSelectedTab(t)} style={[
                     styles.headerSection,
                     i == 0 ? styles.firstSection : null,
                     i == tabs.length - 1 ? styles.lastSection : null,

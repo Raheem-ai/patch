@@ -36,7 +36,6 @@ export default class LocationStore implements ILocationStore {
             const r = await ExpoLocation.getForegroundPermissionsAsync()
             runInAction(() => this.hasForegroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
         } catch (e) {
-            console.log(e);
             runInAction(() => this.hasForegroundPermission = false)
         }
 
@@ -44,7 +43,6 @@ export default class LocationStore implements ILocationStore {
             const r = await ExpoLocation.getBackgroundPermissionsAsync()
             runInAction(() => this.hasBackgroundPermission = r.status == ExpoLocation.PermissionStatus.GRANTED)
         } catch (e) {
-            console.log(e);
             runInAction(() => this.hasBackgroundPermission = false)
         }
 

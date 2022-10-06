@@ -3,6 +3,7 @@ import React from 'react';
 import { userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
 import * as Linking from 'expo-linking';
+import TestIds from '../test/ids';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
@@ -19,22 +20,30 @@ export function navigateTo<Route extends keyof RootStackParamList>(name: Route, 
   }
 }
 
-export type MainMenuOption = { name: string, routeTo: keyof typeof routerNames, disabled?: boolean }
+export type MainMenuOption = { 
+    name: string, 
+    testId: string,
+    routeTo: keyof typeof routerNames, 
+    disabled?: boolean 
+}
 
 // immediate function invocation syntax so we can have this stay a constant and consider our environment 
 export const MainMenuOptions: MainMenuOption[] = (() => {
   let options: MainMenuOption[] = [
     {
       name: 'Home',
-      routeTo: 'userHomePage'
+      routeTo: 'userHomePage',
+      testId: TestIds.header.navigation.home
     },
     {
       name: 'Requests',
-      routeTo: 'helpRequestList'
+      routeTo: 'helpRequestList',
+      testId: TestIds.header.navigation.requests
     },
     {
       name: 'Channels',
-      routeTo: 'chats'
+      routeTo: 'chats',
+      testId: TestIds.header.navigation.channels
     },
     // {
     //   name: 'Resources',
@@ -48,7 +57,8 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
     // }, 
     {
       name: 'Team',
-      routeTo: 'teamList'
+      routeTo: 'teamList',
+      testId: TestIds.header.navigation.team
     },
   ]
 

@@ -15,6 +15,7 @@ import { iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 import { RequestPrefixCharMax } from '../../../common/constants'
 import { resolveErrorMessage } from "../errors";
+import TestIds from "../test/ids";
 import STRINGS from "../../../common/strings"
 
 type Props = ScreenProps<'Settings'>;
@@ -63,6 +64,7 @@ const Settings = ({ navigation, route }: Props) => {
         const inputs = [
             canEditOrgSettings
                 ? {
+                    testID: TestIds.settings.inputs.orgName,
                     name: 'orgName',
                     type: 'TextArea',
                     val: () => organizationStore().metadata.name,
@@ -90,6 +92,7 @@ const Settings = ({ navigation, route }: Props) => {
                 : null,
             canEditOrgSettings
                 ? {
+                    testID: TestIds.settings.inputs.requestPrefix,
                     name: 'requestPrefix',
                     type: 'TextArea',
                     val: () => organizationStore().metadata.requestPrefix,
@@ -122,12 +125,13 @@ const Settings = ({ navigation, route }: Props) => {
                     name: 'manageRoles',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
+                                    testID={TestIds.settings.navInputs.manageRoles}
                                     expand={expand} 
                                     name={'Roles + permissions'} 
                                     description={'Decide who can do what'} />
                     },
                     screen: ({ back }) => {
-                        return <MangeRolesForm back={back} />
+                        return <MangeRolesForm testID={TestIds.settings.navInputs.manageRoles} back={back} />
                     }
                 } as NavigationFormInputConfig
                 : null,
@@ -136,6 +140,7 @@ const Settings = ({ navigation, route }: Props) => {
                     name: 'manageAttributes',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
+                                    testID={TestIds.settings.navInputs.manageAttributes}
                                     expand={expand} 
                                     name={STRINGS.ELEMENTS.attribute({cap: true, plural: true})} 
                                     description={'Describe team members'} />
@@ -143,7 +148,8 @@ const Settings = ({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return (
                             <VisualArea>
-                                <EditCategorizedItemForm 
+                                <EditCategorizedItemForm
+                                    testID={TestIds.settings.navInputs.manageAttributes} 
                                     back={back}
                                     onSaveToastLabel={STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.attribute({plural: true}))} 
                                     editHeaderLabel='Edit attributes'
@@ -160,6 +166,7 @@ const Settings = ({ navigation, route }: Props) => {
                     name: 'manageTags',
                     label: ({ expand }) => {
                         return <DescriptiveNavigationLabel 
+                                    testID={TestIds.settings.navInputs.manageTags}
                                     expand={expand} 
                                     name={'Tags'} 
                                     description={'Add context to requests'} />
@@ -167,7 +174,8 @@ const Settings = ({ navigation, route }: Props) => {
                     screen: ({ back }) => {
                         return (
                             <VisualArea>
-                                <EditCategorizedItemForm 
+                                <EditCategorizedItemForm
+                                    testID={TestIds.settings.navInputs.manageTags} 
                                     back={back} 
                                     onSaveToastLabel={STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.tag({plural: true}))} 
                                     editHeaderLabel='Edit tags'
@@ -202,6 +210,7 @@ const Settings = ({ navigation, route }: Props) => {
             */
             canEditOrgSettings
                 ? {
+                    testID: TestIds.settings.inputs.createRequestChats,
                     name: 'createRequestChats',
                     type: 'Switch',
                     val: () => true,
@@ -280,6 +289,7 @@ const Settings = ({ navigation, route }: Props) => {
 
     return (
         <Form 
+            testID={TestIds.settings.form}
             inputs={[ personalSettings(), organizationSettings() ]} 
             homeScreen={homeScreen}/>
     )

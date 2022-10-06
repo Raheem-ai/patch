@@ -12,6 +12,7 @@ import STRINGS from "../../../../../common/strings";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { observable, runInAction } from "mobx";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
+import TestIds from "../../../test/ids";
 
 @observer
 export default class AddUser extends React.Component {
@@ -29,6 +30,7 @@ export default class AddUser extends React.Component {
         inputs
     }: CustomFormHomeScreenProps) => {
         const headerConfig: BackButtonHeaderProps = {
+            testID: TestIds.addUser.form,
             cancel: {
                 handler: async () => {
                     newUserStore().clear();
@@ -77,6 +79,7 @@ export default class AddUser extends React.Component {
         return {
             headerLabel: STRINGS.ACCOUNT.inviteTitle, 
             homeScreen: this.formHomeScreen,
+            testID: TestIds.addUser.form,
             inputs: [
                 {
                     onChange: (email) => newUserStore().email = email,
@@ -86,6 +89,7 @@ export default class AddUser extends React.Component {
                     isValid: () => {
                         return newUserStore().emailValid
                     },
+                    testID: TestIds.addUser.inputs.email,
                     name: 'email',
                     placeholderLabel: () => 'Email',
                     type: 'TextInput',
@@ -102,6 +106,7 @@ export default class AddUser extends React.Component {
                     isValid: () => {
                         return newUserStore().phoneValid
                     },
+                    testID: TestIds.addUser.inputs.phone,
                     name: 'phone',
                     placeholderLabel: () => 'Phone',
                     type: 'TextInput',
@@ -121,6 +126,7 @@ export default class AddUser extends React.Component {
                     previewLabel: () => newUserStore().roleIds.map(roleId => {
                         return organizationStore().roles.get(roleId)?.name
                     }).join(),
+                    testID: TestIds.addUser.inputs.role,
                     name: 'role',
                     type: 'RoleList',
                     props: {

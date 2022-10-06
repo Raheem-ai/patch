@@ -1,6 +1,7 @@
 import { Container, injectable } from "inversify";
 import { getPersistedStore, makePersistable } from 'mobx-persist-store';
-import { container, persistentKey, persistentPropConfigKey, PersistentStorage, securelyPersistentKey } from "../meta";
+import { container, persistentKey, securelyPersistentKey } from "../meta";
+import PersistentStorage, { persistentPropConfigKey } from "../meta/persistentStorage";
 
 export function getStore<T>({ id }: { id: symbol }): T {
     return container.get(id);

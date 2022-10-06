@@ -13,6 +13,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
 import moment from 'moment'
 import { alertStore } from "../../../../stores/interfaces";
 import { ICONS } from "../../../../types";
+import TestIds from "../../../../test/ids";
 
 type RecurringTimePeriodInputProps = SectionScreenViewProps<'RecurringTimePeriod'>;
 
@@ -86,6 +87,8 @@ const DEFAULT_STATE: RecurringTimeConstraints = {
 }
 
 const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProps) => {
+    const wrappedTestID = TestIds.inputs.recurringTimePeriod.wrapper(config.testID);
+
     const [state, setState] = useState<RecurringTimeConstraints>(Object.assign({}, config.val()));
     const [endOnDayOpen, setEndOnDayOpen] = useState(false);
     const [endOnRepititionOpen, setEndOnRepititionOpen] = useState(false);
@@ -377,6 +380,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
     }
 
     const headerProps: BackButtonHeaderProps = {
+        testID: wrappedTestID,
         cancel: {
             handler: () => {
                 config.onCancel?.()

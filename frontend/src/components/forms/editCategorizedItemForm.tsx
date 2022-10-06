@@ -6,6 +6,7 @@ import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
+import TestIds from "../../test/ids";
 import { ICONS, Colors } from "../../types";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import CategoryRow from "./common/categoryRow";
@@ -16,6 +17,7 @@ import { InlineFormInputConfig } from "./types";
 const WrappedScrollView = wrapScrollView(ScrollView)
 
 type EditScreenViewProps = {
+    testID: string,
     store: IEditCategorizedItemStore,
     back: () => void,
     editHeaderLabel: string,
@@ -25,6 +27,7 @@ type EditScreenViewProps = {
 }
 
 export const EditCategorizedItemForm = observer(({ 
+    testID,
     back, 
     store,
     onSaveToastLabel,
@@ -36,7 +39,10 @@ export const EditCategorizedItemForm = observer(({
     const checkIfFirstRender = useFirstRenderCheck();
     const isFirstRender = checkIfFirstRender();
 
+    const wrappedTestID = TestIds.editCategorizedItemForm.wrapper(testID)
+
     const headerProps: BackButtonHeaderProps = {
+        testID: wrappedTestID,
         save: {
             handler: async () => {
                 try {
@@ -62,6 +68,7 @@ export const EditCategorizedItemForm = observer(({
     }
 
     const addCategoryInputConfig: InlineFormInputConfig<'TextInput'> = {
+        testID: TestIds.editCategorizedItemForm.addCategory(wrappedTestID),
         val: () =>  newCategoryName,
         onChange: (val) => setNewCategoryName(val),
         isValid: () => !!newCategoryName,
@@ -94,8 +101,9 @@ export const EditCategorizedItemForm = observer(({
         )
     }
 
-    const editItemRow =  (categoryId: string) => (item: { id: string, name: string }) => {
+    const editItemRow =  (categoryId: string) => (item: { id: string, name: string, testID: string }) => {
         const editItemInputConfig: InlineFormInputConfig<'TextInput'> = {
+            testID: TestIds.editCategorizedItemForm.editItem(item.testID),
             val: () =>  item.name,
             onChange: (val) => store.editItem(categoryId, item.id, val),
             isValid: () => !!item.name,
@@ -115,8 +123,9 @@ export const EditCategorizedItemForm = observer(({
         )
     }
 
-    const categoryLabel = (props: { id: string, name: string }) => {
+    const categoryLabel = (props: { id: string, name: string, testID: string }) => {
         const editCategoryInputConfig: InlineFormInputConfig<'TextInput'> = {
+            testID: TestIds.editCategorizedItemForm.editCategory(props.testID),
             val: () =>  props.name,
             onChange: (val) => store.editCategory(props.id, val),
             isValid: () => !!props.name,
@@ -150,12 +159,13 @@ export const EditCategorizedItemForm = observer(({
                             handler: store.removeCategory
                         }
 
-                        const categoryFooter = () => {
+                        const categoryFooter = (footerTestID: string) => {
                             return (
                                 <AddItemFooter
                                     // only trigger autofocus behavior for create Category -> create first Item
                                     // flow when a new category is created vs when there are categories with no items
                                     // on an initial render
+                                    testID={footerTestID}
                                     noItems={isFirstRender ? false : !category.items.length}
                                     categoryId={categoryId} 
                                     store={store}
@@ -165,6 +175,7 @@ export const EditCategorizedItemForm = observer(({
 
                         return (
                             <CategoryRow 
+                                testID={wrappedTestID}
                                 key={categoryId}
                                 name={category.name}
                                 items={category.items}
@@ -182,11 +193,13 @@ export const EditCategorizedItemForm = observer(({
 })
 
 const AddItemFooter = ({
+    testID,
     categoryId,
     store, 
     addItemPlaceholderLabel,
     noItems
 }: { 
+    testID: string,
     store: IEditCategorizedItemStore
     categoryId: string, 
     addItemPlaceholderLabel: string,
@@ -207,6 +220,7 @@ const AddItemFooter = ({
     }
     
     const addItemInputConfig: InlineFormInputConfig<'TextInput'> = {
+        testID: TestIds.editCategorizedItemForm.addItem(testID),
         val: () =>  store.pendingItems.get(categoryId) || '',
         onChange: (val) => store.updatePendingItem(categoryId, val),
         isValid: () => !!store.pendingItems.get(categoryId),

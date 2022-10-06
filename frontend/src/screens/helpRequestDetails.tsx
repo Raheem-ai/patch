@@ -15,7 +15,7 @@ import TabbedScreen from "../components/tabbedScreen";
 import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { resolveErrorMessage } from "../errors";
-import ChatChannel from "../components/chats/chatChannel";
+import RequestChatChannel from "../components/chats/helpRequestChatChannel";
 import MapView, { MapViewProps, Marker, MarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
@@ -24,6 +24,7 @@ import * as Linking from 'expo-linking';
 import { constants } from "buffer";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
+import TestIds from "../test/ids";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -74,7 +75,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         
         return (
             <View style={styles.notesSection}>
-                <Text selectable={true}>{notes}</Text>
+                <Text testID={TestIds.requestDetails.notes} selectable={true}>{notes}</Text>
             </View>
         )
     }
@@ -162,6 +163,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
                             <Tags 
+                                testID={TestIds.requestDetails.tags}
                                 centered={false}
                                 tags={tags}
                                 verticalMargin={4}/>
@@ -258,6 +260,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
             <View style={styles.toggleRequestContainer}>
                 <PatchButton 
+                    testID={currentRequestOpen ? TestIds.requestDetails.closeRequest : TestIds.requestDetails.reopenRequest}
                     mode='outlined'
                     uppercase={false}
                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
@@ -367,7 +370,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const channel = () => {
         return (
             <View>
-                <ChatChannel inTabbedScreen={true}/>
+                <RequestChatChannel inTabbedScreen={true}/>
             </View>
         )
     }
@@ -385,6 +388,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                 return <View style={{ padding: 20, paddingBottom: 0 }}>
                     <PatchButton 
+                        testID={TestIds.requestDetails.notifyPeople}
                         mode='outlined'
                         uppercase={false}
                         label={STRINGS.REQUESTS.NOTIFICATIONS.notifyPeople}
@@ -700,6 +704,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 canEdit
                     ? <View>
                         <PatchButton 
+                            testID={TestIds.requestDetails.addResponders}
                             mode='contained'
                             uppercase={false}
                             label={STRINGS.REQUESTS.ACTIONS.addResponders}

@@ -14,11 +14,17 @@ import UpsertRoleForm from "./upsertRoleForm"
 import { VisualArea } from '../helpers/visualArea'
 import STRINGS from "../../../../common/strings"
 import { Colors, ICONS } from "../../types"
+import TestIds from "../../test/ids"
 
-const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
+type ManageRolesFormProps = SectionNavigationScreenViewProps & {
+    testID: string
+}
+
+const MangeRolesForm = ({ back, testID }: ManageRolesFormProps) => {
+    const wrappedTestID = TestIds.editRolesForm.wrapper(testID);
 
     const roleInputs = () => {
-        const editRoleInputs = organizationStore().metadata.roleDefinitions.map(def => {
+        const editRoleInputs = organizationStore().metadata.roleDefinitions.map((def, idx) => {
             return {
                 name: def.id,
                 expandOverride: (expand) => {
@@ -27,6 +33,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                 },
                 label: ({ expand }) => {
                     return <DescriptiveNavigationLabel 
+                                testID={TestIds.editRolesForm.navInputs.roleOptionN(wrappedTestID, idx)}
                                 expand={expand} 
                                 name={def.name} 
                                 inlineDescription={true}
@@ -47,7 +54,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                         }
                     }
 
-                    return <UpsertRoleForm headerLabel={def.name} cancel={cancelEdit} save={saveEdit}/>
+                    return <UpsertRoleForm testID={TestIds.editRolesForm.navInputs.roleOption(wrappedTestID)} headerLabel={def.name} cancel={cancelEdit} save={saveEdit}/>
                 }
             } as NavigationFormInputConfig
         })
@@ -60,7 +67,12 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
             },
             label: ({ expand }) => {
                 return (
-                    <Pressable style={{ paddingVertical: 12}} onPress={expand}>
+                    <Pressable 
+                        style={{ paddingVertical: 12}} 
+                        onPress={expand}
+                        testID={TestIds.editRolesForm.navInputs.addRole(wrappedTestID)}
+                        sentry-label={TestIds.editRolesForm.navInputs.addRole(wrappedTestID)}
+                    >
                         <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())}</Text>
                     </Pressable>
                 )
@@ -80,7 +92,13 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
                     }
                 }
 
-                return <UpsertRoleForm headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} cancel={cancelAdd} save={save}/>
+                return (
+                    <UpsertRoleForm 
+                        testID={TestIds.editRolesForm.navInputs.addRole(wrappedTestID)} 
+                        headerLabel={STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())} 
+                        cancel={cancelAdd} 
+                        save={save}/>
+                )
             }
         } as NavigationFormInputConfig
 
@@ -93,6 +111,7 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
     }: CustomFormHomeScreenProps) => {
 
         const headerProps: BackButtonHeaderProps = {
+            testID: wrappedTestID,
             save: {
                 handler: back,
                 outline: true
@@ -117,7 +136,11 @@ const MangeRolesForm = ({ back }: SectionNavigationScreenViewProps) => {
 
     return (
         <VisualArea>
-            <Form inputs={roleInputs} homeScreen={homeScreen}/>
+            <Form 
+                testID={wrappedTestID} 
+                inputs={roleInputs} 
+                homeScreen={homeScreen}
+            />
         </VisualArea>
     )
 }

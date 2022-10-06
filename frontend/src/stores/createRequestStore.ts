@@ -55,11 +55,7 @@ export default class CreateRequestStore implements ICreateRequestStore  {
 
         const createdReq = await api().createNewRequest(this.orgContext(), req);
 
-        try {
-            await requestStore().updateOrAddReq(createdReq);
-        } catch (e) {
-            console.error(e);
-        }
+        requestStore().updateOrAddReq(createdReq);
 
         return createdReq;
     }

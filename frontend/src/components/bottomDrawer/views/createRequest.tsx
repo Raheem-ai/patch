@@ -13,6 +13,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { ScrollView } from "react-native-gesture-handler";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
+import TestIds from "../../../test/ids";
 import { ICONS } from "../../../types";
 import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import { rightNow } from "../../../../../common/utils";
@@ -48,6 +49,7 @@ class CreateHelpRequest extends React.Component<Props> {
     }: CustomFormHomeScreenProps) => {
 
         const headerConfig: BackButtonHeaderProps = {
+            testID: TestIds.createRequest.form,
             cancel: {
                 handler: async () => {
                     createRequestStore().clear();
@@ -84,7 +86,7 @@ class CreateHelpRequest extends React.Component<Props> {
         return (
             <KeyboardAwareArea>
                 <BackButtonHeader {...headerConfig} />
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <ScrollView testID={TestIds.createRequest.form} showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(inputs()) }
@@ -104,6 +106,7 @@ class CreateHelpRequest extends React.Component<Props> {
         return {
             headerLabel: this.headerLabel(), 
             homeScreen: this.formHomeScreen,
+            testID: TestIds.createRequest.form,
             inputs: [
                 [
                     // Description
@@ -115,13 +118,14 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return !!createRequestStore().notes
                         },
+                        testID: TestIds.createRequest.inputs.description,
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: () => createRequestStore().notes,
                         headerLabel: () => 'Description',
                         placeholderLabel: () => 'Description',
                         type: 'TextArea',
-                        required: true
+                        required: true,
                     },
                     // Type of request
                     {
@@ -135,6 +139,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return createRequestStore().typeValid
                         },
+                        testID: TestIds.createRequest.inputs.type,
                         name: 'type',
                         // required: true,
                         props: {
@@ -152,6 +157,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return createRequestStore().locationValid
                         },
+                        testID: TestIds.createRequest.inputs.location,
                         name: 'location',
                         previewLabel: () => createRequestStore().location?.address,
                         headerLabel: () => 'Location',
@@ -170,6 +176,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.createRequest.inputs.callStart,
                         name: 'callStart',
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
@@ -191,6 +198,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.createRequest.inputs.callEnd,
                         name: 'callEnd',
                         placeholderLabel: () => 'Call end',
                         type: 'TextInput',
@@ -210,6 +218,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.createRequest.inputs.callerName,
                         name: 'callerName',
                         placeholderLabel: () => 'Caller name',
                         type: 'TextInput',
@@ -225,6 +234,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         isValid: () => {
                             return true
                         },
+                        testID: TestIds.createRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
                         placeholderLabel: () => 'Caller contact info',
                         type: 'TextInput',
@@ -246,6 +256,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
                     },
+                    testID: TestIds.createRequest.inputs.positions,
                     name: 'positions',
                     type: 'Positions'
                 },
@@ -260,6 +271,7 @@ class CreateHelpRequest extends React.Component<Props> {
                     isValid: () => {
                         return !!createRequestStore().priority 
                     },
+                    testID: TestIds.createRequest.inputs.priority,
                     name: 'priority',
                     previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
                     headerLabel: () => 'Priority',
@@ -287,6 +299,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         return true
                     },
                     icon: ICONS.tag,
+                    testID: TestIds.createRequest.inputs.tags,
                     name: 'tags'
                 })
             ] as [
@@ -310,7 +323,7 @@ class CreateHelpRequest extends React.Component<Props> {
     }
 
     render() {
-        return <Form ref={this.setRef} {...this.formProps()}/>
+        return <Form sentry-label='CreateRequestForm' ref={this.setRef} {...this.formProps()}/>
     }
 }
 

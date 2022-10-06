@@ -17,6 +17,7 @@ import reactStringReplace from 'react-string-replace';
 import { Colors, ICONS, globalStyles } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
+import TestIds from "../../../../test/ids"
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -25,11 +26,14 @@ const CategorizedItemListInput = ({
     config
 }: Props) => {
 
+    const wrappedTestID = TestIds.inputs.categorizedItemList.wrapper(config.testID)
+
     const editScreen: AdHocScreenConfig = {
         name: 'edit',
         screen: ({ back }) => {
             return (
                 <EditCategorizedItemForm 
+                    testID={wrappedTestID}
                     back={back} 
                     onSaveToastLabel={config.props.editConfig.onSaveToastLabel}
                     // categories={config.props.editConfig.categories}
@@ -57,6 +61,7 @@ const CategorizedItemListInput = ({
         const iCanEdit = isEditable && iHaveAllPermissions(config.props.editConfig.editPermissions)
 
         const headerProps: BackButtonHeaderProps = {
+            testID: wrappedTestID,
             save: {
                 handler: () => {
                     const items = config.props?.editConfig?.filterRemovedItems
@@ -77,6 +82,7 @@ const CategorizedItemListInput = ({
             label: unwrap(config.headerLabel),
             labelDecoration: iCanEdit 
                 ? {
+                    name: 'edit',
                     handler: async () => {
                         await nativeEventStore().hideKeyboard()
                         navigateToScreen('edit')
@@ -118,6 +124,7 @@ const CategorizedItemListInput = ({
         }
 
         const searchItemsInputConfig: InlineFormInputConfig<'TextInput'> = {
+            testID: TestIds.inputs.categorizedItemList.search(wrappedTestID),
             val: () =>  searchText,
             onChange: (val) => setSearchText(val),
             isValid: () => !!searchText,
@@ -154,9 +161,14 @@ const CategorizedItemListInput = ({
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingVertical: (styles.itemContainer.height - fontSize) / 2 }}>
                         {
-                            searchResults.map(([itemName, itemHandle]) => {
+                            searchResults.map(([itemName, itemHandle], idx) => {
                                 return (
-                                    <Pressable onPress={onResultPressed(itemHandle)} style={[styles.itemContainer]}> 
+                                    <Pressable 
+                                        onPress={onResultPressed(itemHandle)} 
+                                        style={[styles.itemContainer]}
+                                        testID={TestIds.inputs.categorizedItemList.searchResultN(wrappedTestID, idx)}
+                                        sentry-label={TestIds.inputs.categorizedItemList.searchResultN(wrappedTestID, idx)}
+                                    > 
                                         <Text style={{ fontSize, color: '#7F7C7F'}}>    
                                             {reactStringReplace(itemName, re, (match, i) => (
                                                 <Text style={{ color: Colors.text.default, fontWeight: '700' }}>{match}</Text>
@@ -176,7 +188,7 @@ const CategorizedItemListInput = ({
                 <ScrollView style={ styles.selectedListArea } showsVerticalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                     <View style={{ paddingBottom: 40 }}>
                     {
-                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category], index) => {
+                        Array.from(config.props.definedCategories().entries()).reverse().map(([categoryId, category], idx) => {
                             
                             const categoryLabelStyle = (categoryId): TextStyle => {
                                 return {
@@ -217,9 +229,10 @@ const CategorizedItemListInput = ({
 
                             return (
                                 <CategoryRow 
+                                    testID={TestIds.inputs.categorizedItemList.categoryRowN(wrappedTestID, idx)}
                                     key={category.name}
                                     name={category.name}
-                                    isFirst={index == 0 ? true : false}
+                                    isFirst={idx == 0 ? true : false}
                                     items={category.items}
                                     defaultClosed={!!config.props?.setDefaultClosed}
                                     id={categoryId}
@@ -240,6 +253,7 @@ const CategorizedItemListInput = ({
                 <View style={selectedItems.length ? styles.hasSelectedItems : {}}>
                     <ScrollView style={styles.searchPillContainer} contentContainerStyle={styles.searchPillContents} horizontal={true} showsHorizontalScrollIndicator={false} onTouchStart={Keyboard.dismiss}>
                             <Tags 
+                                testID={TestIds.inputs.categorizedItemList.pills(wrappedTestID)}
                                 verticalMargin={6} 
                                 horizontalTagMargin={6}
                                 tags={itemInfo.map(i => i[0])}
@@ -289,7 +303,7 @@ const CategorizedItemListInput = ({
     })
 
     return (
-        <Form inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
+        <Form testID={wrappedTestID} inputs={[]} homeScreen={homeScreen} adHocScreens={[ editScreen ]}/>
     )
 }
 
