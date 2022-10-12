@@ -21,6 +21,17 @@ function loadLocalEnv(env) {
 	dotenv.config({ path: envConfigPath })
 }
 
+function loadBuildEnv() {
+	const envConfigPath = process.env.BUILD_CONFIG_FILE // prod
+		|| '/workspace/build_config.env' // staging
+	
+	if (!fs.existsSync(envConfigPath)) {
+		throw `Missing essential env variables and there is no .env file at ${envConfigPath}`
+	}
+
+	dotenv.config({ path: envConfigPath })
+}
+
 if (!ENV) {
 	loadLocalEnv(`local`)
 } else if (ENV == 'prod') {
@@ -31,6 +42,11 @@ if (!ENV) {
 	if (!process.env.MONGO_CREDS) {
 		loadLocalEnv(`staging`)
 	}
+}
+
+if (!process.env.MONGO) {
+	// in cloud build after container has been built so need to load config from 'build_config.env'
+	loadBuildEnv()
 }
 
 const mongoConnectionString = config.MONGO_CONNECTION_STRING.get().connection_string;
