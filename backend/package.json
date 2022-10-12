@@ -13,12 +13,15 @@
     "prod": "yarn run build && PATCH_LOCAL_ENV=prod node lib/backend/src/index.js",
 
     "migration:create": "mongo-migrate create",
+    "migration:status": "node lib/backend/src/migrations/index.js status",
     "migration:up": "node lib/backend/src/migrations/index.js up",
     "migration:down": "node lib/backend/src/migrations/index.js down",
     "migration:down:latest": "node lib/backend/src/migrations/index.js down -l",
+    "migration:status:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js status",
     "migration:up:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js up",
     "migration:down:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js down",
     "migration:down:latest:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js down -l",
+    "migration:status:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js status",
     "migration:up:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js up",
     "migration:down:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js down",
     "migration:down:latest:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js down -l"
