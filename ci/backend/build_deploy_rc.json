@@ -79,12 +79,12 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
             "entrypoint": "bash",
+            "secretEnv": ["MONGO_CREDS"],
             "args": [
                 "/app/ci/backend/run_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=$_ENVIRONMENT",
-                "MONGO_CREDS=$MONGO_CREDS"
+                "_ENVIRONMENT=$_ENVIRONMENT"
             ]
         },
         {
@@ -110,12 +110,12 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
             "entrypoint": "bash",
+            "secretEnv": ["MONGO_CREDS"],
             "args": [
                 "/app/ci/backend/revert_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=$_ENVIRONMENT",
-                "MONGO_CREDS=$MONGO_CREDS"
+                "_ENVIRONMENT=$_ENVIRONMENT"
             ]
         },
         {
