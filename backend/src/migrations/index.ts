@@ -24,11 +24,11 @@ function loadLocalEnv(env) {
 if (!ENV) {
 	loadLocalEnv(`local`)
 } else if (ENV == 'prod') {
-	if (!process.env.MONGO_CONNECTION_STRING) {
+	if (!process.env.MONGO_CREDS) {
 		loadLocalEnv(`prod`)
 	}
 } else {
-	if (!process.env.MONGO_CONNECTION_STRING) {
+	if (!process.env.MONGO_CREDS) {
 		loadLocalEnv(`staging`)
 	}
 }
