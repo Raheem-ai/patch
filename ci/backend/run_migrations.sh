@@ -1,9 +1,12 @@
 cd /app/backend
+
+yarn run migration:status
+
 MIGRATIONS_TO_RUN=$(yarn run migration:status | grep -c pending)
 
 echo $MIGRATIONS_TO_RUN to run
 
-if (( $MIGRATIONS_TO_RUN > 0 ));
+if [ $MIGRATIONS_TO_RUN -gt 0 ];
 then
     if yarn run migration:up;
     then
