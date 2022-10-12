@@ -49,6 +49,7 @@ export default function UpdatePasswordForm() {
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
                             <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
+                            <Text style={styles.titleText}>{'current user: ' + userStore().user.email}</Text>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput

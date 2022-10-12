@@ -12,10 +12,10 @@ import { AuthCode } from "common/models";
 export class AuthCodeModel implements Omit<AuthCode, 'createdAt'> {
 
     @Property()
-    userId: string
+    code: string
 
     @Property()
-    code: string
+    userId: string
 }
 
 export type AuthCodeDoc = AuthCodeModel & Document;

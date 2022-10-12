@@ -152,6 +152,18 @@ export class APIClient implements IAPIService {
         return tokens;
     }
 
+    async signInWithCode(code: string): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.signInWithCode()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { code })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
     async signUp(user: MinUser): Promise<AuthTokens> {
         const url = `${apiHost}${API.client.signUp()}`;
 

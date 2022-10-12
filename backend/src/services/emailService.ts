@@ -1,9 +1,16 @@
-import { Inject, Service } from "@tsed/common";
+import { Service } from "@tsed/common";
 import config from '../config';
 import Mailgun from 'mailgun.js';
 import MailgunClient from 'mailgun.js/client';
 import formData from 'form-data';
 import STRINGS from "common/strings";
+
+import { readFile } from 'fs-extra';
+import path from 'path';
+
+
+
+const Handlebars = require("handlebars");
 
 const mailgunCreds = config.MAILGUN_CREDS.get();
 
@@ -17,12 +24,12 @@ export class EmailService {
         this.client = this.mailgun.client({username: 'api', key: api_key});
     }
 
-    sendEmail = async (recipientEmail: string, subject: string, emailTemplate: string) => {    
+    sendEmail = async (recipientEmail: string, subject: string, emailTemplate: string) => { 
         const raheemMailOptions = {
-            from: config.EMAIL.get().story_confirmation_sender,
+            from: 'Patch <help@getpatch.org>', // config.EMAIL.get().patch_system,
             to: recipientEmail,
             subject: subject,
-            text: emailTemplate, // change to html: [handlebars template]
+            html: emailTemplate
         }
 
         await this.client.messages.create(mailgunCreds.domain, raheemMailOptions)
@@ -30,9 +37,17 @@ export class EmailService {
 
     sendResetPasswordEmail = async (link: string, recipientEmail: string) => {
 
-        // define handlebars template and pass .... 
         const subject = 'Reset Patch password'; // get from STRINGS
-        const emailBody = 'The majick link is ' + link; // make a handlebars template and pass it in
+        const filepath = path.resolve(__dirname, 'email_templates/passwordReset.html');
+        
+console.log("filepath:::::: ",filepath);
+
+        const data: string = await readFile(filepath);
+        const passwordResetEmail: string = data 
+            ? '' + data 
+            : '<html><body><p>error</p></body></html>';
+        const template = Handlebars.compile(passwordResetEmail);
+        const emailBody = template({ "link": link, "email": recipientEmail});
 
         await this.sendEmail(recipientEmail, subject, emailBody);
     }

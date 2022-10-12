@@ -4,7 +4,7 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, LinkExperience, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
+import { AdminEditableUser, AuthTokens, AuthCode, BasicCredentials, CategorizedItem, EditableMe, LinkExperience, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -18,6 +18,7 @@ import { userHasPermissions, getLinkUrl } from "./utils";
 import config from "../config";
 import STRINGS from "../../../common/strings";
 import { EmailService } from "../services/emailService"; 
+import { AuthCodeModel } from "../models/authCode";
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -116,6 +117,7 @@ export class UsersController implements APIController<
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(PubSubService) pubSub: PubSubService;
     @Inject(EmailService) emailService: EmailService;
+    @Inject(AuthCodeModel) authCodes: MongooseModel<AuthCodeModel>;
 
     @Post(API.server.refreshAuth())
     async refreshAuth(
@@ -358,6 +360,7 @@ export class UsersController implements APIController<
         @Required() @BodyParams('email') email: string,
         @Required() @BodyParams('baseUrl') baseUrl: string,
     ) {
+
         const user = await this.users.findOne({ email: new RegExp(email, 'i') });
 
         if (!user) {
@@ -365,9 +368,44 @@ export class UsersController implements APIController<
         }
 
         const code = await this.db.createAuthCode(user.id);
-        const link = getLinkUrl(baseUrl, LinkExperience.SendResetCode, {code});
+        const link = getLinkUrl(baseUrl, LinkExperience.SignInWithCode, {code});
 
         await this.emailService.sendResetPasswordEmail(link, email);
 
+    }
+
+
+    @Post(API.server.signInWithCode())
+    async signInWithCode(
+        @Required() @BodyParams('code') code: string,
+    ) {
+console.log('///////////////')
+
+        const authCodeObject = await this.authCodes.findOne({ code: code });
+
+console.log(code,'-',authCodeObject)
+
+        const user = await this.users.findById(authCodeObject.userId);
+
+console.log(user);
+
+        if (!user) {
+          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(code))
+        }
+    
+// grab email and password with ID and then sign in
+// then set flag on userStore
+
+        user.auth_etag = uuid.v1();
+        await user.save(); // is this needed?
+
+        // return auth tokens
+        const accessToken = await createAccessToken(user.id, user.auth_etag)
+        const refreshToken = await createRefreshToken(user.id, user.auth_etag)
+
+        return {
+            accessToken,
+            refreshToken
+        }
     }
 }

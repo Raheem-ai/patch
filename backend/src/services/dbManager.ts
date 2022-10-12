@@ -1251,10 +1251,10 @@ export class DBManager {
 
     async createAuthCode(userId: string): Promise<string> {
         const authCode = new this.authCodes({
-            userId,
-            code: uuid.v1()
+            code: uuid.v1(),
+            userId
         });
-
+console.log('dbmanager: ',authCode);
         await authCode.save();
 
         return authCode.code;

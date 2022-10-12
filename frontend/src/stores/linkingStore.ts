@@ -5,9 +5,13 @@ import * as Linking from 'expo-linking'
 import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
+import { IAPIService } from '../services/interfaces';
+import { getService } from '../services/meta';
 
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
+
+    private api = getService<IAPIService>(IAPIService);
 
     initialRoute = null;
     initialRouteParams = null;
@@ -86,7 +90,6 @@ const LinkConfig: LinkExperiences = {
     },
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
-            console.log('jo: ',params)
             // TODO: flesh out this flow when user already exists
             // NOTE: this requires us to have the concept of multiple orgs in the app
             // or at least the concept of users who don't belong to an org
@@ -97,6 +100,45 @@ const LinkConfig: LinkExperiences = {
                 })
             } else {
                 navigateTo(routerNames.signUpThroughOrg, params)
+            }
+        }
+    },
+    [LinkExperience.SendResetCode]: {
+        run: (params) => {
+            if (!navigationRef.current) {
+                runInAction(() => {
+                    linkingStore().initialRoute = routerNames.updatePassword;
+                    linkingStore().initialRouteParams = params;
+                })
+            } else {
+                navigateTo(routerNames.updatePassword)
+            }
+        }
+    },
+    [LinkExperience.SignInWithCode]: {
+        run: async (params) => {
+            // get code object (via API-->userController)
+            // api/signinwithcode (which refs userController.signinwithcode)
+
+            const authTokens = await userStore().signInWithCode(params.code, linkingStore().baseUrl);
+
+            console.log('/',authTokens,'/')
+            // check db to see if code exists
+            // if it does, get timestamp and compare to a constant to see if it's expired
+            // tell user if it's expired
+            // if it's good:
+            // 1) sign user in
+            // 2) set flag on userStore that user signed in via code
+            // 3) go to updatePassword
+            // "Cancel" on updatePassword signs out if flag was set 
+
+            if (!navigationRef.current) {
+                runInAction(() => {
+                    linkingStore().initialRoute = routerNames.updatePassword;
+                    linkingStore().initialRouteParams = params;
+                })
+            } else {
+                navigateTo(routerNames.updatePassword)
             }
         }
     }
