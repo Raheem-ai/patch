@@ -94,6 +94,7 @@ const STRINGS = {
         createAccount: 'Create Account',
         signIn: 'Sign In',
         updatePassword: 'Set a new password',
+        updatePasswordFor: (emailOrName: string) => `Enter a new password for ${emailOrName}`,
         forgotPassword: 'Reset password',
         signUp: 'Sign Up',
         signUpThroughOrg: 'Sign Up',

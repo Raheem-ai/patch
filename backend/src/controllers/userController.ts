@@ -360,7 +360,6 @@ export class UsersController implements APIController<
         @Required() @BodyParams('email') email: string,
         @Required() @BodyParams('baseUrl') baseUrl: string,
     ) {
-
         const user = await this.users.findOne({ email: new RegExp(email, 'i') });
 
         if (!user) {
@@ -371,7 +370,6 @@ export class UsersController implements APIController<
         const link = getLinkUrl(baseUrl, LinkExperience.SignInWithCode, {code});
 
         await this.emailService.sendResetPasswordEmail(link, email);
-
     }
 
 
@@ -379,15 +377,8 @@ export class UsersController implements APIController<
     async signInWithCode(
         @Required() @BodyParams('code') code: string,
     ) {
-console.log('///////////////')
-
         const authCodeObject = await this.authCodes.findOne({ code: code });
-
-console.log(code,'-',authCodeObject)
-
         const user = await this.users.findById(authCodeObject.userId);
-
-console.log(user);
 
         if (!user) {
           throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(code))

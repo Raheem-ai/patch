@@ -1,6 +1,6 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { routerNames, Colors, ICONS } from '../types';
 import { alertStore, userStore, linkingStore } from '../stores/interfaces';
 import { navigationRef } from '../navigation';
@@ -13,36 +13,37 @@ import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 import { isEmailValid } from '../../../common/constants';
 
 export default function ForgotPasswordForm() {
-    const [email, setEmail] = React.useState('');
+    const [email, setEmail] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [emailIsValid, setEmailIsValid] = useState(true);
 
-    const res = isEmailValid(email);
-    const errorMessage = res.isValid || email.length == 0 
-        ? null 
-        : res.msg
+    useEffect(() => {
+        const res = isEmailValid(email);
+        setErrorMessage(res.isValid || email.length == 0 
+            ? null 
+            : res.msg);
+        setEmailIsValid(res.isValid);
+      }, [email]);
 
     const sendCode = async () => {
-        if (!isEmailValid) {
-            // TODO:
-            // if it fails, let the user know it failed and why in a toast?
+        if (!emailIsValid) {
+            alertStore().toastSuccess(STRINGS.ACCOUNT.emailProbablyNotRight, true, true);
             return
         }
-
         try {
-            // is there a user?
             await userStore().sendResetCode(email, linkingStore().baseUrl);
-            // if so, construct and send code
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e), false, false);
+            alertStore().toastError(resolveErrorMessage(e), true, true);
             return
         }
-
-        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, true, true);
+        setEmail('');
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
 
     return(
         // TODO
-        // Setting the background color here to hide the fact that an extra space is added
+        // Setting the background color here to hide the fact that an extra space is added (if there's an activeRequest)
         // but the error message is not visible so need to fix KeyboardAwareArea: 
         // https://linear.app/raheem/issue/RAH-632/keyboardavoidingview-not-working-on-updatepassword
         <View style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>

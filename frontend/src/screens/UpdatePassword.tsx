@@ -1,6 +1,6 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-import * as React from 'react';
+import { useState } from 'react';
 import { routerNames, Colors, ICONS } from '../types';
 import { alertStore, userStore } from '../stores/interfaces';
 import { navigationRef } from '../navigation';
@@ -12,8 +12,8 @@ import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 import { isPasswordValid } from '../../../common/constants';
 
 export default function UpdatePasswordForm() {
-    const [password, setPassword] = React.useState('');
-    const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+    const [password, setPassword] = useState('');
+    const [secureTextEntry, setSecureTextEntry] = useState(true);
 
     const res = isPasswordValid(password);
     const errorMessage = res.isValid || password.length == 0 
@@ -30,11 +30,11 @@ export default function UpdatePasswordForm() {
         try {
             await userStore().updatePassword(password);
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e), false, false);
+            alertStore().toastError(resolveErrorMessage(e), true, true);
             return
         }
 
-        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, true, true);
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
 
@@ -48,8 +48,7 @@ export default function UpdatePasswordForm() {
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
-                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePassword}</Text>
-                            <Text style={styles.titleText}>{'current user: ' + userStore().user.email}</Text>
+                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePasswordFor(userStore().user.email)}</Text>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput

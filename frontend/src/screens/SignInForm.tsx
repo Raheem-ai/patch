@@ -26,6 +26,8 @@ export default function SignInForm( { navigation } : Props) {
             return
         }
 
+        setTextUser('');
+        setPassword('');
         navigateTo(routerNames.userHomePage)
     }
 
