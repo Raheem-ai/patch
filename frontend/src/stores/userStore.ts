@@ -24,7 +24,7 @@ export default class UserStore implements IUserStore {
 
     @persistent()
     currentOrgId: string;
-    
+
     userResettingPassword = false;
     loadingCurrentUser = false;
 
@@ -41,9 +41,7 @@ export default class UserStore implements IUserStore {
             // make sure this doesn't throw because any store that depends on the user store
             // won't get initialized when there is a stale refreshToken
             try {
-                
-
-                // wait for api to init so it's persistent state can settle
+                // wait for api to init so its persistent state can settle
                 // before relying on it to handle the refresh token auth flow
                 await this.api.init();
 
