@@ -13,8 +13,7 @@ export class HashPasswords implements MigrationInterface {
 		const hashedUsers: UserDoc[] = [];
 
 		for (const user of users) {
-			// user.password = await hash(user.password, 10);
-			user.password = user.password + '_'
+			user.password = await hash(user.password, 10);
 			hashedUsers.push(user);
 		}
 
@@ -34,29 +33,5 @@ export class HashPasswords implements MigrationInterface {
 
 	async down(db: Db): Promise<any> {
 		// there is no way to undo this by design
-		// TODO: remove...testing with something less permanent first
-		const userCollection = db.collection<UserDoc>('users');
-
-		const users = await userCollection.find().toArray();
-
-		const hashedUsers: UserDoc[] = [];
-
-		for (const user of users) {
-			user.password = await hash(user.password, 10);
-			hashedUsers.push(user);
-		}
-
-		const bulkOps: AnyBulkWriteOperation[] = hashedUsers.map(doc => ({
-			updateOne: {
-				filter: { _id: doc._id },
-				update: {
-					$set: {
-						password: doc.password.slice(0, -1)
-					}
-				}
-			}
-		}))
-
-		await userCollection.bulkWrite(bulkOps as any)
 	}
 }
