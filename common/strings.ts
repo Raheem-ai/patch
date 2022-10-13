@@ -36,6 +36,8 @@ const STRINGS = {
                 : 'tag'
         ),
         position: `position`,
+        organization: `organization`,
+        user: `user`,
         request: (isPlural?: boolean) => (isPlural 
             ? 'requests'
             : 'request'
@@ -46,6 +48,9 @@ const STRINGS = {
         ),
     },
     visualDelim: '·',
+    errorMessages: {
+        unknownElement: (element: string) => `Unknown ${element}`,
+    },
     responders: (n: number) => (n == 1) ? 'responder' : 'responders',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
     people: (n: number) => n ==1 ? 'person' : 'people',
@@ -166,6 +171,9 @@ const STRINGS = {
         },
         ACTIONS: {
             addResponders: 'Add responders',
+        },
+        errorMessages: {
+            positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
         }
     },
     CHANNELS: {
@@ -208,6 +216,9 @@ const STRINGS = {
             genericError: () => `Something went wrong. Make sure you're online and, if it persists, email ${STRINGS.emailAddresses.help}.`,
             badResetPasswordCode: () => `The link you used is either expired or incorrect. Try sending yourself a new one or email ${STRINGS.emailAddresses.help} for help.`,
             userNotSignedIn: `User no longer signed in`,
+            onlyOneOrg: `You can only be a member of one org currently!`,
+            alreadyAMember: `User is already a member of the organization`,
+            notInOrg: `User is not a member of the organization`,
         },
         
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
@@ -231,6 +242,19 @@ const STRINGS = {
         removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
         removeRoleDialogOptionNo: 'Cancel',
         removeRoleDialogOptionYes:  `Remove`, 
+        errorMessages: {
+            roleNotInOrg: (roleId: string, organization: string) => `Role  ${roleId} does not exist in organization ${organization}.`,
+            attributeCategoryExists: (category: string, organization: string) => `Already an Attribute Category with the name "${category}" in organization ${organization}`,
+            unknownAttributeCategory: (category: string, organization: string) => `Unknown Attribute Category with the name "${category}" in organization ${organization}`,
+            attributeExistsInCategory: (attribute: string, category: string, organization: string) => `Already an Attribute with the name "${attribute}" in Attribute Category "${category}" in Organization ${organization}`,
+            attributeNotInCategory: (attribute: string, category: string) => `Attribute ${attribute} does not exist in Attribute Category ${category}.`,
+            unknownAttributeInCategory: (attribute: string, category: string, organization: string) => `Unknown Attribute (${attribute}) in Attribute Category (${category}) in organization (${organization})`,
+            tagCategoryExists: (category: string, organization: string) => `Already a Tag Category with the name "${category}" in organization ${organization}`,
+            unknownTagCategory: (category: string, organization: string) => `Unknown Tag Category with the name "${category}" in organization ${organization}`,
+            tagExistsInCategory: (tag: string, category: string, organization: string) => `Already a Tag with the name "${tag}" in Tag Category "${category}" in Organization ${organization}`,
+            tagNotInCategory: (tag: string, category: string) => `Tag ${tag} does not exist in Tag Category ${category}.`,
+            unknownTagInCategory: (tag: string, category: string, organization: string) => `Unknown Tag (${tag}) in Tag Category (${category}) in organization (${organization})`
+        },
     }
 }
 

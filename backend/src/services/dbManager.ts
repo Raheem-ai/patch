@@ -144,7 +144,7 @@ export class DBManager {
             } else if (numOrgs) {
                 // TODO: remove when we have ui for being able to switch between orgs 
                 // and made sure the ui handles it + backend sign up functions
-                throw new BadRequest(`You can only be a member of one org currently!`)
+                throw new BadRequest(STRINGS.ACCOUNT.errorMessages.onlyOneOrg);
             }
 
             const pendingUser = org.pendingUsers[idx];
@@ -304,7 +304,7 @@ export class DBManager {
         user.organizations ||= {};
 
         if (user.organizations[org.id]) {
-            throw `User is already a member of the organization`
+            throw STRINGS.ACCOUNT.errorMessages.alreadyAMember;
         } else {
             await this.updateUsersOrgConfig(user, org.id, (_) => ({
                 roleIds: roleIds,
@@ -396,7 +396,7 @@ export class DBManager {
             return await org.save();
         }
 
-        throw `Unknown role ${roleUpdates.id} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.roleNotInOrg(roleUpdates.id, orgId);
     }
 
     async addRoleToOrganization(minRole: MinRole, orgId: string): Promise<[OrganizationDoc, Role]> {
@@ -455,13 +455,13 @@ export class DBManager {
         const user = await this.resolveUser(userId);
 
         if (!user.organizations || !user.organizations[orgId]){
-            throw `User not in organization`
+            throw STRINGS.ACCOUNT.errorMessages.notInOrg;
         }
 
         const org = await this.resolveOrganization(orgId);
         for (const roleId of roleIds) {
             if (!org.roleDefinitions.some(roleDef => roleDef.id == roleId)) {
-                throw `Role  ${roleId} does not exist in organization ${orgId}.`
+                throw STRINGS.SETTINGS.errorMessages.roleNotInOrg(roleId, orgId);
             }
         }
 
@@ -480,7 +480,7 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId)
 
         if (this.checkForDupes(minCategory.name, org.attributeCategories)) {
-            throw `Already an Attribute Category with the name "${minCategory.name}" in organization ${orgId}`;
+            throw STRINGS.SETTINGS.errorMessages.attributeCategoryExists(minCategory.name, orgId);
         }
 
         const newAttributeCategory: AttributeCategory = {
@@ -502,7 +502,7 @@ export class DBManager {
 
         for (const minCategory of minCategories) {
             if (this.checkForDupes(minCategory.name, org.attributeCategories)) {
-                throw new BadRequest(`Already an Attribute Category with the name "${minCategory.name}" in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.attributeCategoryExists(minCategory.name, org.id));
             }
 
             const newAttributeCategory: AttributeCategory = {
@@ -524,7 +524,7 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId);
 
         if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.attributeCategories.filter(cat => cat.id != categoryUpdates.id))) {
-            throw `Already an Attribute Category with the name "${categoryUpdates.name}" in organization ${orgId}`;
+            throw STRINGS.SETTINGS.errorMessages.attributeCategoryExists(categoryUpdates.name, orgId);
         }
 
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryUpdates.id);
@@ -539,7 +539,7 @@ export class DBManager {
             ]
         }
 
-        throw `Unknown Attribute Category ${categoryUpdates.id} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryUpdates.id, orgId);
     }
 
     async editAttributeCategories(orgId: string | OrganizationDoc, categoryUpdates: AttributeCategoryUpdates[]): Promise<[OrganizationDoc, AttributeCategory[]]> {
@@ -548,7 +548,7 @@ export class DBManager {
 
         for (const categoryUpdate of categoryUpdates) {
             if (categoryUpdate.name && this.checkForDupes(categoryUpdate.name, org.attributeCategories.filter(cat => cat.id != categoryUpdate.id))) {
-                throw new BadRequest(`Already an Attribute Category with the name "${categoryUpdate.name}" in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.attributeCategoryExists(categoryUpdate.name, org.id));
             }
 
             const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryUpdate.id);
@@ -560,7 +560,7 @@ export class DBManager {
                 org.markModified('attributeCategories');
                 editedAttributeCategories.push(org.attributeCategories[categoryIndex])
             } else {
-                throw new BadRequest(`Unknown Attribute Category ${categoryUpdate.id} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryUpdate.id, org.id));
             }
         }
 
@@ -587,7 +587,7 @@ export class DBManager {
             })
         }
 
-        throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, orgId);
     }
 
     async removeAttributeCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
@@ -607,7 +607,7 @@ export class DBManager {
             return org
         }
 
-        throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+        throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
     }
 
     // TODO: delete
@@ -622,7 +622,7 @@ export class DBManager {
 
         if (categoryIndex >= 0) {
             if (this.checkForDupes(newAttribute.name, org.attributeCategories[categoryIndex].attributes)) {
-                throw `Already an Attribute with the name "${newAttribute.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${orgId}`;
+                throw STRINGS.SETTINGS.errorMessages.attributeExistsInCategory(newAttribute.name, org.attributeCategories[categoryIndex].name, orgId); 
             }
 
             org.attributeCategories[categoryIndex].attributes.push(newAttribute);
@@ -633,7 +633,7 @@ export class DBManager {
             ]
         }
 
-        throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
     }
 
     async addAttributesToOrganization(orgId: string | OrganizationDoc, categoryId: string, minAttributes: MinAttribute[]): Promise<[OrganizationDoc, Attribute[]]> {
@@ -650,45 +650,18 @@ export class DBManager {
 
             if (categoryIndex >= 0) {
                 if (this.checkForDupes(newAttribute.name, org.attributeCategories[categoryIndex].attributes)) {
-                    throw new BadRequest(`Already an Attribute with the name "${newAttribute.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.attributeExistsInCategory(newAttribute.name, org.attributeCategories[categoryIndex].name, org.id));
                 }
 
                 org.attributeCategories[categoryIndex].attributes.push(newAttribute);
                 org.markModified('attributeCategories');
                 newAttributes.push(newAttribute)
             } else {
-                throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
             }
         }
 
         return [org, newAttributes]
-    }
-
-    // TODO: delete
-    async editAttribute(orgId: string, categoryId: string, attributeUpdates: AtLeast<Attribute, 'id'>): Promise<[OrganizationDoc, Attribute]> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
-        if (categoryIndex >= 0) {
-            if (attributeUpdates.name && this.checkForDupes(attributeUpdates.name, org.attributeCategories[categoryIndex].attributes.filter(attr => attr.id != attributeUpdates.id))) {
-                throw `Already an Attribute with the name "${attributeUpdates.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${orgId}`;
-            }
-
-            const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeUpdates.id);
-            if (attributeIndex >= 0) {
-                for (const prop in attributeUpdates) {
-                    org.attributeCategories[categoryIndex].attributes[attributeIndex][prop] = attributeUpdates[prop];
-                }
-                org.markModified('attributeCategories');
-                return [
-                    await org.save(),
-                    org.attributeCategories[categoryIndex].attributes[attributeIndex]
-                ]
-            }
-
-            throw `Unknown Attribute ${attributeUpdates.id} in Attribute Category ${categoryId} in organization ${orgId}`;
-        }
-
-        throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
     }
 
     async editAttributes(orgId: string | OrganizationDoc, attributeUpdates: (AtLeast<Attribute, 'id'> & { categoryId: string })[]): Promise<[OrganizationDoc, (Attribute & { categoryId: string })[]]> {
@@ -701,7 +674,7 @@ export class DBManager {
             
             if (categoryIndex >= 0) {
                 if (update.name && this.checkForDupes(update.name, org.attributeCategories[categoryIndex].attributes.filter(attr => attr.id != update.id))) {
-                    throw new BadRequest(`Already an Attribute with the name "${update.name}" in Attribute Category "${org.attributeCategories[categoryIndex].name}" in Organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.attributeExistsInCategory(update.name, org.attributeCategories[categoryIndex].name, org.id));
                 }
 
                 const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == update.id);
@@ -715,10 +688,10 @@ export class DBManager {
                     })
                     org.markModified('attributeCategories');
                 } else {
-                    throw new BadRequest(`Unknown Attribute ${update.id} in Attribute Category ${categoryId} in organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(update.id, categoryId, org.id));
                 }
             } else {
-                throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
             }
         }
 
@@ -750,7 +723,7 @@ export class DBManager {
                             usersToSave.set(member as UserDoc, attrIndex);
                         }
                     } else {
-                        throw `User has no attributes in Attribute Category ${categoryId} in organization ${orgId}`;
+                        throw `User has no attributes in Attribute Category ${categoryId} in organization ${orgId}`; // what does this actually mean?
                     }
                 });
 
@@ -775,10 +748,10 @@ export class DBManager {
                 }
             }
 
-            throw `Unknown Attribute ${attributeId} in Attribute Category ${categoryId} in organization ${orgId}`;
+            throw STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(attributeId, categoryId, org.id);
         }
 
-        throw `Unknown Attribute Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
     }
 
     // TODO: this can be sped up by returning the users to be saved by the caller...ie if more than one attribute is removed that a user 
@@ -818,10 +791,10 @@ export class DBManager {
                 return org;
             }
 
-            throw new BadRequest(`Unknown Attribute ${attributeId} in Attribute Category ${categoryId} in organization ${org.id}`);
+            throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(attributeId, categoryId, org.id));
         }
 
-        throw new BadRequest(`Unknown Attribute Category ${categoryId} in organization ${org.id}`);
+        throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
     }
 
     // TODO: remove?...or maybe move validation to updateUser()?
@@ -830,7 +803,7 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId);
 
         if (!user.organizations || !user.organizations[org.id]){
-            throw `User not in organization`
+            throw STRINGS.ACCOUNT.errorMessages.notInOrg;
         }
 
         // Validate attributes exist in the proper category.
@@ -839,11 +812,11 @@ export class DBManager {
             if (category) {
                 for (const attrId of attributes[categoryId]) {
                     if (!category.attributes.some(attr => attr.id == attrId)) {
-                        throw `Attribute ${attrId} does not exist in Attribute Category ${categoryId}.`
+                        throw STRINGS.SETTINGS.errorMessages.attributeNotInCategory(attrId, categoryId)
                     }
                 }
             } else {
-                throw `Attribute Category ${categoryId} does not exist in organization ${orgId}.`
+                throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
             }
         }
 
@@ -921,7 +894,7 @@ export class DBManager {
 
         for (const minCategory of minCategories) {
             if (this.checkForDupes(minCategory.name, org.tagCategories)) {
-                throw `Already an Tag Category with the name "${minCategory.name}" in organization ${org.id}`;
+                throw STRINGS.SETTINGS.errorMessages.tagCategoryExists(minCategory.name, org.id);
             }
 
             const newTagCategory: TagCategory = {
@@ -942,7 +915,7 @@ export class DBManager {
         const org = await this.resolveOrganization(orgId);
 
         if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.tagCategories.filter(cat => cat.id != categoryUpdates.id))) {
-            throw `Already a Tag Category with the name "${categoryUpdates.name}" in organization ${orgId}`;
+            throw STRINGS.SETTINGS.errorMessages.tagCategoryExists(categoryUpdates.name, orgId);
         }
 
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryUpdates.id);
@@ -957,7 +930,7 @@ export class DBManager {
             ]
         }
 
-        throw `Unknown Tag Category ${categoryUpdates.id} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryUpdates.id, orgId);
     }
 
     async editTagCategories(orgId: string | OrganizationDoc, categoryUpdates: TagCategoryUpdates[]): Promise<[OrganizationDoc, TagCategory[]]> {
@@ -966,7 +939,7 @@ export class DBManager {
 
         for (const categoryUpdate of categoryUpdates) {
             if (categoryUpdate.name && this.checkForDupes(categoryUpdate.name, org.tagCategories.filter(cat => cat.id != categoryUpdate.id))) {
-                throw new BadRequest(`Already a Tag Category with the name "${categoryUpdate.name}" in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.tagCategoryExists(categoryUpdate.name, org.id));
             }
 
             const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryUpdate.id);
@@ -977,7 +950,7 @@ export class DBManager {
                 org.markModified('tagCategories');
                 editedTagCategories.push(org.tagCategories[categoryIndex])
             } else {
-                throw new BadRequest(`Unknown Tag Category ${categoryUpdate.id} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryUpdate.id, org.id));
             }
         }
 
@@ -1005,7 +978,7 @@ export class DBManager {
             })
         }
 
-        throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
     async removeTagCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
@@ -1025,7 +998,7 @@ export class DBManager {
             return org;
         }
 
-        throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+        throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
     }
 
     async addTagToOrganization(orgId: string, categoryId: string, minTag: MinTag): Promise<[OrganizationDoc, Tag]> {
@@ -1039,7 +1012,7 @@ export class DBManager {
 
         if (categoryIndex >= 0) {
             if (this.checkForDupes(newTag.name, org.tagCategories[categoryIndex].tags)) {
-                throw `Already a Tag with the name "${newTag.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${orgId}`;
+                throw STRINGS.SETTINGS.errorMessages.tagExistsInCategory(newTag.name, org.tagCategories[categoryIndex].name, orgId);
             }
 
             org.tagCategories[categoryIndex].tags.push(newTag);
@@ -1050,7 +1023,7 @@ export class DBManager {
             ]
         }
 
-        throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
     async addTagsToOrganization(orgId: string | OrganizationDoc, categoryId: string, minTags: MinTag[]): Promise<[OrganizationDoc, Tag[]]> {
@@ -1067,14 +1040,14 @@ export class DBManager {
 
             if (categoryIndex >= 0) {
                 if (this.checkForDupes(newTag.name, org.tagCategories[categoryIndex].tags)) {
-                    throw new BadRequest(`Already a Tag with the name "${newTag.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.tagExistsInCategory(newTag.name, org.tagCategories[categoryIndex].name, org.id));
                 }
 
                 org.tagCategories[categoryIndex].tags.push(newTag);
                 org.markModified('tagCategories');
                 newTags.push(newTag)
             } else {
-                throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
             }
         }
 
@@ -1088,7 +1061,7 @@ export class DBManager {
 
         if (categoryIndex >= 0) {
             if (this.checkForDupes(tagUpdates.name, org.tagCategories[categoryIndex].tags.filter(tag => tag.id != tagUpdates.id))) {
-                throw `Already a Tag with the name "${tagUpdates.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${orgId}`;
+                throw STRINGS.SETTINGS.errorMessages.tagExistsInCategory(tagUpdates.name, org.tagCategories[categoryIndex].name, org.id);
             }
 
             const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagUpdates.id);
@@ -1103,10 +1076,10 @@ export class DBManager {
                 ]
             }
 
-            throw `Unknown Tag ${tagUpdates.id} in Tag Category ${categoryId} in organization ${orgId}`;
+            throw STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagUpdates.id, categoryId, orgId);
         }
 
-        throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
+        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
     async editTags(orgId: string | OrganizationDoc, tagUpdates: (AtLeast<Tag, 'id'> & { categoryId: string })[]): Promise<[OrganizationDoc, (Tag & { categoryId: string })[]]> {
@@ -1119,7 +1092,7 @@ export class DBManager {
 
             if (categoryIndex >= 0) {
                 if (this.checkForDupes(update.name, org.tagCategories[categoryIndex].tags.filter(tag => tag.id != update.id))) {
-                    throw new BadRequest(`Already a Tag with the name "${update.name}" in Tag Category "${org.tagCategories[categoryIndex].name}" in Organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.tagExistsInCategory(update.name, org.tagCategories[categoryIndex].name, org.id));
                 }
 
                 const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == update.id);
@@ -1133,10 +1106,10 @@ export class DBManager {
                         ...org.tagCategories[categoryIndex].tags[tagIndex]
                     })
                 } else {
-                    throw new BadRequest(`Unknown Tag ${update.id} in Tag Category ${categoryId} in organization ${org.id}`);
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(update.id, categoryId, org.id));
                 }
             } else {
-                throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+                throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
             }
         }
 
@@ -1232,10 +1205,10 @@ export class DBManager {
                 return org;
             }
 
-            throw new BadRequest(`Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${org.id}`);
+            throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
         }
 
-        throw new BadRequest(`Unknown Tag Category ${categoryId} in organization ${org.id}`);
+        throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
     }
 
     checkForDupes(name: string, collection: AtLeast<any, 'name'>[]) {
@@ -1564,9 +1537,9 @@ console.log('dbmanager: ',authCode);
         const position = request.positions.find(pos => pos.id == positionId);
         const prefix = (await this.resolveOrganization(request.orgId)).requestPrefix;
 
-        // TODO: this should throw
+        // TODO: move to strings.ts ... what's up with the double quotes?
         if (!position) {
-            throw `'This position doesn't exist on ${prefix + '–' || 'Request '}${request.displayId}.`
+            throw STRINGS.REQUESTS.errorMessages.positionNotOnRequest(prefix, request.displayId); 
         }
 
         const userIdx = position.joinedUsers.findIndex(joinedUserId => joinedUserId == userId);
@@ -1653,7 +1626,7 @@ console.log('dbmanager: ',authCode);
             : orgId;
 
         if (!org) {
-            throw `Unknown organization`
+            throw STRINGS.errorMessages.unknownElement(STRINGS.ELEMENTS.organization) 
         }
 
         return org;
@@ -1665,7 +1638,7 @@ console.log('dbmanager: ',authCode);
             : userId;
 
         if (!user) {
-            throw `Unknown user`
+            throw STRINGS.errorMessages.unknownElement(STRINGS.ELEMENTS.user)
         }
 
         return user;
@@ -1677,7 +1650,7 @@ console.log('dbmanager: ',authCode);
             : requestId;
 
         if (!req) {
-            throw `Unknown request`
+            throw STRINGS.errorMessages.unknownElement(STRINGS.ELEMENTS.request())
         }
 
         return req;
