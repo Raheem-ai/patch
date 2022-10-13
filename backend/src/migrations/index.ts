@@ -10,7 +10,7 @@ const ENV = process.env._ENVIRONMENT
 // as the frontend app.config.js uses this same logic buttt I tried it and
 // common can't resolve node_module dependencies as this would have to be written
 // in js...can't write in ts and have build place it in frontend/backend because
-// frontend app.config.js has no build step
+// frontend app.config.js has no build step...plus this logic has diverted from the frontend
 function loadLocalEnv(env) {
 	const envConfigPath = path.resolve(__dirname, `../../../../../backend/env/.env.${env}`) 
 	
@@ -50,6 +50,13 @@ if (!process.env.MONGO) {
 }
 
 const mongoConnectionString = config.MONGO_CONNECTION_STRING.get().connection_string;
+
+// NOTE: because this library uses the full file path name as the way to both identify a
+// previously run job and as the file it should run to undo the migration later, running a migration
+// from on the ci and then trying to undo it locally will not work...you have to download the container and
+// run the migration down command from inside the container -_-
+// ie: docker run -it -v $(pwd)/env:/app/backend/env gcr.io/raheem-org-dev/patch-rc:<ID> bash for staging 
+// ie: docker run -it -v $(pwd)/env:/app/backend/env gcr.io/raheem-org/patch:<ID> bash for prod
 
 mongoMigrateCli({
   uri: mongoConnectionString,
