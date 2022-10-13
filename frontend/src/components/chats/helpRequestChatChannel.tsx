@@ -10,12 +10,13 @@ import UserIcon from "../userIcon";
 import STRINGS from "../../../../common/strings";
 import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
+import TestIds from "../../test/ids";
 
 type Props =  {
     inTabbedScreen?: boolean
 }
 
-const ChatChannel = observer(({ inTabbedScreen }: Props) => {
+const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
     const request = requestStore().currentRequest;
     const chat = request.chat;
 
@@ -94,14 +95,16 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                         */}
                         <View style={styles.messageInputContainer} >
                             <TextInput 
+                                testID={TestIds.requestChatChannel.textInput}
                                 multiline
                                 autoFocus
                                 value={message} 
                                 style={styles.messageInput} 
-                                
                                 onChangeText={(s: string) => setMessage(s)}/>
                         </View>
                         <IconButton 
+                            testID={TestIds.requestChatChannel.send}
+                            sentry-label={TestIds.requestChatChannel.send}
                             disabled={loading}
                             onPress={sendMessage}
                             icon={ICONS.sendMessage}
@@ -133,6 +136,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
                     <View style={[styles.inputContainer, styles.disabledChatContainer, {flex: 0}]}>
                             {userCanReopenRequest 
                                 ? <PatchButton 
+                                    testID={TestIds.requestChatChannel.reopen}
                                     mode='outlined'
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
@@ -155,7 +159,7 @@ const ChatChannel = observer(({ inTabbedScreen }: Props) => {
     )
 })
 
-export default ChatChannel
+export default RequestChatChannel
 
 const styles = StyleSheet.create({
     chatContainer: {

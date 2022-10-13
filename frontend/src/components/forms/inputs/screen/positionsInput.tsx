@@ -14,6 +14,7 @@ import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig
 import { observable } from "mobx"
 import { Colors, ICONS } from "../../../../types";
 import PatchButton from "../../../patchButton";
+import TestIds from "../../../../test/ids";
 
 export type PositionsInputProps = SectionScreenViewProps<'Positions'> 
 
@@ -30,6 +31,8 @@ const PositionsInput = observer(({
         max: -1
     }) as Position))
     
+    const wrappedTestID = TestIds.inputs.positions.wrapper(config.testID);
+
     const inputs = [[
         {
             val: () => {
@@ -44,6 +47,7 @@ const PositionsInput = observer(({
             },
             isValid: () => true,
             name: 'minmax',
+            testID: TestIds.inputs.positions.inputs.minMax(wrappedTestID),
             type: 'Slider',
             icon: ICONS.accountMultiple,
             props: {
@@ -61,6 +65,7 @@ const PositionsInput = observer(({
             placeholderLabel: 'Role',
             previewLabel: () => organizationStore().roles.get(position.get().role)?.name,
             name: 'role',
+            testID: TestIds.inputs.positions.inputs.roles(wrappedTestID),
             type: 'RoleList',
             icon: ICONS.role,
             props: {
@@ -68,6 +73,7 @@ const PositionsInput = observer(({
             }
         },
         AttributesListInput({
+            testID: TestIds.inputs.positions.inputs.attributes(wrappedTestID),
             val: () => position.get().attributes,
             onSave: (val) => { 
                 const cpy = Object.assign({}, position.get(), { attributes: val }) as Position
@@ -94,6 +100,7 @@ const PositionsInput = observer(({
 
         const header = () => {
             const headerProps: BackButtonHeaderProps = {
+                testID: wrappedTestID,
                 save: {
                     handler: () => {
                         const updatedPositions: Position[] = JSON.parse(JSON.stringify(config.val()));
@@ -144,6 +151,7 @@ const PositionsInput = observer(({
             return position.get().id
                 ? <View style={{ marginVertical: 32, paddingHorizontal: 16 }}>
                     <PatchButton 
+                        testID={TestIds.inputs.positions.delete(wrappedTestID)}
                         mode='outlined'
                         uppercase={false}
                         label='Delete this position'
@@ -161,7 +169,7 @@ const PositionsInput = observer(({
         )
     })
 
-    return <Form inputs={inputs} homeScreen={homeScreen} />
+    return <Form testID={wrappedTestID} inputs={inputs} homeScreen={homeScreen} />
 })
 
 export default PositionsInput;

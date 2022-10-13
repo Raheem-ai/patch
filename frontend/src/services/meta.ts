@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { makePersistable } from "mobx-persist-store";
-import { persistentKey, persistentPropConfigKey, PersistentStorage, securelyPersistentKey } from "../meta";
+import { persistentKey, securelyPersistentKey } from "../meta";
+import PersistentStorage, { persistentPropConfigKey } from "../meta/persistentStorage";
 import { getStore } from "../stores/meta";
 
 export function Service({ id }: { id: Symbol }) {

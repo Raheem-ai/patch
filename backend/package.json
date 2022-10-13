@@ -7,9 +7,24 @@
     "start": "yarn run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
+
     "dev": "yarn run build && PATCH_LOCAL_ENV=local node lib/backend/src/index.js",
     "staging": "yarn run build && PATCH_LOCAL_ENV=staging node lib/backend/src/index.js",
-    "prod": "yarn run build && PATCH_LOCAL_ENV=prod node lib/backend/src/index.js"
+    "prod": "yarn run build && PATCH_LOCAL_ENV=prod node lib/backend/src/index.js",
+
+    "migration:create": "mongo-migrate create",
+    "migration:status": "node lib/backend/src/migrations/index.js status",
+    "migration:up": "node lib/backend/src/migrations/index.js up",
+    "migration:down": "node lib/backend/src/migrations/index.js down",
+    "migration:down:latest": "node lib/backend/src/migrations/index.js down -l",
+    "migration:status:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js status",
+    "migration:up:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js up",
+    "migration:down:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js down",
+    "migration:down:latest:staging": "_ENVIRONMENT=staging node lib/backend/src/migrations/index.js down -l",
+    "migration:status:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js status",
+    "migration:up:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js up",
+    "migration:down:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js down",
+    "migration:down:latest:prod": "_ENVIRONMENT=prod node lib/backend/src/migrations/index.js down -l"
   },
   "engines": {
     "node": "12"
@@ -36,6 +51,7 @@
     "@types/node": "^16.3.3",
     "agenda": "^4.2.1",
     "ajv": "^8.6.2",
+    "bcrypt": "^5.1.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "connect-mongo": "^4.5.0",
@@ -51,7 +67,8 @@
     "mailgun.js": "^8.0.1",
     "method-override": "^3.0.0",
     "module-alias": "^2.2.2",
-    "mongoose": "^5.13.7",
+    "mongo-migrate-ts": "^1.1.1",
+    "mongoose": "^5.13.12",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -62,6 +79,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/express-session": "^1.17.4",
     "@types/jsonwebtoken": "^8.5.5",
     "@types/mongodb": "^4.0.7",

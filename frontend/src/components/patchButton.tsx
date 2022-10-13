@@ -6,6 +6,7 @@ import { Colors, ICONS } from "../types";
 
 export type PatchButtonProps = {
     label: string,
+    testID: string,
     width?: number | string,
     small?: boolean,
     style?: StyleProp<ViewStyle>
@@ -27,6 +28,7 @@ const PatchButton = ( props:PatchButtonProps) => {
         width,
         small,
         style,
+        testID,
         ...rest
     } = props;
 
@@ -51,6 +53,8 @@ const PatchButton = ( props:PatchButtonProps) => {
     return(
         <Button 
             {...rest}
+            testID={testID}
+            sentry-label={testID}
             style={[ 
                 styles.button, 
                 (width 

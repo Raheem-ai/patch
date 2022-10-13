@@ -26,6 +26,7 @@ export type FormProps = {
     },
     homeScreen?: (params: CustomFormHomeScreenProps) => JSX.Element
     adHocScreens?: AdHocScreenConfig[]
+    testID: string
 }
 
 export type CustomFormHomeScreenProps = {
@@ -35,7 +36,7 @@ export type CustomFormHomeScreenProps = {
     renderInputs: (configsToRender: Grouped<StandAloneFormInputConfig>[]) => JSX.Element[],
     inputs: () => Grouped<StandAloneFormInputConfig>[],
     isValid: () => boolean,
-    navigateToScreen: (screenName: string) => void
+    navigateToScreen: (screenName: string) => void,
 }
 
 const WrappedScrollView = wrapScrollView(ScrollView)
@@ -200,6 +201,8 @@ export default class Form extends React.Component<FormProps> {
         const renderInput = (inputConfig: StandAloneFormInputConfig, position?: GroupPosition) => {
             if (this.isNavigationInput(inputConfig)) {
                 return <NavigationSection
+                    sentry-label={inputConfig.name}        
+                    // sentry-label={inputConfig.testID}
                             key={inputConfig.name}
                             inputConfig={inputConfig}
                             openLink={navigateToScreen}  
@@ -250,6 +253,7 @@ export default class Form extends React.Component<FormProps> {
 
                 if (labelComponent) {
                     return <LabelSection 
+                        sentry-label={inputConfig.testID}
                         key={inputConfig.name}
                         inputConfig={screenInputConfig}
                         viewConfig={screenViewConfig}
@@ -263,6 +267,7 @@ export default class Form extends React.Component<FormProps> {
 
                 if (inlineComponent) {    
                     return <InlineSection 
+                        sentry-label={inputConfig.testID}
                         key={inputConfig.name}
                         inputConfig={inlineInputConfig}
                         inlineComponent={inlineComponent} 
@@ -270,6 +275,7 @@ export default class Form extends React.Component<FormProps> {
                 }
 
                 return <DefaultSection 
+                    sentry-label={inputConfig.testID}
                     key={inputConfig.name}
                     inputConfig={screenInputConfig}
                     openLink={navigateToScreen}  
@@ -344,12 +350,21 @@ export default class Form extends React.Component<FormProps> {
                 navigateToScreen
             };
 
-            return <CustomHomeScreen {...customProps} />
+            return (
+                // TODO: might need this at the definitionof the custom home screen
+                // ie pass it down?
+                <CustomHomeScreen 
+                    sentry-label={`${this.props.testID} (custom home screen)`} 
+                    {...customProps} 
+                />
+            )
         }
 
         // where in the app does this get returned?
         return (
                 <WrappedScrollView 
+                    sentry-label={`${this.props.testID} (home screen)`}
+                    testID={this.props.testID}
                     showsVerticalScrollIndicator={false} 
                     style={{ flex: 1 }}
                     contentContainerStyle={{ display: 'flex', flexGrow: 1 }} 
@@ -361,6 +376,7 @@ export default class Form extends React.Component<FormProps> {
                         {
                             this.props.submit
                                 ? <Button 
+                                    sentry-label={`${this.props.testID} (submit button)`}
                                     uppercase={false}
                                     onPress={onSubmit}
                                     color={this.isValid.get() ? styles.submitButton.color : styles.disabledSubmitButton.color}
@@ -406,7 +422,14 @@ export default class Form extends React.Component<FormProps> {
 
             const paramsFromLabel = route.params;
 
-            return <ScreenComponent paramsFromLabel={paramsFromLabel} back={back} config={inputConfig}/>
+            return (
+                <ScreenComponent
+                    sentry-label={`${inputConfig.testID} (screen)`}
+                    paramsFromLabel={paramsFromLabel} 
+                    back={back} 
+                    config={inputConfig}
+                />
+            )
         }
     }
 
@@ -429,21 +452,27 @@ export default class Form extends React.Component<FormProps> {
 
     render() {
         return (
-            <NavigationContainer independent onStateChange={this.saveRoute}>
+            <NavigationContainer sentry-label={this.props.testID}  independent onStateChange={this.saveRoute}>
                 <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: Colors.backgrounds.standard }}}  initialRouteName={this.homeScreenId}>
                     {/* setup form home screen */}
                     <Stack.Screen name={this.homeScreenId} component={this.listView} />
                     {   // setup navigation input screen components
                         this.navigationInputs.get().map(navigationInputConfig => {
                             return (
-                                <Stack.Screen name={navigationInputConfig.name} component={this.navigationScreen(navigationInputConfig)} />
+                                <Stack.Screen 
+                                    name={navigationInputConfig.name} 
+                                    component={this.navigationScreen(navigationInputConfig)} 
+                                />
                             )
                         })
                     }
                     {   // setup screen input screen components
                         this.screenInputs.get().map(screenInputConfig => {
                             return (
-                                <Stack.Screen name={screenInputConfig.name} component={this.inputScreen(screenInputConfig)}/>
+                                <Stack.Screen 
+                                    name={screenInputConfig.name} 
+                                    component={this.inputScreen(screenInputConfig)}
+                                />
                             )
                         })
                     }
@@ -451,7 +480,10 @@ export default class Form extends React.Component<FormProps> {
                         // setup ad-hoc screen components
                         (this.props.adHocScreens || []).map(config => {
                             return (
-                                <Stack.Screen name={config.name} component={this.adHocScreen(config)}/>
+                                <Stack.Screen 
+                                    name={config.name} 
+                                    component={this.adHocScreen(config)}
+                                />
                             )
                         })
                     }
@@ -515,7 +547,12 @@ const DefaultSection = observer((props: {
 
     return preview 
             ? <>
-                <Pressable style={resolvedStyles} onPress={expand}>
+                <Pressable 
+                    sentry-label={props.inputConfig.testID}
+                    testID={props.inputConfig.testID} 
+                    style={resolvedStyles} 
+                    onPress={expand}
+                >
                     { props.inputConfig.icon
                         ? <View style={styles.iconContainer}>
                             <IconButton
@@ -545,7 +582,12 @@ const DefaultSection = observer((props: {
                 }
             </>
             : <>
-                <Pressable style={resolvedStyles} onPress={expand}>
+                <Pressable 
+                    sentry-label={props.inputConfig.testID} 
+                    testID={props.inputConfig.testID} 
+                    style={resolvedStyles} 
+                    onPress={expand}
+                >
                     { props.inputConfig.icon
                         ? <View style={styles.iconContainer}>
                             <IconButton
@@ -596,7 +638,7 @@ function InlineSection(props: {
 
     return (
         <>
-            <View style={resolvedStyles}>
+            <View sentry-label={props.inputConfig.testID} style={resolvedStyles}>
                 { props.inputConfig.icon
                     ? <View style={styles.iconContainer}>
                         <IconButton
@@ -664,7 +706,7 @@ const LabelSection = observer((props: {
 
     return (
         <>
-            <View style={resolvedStyles}>
+            <View sentry-label={props.inputConfig.testID} style={resolvedStyles}>
                 { props.inputConfig.icon
                     ? <View style={styles.iconContainer}>
                         <IconButton
@@ -742,7 +784,12 @@ const NavigationSection = observer((props: {
 
     return (
         <>
-            <Pressable style={resolvedStyles} onPress={resolvedExpand}>
+            <Pressable
+                sentry-label={props.inputConfig.testID}
+                testID={props.inputConfig.testID}
+                style={resolvedStyles}
+                onPress={resolvedExpand}
+            >
                 { props.inputConfig.icon
                     ? <View style={styles.iconContainer}>
                         <IconButton

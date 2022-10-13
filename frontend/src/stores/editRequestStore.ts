@@ -52,26 +52,22 @@ export default class EditRequestStore implements IEditRequestStore  {
     }
 
     async editRequest(reqId: string) {
-        try {
-            const req = {
-                id: reqId,
-                type: this.type,
-                location: this.location,
-                notes: this.notes,
-                callerName: this.callerName,
-                callerContactInfo: this.callerContactInfo,
-                callStartedAt: this.callStartedAt,
-                callEndedAt: this.callEndedAt,
-                priority: this.priority,
-                tagHandles: this.tagHandles,
-                positions: this.positions
-            }
-
-            const updatedReq = await api().editRequest(this.requestContext(reqId), req);
-            requestStore().updateRequestInternals(updatedReq);
-        } catch (e) {
-            console.error(e);
+        const req = {
+            id: reqId,
+            type: this.type,
+            location: this.location,
+            notes: this.notes,
+            callerName: this.callerName,
+            callerContactInfo: this.callerContactInfo,
+            callStartedAt: this.callStartedAt,
+            callEndedAt: this.callEndedAt,
+            priority: this.priority,
+            tagHandles: this.tagHandles,
+            positions: this.positions
         }
+
+        const updatedReq = await api().editRequest(this.requestContext(reqId), req);
+        requestStore().updateRequestInternals(updatedReq);
     }
     
     loadRequest(req: CreateReqData) {

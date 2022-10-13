@@ -27,7 +27,7 @@ export type SectionScreenViewProps<Type extends ScreenFormInputType = ScreenForm
 // all it needs from form implementation is a way to switch screens
 export type SectionNavigationLabelViewProps = {
     expand: () => void
-}
+} & Pick<BaseFormInputConfig, 'testID'>
 
 // navigation input config decides completely how to render the screen component
 // all it needs from form implementation is a way to go back to the form's home screen
@@ -200,7 +200,7 @@ export type NavigationFormInputConfig = {
     expandIcon?: string | (() => string)
     // need 'name' for a screenId and 'disabled' in case the label is a string
     // so the consumer doesn't have control over the disabled lable visual component
-} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'icon'>; 
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'icon' | 'testID'>; 
 
 export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormInputType, Val extends InlineFormInputOptions[Type]['type'] = InlineFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
@@ -252,7 +252,7 @@ export type CompoundFormInputConfig<Type extends CompoundFormInputType = Compoun
 export type CompoundFormInputFactoryParams<Type extends CompoundFormInputType = CompoundFormInputType, Val extends CompoundFormInputOptions[Type]['type'] = CompoundFormInputOptions[Type]['type']> = {
     onChange(val: Val): void
     val(): Val
-} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'required'> & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
+} & Pick<BaseFormInputConfig, 'name' | 'disabled' | 'required' | 'testID'> & Pick<CompoundFormInputConfig<Type, Val>, 'props'>
 
 // instead of exporting an input component we export a factory with a similar config interface
 export type CompoundFormInputFactory<Type extends CompoundFormInputType> = (params: CompoundFormInputFactoryParams<Type>) => CompoundFormInputConfig<Type>;
@@ -264,6 +264,7 @@ export type AdHocScreenConfig = {
 
 type BaseFormInputConfig = {
     name: string
+    testID: string
     disabled?: boolean
     required?: boolean
     icon?: string

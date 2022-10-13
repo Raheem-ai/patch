@@ -19,6 +19,8 @@ import config from "../config";
 import STRINGS from "../../../common/strings";
 import { EmailService } from "../services/emailService"; 
 import { AuthCodeModel } from "../models/authCode";
+import { compare } from 'bcrypt';
+
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -219,8 +221,10 @@ export class UsersController implements APIController<
         if (!user) {
           throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
         }
+
+        const passwordHashesMatch = await compare(credentials.password, user.password)
     
-        if(!(user.password == credentials.password)) {
+        if(!passwordHashesMatch) {
             throw new Unauthorized(STRINGS.ACCOUNT.wrongPassword)
         }
 

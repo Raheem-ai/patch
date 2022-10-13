@@ -4,7 +4,7 @@ import { manageAttributesStore } from "../../../../stores/interfaces";
 import { ScreenFormInputConfig } from "../../types";
 
 // export type AttributesListInputConfig = Pick<ScreenFormInputConfig<'CategorizedItemList'>, 'onSave' | 'val' | 'isValid' | 'name' | 'props'>
-type RequiredFields = 'onSave' | 'val' | 'isValid' | 'name'
+type RequiredFields = 'onSave' | 'val' | 'isValid' | 'name' | 'testID'
 type DisabledFields = 'type'
 
 type OverrideableConfig = Omit<ScreenFormInputConfig<'CategorizedItemList'>, RequiredFields | DisabledFields | 'props'>;

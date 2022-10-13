@@ -13,6 +13,7 @@ import { BadRequest } from "@tsed/exceptions";
 import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
+import { hash } from 'bcrypt';
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -111,6 +112,8 @@ export class DBManager {
         user.displayColor = user.displayColor || randomColor({
             hue: '#DB0000'
         });
+
+        user.password = await hash(user.password, 10);
 
         const newUser = new this.users(user)
         user.organizations = {};

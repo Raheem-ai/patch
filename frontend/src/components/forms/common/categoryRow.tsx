@@ -2,10 +2,11 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { GestureResponderEvent, Pressable, StyleSheet, TextStyle, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import STRINGS from "../../../../../common/strings";
+import TestIds from "../../../test/ids";
 import { ICONS, Colors } from "../../../types";
 
 type CategoryRowProps = {
+    testID: string,
     id: string,
     name: string,
     isFirst?: boolean,
@@ -18,16 +19,17 @@ type CategoryRowProps = {
         icon: string
         handler: (categoryId: string) => void
     }
-    categoryFooter?: () => JSX.Element,
+    categoryFooter?: (testID: string) => JSX.Element,
     itemLabelStyle?: (itemId: string ) => TextStyle,
     categoryLabelStyle?: (categoryId: string ) => TextStyle,
-    itemIcon?: (categoryId: string, itemId: string) => JSX.Element,
+    itemIcon?: (categoryId: string, itemId: string, testID: string) => JSX.Element,
     itemRowPressed?: (itemId: string) => void,
-    itemRow?: (props: { id: string, name: string }) => JSX.Element
-    categoryLabel?: (props: { id: string, name: string }) => JSX.Element
+    itemRow?: (props: { id: string, name: string, testID: string }) => JSX.Element
+    categoryLabel?: (props: { id: string, name: string, testID: string }) => JSX.Element
 }
 
 const CategoryRow = observer(({
+    testID,
     id,
     name,
     items,
@@ -44,6 +46,8 @@ const CategoryRow = observer(({
 }: CategoryRowProps) => {
     const [isOpen, setIsOpen] = useState(defaultClosed ? false : true);
 
+    const wrappedTestID = TestIds.categoryRow.wrapper(testID);
+
     const toggleOpen = () => {
         setIsOpen(!isOpen)
     }
@@ -53,13 +57,19 @@ const CategoryRow = observer(({
         categoryAction.handler(id)
     }
 
-    const defaultItemRow = (item: { id: string, name: string }) => {
+    const defaultItemRow = (item: { id: string, name: string }, itemRowTestID: string) => {        
         return (
-            <Pressable key={item.id} onPress={() => itemRowPressed?.(item.id)} style={styles.itemContainer}>
+            <Pressable 
+                testID={itemRowTestID}
+                sentry-label={itemRowTestID}
+                key={item.id} 
+                onPress={() => itemRowPressed?.(item.id)} 
+                style={styles.itemContainer}
+            >
                 <Text style={[{ flex: 1, fontSize: 16 }, itemLabelStyle ? itemLabelStyle(item.id) : null]}>{item.name}</Text>
                 {
                     itemIcon 
-                        ? itemIcon(id, item.id)
+                        ? itemIcon(id, item.id, itemRowTestID)
                         : null
                 }
             </Pressable>
@@ -68,7 +78,11 @@ const CategoryRow = observer(({
 
     return (
         <View>
-            <Pressable onPress={toggleOpen} style={[ styles.categoryHeaderContainer, isFirst ? styles.categoryHeaderContainerFirst : null]}>
+            <Pressable 
+                testID={TestIds.categoryRow.toggleOpen(wrappedTestID)}
+                onPress={toggleOpen} 
+                style={[ styles.categoryHeaderContainer, isFirst ? styles.categoryHeaderContainerFirst : null]}
+            >
                 <View style={{ marginHorizontal: 15 }}>
                     <IconButton
                         icon={isOpen ? ICONS.filterClose: ICONS.filterOpen} 
@@ -79,7 +93,7 @@ const CategoryRow = observer(({
                 </View>
                 <View style={styles.categoryLabelContainer}>
                     { categoryLabel
-                        ? categoryLabel({ id, name })
+                        ? categoryLabel({ id, name, testID: TestIds.categoryRow.label(wrappedTestID) })
                         : <Text style={[styles.categoryLabel, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name}</Text>
                     }   
                 </View>
@@ -99,15 +113,17 @@ const CategoryRow = observer(({
             </Pressable>
             {
                 isOpen
-                    ? items.map(item => {
+                    ? items.map((item, idx) => {
+                        const itemRowTestID = TestIds.categoryRow.itemRowN(wrappedTestID, idx);
+
                         return itemRow 
-                            ? itemRow(item) 
-                            : defaultItemRow(item)
+                            ? itemRow({ ...item, testID: itemRowTestID}) 
+                            : defaultItemRow(item, itemRowTestID)
                     })
                 : null
             }
             { isOpen
-                ? categoryFooter?.() 
+                ? categoryFooter?.(TestIds.categoryRow.footer(wrappedTestID)) 
                 : null 
             }
         </View>

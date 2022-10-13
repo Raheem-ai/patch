@@ -1,6 +1,7 @@
 import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
+import TestIds from "../../test/ids"
 import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
 import { requestDisplayName } from "../../../../common/utils/requestUtils"
@@ -8,7 +9,9 @@ import STRINGS from "../../../../common/strings"
 
 export type IHeaderAction = {
     icon: string,
-    callback: () => void
+    callback: () => void,
+    // TODO: make this mandatory when we get each screen instrumented
+    testId?: string
 }
 
 export type HeaderRouteConfig = {
@@ -80,6 +83,7 @@ const HeaderConfig: {
             icon: ICONS.map,
             callback: () => navigateTo(routerNames.helpRequestMap)
         }, {
+            testId: TestIds.header.actions.createRequest,
             icon: ICONS.add,
             callback: () => {
                 bottomDrawerStore().show(BottomDrawerView.createRequest, true);

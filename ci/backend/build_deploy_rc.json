@@ -77,6 +77,17 @@
             ]
         },
         {
+            "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
+            "entrypoint": "bash",
+            "secretEnv": ["MONGO_CREDS"],
+            "args": [
+                "/app/ci/backend/run_migrations.sh"
+            ],
+            "env": [ 
+                "_ENVIRONMENT=$_ENVIRONMENT"
+            ]
+        },
+        {
             "name": "gcr.io/cloud-builders/gcloud",
             "entrypoint": "bash",
             "args": [
@@ -94,6 +105,17 @@
                 "_SERVICE=$_SERVICE", 
                 "_CI_EMAIL=$_CI_EMAIL",
                 "_CI_USERNAME=$_CI_USERNAME"
+            ]
+        },
+        {
+            "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
+            "entrypoint": "bash",
+            "secretEnv": ["MONGO_CREDS"],
+            "args": [
+                "/app/ci/backend/revert_migrations.sh"
+            ],
+            "env": [ 
+                "_ENVIRONMENT=$_ENVIRONMENT"
             ]
         },
         {
@@ -131,6 +153,10 @@
             {
                 "versionName": "projects/$PROJECT_ID/secrets/sentry-creds/versions/latest",
                 "env": "SENTRY_CREDS"
+            },
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/patch-mongo-credentials/versions/latest",
+                "env": "MONGO_CREDS"
             },
             {
                 "versionName": "projects/$PROJECT_ID/secrets/infra-git-ssh-key/versions/latest",

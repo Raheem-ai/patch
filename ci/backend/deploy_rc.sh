@@ -30,7 +30,9 @@ then
         # push tag
         git push origin rc-$SHORT_SHA
     else
-        exit 1
+        echo "ERROR: deployment failed"
+        echo "1" >> deployment_failed.txt
+        # exit 1
     fi
 else
     echo "# no backend changes to deploy"

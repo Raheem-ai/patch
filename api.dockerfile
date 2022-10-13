@@ -1,5 +1,5 @@
 # FROM node:16
-FROM node:12
+FROM node:14
 
 WORKDIR app
 
@@ -45,6 +45,8 @@ COPY frontend/yarn.lock .
 RUN yarn install
 
 COPY frontend .
+
+RUN yarn run test
 
 # /app
 WORKDIR ..

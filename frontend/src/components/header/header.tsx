@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { Animated, Dimensions, View, Image } from 'react-native';
+import { Animated, Dimensions, View } from 'react-native';
 import { StackHeaderProps } from '@react-navigation/stack';
 import { StyleSheet } from "react-native";
 import { IconButton, Switch, Text } from 'react-native-paper';
-import { useState } from 'react';
 import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOptions } from '../../navigation';
 import { RootStackParamList, routerNames, Colors, ICONS } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
 import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, headerIconPaddingVertical, InteractiveHeaderHeight, isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
+import TestIds from '../../test/ids';
 import STRINGS from '../../../../common/strings';
 
 type Props = StackHeaderProps & {};
@@ -89,56 +89,73 @@ const Header = observer((props: Props) => {
 
         const rightActionsRefs = [];
 
-        const rightActionsMap = rightActions.map((a, index) =>
-            <IconButton 
-                key={a.icon} 
-                style={[styles.icon, {marginLeft: (index == 0 ? 0 : 12)}]} 
-                icon={a.icon} 
-                size={headerIconSize} 
-                color={Colors.icons.lightReversed} 
-                onPress={a.callback}
-                />);        
+        const rightActionsMap = rightActions.map((a, index) => {
+            return (
+                <IconButton 
+                    testID={a.testId}
+                    key={a.icon} 
+                    style={[styles.icon, {marginLeft: (index == 0 ? 0 : 12)}]} 
+                    icon={a.icon} 
+                    size={headerIconSize} 
+                    color={Colors.icons.lightReversed} 
+                    onPress={a.callback}/>
+            )
+        })   
 
         return (
-            <View style={{ backgroundColor: styles.container.backgroundColor }}>
-            <Animated.View style={{ opacity }}>
-                <View style={styles.container}>
-                    {   leftActions.length 
-                        ? <View style={styles.leftIconContainer}>
-                            {
-                                leftActions.map(a => <IconButton key={a.icon} style={styles.leftIcon} icon={a.icon} size={headerIconSize} color={Colors.icons.lightReversed} onPress={a.callback}/>)
-                            }
-                        </View>
-                        : null
-                    }
-                    <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
-                        <Text style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</Text>
-                    </View>
+            <View sentry-label='Header (closed)' style={{ backgroundColor: styles.container.backgroundColor }}>
+                <Animated.View style={{ opacity }}>
+                    <View style={styles.container}>
+                        {   leftActions.length
+                            ? <View style={styles.leftIconContainer}>
+                                {
+                                    leftActions.map((a) => {
+                                        const testId = a.icon == 'menu'
+                                            ? TestIds.header.menu
+                                            : a.testId || null;
 
-                    <View style={styles.rightIconContainer}>
-                        {rightActionsMap}
+                                        return (
+                                            <IconButton 
+                                                testID={testId} 
+                                                style={styles.leftIcon}
+                                                key={a.icon} 
+                                                icon={a.icon} 
+                                                size={headerIconSize} 
+                                                color={Colors.icons.lightReversed} 
+                                                onPress={a.callback}/>
+                                        )
+                                    })
+                                }
+                            </View>
+                            : null
+                        }
+                        <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
+                            <Text style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</Text>
+                        </View>
+
+                        <View style={styles.rightIconContainer}>
+                            {rightActionsMap}
+                        </View>
+                        {/* Add a divider line between right icons and status icon */}
+                        { rightActions.length
+                            ? <View style={{ flexDirection: 'row', height: InteractiveHeaderHeight, alignItems: 'center', paddingLeft: 6, paddingRight: 12 }}>
+                                <View style={{ borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, height: '60%' }}></View>
+                            </View>
+                            : null
+                        }
+                        { 
+                            <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
+                                <IconButton 
+                                    key={'status-icon'} 
+                                    style={{ width: statusIconSize, height: statusIconSize }} 
+                                    icon={statusIcon} 
+                                    size={statusIconSize} 
+                                    color={statusColor}
+                                    onPress={promptToToggleAvailability}/>
+                            </View>
+                        }
                     </View>
-                    {/* Add a divider line between right icons and status icon */}
-                    { rightActions.length
-                        ? <View style={{ flexDirection: 'row', height: InteractiveHeaderHeight, alignItems: 'center', paddingLeft: 6, paddingRight: 12 }}>
-                            <View style={{ borderLeftColor: Colors.icons.dark, borderLeftWidth: 1, height: '60%' }}></View>
-                        </View>
-                        : null
-                    }
-                    { 
-                    
-                        <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
-                            <IconButton 
-                                key={'status-icon'} 
-                                style={{ width: statusIconSize, height: statusIconSize }} 
-                                icon={statusIcon} 
-                                size={statusIconSize} 
-                                color={statusColor}
-                                onPress={promptToToggleAvailability}/>
-                        </View>
-                    }
-                </View>
-            </Animated.View>
+                </Animated.View>
             </View>
         )
     }
@@ -160,9 +177,23 @@ const Header = observer((props: Props) => {
             }
         }
 
+        const option = (opt: MainMenuOption) => {
+            return (
+                <Text 
+                    testID={opt.testId}
+                    key={opt.name} 
+                    style={[
+                        styles.mainMenuText, 
+                        opt.disabled ? styles.disabledMainMenuText : null
+                    ]} 
+                    onPress={onPress(opt)}
+                >{opt.name}</Text>
+            )
+        }
+
         return (
             <View style={style}>
-                {MainMenuOptions.map(opt => <Text key={opt.name} style={[styles.mainMenuText, opt.disabled ? styles.disabledMainMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {MainMenuOptions.map(option)}
             </View>
         )
     }
@@ -192,7 +223,7 @@ const Header = observer((props: Props) => {
     }
     
     const fullScreenHeader = () =>
-        <View style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
+        <View sentry-label='Header (open)' style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
                     <IconButton icon={ICONS.navCancel} size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>

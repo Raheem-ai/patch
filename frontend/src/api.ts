@@ -12,7 +12,7 @@ import { AtLeast } from '../../common';
 import * as Constants from 'expo-constants'
 import STRINGS from '../../common/strings';
 
-export const apiHost = Constants.default.manifest.extra.apiHost
+export const apiHost = Constants.default.manifest.extra?.apiHost
 
 if (!apiHost) {
     // do something?

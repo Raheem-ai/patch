@@ -1,11 +1,17 @@
 const path = require('path');
 
+const nodeModulesDir = path.resolve(__dirname, '../node_modules')
+const commonDir = path.resolve(__dirname, '../common')
+
+console.log('nodeModulesDir', nodeModulesDir)
+console.log('commonDir', commonDir)
+
 const extraNodeModules = {
-  'common': path.resolve(__dirname, '../common'),
+  'common': commonDir,
 };
 
 const watchFolders = [
-  path.resolve(__dirname, '../common')
+  commonDir
 ];
 
 
@@ -23,10 +29,15 @@ module.exports = {
       get: (target, name) => {
         const correctPath = name in target ? target[name] : path.join(process.cwd(), `node_modules/${name}`);
 
+        if (!name in target) {
+          console.log(path.join(process.cwd(), `node_modules/${name}`))
+        }
+
         //redirects dependencies referenced from common/ to local node_modules
         return correctPath
       }
     }),
+    nodeModulesPaths: [nodeModulesDir]
   },
   watchFolders,
 };
