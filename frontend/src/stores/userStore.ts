@@ -24,7 +24,8 @@ export default class UserStore implements IUserStore {
 
     @persistent()
     currentOrgId: string;
-
+    
+    userResettingPassword = false;
     loadingCurrentUser = false;
 
     currentUser: ClientSideFormat<ProtectedUser>;

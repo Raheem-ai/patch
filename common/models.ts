@@ -993,8 +993,7 @@ export type AppSecrets = {
 export enum LinkExperience {
     SignUpThroughOrganization = 'suto',
     JoinOrganization = 'jo',
-    SendResetCode = 'src',
-    SignInWithCode = 'siwc'
+    ResetPassword = 'rp'
 }
 
 export type LinkParams = {
@@ -1008,10 +1007,7 @@ export type LinkParams = {
         email: string,
         pendingId: string
     },
-    [LinkExperience.SendResetCode]: {
-        code: string
-    },
-    [LinkExperience.SignInWithCode]: {
+    [LinkExperience.ResetPassword]: {
         code: string
     }  
 } 

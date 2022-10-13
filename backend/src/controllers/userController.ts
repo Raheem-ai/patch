@@ -367,7 +367,7 @@ export class UsersController implements APIController<
         }
 
         const code = await this.db.createAuthCode(user.id);
-        const link = getLinkUrl(baseUrl, LinkExperience.SignInWithCode, {code});
+        const link = getLinkUrl(baseUrl, LinkExperience.ResetPassword, {code});
 
         await this.emailService.sendResetPasswordEmail(link, email);
     }
@@ -378,21 +378,23 @@ export class UsersController implements APIController<
         @Required() @BodyParams('code') code: string,
     ) {
         const authCodeObject = await this.authCodes.findOne({ code: code });
+
+        if (!authCodeObject) {
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.genericError());
+        }
+
         const user = await this.users.findById(authCodeObject.userId);
 
         if (!user) {
-          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(code))
+            throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(code))
         }
-    
-// grab email and password with ID and then sign in
-// then set flag on userStore
 
         user.auth_etag = uuid.v1();
-        await user.save(); // is this needed?
+        await user.save();
 
         // return auth tokens
-        const accessToken = await createAccessToken(user.id, user.auth_etag)
-        const refreshToken = await createRefreshToken(user.id, user.auth_etag)
+        const accessToken = await createAccessToken(user.id, user.auth_etag);
+        const refreshToken = await createRefreshToken(user.id, user.auth_etag);
 
         return {
             accessToken,

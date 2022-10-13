@@ -8,6 +8,9 @@ type CaseAndNumber = {
 
 const STRINGS = {
     // GLOBAL
+    emailAddresses: {
+        help: `help@getpatch.org`,
+    },
     cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
@@ -201,6 +204,11 @@ const STRINGS = {
         invitationSuccessful: (email: string, phone: string) => `Invitation sent to email ${email} and phone ${phone}.`,
         inviteNotFound: (userEmail: string, orgName: string) => `Invite for user with email ${userEmail} to join '${orgName}' not found`,
         twilioError: (msg: string) => `Twilio Error: ${msg}`,
+        errorMessages: {
+            genericError: () => `Something went wrong. Make sure you're online and, if it persists, email ${STRINGS.emailAddresses.help}.`,
+            badResetPasswordCode: () => `The link you used is either expired or incorrect. Try sending yourself a new one or email ${STRINGS.emailAddresses.help} for help.`,
+            userNotSignedIn: `User no longer signed in`,
+        },
         
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,

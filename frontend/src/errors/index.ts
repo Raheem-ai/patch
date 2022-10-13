@@ -1,4 +1,5 @@
 import { AxiosError } from "axios";
+import STRINGS from "../../../common/strings";
 
 export function resolveErrorMessage(e: AxiosError): string {
     if (!e.isAxiosError) {
@@ -22,6 +23,6 @@ export function resolveErrorMessage(e: AxiosError): string {
             return e.response.data.message;
     
         default:
-            return `Something went wrong. Make sure you're online and, if it persists, email help@getpatch.org. \n\n ${JSON.stringify(e?.response?.data || e)}`;
+            return STRINGS.ACCOUNT.errorMessages.genericError() + `\n\n ${JSON.stringify(e?.response?.data || e)}`;
     }
 }

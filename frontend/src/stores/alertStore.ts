@@ -22,11 +22,12 @@ export default class AlertStore implements IAlertStore {
         }
 
         //TODO: start fade in animation
-
-        setTimeout(() => {
-            // todo start fadeout animation here
-            runInAction(() =>  this.toast = null)
-        }, this.defaultToastTime)
+        if (!dismissable) {
+            setTimeout(() => {
+                // todo start fadeout animation here
+                runInAction(() =>  this.toast = null)
+            }, this.defaultToastTime)
+        }
     }
 
     toastError(message: string, dismissable?: boolean, unauthenticated?: boolean) {
@@ -38,11 +39,12 @@ export default class AlertStore implements IAlertStore {
         }
 
         //TODO: start fade in animation
-
-        setTimeout(() => {
-            // todo start fadeout animation here
-            runInAction(() =>  this.toast = null)
-        }, this.defaultToastTime)
+        if (!dismissable) {
+            setTimeout(() => {
+                // todo start fadeout animation here
+                runInAction(() =>  this.toast = null)
+            }, this.defaultToastTime)
+        }
     }
     
     showPrompt(config: PromptConfig) {

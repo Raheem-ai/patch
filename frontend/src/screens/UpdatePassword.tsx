@@ -38,6 +38,14 @@ export default function UpdatePasswordForm() {
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
 
+    const cancel = async () => {
+        if(userStore().userResettingPassword) {
+            userStore().signOut();
+        } else {
+            navigationRef.current.goBack();
+        }
+    }
+
     return(
         // TODO
         // Setting the background color here to hide the fact that an extra space is added
@@ -62,7 +70,7 @@ export default function UpdatePasswordForm() {
                         </View>
                         <View style={styles.bottomContainer}>
                             <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                            <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
+                            <Text onPress={cancel} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>
                 </Pressable>
