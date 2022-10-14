@@ -61,6 +61,7 @@ export default class UserStore implements IUserStore {
             this.authToken = null
             this.currentOrgId = null
             this.users = new ObservableMap()
+            this.userResettingPassword = false
         })
     }
 

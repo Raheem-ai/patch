@@ -9,13 +9,16 @@ import { AuthCode } from "common/models";
         timestamps: true
     }
 })
-export class AuthCodeModel implements Omit<AuthCode, 'createdAt'> {
+export class AuthCodeModel implements AuthCode { 
 
     @Property()
     code: string
 
     @Property()
     userId: string
+
+    @Property()
+    createdAt: string
 }
 
 export type AuthCodeDoc = AuthCodeModel & Document;

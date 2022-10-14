@@ -387,6 +387,15 @@ export class UsersController implements APIController<
             throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.genericError());
         }
 
+        // check if the code is still good
+        const validMilliseconds = 1000*60*60*24; // one day = 1000*60*60*24 milliseconds
+        const codeCreatedAt = Date.parse(authCodeObject.createdAt);
+        const elapsedMilliseconds = (Date.now() - codeCreatedAt);
+
+        if (elapsedMilliseconds > validMilliseconds) {
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
+        }
+
         const user = await this.users.findById(authCodeObject.userId);
 
         if (!user) {

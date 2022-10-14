@@ -3,7 +3,7 @@ import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdat
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda } from "@tsed/agenda";
-import {MongooseService} from "@tsed/mongoose";
+import { MongooseService } from "@tsed/mongoose";
 import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
@@ -295,7 +295,7 @@ export class DBManager {
 
     async updateUserPassword(userId: (string | UserDoc), password: string) {
         const user = await this.resolveUser(userId);
-        user.password = password;
+        user.password = await hash(password, 10);
 
         return await user.save()
     }
@@ -1230,7 +1230,7 @@ export class DBManager {
             code: uuid.v1(),
             userId
         });
-console.log('dbmanager: ',authCode);
+
         await authCode.save();
 
         return authCode.code;

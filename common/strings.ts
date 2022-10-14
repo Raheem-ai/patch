@@ -195,7 +195,7 @@ const STRINGS = {
         passwordTooShort: `Use at least ${minPasswordLength} characters.`,
         passwordUpdated: 'Successfully updated password.',
         emailProbablyNotRight: `That doesn't look like an email address.`,
-        resetPasswordCodeSent: `Check your email for a link to reset your password.`,
+        resetPasswordCodeSent: `If we find a matching account, we'll email a link to reset your password.`,
         signInForAPI: `You must be signed in to call this api`,
         noOrgScope: `No org scope supplied`,
         noOrgAccess: `You do not have access to the requested org.`,

@@ -27,7 +27,7 @@ export default function ForgotPasswordForm() {
 
     const sendCode = async () => {
         if (!emailIsValid) {
-            alertStore().toastSuccess(STRINGS.ACCOUNT.emailProbablyNotRight, true, true);
+            alertStore().toastSuccess(STRINGS.ACCOUNT.emailProbablyNotRight, false, true);
             return
         }
         try {
@@ -36,6 +36,7 @@ export default function ForgotPasswordForm() {
             alertStore().toastError(resolveErrorMessage(e), true, true);
             return
         }
+        
         alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, true, true);
         setEmail('');
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition

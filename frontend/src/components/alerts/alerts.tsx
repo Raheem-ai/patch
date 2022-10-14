@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
         margin: 0, 
         marginLeft: 8, 
         width: 25, 
+        alignSelf: 'flex-start'
     },
     promptActionsContainer: {
         minHeight: 60,

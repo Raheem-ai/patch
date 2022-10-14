@@ -34,7 +34,7 @@ export default function UpdatePasswordForm() {
             return
         }
 
-        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, true, true);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
 
