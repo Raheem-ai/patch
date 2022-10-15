@@ -35,19 +35,17 @@ export class EmailService {
         await this.client.messages.create(mailgunCreds.domain, raheemMailOptions)
     }
 
-    sendResetPasswordEmail = async (link: string, recipientEmail: string) => {
+    sendResetPasswordEmail = async (link: string, recipientEmail: string, userName: string) => {
 
         const subject = 'Reset Patch password'; // get from STRINGS
         const filepath = path.resolve(__dirname, 'email_templates/passwordReset.html');
-        
-console.log("filepath:::::: ",filepath);
-
         const data: string = await readFile(filepath);
+
         const passwordResetEmail: string = data 
             ? '' + data 
             : '<html><body><p>error</p></body></html>';
         const template = Handlebars.compile(passwordResetEmail);
-        const emailBody = template({ "link": link, "email": recipientEmail});
+        const emailBody = template({ "link": link, "email": recipientEmail, "name": userName});
 
         await this.sendEmail(recipientEmail, subject, emailBody);
     }

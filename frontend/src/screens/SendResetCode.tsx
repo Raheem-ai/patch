@@ -37,7 +37,7 @@ export default function ForgotPasswordForm() {
             return
         }
         
-        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, true, true);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, false, true);
         setEmail('');
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }
@@ -53,6 +53,11 @@ export default function ForgotPasswordForm() {
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
                             <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.forgotPassword}</Text>
+                        </View>
+                        <View style={styles.captionContainer}>
+                            <Text style={styles.captionText}>
+                                <Text>{STRINGS.PAGE_TITLES.forgotPasswordSubtitle}</Text>
+                            </Text>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
@@ -85,8 +90,7 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         alignSelf: 'center',
-        paddingTop: 280,
-        marginBottom: 64
+        paddingTop: 160,
     },
     titleText: {
         fontStyle: 'normal',
@@ -96,9 +100,21 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: Colors.text.signInTitle,
     },
+    captionContainer: {
+        alignSelf: 'center',
+        width: 275,
+        marginTop: 32,
+        marginBottom: 64
+    },
+    captionText: {
+        fontSize: 18,
+        fontWeight: '400',
+        color: 'rgba(105, 79, 112, 0.66)',
+        textAlign: 'center'
+    },
     inputsContainer: {
         alignSelf: 'center',
-        marginBottom: 24,
+        marginBottom: 12,
         width: 296
     },
     input: {
@@ -106,7 +122,7 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         alignSelf: 'center',
-        marginVertical: 12
+        marginVertical: 0
     },
     signInButton: {
         borderRadius: 24,

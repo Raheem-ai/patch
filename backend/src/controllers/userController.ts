@@ -373,7 +373,7 @@ export class UsersController implements APIController<
         const code = await this.db.createAuthCode(user.id);
         const link = getLinkUrl(baseUrl, LinkExperience.ResetPassword, {code});
 
-        await this.emailService.sendResetPasswordEmail(link, email);
+        await this.emailService.sendResetPasswordEmail(link, email, user.name);
     }
 
 
