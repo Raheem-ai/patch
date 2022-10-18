@@ -95,7 +95,7 @@ export interface IApiClient {
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
 
-    updatePassword: Authenticated<(password: string) => Promise<void>>
+    updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>

@@ -1228,12 +1228,23 @@ export class DBManager {
     async createAuthCode(userId: string): Promise<string> {
         const authCode = new this.authCodes({
             code: uuid.v1(),
-            userId
+            userId: userId,
+            hasBeenUsed: false
         });
-
         await authCode.save();
 
         return authCode.code;
+    }
+
+
+    async setAuthCodeInvalid(code: string): Promise<void> {
+        try {
+            const authCode = await this.authCodes.findOne({ code: code });
+            authCode.hasBeenUsed = true;
+            await authCode.save();
+        } catch(e) {
+            return
+        }
     }
 
     // Requests

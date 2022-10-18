@@ -1,6 +1,6 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { routerNames, Colors, ICONS } from '../types';
 import { alertStore, userStore } from '../stores/interfaces';
 import { navigationRef } from '../navigation';
@@ -14,16 +14,21 @@ import { isPasswordValid } from '../../../common/constants';
 export default function UpdatePasswordForm() {
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [passwordIsValid, setEmailIsValid] = useState(true);
 
-    const res = isPasswordValid(password);
-    const errorMessage = res.isValid || password.length == 0 
-        ? null 
-        : res.msg
+    useEffect(() => {
+        const res = isPasswordValid(password);
+        setErrorMessage(res.isValid || password.length == 0 
+            ? null 
+            : res.msg);
+        setEmailIsValid(res.isValid);
+      }, [password]);
 
     const updatePassword = async () => {
-        if (!isPasswordValid(password)) {
-            // TODO:
-            // if it fails, let the user know it failed and why in a toast?
+
+        if (!passwordIsValid) {
+            alertStore().toastError(errorMessage, true, true);
             return
         }
 
@@ -35,11 +40,11 @@ export default function UpdatePasswordForm() {
         }
 
         alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
-        setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
+        setTimeout(() => cancel(), 1000); // delay to ease transition
     }
 
     const cancel = async () => {
-        if(userStore().userResettingPassword) {
+        if(!!userStore().userResettingPasswordWithCode) {
             userStore().signOut();
         } else {
             navigationRef.current.goBack();

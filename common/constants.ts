@@ -6,12 +6,12 @@ export const RequestPrefixCharMax = 6;
 
 export const PhoneNumberRegex = /^\+[1-9]\d{1,14}$/;
 
-export const minPasswordLength = 2;
+export const minPasswordLength = 4;
 export const isPasswordValid = (password: string) => {
     if(password.length < minPasswordLength) {
         return {
             isValid: false, 
-            msg: STRINGS.ACCOUNT.passwordTooShort
+            msg: STRINGS.ACCOUNT.errorMessages.passwordTooShort
         };
     } else {
         return {
@@ -26,17 +26,12 @@ export const isEmailValid = (email: string) => {
     const domain = email.slice(atSymbol + 1);
     const dot = domain.indexOf(".");
     
-    if (atSymbol < 1) { // there's no email address
+    if (atSymbol < 1) { // there's no addressee (e.g. `foo.org` or `charlie.foo.org`) 
         return {
             isValid: false, 
             msg: STRINGS.ACCOUNT.emailProbablyNotRight
         };
-    } else if (dot < 1) { // there's no domain name
-        return {
-            isValid: false, 
-            msg: STRINGS.ACCOUNT.emailProbablyNotRight
-        }
-    } else if (dot === domain.length -1) { // there's no TLD
+    } else if (dot < 1 || dot === domain.length - 1) { // there's no domain name (e.g. `charlie@` or `charlie@foo.` or `charlie.lipford@foo`)
         return {
             isValid: false, 
             msg: STRINGS.ACCOUNT.emailProbablyNotRight
@@ -44,7 +39,6 @@ export const isEmailValid = (email: string) => {
     } else {
         return {
             isValid: true,
-            msg: `It's fine. Everything's fine.`
         }; 
     }
 }

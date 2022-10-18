@@ -51,6 +51,7 @@ const HeaderConfig: {
         title: STRINGS.PAGE_TITLES.signIn,
         unauthenticated: true
     },
+    // updatePassword marked as unauthenticated because we don't want the header on the view
     [routerNames.updatePassword]: {
         title: STRINGS.PAGE_TITLES.updatePassword,
         unauthenticated: true

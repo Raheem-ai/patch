@@ -219,7 +219,7 @@ export class UsersController implements APIController<
         const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
 
         if (!user) {
-          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
+          throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.userNotFound(credentials.email))
         }
 
         const passwordHashesMatch = await compare(credentials.password, user.password)
@@ -355,8 +355,11 @@ export class UsersController implements APIController<
     async updatePassword(
         @User() user: UserDoc,
         @Required() @BodyParams('password') password: string,
+        @BodyParams('code') code: string,
     ) {
         const res = await this.db.updateUserPassword(user, password);
+
+        if (!!code) await this.db.setAuthCodeInvalid(code);
     }
 
     @Post(API.server.sendResetCode())
@@ -384,22 +387,23 @@ export class UsersController implements APIController<
         const authCodeObject = await this.authCodes.findOne({ code: code });
 
         if (!authCodeObject) {
-            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.genericError());
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
         }
 
         // check if the code is still good
         const validMilliseconds = 1000*60*60*24; // one day = 1000*60*60*24 milliseconds
         const codeCreatedAt = Date.parse(authCodeObject.createdAt);
         const elapsedMilliseconds = (Date.now() - codeCreatedAt);
+        const usedCode = authCodeObject.hasBeenUsed;
 
-        if (elapsedMilliseconds > validMilliseconds) {
+        if (usedCode || (elapsedMilliseconds > validMilliseconds)) {
             throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
         }
 
         const user = await this.users.findById(authCodeObject.userId);
 
         if (!user) {
-            throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(code))
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.userNotFound(code))
         }
 
         user.auth_etag = uuid.v1();

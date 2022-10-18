@@ -108,11 +108,7 @@ const LinkConfig: LinkExperiences = {
                 return
             }
 
-            runInAction(() => userStore().userResettingPassword = true);
-            // check db to see if code exists
-            // if it does, get timestamp and compare to a constant to see if it's expired
-            // tell user if it's expired
-            // if it's good:
+            runInAction(() => userStore().userResettingPasswordWithCode = params.code);
 
             if (!navigationRef.current) {
                 runInAction(() => {
