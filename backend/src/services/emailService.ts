@@ -4,11 +4,8 @@ import Mailgun from 'mailgun.js';
 import MailgunClient from 'mailgun.js/client';
 import formData from 'form-data';
 import STRINGS from "common/strings";
-
 import { readFile } from 'fs-extra';
 import path from 'path';
-
-
 
 const Handlebars = require("handlebars");
 
@@ -36,18 +33,13 @@ export class EmailService {
     }
 
     sendResetPasswordEmail = async (link: string, recipientEmail: string, userName: string) => {
-
-        const subject = 'Reset Patch password'; // get from STRINGS
-        const filepath = path.resolve(__dirname, 'email_templates/passwordReset.html');
+        const subject = STRINGS.EMAILS.forgotPasswordSubject;
+        const filepath = path.resolve('./', 'static/email_templates/passwordReset.html');
         const data: string = await readFile(filepath);
-
-        const passwordResetEmail: string = data 
-            ? '' + data 
-            : '<html><body><p>error</p></body></html>';
+        const passwordResetEmail: string = '' + data;
         const template = Handlebars.compile(passwordResetEmail);
         const emailBody = template({ "link": link, "email": recipientEmail, "name": userName});
 
         await this.sendEmail(recipientEmail, subject, emailBody);
     }
-
 }

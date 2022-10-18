@@ -104,7 +104,7 @@ const STRINGS = {
         updatePassword: 'Set a new password',
         updatePasswordFor: (emailOrName: string) => `Enter a new password for ${emailOrName}`,
         forgotPassword: 'Reset password',
-        forgotPasswordSubtitle: `Enter your email and we'll send a link so you can set a new password.`,
+        forgotPasswordSubtitle: `Enter your email and we'll send a link to set a new password.`,
         signUp: 'Sign Up',
         signUpThroughOrg: 'Sign Up',
         userHomePage: 'Home',
@@ -117,6 +117,9 @@ const STRINGS = {
         channels: 'Channels',
         componentLibrary: 'Component Library',
         createRequest: 'Create Request',
+    },
+    EMAILS: {
+        forgotPasswordSubject: `Reset Patch password`,
     },
     REQUESTS: {
         updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
