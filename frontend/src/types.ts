@@ -255,6 +255,6 @@ export const globalStyles = StyleSheet.create({
             height: 2
         },
         elevation: 1,
-        backgroundColor: Colors.backgrounds.standard
+        
     }
 })

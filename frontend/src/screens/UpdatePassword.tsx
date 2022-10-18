@@ -1,9 +1,9 @@
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, TextInput } from 'react-native-paper';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button } from 'react-native-paper';
 import { useState, useEffect } from 'react';
-import { routerNames, Colors, ICONS } from '../types';
+import { routerNames, Colors } from '../types';
 import { alertStore, userStore } from '../stores/interfaces';
-import { navigationRef } from '../navigation';
+import { navigateTo, navigationRef } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
@@ -13,7 +13,6 @@ import { isPasswordValid } from '../../../common/constants';
 
 export default function UpdatePasswordForm() {
     const [password, setPassword] = useState('');
-    const [secureTextEntry, setSecureTextEntry] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const [passwordIsValid, setEmailIsValid] = useState(true);
 
@@ -40,10 +39,12 @@ export default function UpdatePasswordForm() {
         }
 
         alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
-        setTimeout(() => exitScreen(), 1000); // delay to ease transition
+        setTimeout(() => {
+            navigateTo(routerNames.userHomePage);
+        } , 1000);
     }
 
-    const exitScreen = async () => {
+    const cancel = async () => {
         if(!!userStore().passwordResetLoginCode) {
             userStore().signOut();
         } else {
@@ -75,7 +76,7 @@ export default function UpdatePasswordForm() {
                         </View>
                         <View style={styles.bottomContainer}>
                             <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                            <Text onPress={exitScreen} style={styles.cancelLink}>Cancel</Text>
+                            <Text onPress={cancel} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>
                 </Pressable>
