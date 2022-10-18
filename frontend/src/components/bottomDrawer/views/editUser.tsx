@@ -226,6 +226,7 @@ export default class EditUser extends React.Component {
                 placeholderLabel: () => 'Name',
                 type: 'TextInput',
                 icon: ICONS.responder,
+                required: true
             } as InlineFormInputConfig<'TextInput'>,
             {
                 onSave: (bio) => editUserStore().bio = bio,
