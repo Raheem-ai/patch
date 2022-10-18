@@ -355,11 +355,13 @@ export class UsersController implements APIController<
     async updatePassword(
         @User() user: UserDoc,
         @Required() @BodyParams('password') password: string,
-        @BodyParams('code') code: string,
+        @BodyParams('resetCode') resetCode?: string,
     ) {
         const res = await this.db.updateUserPassword(user, password);
 
-        if (!!code) await this.db.setAuthCodeInvalid(code);
+        if (!!resetCode) {
+            await this.db.deleteAuthCode(resetCode);
+        }
     }
 
     @Post(API.server.sendResetCode())
@@ -394,9 +396,8 @@ export class UsersController implements APIController<
         const validMilliseconds = 1000*60*60*24; // one day = 1000*60*60*24 milliseconds
         const codeCreatedAt = Date.parse(authCodeObject.createdAt);
         const elapsedMilliseconds = (Date.now() - codeCreatedAt);
-        const usedCode = authCodeObject.hasBeenUsed;
 
-        if (usedCode || (elapsedMilliseconds > validMilliseconds)) {
+        if (elapsedMilliseconds > validMilliseconds) {
             throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
         }
 

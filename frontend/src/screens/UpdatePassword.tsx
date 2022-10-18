@@ -40,11 +40,11 @@ export default function UpdatePasswordForm() {
         }
 
         alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
-        setTimeout(() => cancel(), 1000); // delay to ease transition
+        setTimeout(() => exitScreen(), 1000); // delay to ease transition
     }
 
-    const cancel = async () => {
-        if(!!userStore().userResettingPasswordWithCode) {
+    const exitScreen = async () => {
+        if(!!userStore().passwordResetLoginCode) {
             userStore().signOut();
         } else {
             navigationRef.current.goBack();
@@ -75,7 +75,7 @@ export default function UpdatePasswordForm() {
                         </View>
                         <View style={styles.bottomContainer}>
                             <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                            <Text onPress={cancel} style={styles.cancelLink}>Cancel</Text>
+                            <Text onPress={exitScreen} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>
                 </Pressable>

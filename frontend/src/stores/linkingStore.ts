@@ -108,7 +108,7 @@ const LinkConfig: LinkExperiences = {
                 return
             }
 
-            runInAction(() => userStore().userResettingPasswordWithCode = params.code);
+            runInAction(() => userStore().passwordResetLoginCode = params.code);
 
             if (!navigationRef.current) {
                 runInAction(() => {

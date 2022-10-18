@@ -34,7 +34,7 @@ export class EmailService {
 
     sendResetPasswordEmail = async (link: string, recipientEmail: string, userName: string) => {
         const subject = STRINGS.EMAILS.forgotPasswordSubject;
-        const filepath = path.resolve('./', 'static/email_templates/passwordReset.html');
+        const filepath = path.resolve(__dirname, '../../../../static/email_templates/passwordReset.html');
         const data: string = await readFile(filepath);
         const passwordResetEmail: string = '' + data;
         const template = Handlebars.compile(passwordResetEmail);

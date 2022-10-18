@@ -25,7 +25,7 @@ export default class UserStore implements IUserStore {
     @persistent()
     currentOrgId: string;
 
-    userResettingPasswordWithCode = null;
+    passwordResetLoginCode = null;
     loadingCurrentUser = false;
 
     currentUser: ClientSideFormat<ProtectedUser>;
@@ -61,7 +61,7 @@ export default class UserStore implements IUserStore {
             this.authToken = null
             this.currentOrgId = null
             this.users = new ObservableMap()
-            this.userResettingPasswordWithCode = null
+            this.passwordResetLoginCode = null
         })
     }
 
@@ -170,7 +170,8 @@ export default class UserStore implements IUserStore {
 
     async updatePassword(password: string) {
         const token = this.authToken;
-        await this.api.updatePassword( {token}, password, this.userResettingPasswordWithCode)        
+        await this.api.updatePassword( {token}, password, this.passwordResetLoginCode);
+        this.passwordResetLoginCode = null;
     }
 
     async sendResetCode(email: string, baseUrl: string) {

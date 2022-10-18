@@ -15,7 +15,7 @@ export interface IBaseStore {
 export interface IUserStore extends IBaseStore {
     user: ClientSideFormat<Me>;
     signedIn: boolean;
-    userResettingPasswordWithCode: string;
+    passwordResetLoginCode: string;
     authToken: string;
     isOnDuty: boolean;
     currentOrgId: string;

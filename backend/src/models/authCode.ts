@@ -18,9 +18,6 @@ export class AuthCodeModel implements AuthCode {
     userId: string
 
     @Property()
-    hasBeenUsed: boolean
-
-    @Property()
     createdAt: string
 }
 
