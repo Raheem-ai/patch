@@ -39,8 +39,13 @@ export default function UpdatePasswordForm() {
         }
 
         alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
+
         setTimeout(() => {
-            navigateTo(routerNames.userHomePage);
+            if(!!userStore().passwordResetLoginCode) {
+                navigateTo(routerNames.userHomePage);
+            } else {
+                navigationRef.current.goBack();
+            }
         } , 1000);
     }
 

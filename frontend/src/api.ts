@@ -245,7 +245,7 @@ export class APIClient implements IAPIService {
     async updatePassword(ctx: TokenContext, password: string, resetCode?: string): Promise<void> {
         const url = `${apiHost}${API.client.updatePassword()}`;
 
-        await this.tryPost(url, {password: password, resetCode: userStore().passwordResetLoginCode}, {
+        await this.tryPost(url, {password: password, resetCode: resetCode ? resetCode : null}, {
             headers: this.userScopeAuthHeaders(ctx),
         });
     }
