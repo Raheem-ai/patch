@@ -1,11 +1,12 @@
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
+import { routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
 import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
+import STRINGS from '../../../common/strings';
 import { block } from 'react-native-reanimated';
 import TestIds from '../test/ids';
 
@@ -27,6 +28,8 @@ export default function SignInForm( { navigation } : Props) {
             return
         }
 
+        setTextUser('');
+        setPassword('');
         navigateTo(routerNames.userHomePage)
     }
 
@@ -48,7 +51,7 @@ export default function SignInForm( { navigation } : Props) {
                             testID={TestIds.signIn.email}
                             mode="flat"
                             style={styles.input}
-                            label={labelNames.email}
+                            label={STRINGS.INTERFACE.email}
                             value={username}
                             keyboardType='email-address'
                             onChangeText={username => setTextUser(username)}/>
@@ -68,12 +71,13 @@ export default function SignInForm( { navigation } : Props) {
                                 />
                             }
                             style={styles.input}
-                            label={labelNames.password}
+                            label={STRINGS.INTERFACE.password}
                             value={password}
                             onChangeText={password =>setPassword(password)}
                             onSubmitEditing={signIn}/>
                     </View>
                     <View style={styles.bottomContainer}>
+
                         <Button 
                             testID={TestIds.signIn.submit}
                             uppercase={false} 
@@ -81,11 +85,8 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         >{'Sign in'}</Button>
-                        {/* 
-                        // TO DO: enable forgot your password
-                        <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                        <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text>
-                        */}
+                        <Text style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
+                        {/* <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text> */}
                     </View>
                 </ScrollView>
             </Pressable>

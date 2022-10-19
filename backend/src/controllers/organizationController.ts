@@ -3,7 +3,7 @@ import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
 import { Format, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, Role, UserRole, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, Role, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc } from "../models/user";
@@ -17,7 +17,8 @@ import config from '../config';
 import { PubSubService } from "../services/pubSubService";
 import { OrganizationDoc } from "../models/organization";
 import { AtLeast } from "common";
-import STRINGS from "../../../common/strings"
+import STRINGS from "../../../common/strings";
+import { getLinkUrl } from "./utils";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -60,8 +61,6 @@ export class OrganizationController implements APIController<
             user: this.db.me(admin)
         }
     }
-
-
     
     @Post(API.server.removeUserFromOrg())
     @RequireAllPermissions([PatchPermissions.RemoveFromOrg])
@@ -84,8 +83,6 @@ export class OrganizationController implements APIController<
 
         return res;
     }
-    
-
 
     @Post(API.server.addRolesToUser())
     @RequireAllPermissions([PatchPermissions.AssignRoles])
@@ -153,7 +150,6 @@ export class OrganizationController implements APIController<
         }
     }
 
-
     @Post(API.server.inviteUserToOrg())
     @RequireAllPermissions([PatchPermissions.InviteToOrg])
     async inviteUserToOrg(
@@ -184,13 +180,13 @@ export class OrganizationController implements APIController<
 
         // TODO: retest this when we have the concept of being part of more than one org
         if (existingUser) {
-            link = this.getLinkUrl<LinkExperience.JoinOrganization>(baseUrl, LinkExperience.JoinOrganization, {
+            link = getLinkUrl<LinkExperience.JoinOrganization>(baseUrl, LinkExperience.JoinOrganization, {
                 orgId,
                 email,
                 pendingId: pendingUser.pendingId    
             });
         } else {
-            link = this.getLinkUrl<LinkExperience.SignUpThroughOrganization>(baseUrl, LinkExperience.SignUpThroughOrganization, {
+            link = getLinkUrl<LinkExperience.SignUpThroughOrganization>(baseUrl, LinkExperience.SignUpThroughOrganization, {
                 orgId,
                 email,
                 pendingId: pendingUser.pendingId
@@ -490,13 +486,4 @@ export class OrganizationController implements APIController<
             return updatedOrg;
         })
     }
-
-    getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
-        const expoSection = baseUrl.startsWith('exp')
-            ? '--/'
-            :'';
-
-        return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
-    }
-
 }

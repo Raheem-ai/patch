@@ -65,16 +65,19 @@ export const Alerts = observer(() => {
         const left = 20;
 
         return !!alertStore().toast
-            ? <View style={[styles.toastContainer, { width, top, left }]} onTouchStart={() => alertStore().hideToast()}>
+            ? <View style={[styles.toastContainer, { width, top, left }]}>
                 <ScrollView>
                     <Text style={styles.toastText}>{alertStore().toast.message}</Text>
                 </ScrollView>
-                <IconButton
-                    style={styles.toastDismissButton}
-                    icon={ICONS.dismissAlert} 
-                    color={Colors.icons.lighter}
-                    onPress={() => alertStore().hideToast()}
-                    size={25} />
+                {!alertStore().toast.dismissable
+                    ? null
+                    : <IconButton
+                        style={styles.toastDismissButton}
+                        icon={ICONS.dismissAlert} 
+                        color={Colors.icons.lighter}
+                        onPress={() => alertStore().hideToast()}
+                        size={25} />
+                }
             </View>
             : null
     }
@@ -144,6 +147,7 @@ const styles = StyleSheet.create({
         margin: 0, 
         marginLeft: 8, 
         width: 25, 
+        alignSelf: 'flex-start'
     },
     promptActionsContainer: {
         minHeight: 60,

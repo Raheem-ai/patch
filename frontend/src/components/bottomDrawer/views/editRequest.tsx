@@ -165,6 +165,12 @@ class EditHelpRequest extends React.Component<Props> {
                         placeholderLabel: () => 'Call start',
                         type: 'TextInput',
                         icon: ICONS.timeCallStarted,
+                        props: {
+                            inlineAction: {
+                                icon: ICONS.timestamp,
+                                action: () => runInAction(() => {editRequestStore().callStartedAt = rightNow()} )
+                            }
+                        }
                         // required: true
                     },
                     // Call End

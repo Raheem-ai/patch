@@ -10,6 +10,7 @@ import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
 import * as Constants from 'expo-constants'
+import STRINGS from '../../common/strings';
 
 export const apiHost = Constants.default.manifest.extra?.apiHost
 
@@ -62,9 +63,9 @@ export class APIClient implements IAPIService {
                 accessToken = await this.refreshAuth(this.refreshToken);
             } catch (e) {
                 // route to sign in and clear all stores
-                userStore().onSignOut(routerNames.signIn)
+                userStore().onSignOut(routerNames.signIn);
 
-                throw 'User no longer signed in'
+                throw STRINGS.ACCOUNT.errorMessages.userNotSignedIn;
             }
 
             const updatedConfig = {
@@ -117,7 +118,7 @@ export class APIClient implements IAPIService {
                 // route to sign in and clear all stores
                 userStore().onSignOut(routerNames.signIn)
 
-                throw 'User no longer signed in'
+                throw STRINGS.ACCOUNT.errorMessages.userNotSignedIn
             }
 
             const updatedConfig = {
@@ -144,6 +145,18 @@ export class APIClient implements IAPIService {
         const url = `${apiHost}${API.client.signIn()}`;
 
         const tokens = (await axios.post<AuthTokens>(url, { credentials })).data
+
+        runInAction(() => {
+            this.refreshToken = tokens.refreshToken;
+        })
+
+        return tokens;
+    }
+
+    async signInWithCode(code: string): Promise<AuthTokens> {
+        const url = `${apiHost}${API.client.signInWithCode()}`;
+
+        const tokens = (await axios.post<AuthTokens>(url, { code })).data
 
         runInAction(() => {
             this.refreshToken = tokens.refreshToken;
@@ -227,6 +240,19 @@ export class APIClient implements IAPIService {
         await this.tryPost(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
         });
+    }
+
+    async updatePassword(ctx: TokenContext, password: string, resetCode?: string): Promise<void> {
+        const url = `${apiHost}${API.client.updatePassword()}`;
+
+        await this.tryPost(url, {password: password, resetCode: resetCode ? resetCode : null}, {
+            headers: this.userScopeAuthHeaders(ctx),
+        });
+    }
+
+    async sendResetCode(email: string, baseUrl: string): Promise<void> {
+        const url = `${apiHost}${API.client.sendResetCode()}`;
+        await axios.post<void>(url, { email, baseUrl }, {});
     }
 
     async reportLocation(ctx: TokenContext, locations: Location[]) {

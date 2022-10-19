@@ -4,7 +4,7 @@ import { MongooseModel, Schema } from "@tsed/mongoose";
 import { Authenticate } from "@tsed/passport";
 import { CollectionOf, Format, Optional, Property, Required } from "@tsed/schema";
 import API from 'common/api';
-import { AdminEditableUser, AuthTokens, BasicCredentials, CategorizedItem, EditableMe, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
+import { AdminEditableUser, AuthTokens, AuthCode, BasicCredentials, CategorizedItem, EditableMe, LinkExperience, Location, MinUser, PatchEventType, PatchPermissions, PendingUser, UserRole } from "common/models";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../auth";
 import { RequireSomePermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
@@ -14,10 +14,13 @@ import { OrganizationController } from "./organizationController";
 import { User } from "../protocols/jwtProtocol";
 import { DBManager } from "../services/dbManager";
 import { PubSubService } from "../services/pubSubService";
-import { userHasPermissions } from "./utils";
+import { userHasPermissions, getLinkUrl } from "./utils";
 import config from "../config";
 import STRINGS from "../../../common/strings";
+import { EmailService } from "../services/emailService"; 
+import { AuthCodeModel } from "../models/authCode";
 import { compare } from 'bcrypt';
+
 
 export class ValidatedMinUser implements MinUser {
     @Required()
@@ -109,10 +112,14 @@ export class UsersController implements APIController<
     | 'signUpThroughOrg'
     | 'editMe'
     | 'editUser'
+    | 'sendResetCode'
+    | 'updatePassword'
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(PubSubService) pubSub: PubSubService;
+    @Inject(EmailService) emailService: EmailService;
+    @Inject(AuthCodeModel) authCodes: MongooseModel<AuthCodeModel>;
 
     @Post(API.server.refreshAuth())
     async refreshAuth(
@@ -212,7 +219,7 @@ export class UsersController implements APIController<
         const user = await this.users.findOne({ email: new RegExp(credentials.email, 'i') });
 
         if (!user) {
-          throw new Unauthorized(STRINGS.ACCOUNT.userNotFound(credentials.email))
+          throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.userNotFound(credentials.email))
         }
 
         const passwordHashesMatch = await compare(credentials.password, user.password)
@@ -342,6 +349,74 @@ export class UsersController implements APIController<
 
         return res;
     }
+
+    @Post(API.server.updatePassword())
+    @Authenticate()
+    async updatePassword(
+        @User() user: UserDoc,
+        @Required() @BodyParams('password') password: string,
+        @BodyParams('resetCode') resetCode?: string,
+    ) {
+        const res = await this.db.updateUserPassword(user, password);
+
+        if (!!resetCode) {
+            await this.db.deleteAuthCode(resetCode);
+        }
+    }
+
+    @Post(API.server.sendResetCode())
+    async sendResetCode(
+        @Required() @BodyParams('email') email: string,
+        @Required() @BodyParams('baseUrl') baseUrl: string,
+    ) {
+        const user = await this.users.findOne({ email: new RegExp(email, 'i') });
+
+        if (!user) {
+            return
+        }
+
+        const code = await this.db.createAuthCode(user.id);
+        const link = getLinkUrl(baseUrl, LinkExperience.ResetPassword, {code});
+
+        await this.emailService.sendResetPasswordEmail(link, email, user.name);
+    }
+
+
+    @Post(API.server.signInWithCode())
+    async signInWithCode(
+        @Required() @BodyParams('code') code: string,
+    ) {
+        const authCodeObject = await this.authCodes.findOne({ code: code });
+
+        if (!authCodeObject) {
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
+        }
+
+        // check if the code is still good
+        const validMilliseconds = 1000*60*60*24; // one day = 1000*60*60*24 milliseconds
+        const codeCreatedAt = Date.parse(authCodeObject.createdAt);
+        const elapsedMilliseconds = (Date.now() - codeCreatedAt);
+
+        if (elapsedMilliseconds > validMilliseconds) {
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.badResetPasswordCode());
+        }
+
+        const user = await this.users.findById(authCodeObject.userId);
+
+        if (!user) {
+            throw new Unauthorized(STRINGS.ACCOUNT.errorMessages.userNotFound(code))
+        }
+
+        user.auth_etag = uuid.v1();
+        await user.save();
+
+        // return auth tokens
+        const accessToken = await createAccessToken(user.id, user.auth_etag);
+        const refreshToken = await createRefreshToken(user.id, user.auth_etag);
+
+        return {
+            accessToken,
+            refreshToken
+        }
+    }
 }
-
-

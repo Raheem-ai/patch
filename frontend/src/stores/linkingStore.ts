@@ -1,14 +1,14 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { Store } from './meta';
-import { ILinkingStore, IUserStore, linkingStore, userStore } from './interfaces';
+import { alertStore, ILinkingStore, linkingStore, navigationStore, userStore } from './interfaces';
 import * as Linking from 'expo-linking'
 import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
+import { resolveErrorMessage } from '../errors';
 
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
-
     initialRoute = null;
     initialRouteParams = null;
 
@@ -86,7 +86,6 @@ const LinkConfig: LinkExperiences = {
     },
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
-            console.log('jo: ',params)
             // TODO: flesh out this flow when user already exists
             // NOTE: this requires us to have the concept of multiple orgs in the app
             // or at least the concept of users who don't belong to an org
@@ -97,6 +96,27 @@ const LinkConfig: LinkExperiences = {
                 })
             } else {
                 navigateTo(routerNames.signUpThroughOrg, params)
+            }
+        }
+    },
+    [LinkExperience.ResetPassword]: {
+        run: async (params) => {
+            try {
+                await userStore().signInWithCode(params.code);
+            } catch(e) {
+                alertStore().toastError(resolveErrorMessage(e), true, true);
+                return
+            }
+
+            runInAction(() => userStore().passwordResetLoginCode = params.code);
+
+            if (!navigationRef.current) {
+                runInAction(() => {
+                    linkingStore().initialRoute = routerNames.updatePassword;
+                    linkingStore().initialRouteParams = params;
+                })
+            } else if (navigationStore().currentRoute != routerNames.updatePassword) {
+                navigateTo(routerNames.updatePassword)
             }
         }
     }
