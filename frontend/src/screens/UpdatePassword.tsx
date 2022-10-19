@@ -31,6 +31,8 @@ export default function UpdatePasswordForm() {
             return
         }
 
+        const loggedInWithCode = !!userStore().passwordResetLoginCode;
+
         try {
             await userStore().updatePassword(password);
         } catch(e) {
@@ -41,7 +43,7 @@ export default function UpdatePasswordForm() {
         alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
 
         setTimeout(() => {
-            if(!!userStore().passwordResetLoginCode) {
+            if(loggedInWithCode) {
                 navigateTo(routerNames.userHomePage);
             } else {
                 navigationRef.current.goBack();
