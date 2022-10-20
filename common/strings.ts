@@ -1,4 +1,5 @@
 import { requestDisplayName } from './utils/requestUtils';
+import { minPasswordLength } from '../common/constants';
 
 type CaseAndNumber = {
     cap?: boolean,
@@ -7,6 +8,9 @@ type CaseAndNumber = {
 
 const STRINGS = {
     // GLOBAL
+    emailAddresses: {
+        help: `help@getpatch.org`,
+    },
     cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
@@ -32,6 +36,8 @@ const STRINGS = {
                 : 'tag'
         ),
         position: `position`,
+        organization: `organization`,
+        user: `user`,
         request: (isPlural?: boolean) => (isPlural 
             ? 'requests'
             : 'request'
@@ -42,6 +48,9 @@ const STRINGS = {
         ),
     },
     visualDelim: '·',
+    errorMessages: {
+        unknownElement: (element: string) => `Unknown ${element}`,
+    },
     responders: (n: number) => (n == 1) ? 'responder' : 'responders',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,
     people: (n: number) => n ==1 ? 'person' : 'people',
@@ -73,6 +82,13 @@ const STRINGS = {
         editElement: (el?: string) => `Edit${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
         addAnotherElement: (el?: string) => `Add another ${el}`,
+        username: 'Username',
+        password: 'Password',
+        newPassword: 'New password',
+        firstname: 'First Name',
+        lastname: 'Last Name',
+        email: 'Email',
+        invitationCode: 'Invitation code',
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
         available: (cap?: boolean) => cap ? `Available` : `available`, 
         unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
@@ -85,6 +101,10 @@ const STRINGS = {
         invitationSuccessful: 'Invitation Successful',
         createAccount: 'Create Account',
         signIn: 'Sign In',
+        updatePassword: 'Set a new password',
+        updatePasswordFor: (emailOrName: string) => `Enter a new password for ${emailOrName}`,
+        forgotPassword: 'Reset password',
+        forgotPasswordSubtitle: `Enter your email and we'll send a link to set a new password.`,
         signUp: 'Sign Up',
         signUpThroughOrg: 'Sign Up',
         userHomePage: 'Home',
@@ -97,6 +117,9 @@ const STRINGS = {
         channels: 'Channels',
         componentLibrary: 'Component Library',
         createRequest: 'Create Request',
+    },
+    EMAILS: {
+        forgotPasswordSubject: `Reset Patch password`,
     },
     REQUESTS: {
         updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
@@ -152,6 +175,9 @@ const STRINGS = {
         },
         ACTIONS: {
             addResponders: 'Add responders',
+        },
+        errorMessages: {
+            positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
         }
     },
     CHANNELS: {
@@ -165,9 +191,13 @@ const STRINGS = {
         editMyProfile: 'Edit my profile',
         sendInvite: `Send Invite`,
         welcomeToPatch: `Welcome to PATCH!`,
-        userNotFound: (email: string) => `User with email ${email} not found`,
         userExists: (email: string) => `User with email ${email} already exists.`,
         wrongPassword: `Password is incorrect`,
+        updatePasswordButton: `Set password`,
+        forgotPasswordButton: `Send a link`,
+        passwordUpdated: 'Successfully updated password.',
+        emailProbablyNotRight: `That doesn't look like an email address.`,
+        resetPasswordCodeSent: `If we find a matching account, we'll email a link to reset your password.`,
         signInForAPI: `You must be signed in to call this api`,
         noOrgScope: `No org scope supplied`,
         noOrgAccess: `You do not have access to the requested org.`,
@@ -184,6 +214,16 @@ const STRINGS = {
         invitationSuccessful: (email: string, phone: string) => `Invitation sent to email ${email} and phone ${phone}.`,
         inviteNotFound: (userEmail: string, orgName: string) => `Invite for user with email ${userEmail} to join '${orgName}' not found`,
         twilioError: (msg: string) => `Twilio Error: ${msg}`,
+        errorMessages: {
+            genericError: () => `Something went wrong. Make sure you're online and, if it persists, email ${STRINGS.emailAddresses.help}.`,
+            badResetPasswordCode: () => `The link you used is either expired or incorrect. Try sending yourself a new one or email ${STRINGS.emailAddresses.help} for help.`,
+            userNotSignedIn: `User no longer signed in`,
+            onlyOneOrg: `You can only be a member of one org currently!`,
+            alreadyAMember: `User is already a member of the organization`,
+            notInOrg: `User is not a member of the organization`,
+            userNotFound: (email?: string) => `No account found with that email and password.`,
+            passwordTooShort: `Use at least ${minPasswordLength} characters.`,
+        },
         
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
@@ -206,6 +246,19 @@ const STRINGS = {
         removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
         removeRoleDialogOptionNo: 'Cancel',
         removeRoleDialogOptionYes:  `Remove`, 
+        errorMessages: {
+            roleNotInOrg: (roleId: string, organization: string) => `Role  ${roleId} does not exist in organization ${organization}.`,
+            attributeCategoryExists: (category: string, organization: string) => `Already an Attribute Category with the name "${category}" in organization ${organization}`,
+            unknownAttributeCategory: (category: string, organization: string) => `Unknown Attribute Category with the name "${category}" in organization ${organization}`,
+            attributeExistsInCategory: (attribute: string, category: string, organization: string) => `Already an Attribute with the name "${attribute}" in Attribute Category "${category}" in Organization ${organization}`,
+            attributeNotInCategory: (attribute: string, category: string) => `Attribute ${attribute} does not exist in Attribute Category ${category}.`,
+            unknownAttributeInCategory: (attribute: string, category: string, organization: string) => `Unknown Attribute (${attribute}) in Attribute Category (${category}) in organization (${organization})`,
+            tagCategoryExists: (category: string, organization: string) => `Already a Tag Category with the name "${category}" in organization ${organization}`,
+            unknownTagCategory: (category: string, organization: string) => `Unknown Tag Category with the name "${category}" in organization ${organization}`,
+            tagExistsInCategory: (tag: string, category: string, organization: string) => `Already a Tag with the name "${tag}" in Tag Category "${category}" in Organization ${organization}`,
+            tagNotInCategory: (tag: string, category: string) => `Tag ${tag} does not exist in Tag Category ${category}.`,
+            unknownTagInCategory: (tag: string, category: string, organization: string) => `Unknown Tag (${tag}) in Tag Category (${category}) in organization (${organization})`
+        },
     }
 }
 

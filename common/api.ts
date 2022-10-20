@@ -84,7 +84,9 @@ export interface IApiClient {
     signIn: (credentials: BasicCredentials) => Promise<AuthTokens>
     refreshAuth: (refreshToken: string) => Promise<string>
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
-    
+    sendResetCode: (email: string, baseUrl: string) => Promise<void>
+    signInWithCode: (code: string) => Promise<AuthTokens>
+
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
     me: Authenticated<() => Promise<Me>>
@@ -92,6 +94,8 @@ export interface IApiClient {
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
+
+    updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 
     // must be signed in and have the correct roles within the target org
     getOrgMetadata: AuthenticatedWithOrg<() => Promise<OrganizationMetadata>>
@@ -299,6 +303,15 @@ type ApiRoutes = {
         updateTags: () => {
             return '/updateTags'
         },
+        updatePassword: () => {
+            return `/updatePassword`
+        },
+        sendResetCode: () => {
+            return `/sendResetCode`
+        },
+        signInWithCode: () => {
+            return `/signInWithCode`
+        },
     }
 
     client: ApiRoutes = {
@@ -308,6 +321,15 @@ type ApiRoutes = {
         },
         signUpThroughOrg: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUpThroughOrg()}`
+        },
+        updatePassword: () => {
+            return `${this.base}${this.namespaces.users}${this.server.updatePassword()}`
+        },
+        sendResetCode: () => {
+            return `${this.base}${this.namespaces.users}${this.server.sendResetCode()}`
+        },
+        signInWithCode: () => {
+            return `${this.base}${this.namespaces.users}${this.server.signInWithCode()}`
         },
         signIn: () => {
             return `${this.base}${this.namespaces.users}${this.server.signIn()}`

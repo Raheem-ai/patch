@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
 import { Store } from './meta';
 import { IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
@@ -25,6 +25,7 @@ export default class UserStore implements IUserStore {
     @persistent()
     currentOrgId: string;
 
+    passwordResetLoginCode = null;
     loadingCurrentUser = false;
 
     currentUser: ClientSideFormat<ProtectedUser>;
@@ -40,9 +41,7 @@ export default class UserStore implements IUserStore {
             // make sure this doesn't throw because any store that depends on the user store
             // won't get initialized when there is a stale refreshToken
             try {
-                
-
-                // wait for api to init so it's persistent state can settle
+                // wait for api to init so its persistent state can settle
                 // before relying on it to handle the refresh token auth flow
                 await this.api.init();
 
@@ -62,6 +61,7 @@ export default class UserStore implements IUserStore {
             this.authToken = null
             this.currentOrgId = null
             this.users = new ObservableMap()
+            this.passwordResetLoginCode = null
         })
     }
 
@@ -165,6 +165,21 @@ export default class UserStore implements IUserStore {
 
     async signUpThroughOrg(orgId: string, pendingId: string, minUser: MinUser) {
         const authTokens = await this.api.signUpThroughOrg(orgId, pendingId, minUser)        
+        await this.afterSignIn(authTokens);
+    }
+
+    async updatePassword(password: string) {
+        const token = this.authToken;
+        await this.api.updatePassword( {token}, password, this.passwordResetLoginCode);
+        this.passwordResetLoginCode = null;
+    }
+
+    async sendResetCode(email: string, baseUrl: string) {
+        await this.api.sendResetCode(email, baseUrl)        
+    }
+
+    async signInWithCode(code: string) {
+        const authTokens = await this.api.signInWithCode(code)
         await this.afterSignIn(authTokens);
     }
 

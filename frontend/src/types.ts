@@ -14,6 +14,9 @@ export type RootStackParamList = {
     InvitationSuccessful: undefined;
     CreateAccount: undefined;
     SignIn: undefined;
+    UpdatePassword: undefined;
+    SendResetCode: undefined;
+
     // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
     Home: undefined;
     SignUp: undefined;
@@ -43,6 +46,8 @@ export const routerNames: TypedRouterNames = {
     createAccount: "CreateAccount",
     home: "Home",
     signUp: "SignUp",
+    updatePassword: "UpdatePassword",
+    sendResetCode: "SendResetCode",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
     userDetails: "UserDetails",
@@ -67,15 +72,8 @@ export type SignInNavigationProp = StackNavigationProp<RootStackParamList, 'Sign
 export type SignUpNavigationProp = StackNavigationProp<RootStackParamList, 'SignUp'>;
 export type HomeNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
-// TODO: fully flush out using resource strings so we can translate :)
-export const labelNames = {
-    username: 'Username',
-    password: 'Password',
-    firstname: 'First Name',
-    lastname: 'Last Name',
-    email: 'Email',
-    invitationCode: 'Invitation code'
-};
+// export type UpdatePasswordNavigationProp = StackNavigationProp<RootStackParamList, 'UpdatePassword'>;
+
 
 export const Colors = {
     primary: {
@@ -257,6 +255,6 @@ export const globalStyles = StyleSheet.create({
             height: 2
         },
         elevation: 1,
-        backgroundColor: Colors.backgrounds.standard
+        
     }
 })

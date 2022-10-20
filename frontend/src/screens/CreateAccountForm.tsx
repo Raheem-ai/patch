@@ -1,8 +1,9 @@
 import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { CreateAccountNavigationProp, ICONS, labelNames, routerNames } from '../types';
+import { CreateAccountNavigationProp, ICONS, routerNames } from '../types';
 import { navigateTo } from '../navigation';
+import STRINGS from '../../../common/strings';
 
 type Props = {
     navigation: CreateAccountNavigationProp;
@@ -25,13 +26,13 @@ export default function CreateAccountForm( { navigation } : Props) {
                         <TextInput
                             mode="flat"
                             style={[styles.nameInput, { marginRight: 16 }]}
-                            label={labelNames.firstname}
+                            label={STRINGS.INTERFACE.firstname}
                             value={firstname}
                             onChangeText={firstname => setFirstname(firstname)}/>
                         <TextInput
                             mode="flat"
                             style={styles.nameInput}
-                            label={labelNames.lastname}
+                            label={STRINGS.INTERFACE.lastname}
                             value={lastname}
                             onChangeText={lastname => setLastname(lastname)}/>
                     </View>
@@ -48,7 +49,7 @@ export default function CreateAccountForm( { navigation } : Props) {
                             />
                         }
                         style={styles.input}
-                        label={labelNames.password}
+                        label={STRINGS.INTERFACE.password}
                         value={password}
                         onChangeText={password =>setPassword(password)}/>
                 </View>

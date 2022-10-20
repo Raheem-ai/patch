@@ -29,7 +29,7 @@ export type MainMenuOption = {
 
 // immediate function invocation syntax so we can have this stay a constant and consider our environment 
 export const MainMenuOptions: MainMenuOption[] = (() => {
-  let options: MainMenuOption[] = [
+    let options: MainMenuOption[] = [
     {
       name: 'Home',
       routeTo: 'userHomePage',
@@ -62,50 +62,50 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
     },
   ]
 
-  // if (!runningOnProd) {
-  //   options.push({
-  //     name: 'Component Lib', 
-  //     routeTo: 'componentLib'
-  //   })
-  // }
+    // if (!runningOnProd) {
+    //   options.push({
+    //     name: 'Component Lib', 
+    //     routeTo: 'componentLib'
+    //   })
+    // }
 
-  return options
+    return options
 })()
 
 export type SubMenuOption = ({ 
-  name: string, 
-  onPress: () => void, 
-  routeTo?: undefined, 
-  disabled?: undefined
+    name: string, 
+    onPress: () => void, 
+    routeTo?: undefined, 
+    disabled?: undefined
 } | {  
-  name:string, 
-  disabled?: boolean,
-  routeTo: keyof typeof routerNames, 
-  onPress?: undefined 
+    name:string, 
+    disabled?: boolean,
+    routeTo: keyof typeof routerNames, 
+    onPress?: undefined 
 })
 
-export const SubMenuOptions: SubMenuOption[] = [
-  {
-    name: 'Profile',
-    onPress: () => {
-      userStore().pushCurrentUser(userStore().user);
-      navigateTo(routerNames.userDetails);
+export const SubMenuOptions: SubMenuOption[] = [    
+    {
+        name: 'Profile',
+        onPress: () => {
+            userStore().pushCurrentUser(userStore().user);
+            navigateTo(routerNames.userDetails);
+        }
+    }, 
+    {
+        name: 'Settings',
+        routeTo: 'settings',
+    }, 
+    {
+        name: 'Help',
+        onPress: () => {
+            Linking.openURL('https://help.getpatch.org/');
+        }
+    }, 
+    {
+        name: 'Sign out',
+        onPress: () => {
+            userStore().signOut();
+        }
     }
-  }, 
-  {
-    name: 'Settings',
-    routeTo: 'settings',
-  }, 
-  {
-    name: 'Help',
-    onPress: () => {
-      Linking.openURL('https://help.getpatch.org/');
-    }
-  }, 
-  {
-    name: 'Sign out',
-    onPress: () => {
-      userStore().signOut();
-    }
-  }
 ]

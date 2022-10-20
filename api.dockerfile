@@ -32,6 +32,7 @@ RUN yarn install
 # copy in src (frequent changes)
 COPY backend/tsconfig.json .
 COPY backend/src ./src
+COPY backend/static ./static 
 COPY common ../common/
 
 RUN yarn run build

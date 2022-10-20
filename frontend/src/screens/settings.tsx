@@ -9,20 +9,23 @@ import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNa
 import MangeRolesForm from "../components/forms/editRolesForm";
 import { InlineFormInputConfig, NavigationFormInputConfig, ScreenFormInputConfig, SectionNavigationLabelViewProps, SectionNavigationScreenViewProps, StandAloneFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
-import { ScreenProps, Colors, ICONS } from "../types";
+import { ScreenProps, Colors, ICONS, routerNames } from "../types";
 import { alertStore, manageAttributesStore, manageTagsStore, organizationSettingsStore, organizationStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import EditCategorizedItemForm from "../components/forms/editCategorizedItemForm";
 import { RequestPrefixCharMax } from '../../../common/constants'
 import { resolveErrorMessage } from "../errors";
+import { navigateTo } from "../navigation";
+import UpdatePasswordForm from "./UpdatePassword";
+import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
-import STRINGS from "../../../common/strings"
 
 type Props = ScreenProps<'Settings'>;
 
 type PersonalSettingsInputs = [
-    InlineFormInputConfig<'Switch'>,
-    InlineFormInputConfig<'Switch'>
+    // InlineFormInputConfig<'Switch'>,
+    // InlineFormInputConfig<'Switch'>,
+    NavigationFormInputConfig
 ]
 
 const Settings = ({ navigation, route }: Props) => {
@@ -30,6 +33,7 @@ const Settings = ({ navigation, route }: Props) => {
     const personalSettings = () => {
         // TODO: plumb these through to the user model 
         const inputs = [
+            /*
             {
                 name: 'appNotifications',
                 type: 'Switch',
@@ -51,7 +55,22 @@ const Settings = ({ navigation, route }: Props) => {
                 props: {
                     label: 'SMS notifications'
                 }
-            }
+            },
+            */
+            {
+                name: 'updatePassword',
+                expandOverride: (expand) => {
+                    navigateTo(routerNames.updatePassword)
+                },
+                label: ({ expand }) => {
+                    return <DescriptiveNavigationLabel 
+                        expand={ expand } 
+                        name={STRINGS.PAGE_TITLES.updatePassword} />
+                },
+                screen: () => {
+                    return null
+                }
+            },
         ] as PersonalSettingsInputs
 
         return inputs
@@ -254,7 +273,7 @@ const Settings = ({ navigation, route }: Props) => {
             <VisualArea>
                 <ScrollView showsVerticalScrollIndicator={false} style={[{ flex: 1 }, styles.pageContainer]}>
                     <Pressable onPress={params.onContainerPress} style={{ flex: 1 }}>
-                        {/* <View style={styles.headerContainer}>
+                        <View style={styles.headerContainer}>
                             <IconButton
                                 icon={'account'} 
                                 color={Colors.icons.dark}
@@ -264,7 +283,7 @@ const Settings = ({ navigation, route }: Props) => {
                         </View>
                         <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
-                        </View> */}
+                        </View>
                         { shouldShowOrgSettings
                             ? <>
                                 <View style={styles.headerContainer}>
