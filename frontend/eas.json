@@ -1,0 +1,19 @@
+{
+  "build": {
+    "prod": {
+      "channel": "prod",
+      "env": {
+        "_ENVIRONMENT": "prod"
+      }
+    },
+    "staging": {
+      "extends": "prod",
+      "developmentClient": "true",
+      "distribution": "internal",
+      "channel": "staging",
+      "env": {
+        "_ENVIRONMENT": "staging"
+      }
+    }
+  }
+}

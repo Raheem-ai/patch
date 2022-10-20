@@ -9,13 +9,7 @@ import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
-import * as Constants from 'expo-constants'
-
-export const apiHost = Constants.default.manifest.extra?.apiHost
-
-if (!apiHost) {
-    // do something?
-}
+import { apiHost } from './config';
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {

@@ -3,7 +3,7 @@ import { Store } from './meta';
 import { ISocketStore, notificationStore, requestStore, updateStore, userStore } from './interfaces';
 import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
-import { apiHost } from '../api';
+import { apiHost } from '../config';
 import { api } from '../services/interfaces';
 import { PatchEventPacket, PatchNotification } from '../../../common/models';
 import { NotificationHandlers } from '../notifications/notificationActions';

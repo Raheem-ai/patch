@@ -50,14 +50,14 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import boot from './src/boot';
 import * as Sentry from 'sentry-expo';
-import { apiHost } from './src/api';
+import { apiHost, sentryDSN } from './src/config';
 import * as Constants from 'expo-constants';
 
 const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
 // TODO: use Sentry.withProfiler with each top level screen
 Sentry.init({
-  dsn: Constants.default.manifest.extra?.sentryDSN,
+  dsn: sentryDSN,
   enableInExpoDevelopment: false,
   // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
   debug: true, 
