@@ -9,6 +9,7 @@ import { navigateTo } from './navigation';
 import { routerNames } from './types';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
+import STRINGS from '../../common/strings';
 import { apiHost } from './config';
 
 @Service(IAPIService)
