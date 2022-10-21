@@ -13,8 +13,8 @@ const BUILD_COUNT = 3
 const ENV = process.env._ENVIRONMENT 
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
-// only needed during build
-const PLATFORM = process.env._PLATFORM
+// only needed during build (provided by eas build env)
+const PLATFORM = process.env.EAS_BUILD_PLATFORM
 // running in eas build env
 const inEASBuild = process.env.EAS_BUILD == 'true';
 
