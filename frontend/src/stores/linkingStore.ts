@@ -6,6 +6,7 @@ import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { resolveErrorMessage } from '../errors';
+import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
@@ -16,22 +17,38 @@ export default class LinkingStore implements ILinkingStore {
         makeAutoObservable(this)
     }
 
-    get baseUrl() {
-        return Linking.createURL('');
-    }
-
     init = async () => {
         //make sure login is settled so linking handlers have access to that info
         await userStore().init();
 
-        Linking.addEventListener('url', this.handleLink)
-
-        // for linking from background
-        const url = await Linking.getInitialURL()
-
-        if (url) {
-            this.handleLink({ url });
-        }
+        
+        /**
+         * TODO: might need to make LinkExperienceDef.run() be async and
+         * do some async shenanigans to 
+         * await the call to handle link for ones that require async 
+         * setup...branch handles when we are opened with a link 
+         * immediately but gives us no way to check if we need to wait or not
+         * something like a 
+         * 
+         * let initialLinkSetup = null
+         * 
+         * Branch.subscribe(e => {
+         *   initialLinkSetup = this.handleLink(...)
+         * })
+         * 
+         * await sleep(0)
+         * 
+         * if (initialLinkSetup) {
+         *    await initialLinkSetup
+         * }
+         * 
+         */
+        Branch.subscribe((event: BranchSubscriptionEvent) => {
+            if (event && event.params && !event.error) {
+                const url = event.uri
+                this.handleLink({ url })
+            }
+        })
     }
 
     handleLink = ({ url }: { url: string }) => {

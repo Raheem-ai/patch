@@ -14,6 +14,7 @@ import {
     PatchTwilioSecret,
     GoogleMapsCredentials,
     SentryCredentials,
+    BranchCredentials,
     MailgunCredentials
 } from 'infra/src/secrets';
 
@@ -30,7 +31,8 @@ const environmentConfig = {
     GOOGLE_MAPS: new GoogleMapsCredentials(),
     SENTRY_CREDS: new SentryCredentials(),
     MAILGUN_CREDS: new MailgunCredentials(),
-    EMAIL: new EmailConfig()
+    EMAIL: new EmailConfig(),
+    BRANCH_CREDS: new BranchCredentials()
 }
 
 // can formalize this pattern in the future to make it more reusable

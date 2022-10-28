@@ -28,7 +28,7 @@ import HelpRequestDetails from './src/screens/helpRequestDetails';
 import { NavigationContainer, NavigationState } from '@react-navigation/native';
 import { createStackNavigator, StackHeaderProps } from '@react-navigation/stack';
 import { RootStackParamList, routerNames } from './src/types';
-import { linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
+import { appUpdateStore, linkingStore, navigationStore, notificationStore, organizationStore, userStore } from './src/stores/interfaces';
 import { navigationRef } from './src/navigation';
 import { bindServices, initServices } from './src/services';
 import { useEffect } from 'react';
@@ -52,17 +52,17 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import boot from './src/boot';
 import * as Sentry from 'sentry-expo';
-import { apiHost, sentryDSN } from './src/config';
-import * as Constants from 'expo-constants';
+import { apiHost, sentryDSN, inProdApp } from './src/config';
 
 const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
 // TODO: use Sentry.withProfiler with each top level screen
 Sentry.init({
   dsn: sentryDSN,
-  enableInExpoDevelopment: false,
+  // *** Note: set this to 'true' if you need to test error reporting in the dev env ***
+  enableInExpoDevelopment: false, 
   // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-  debug: true, 
+  debug: !inProdApp, 
   integrations: [
     new Sentry.Native.ReactNativeTracing({
       routingInstrumentation,
@@ -94,6 +94,11 @@ function App() {
     useEffect(() => {
 
       return boot(() => {
+        if (appUpdateStore().waitingForReload) {
+          // don't leave splash screen while waiting for OS to reload app with update
+          return 
+        }
+
         setIsLoading(false);
         SplashScreen.hideAsync();
       })

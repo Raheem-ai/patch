@@ -1,14 +1,17 @@
 {
   "scripts": {
-    "dev": "_DEV_ENVIRONMENT=local expo start --no-https",
-    "dev:staging": "_DEV_ENVIRONMENT=staging expo start --no-https",
-    "dev:prod": "_DEV_ENVIRONMENT=prod expo start --no-https",
+    "dev": "_DEV_ENVIRONMENT=dev expo start --dev-client",
+    "dev:staging": "_DEV_ENVIRONMENT=staging expo start --dev-client",
+    "dev:prod": "_DEV_ENVIRONMENT=prod expo start --dev-client",
     "build:prod": "eas build --profile prod",
     "build:staging": "eas build --profile staging",
     "build:prod:ios": "eas build --profile prod --platform ios",
     "build:staging:ios": "eas build --profile staging --platform ios",
+    "build:dev:ios": "eas build --profile dev --platform ios",
     "build:prod:android": "eas build --profile prod --platform android",
     "build:staging:android": "eas build --profile staging --platform android",
+    "build:dev:android": "eas build --profile dev --platform android",
+    "doctor": "_DEV_ENVIRONMENT=staging expo doctor",
     "test": "jest"
   },
   "jest": {
@@ -40,6 +43,9 @@
     ]
   },
   "dependencies": {
+    "@config-plugins/react-native-branch": "^3.0.0",
+    "@expo/config-plugins": "^4.1.0",
+    "@expo/prebuild-config": "^4.0.0",
     "@googlemaps/google-maps-services-js": "3.1.16",
     "@react-native-async-storage/async-storage": "~1.17.3",
     "@react-navigation/native": "^6.0.6",
@@ -58,6 +64,7 @@
     "expo-linear-gradient": "~11.3.0",
     "expo-linking": "~3.1.0",
     "expo-location": "~14.2.2",
+    "expo-modules-autolinking": "~0.8.1 || ~0.9.0",
     "expo-notifications": "~0.15.4",
     "expo-secure-store": "~11.2.0",
     "expo-splash-screen": "~0.15.1",
@@ -78,6 +85,7 @@
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-native": "0.68.2",
+    "react-native-branch": "^5.4.0",
     "react-native-calendar-picker": "^7.1.2",
     "react-native-gesture-handler": "~2.2.1",
     "react-native-get-random-values": "~1.8.0",
@@ -116,7 +124,7 @@
     "@types/uuid": "^8.3.1",
     "babel-plugin-module-resolver": "^4.1.0",
     "eas-cli": "^2.4.1",
-    "expo-cli": "^5.0.3",
+    "expo-cli": "^5.4.3",
     "react-test-renderer": "17",
     "typescript": "~4.3.5"
   },

@@ -4,6 +4,7 @@ import { userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
 import * as Linking from 'expo-linking';
 import TestIds from '../test/ids';
+import { inProdApp } from '../config';
 
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
@@ -30,44 +31,45 @@ export type MainMenuOption = {
 // immediate function invocation syntax so we can have this stay a constant and consider our environment 
 export const MainMenuOptions: MainMenuOption[] = (() => {
     let options: MainMenuOption[] = [
-    {
-      name: 'Home',
-      routeTo: 'userHomePage',
-      testId: TestIds.header.navigation.home
-    },
-    {
-      name: 'Requests',
-      routeTo: 'helpRequestList',
-      testId: TestIds.header.navigation.requests
-    },
-    {
-      name: 'Channels',
-      routeTo: 'chats',
-      testId: TestIds.header.navigation.channels
-    },
-    // {
-    //   name: 'Resources',
-    //   routeTo: 'home',
-    //   disabled: true
-    // }, 
-    // {
-    //   name: 'Schedule',
-    //   routeTo: 'signIn',
-    //   disabled: true
-    // }, 
-    {
-      name: 'Team',
-      routeTo: 'teamList',
-      testId: TestIds.header.navigation.team
-    },
-  ]
+        {
+          name: 'Home',
+          routeTo: 'userHomePage',
+          testId: TestIds.header.navigation.home
+        },
+        {
+          name: 'Requests',
+          routeTo: 'helpRequestList',
+          testId: TestIds.header.navigation.requests
+        },
+        {
+          name: 'Channels',
+          routeTo: 'chats',
+          testId: TestIds.header.navigation.channels
+        },
+        // {
+        //   name: 'Resources',
+        //   routeTo: 'home',
+        //   disabled: true
+        // }, 
+        // {
+        //   name: 'Schedule',
+        //   routeTo: 'signIn',
+        //   disabled: true
+        // }, 
+        {
+          name: 'Team',
+          routeTo: 'teamList',
+          testId: TestIds.header.navigation.team
+        },
+    ]
 
-    // if (!runningOnProd) {
-    //   options.push({
-    //     name: 'Component Lib', 
-    //     routeTo: 'componentLib'
-    //   })
-    // }
+    if (!inProdApp) {
+      options.push({
+        name: 'Component Lib', 
+        routeTo: 'componentLib',
+        testId: TestIds.header.navigation.channels
+      })
+    }
 
     return options
 })()

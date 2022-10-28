@@ -1,11 +1,11 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { ISocketStore, notificationStore, requestStore, updateStore, userStore } from './interfaces';
+import { ISocketStore, notificationStore, updateStore, userStore } from './interfaces';
 import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../config';
 import { api } from '../services/interfaces';
-import { PatchEventPacket, PatchNotification } from '../../../common/models';
+import { PatchNotification } from '../../../common/models';
 import { NotificationHandlers } from '../notifications/notificationActions';
 
 @Store(ISocketStore)

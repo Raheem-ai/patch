@@ -29,6 +29,7 @@ const TestIds = {
             requests: 'headerNavigationRequests',
             channels: 'headerNavigationChannels',
             team: 'headerNavigationTeam',
+            componentLib: 'headerNavigationComponentLib'
         },
         actions: {
             createRequest: 'headerActionsCreateRequest'

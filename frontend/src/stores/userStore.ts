@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
 import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
 import { Store } from './meta';
-import { IUserStore, navigationStore } from './interfaces';
+import { appUpdateStore, IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { RootStackParamList, routerNames } from '../types';
@@ -37,6 +37,8 @@ export default class UserStore implements IUserStore {
     }
 
     async init() {
+        await appUpdateStore().init()
+
         if (this.signedIn) {
             // make sure this doesn't throw because any store that depends on the user store
             // won't get initialized when there is a stale refreshToken
