@@ -1,7 +1,7 @@
 ## Change description
 
-> Description here
+Description here
 
-### Security
+### Security & privacy
+- [ ] Privacy impact of change has been considered
 - [ ] Security impact of change has been considered
-- [ ] Code follows company security practices and guidelines
