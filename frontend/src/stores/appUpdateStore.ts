@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {  Store } from './meta';
 import { alertStore, IAppUpdateStore, PromptConfig } from './interfaces';
 import * as Updates from 'expo-updates';
+import { inDevApp } from '../config';
 
 @Store(IAppUpdateStore)
 export default class AppUpdateStore implements IAppUpdateStore {
@@ -12,6 +13,11 @@ export default class AppUpdateStore implements IAppUpdateStore {
     }
 
     async init() {
+
+        if (inDevApp) {
+            return; // can't check for updates in dev app
+        }
+        
         const updateRes = await Updates.checkForUpdateAsync()
 
         if (updateRes.isAvailable) {

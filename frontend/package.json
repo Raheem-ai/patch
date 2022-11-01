@@ -11,6 +11,7 @@
     "build:prod:android": "eas build --profile prod --platform android",
     "build:staging:android": "eas build --profile staging --platform android",
     "build:dev:android": "eas build --profile dev --platform android",
+    "update:staging": "_UPDATE_ENVIRONMENT=staging eas update --branch staging",
     "doctor": "_DEV_ENVIRONMENT=staging expo doctor",
     "test": "jest"
   },

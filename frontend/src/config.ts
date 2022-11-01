@@ -1,10 +1,13 @@
 import Constants from 'expo-constants'
 
-export const apiHost = Constants.manifest2?.extra.expoClient.extra.apiHost;
-export const sentryDSN = Constants.manifest2?.extra.expoClient.extra.sentryDSN;
-export const appEnv = Constants.manifest2?.extra.expoClient.extra.appEnv;
-export const backendEnv = Constants.manifest2?.extra.expoClient.extra.backendEnv;
-export const linkBaseUrl = Constants.manifest2?.extra.expoClient.extra.linkBaseUrl;
+const extra = Constants.manifest?.extra // build with no updates yet
+    || Constants.manifest2?.extra.expoClient.extra; // once first update is deployed
+
+export const apiHost = extra.apiHost;
+export const sentryDSN = extra.sentryDSN;
+export const appEnv = extra.appEnv;
+export const backendEnv = extra.backendEnv;
+export const linkBaseUrl = extra.linkBaseUrl;
 
 export const inProdApp = appEnv == 'prod'
 export const inStagingApp = appEnv == 'staging'

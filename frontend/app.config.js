@@ -13,6 +13,8 @@ const BUILD_COUNT = 3
 const ENV = process.env._ENVIRONMENT 
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
+// provided by whatever script is running update
+const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
 // only needed during build (provided by eas build env)
 // const PLATFORM = process.env.EAS_BUILD_PLATFORM
 // running in eas build env
@@ -31,7 +33,7 @@ const inEASBuild = process.env.EAS_BUILD == 'true';
 
 // just signifies if a build of a particular version is for prod/staging and ios/android of that version
 // and these values will throw if we are doing a real build without passing in the required env variables
-let IOS_BUILD_NUMBER = '1'
+let IOS_BUILD_NUMBER = '2'
 // let IOS_BUILD_NUMBER = '-1'
 let ANDROID_VERSION_CODE = BUILD_COUNT
 // let ANDROID_VERSION_CODE = -1
@@ -139,8 +141,25 @@ if (inEASBuild) { // running eas build on ci server
 
 	resolveSecrets(DEV_ENV)
 
-} else {
+} else if (!!UPDATE_ENVIRONMENT) {
 	// running eas update locally or otherwise
+
+	// try and load secrets from local .env files if they exist
+	try {
+		loadLocalEnv(UPDATE_ENVIRONMENT)
+	} catch (e) {
+
+	}
+	
+	// make sure api is pointing to the right environment
+	resolveApiHost(UPDATE_ENVIRONMENT)
+
+	// resolve secrets either pulled from local .env
+	// or provided by env
+	resolveSecrets(UPDATE_ENVIRONMENT)
+} else {
+	// *** is this true? ***
+	// throw `This file shouldn't be used without providing either _ENVIRONMENT, _DEV_ENVIRONMENT, or _UPDATE_ENV env variable`
 }
 
 // the name that shows up under the app icon 
@@ -185,7 +204,10 @@ function branchConfig() {
 		"apiKey": BRANCH_KEY || 'FAKE',
 		"iosAppDomain": env == 'prod'
 			? "hla1z.app.link"
-			: "hla1z.test-app.link"
+			: "hla1z.test-app.link",
+		"iosUniversalLinkDomains": env == 'prod'
+			? ["hla1z.app.link", "hla1z-alternate.app.link"]
+			: ["hla1z.test-app.link", "hla1z-alternate.test-app.link"]
 	}
 }
 
@@ -291,5 +313,7 @@ const config = {
 	  }
 	}
 }
+
+// console.log(config)
 
 export default config
