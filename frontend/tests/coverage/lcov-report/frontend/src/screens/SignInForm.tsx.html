@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.33% </span>
+                <span class="strong">72.22% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/15</span>
+                <span class='fraction'>13/18</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/5</span>
+                <span class='fraction'>4/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.33% </span>
+                <span class="strong">72.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/15</span>
+                <span class='fraction'>13/18</span>
             </div>
         
             
@@ -227,7 +227,8 @@
 <a name='L162'></a><a href='#L162'>162</a>
 <a name='L163'></a><a href='#L163'>163</a>
 <a name='L164'></a><a href='#L164'>164</a>
-<a name='L165'></a><a href='#L165'>165</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -243,11 +244,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -257,9 +259,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -311,9 +315,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -394,11 +396,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
-import { labelNames, routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
+import { routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
 import { alertStore, notificationStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
+import STRINGS from '../../../common/strings';
 import { block } from 'react-native-reanimated';
 import TestIds from '../test/ids';
 &nbsp;
@@ -420,6 +423,8 @@ export default function SignInForm( { navigation } : Props) {
 <span class="cstat-no" title="statement not covered" >            return</span>
         }
 &nbsp;
+        setTextUser('');
+        setPassword('');
         navigateTo(routerNames.userHomePage)
     }
 &nbsp;
@@ -441,7 +446,7 @@ export default function SignInForm( { navigation } : Props) {
                             testID={TestIds.signIn.email}
                             mode="flat"
                             style={styles.input}
-                            label={labelNames.email}
+                            label={STRINGS.INTERFACE.email}
                             value={username}
                             keyboardType='email-address'
                             onChangeText={username =&gt; setTextUser(username)}/&gt;
@@ -461,12 +466,13 @@ export default function SignInForm( { navigation } : Props) {
                                 /&gt;
                             }
                             style={styles.input}
-                            label={labelNames.password}
+                            label={STRINGS.INTERFACE.password}
                             value={password}
                             onChangeText={password =&gt;setPassword(password)}
                             onSubmitEditing={signIn}/&gt;
                     &lt;/View&gt;
                     &lt;View style={styles.bottomContainer}&gt;
+&nbsp;
                         &lt;Button 
                             testID={TestIds.signIn.submit}
                             uppercase={false} 
@@ -474,11 +480,8 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         &gt;{'Sign in'}&lt;/Button&gt;
-                        {/* 
-                        // TO DO: enable forgot your password
-                        &lt;Text style={styles.forgotPasswordText}&gt;Forgot your password?&lt;/Text&gt;
-                        &lt;Text style={styles.invitationCodeText} onPress={() =&gt; navigateTo(routerNames.joinOrganization)}&gt;Enter invitation code&lt;/Text&gt;
-                        */}
+                        &lt;Text style={styles.forgotPasswordText} onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >navigateTo(routerNames.sendResetCode)}</span>&gt;Forgot your password?&lt;/Text&gt;
+                        {/* &lt;Text style={styles.invitationCodeText} onPress={() =&gt; navigateTo(routerNames.joinOrganization)}&gt;Enter invitation code&lt;/Text&gt; */}
                     &lt;/View&gt;
                 &lt;/ScrollView&gt;
             &lt;/Pressable&gt;
@@ -562,7 +565,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-10-06T20:28:54.833Z
+                at 2022-11-02T21:48:15.173Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

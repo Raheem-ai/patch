@@ -7,6 +7,7 @@ import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { resolveErrorMessage } from '../errors';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
+import STRINGS from '../../../common/strings';
 
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
@@ -64,7 +65,7 @@ export default class LinkingStore implements ILinkingStore {
             LinkConfig[exp as LinkExperience].run(params || {});
         } else {
             // TODO: should this have a default view for this to route to?
-            alertStore().toastError(`Sorry we don't recognize that link. Please make sure it is correct.`, true, true)
+            alertStore().toastError(STRINGS.LINKS.errorMessages.unknownLink(), true, true)
         }
     }
 
@@ -100,7 +101,7 @@ const LinkConfig: LinkExperiences = {
     [LinkExperience.SignUpThroughOrganization]: {
         run: (params) => {
             if (!(params.email && params.orgId && params.pendingId)) {
-                alertStore().toastError(`The link you clicked to sign up through an org is invalid. Make sure it is correct.`, true, true);
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink(), true, true);
                 return
             }
 
@@ -117,7 +118,7 @@ const LinkConfig: LinkExperiences = {
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
             if (!(params.email && params.orgId && params.pendingId)) {
-                alertStore().toastError(`The link you clicked to join an org is invalid. Make sure it is correct.`, true, true);
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badJoinOrgLink(), true, true);
                 return
             }
 

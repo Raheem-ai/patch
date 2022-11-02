@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
@@ -323,9 +323,7 @@
 <a name='L258'></a><a href='#L258'>258</a>
 <a name='L259'></a><a href='#L259'>259</a>
 <a name='L260'></a><a href='#L260'>260</a>
-<a name='L261'></a><a href='#L261'>261</a>
-<a name='L262'></a><a href='#L262'>262</a>
-<a name='L263'></a><a href='#L263'>263</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L261'></a><a href='#L261'>261</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -362,10 +360,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -395,7 +393,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -403,8 +400,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -509,8 +506,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -573,8 +570,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -603,6 +599,9 @@ export type RootStackParamList = {
     InvitationSuccessful: undefined;
     CreateAccount: undefined;
     SignIn: undefined;
+    UpdatePassword: undefined;
+    SendResetCode: undefined;
+&nbsp;
     // TODO: Deprecate Home, SignUp, SignUpThroughOrg?
     Home: undefined;
     SignUp: undefined;
@@ -632,6 +631,8 @@ export const routerNames: TypedRouterNames = {
     createAccount: "CreateAccount",
     home: "Home",
     signUp: "SignUp",
+    updatePassword: "UpdatePassword",
+    sendResetCode: "SendResetCode",
     signUpThroughOrg: "SignUpThroughOrg",
     userHomePage: "UserHomePage",
     userDetails: "UserDetails",
@@ -656,15 +657,8 @@ export type SignInNavigationProp = StackNavigationProp&lt;RootStackParamList, 'S
 export type SignUpNavigationProp = StackNavigationProp&lt;RootStackParamList, 'SignUp'&gt;;
 export type HomeNavigationProp = StackNavigationProp&lt;RootStackParamList, 'Home'&gt;;
 &nbsp;
-// TODO: fully flush out using resource strings so we can translate :)
-export const labelNames = {
-    username: 'Username',
-    password: 'Password',
-    firstname: 'First Name',
-    lastname: 'Last Name',
-    email: 'Email',
-    invitationCode: 'Invitation code'
-};
+// export type UpdatePasswordNavigationProp = StackNavigationProp&lt;RootStackParamList, 'UpdatePassword'&gt;;
+&nbsp;
 &nbsp;
 export const Colors = {
     primary: {
@@ -846,7 +840,7 @@ export const globalStyles = StyleSheet.create({
             height: 2
         },
         elevation: 1,
-        backgroundColor: Colors.backgrounds.standard
+        
     }
 })
 &nbsp;</pre></td></tr></table></pre>
@@ -856,7 +850,7 @@ export const globalStyles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-10-06T20:28:54.833Z
+                at 2022-11-02T21:48:15.173Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

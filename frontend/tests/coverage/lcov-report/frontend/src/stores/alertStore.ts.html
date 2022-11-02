@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.29% </span>
+                <span class="strong">36.84% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/17</span>
+                <span class='fraction'>7/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>1/4</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">40% </span>
+                <span class="strong">41.17% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/15</span>
+                <span class='fraction'>7/17</span>
             </div>
         
             
@@ -131,7 +131,9 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -155,7 +157,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -163,18 +165,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -223,11 +227,12 @@ export default class AlertStore implements IAlertStore {
         }
 &nbsp;
         //TODO: start fade in animation
-&nbsp;
-        setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
-            // todo start fadeout animation here
-<span class="cstat-no" title="statement not covered" >            runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt;  <span class="cstat-no" title="statement not covered" >this.toast = null)</span></span>
-        }, this.defaultToastTime)
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (!dismissable) {
+            setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+                // todo start fadeout animation here
+<span class="cstat-no" title="statement not covered" >                runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt;  <span class="cstat-no" title="statement not covered" >this.toast = null)</span></span>
+            }, this.defaultToastTime)
+        }
     }
 &nbsp;
 <span class="fstat-no" title="function not covered" >    to</span>astError(message: string, dismissable?: boolean, unauthenticated?: boolean) {
@@ -239,11 +244,12 @@ export default class AlertStore implements IAlertStore {
         }
 &nbsp;
         //TODO: start fade in animation
-&nbsp;
-<span class="cstat-no" title="statement not covered" >        setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-            // todo start fadeout animation here
-<span class="cstat-no" title="statement not covered" >            runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt;  <span class="cstat-no" title="statement not covered" >this.toast = null)</span></span>
-        }, this.defaultToastTime)
+<span class="cstat-no" title="statement not covered" >        if (!dismissable) {</span>
+<span class="cstat-no" title="statement not covered" >            setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+                // todo start fadeout animation here
+<span class="cstat-no" title="statement not covered" >                runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt;  <span class="cstat-no" title="statement not covered" >this.toast = null)</span></span>
+            }, this.defaultToastTime)
+        }
     }
     
 <span class="fstat-no" title="function not covered" >    sh</span>owPrompt(config: PromptConfig) {
@@ -274,7 +280,7 @@ export default class AlertStore implements IAlertStore {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-10-06T20:28:54.833Z
+                at 2022-11-02T21:48:15.173Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

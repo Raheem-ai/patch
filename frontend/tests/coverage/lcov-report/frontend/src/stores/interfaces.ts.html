@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.34% </span>
+                <span class="strong">87.8% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>69/79</span>
+                <span class='fraction'>72/82</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.33% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>14/24</span>
+                <span class='fraction'>15/25</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>55/55</span>
+                <span class='fraction'>57/57</span>
             </div>
         
             
@@ -693,7 +693,26 @@
 <a name='L628'></a><a href='#L628'>628</a>
 <a name='L629'></a><a href='#L629'>629</a>
 <a name='L630'></a><a href='#L630'>630</a>
-<a name='L631'></a><a href='#L631'>631</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L631'></a><a href='#L631'>631</a>
+<a name='L632'></a><a href='#L632'>632</a>
+<a name='L633'></a><a href='#L633'>633</a>
+<a name='L634'></a><a href='#L634'>634</a>
+<a name='L635'></a><a href='#L635'>635</a>
+<a name='L636'></a><a href='#L636'>636</a>
+<a name='L637'></a><a href='#L637'>637</a>
+<a name='L638'></a><a href='#L638'>638</a>
+<a name='L639'></a><a href='#L639'>639</a>
+<a name='L640'></a><a href='#L640'>640</a>
+<a name='L641'></a><a href='#L641'>641</a>
+<a name='L642'></a><a href='#L642'>642</a>
+<a name='L643'></a><a href='#L643'>643</a>
+<a name='L644'></a><a href='#L644'>644</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1088,7 +1107,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1264,6 +1282,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1286,7 +1312,7 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -1294,10 +1320,10 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1327,11 +1353,13 @@
 import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 &nbsp;
 export interface IBaseStore {
+    // we can have this be optional because the @Store() decorator
+    // adds an init() impl even if the store doesn't have its own setup
     init?(): Promise&lt;void&gt;,
     // should this be clearUserData?
     clear(): void
@@ -1340,6 +1368,7 @@ export interface IBaseStore {
 export interface IUserStore extends IBaseStore {
     user: ClientSideFormat&lt;Me&gt;;
     signedIn: boolean;
+    passwordResetLoginCode: string;
     authToken: string;
     isOnDuty: boolean;
     currentOrgId: string;
@@ -1350,6 +1379,9 @@ export interface IUserStore extends IBaseStore {
     loadingCurrentUser: boolean
 &nbsp;
     signIn(email: string, password: string): Promise&lt;void&gt;
+    updatePassword(password: string): Promise&lt;void&gt;
+    sendResetCode(email: string, baseUrl: string): Promise&lt;void&gt;
+    signInWithCode(code: string): Promise&lt;void&gt;
     signUp(minUser: MinUser): Promise&lt;void&gt;
     signOut(): Promise&lt;void&gt;
     onSignOut: (route?: keyof RootStackParamList) =&gt; void
@@ -1710,7 +1742,6 @@ export namespace IHeaderStore {
 }
 &nbsp;
 export interface ILinkingStore extends IBaseStore {
-    baseUrl: string
     initialRoute: keyof RootStackParamList;
     initialRouteParams: any
 &nbsp;
@@ -1900,6 +1931,14 @@ export interface IManageAttributesStore extends CategorizedItemStore {
     getAttribute(categoryId: string, attributeId: string): Attribute
 };
 &nbsp;
+export namespace IAppUpdateStore {
+    export const id = Symbol('IAppUpdateStore');
+}
+&nbsp;
+export interface IAppUpdateStore extends IBaseStore {
+    waitingForReload: boolean
+}
+&nbsp;
 export const userStore = () =&gt; getStore&lt;IUserStore&gt;(IUserStore);
 export const locationStore = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >getStore&lt;ILocationStore&gt;(ILocationStore);</span>
 export const notificationStore = () =&gt; getStore&lt;INotificationStore&gt;(INotificationStore);
@@ -1924,8 +1963,7 @@ export const manageTagsStore = () =&gt; getStore&lt;IManageTagsStore&gt;(IManage
 export const manageAttributesStore = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >getStore&lt;IManageAttributesStore&gt;(IManageAttributesStore);</span>
 export const navigationStore = () =&gt; getStore&lt;INavigationStore&gt;(INavigationStore);
 export const organizationSettingsStore = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >getStore&lt;IOrganizationSettingsStore&gt;(IOrganizationSettingsStore);</span>
-&nbsp;
-&nbsp;
+export const appUpdateStore = () =&gt; getStore&lt;IAppUpdateStore&gt;(IAppUpdateStore);
 &nbsp;
 export const AllStores = [
     IUserStore,
@@ -1951,7 +1989,8 @@ export const AllStores = [
     IManageAttributesStore,
     IManageTagsStore,
     INavigationStore,
-    IOrganizationSettingsStore
+    IOrganizationSettingsStore,
+    IAppUpdateStore
 ]
 &nbsp;</pre></td></tr></table></pre>
 
@@ -1960,7 +1999,7 @@ export const AllStores = [
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-10-06T20:28:54.833Z
+                at 2022-11-02T21:48:15.173Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

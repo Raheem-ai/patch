@@ -3,6 +3,7 @@ import {  Store } from './meta';
 import { alertStore, IAppUpdateStore, PromptConfig } from './interfaces';
 import * as Updates from 'expo-updates';
 import { inDevApp } from '../config';
+import STRINGS from '../../../common/strings';
 
 @Store(IAppUpdateStore)
 export default class AppUpdateStore implements IAppUpdateStore {
@@ -24,20 +25,21 @@ export default class AppUpdateStore implements IAppUpdateStore {
             runInAction(() => this.waitingForReload = true)
             await Updates.reloadAsync()
         } else {
+            // this doesn't seem to be working for some reason
             Updates.addListener(async (event) => {
                 if (event.type == Updates.UpdateEventType.UPDATE_AVAILABLE) {
                     await alertStore().init()
 
                     const updatePrompt: PromptConfig = {
-                        title: 'New update available',
-                        message: 'Would you like to reload the latest update?',
+                        title: STRINGS.APP_UPDATES.prompt.title,
+                        message: STRINGS.APP_UPDATES.prompt.message,
                         actions: [
                             {
-                                label: 'Update later',
+                                label: STRINGS.APP_UPDATES.prompt.updateLater,
                                 onPress: () => {}
                             }, 
                             {
-                                label: 'Update now',
+                                label: STRINGS.APP_UPDATES.prompt.updateNow,
                                 onPress: async () => {
                                     await Updates.reloadAsync()
                                 },
