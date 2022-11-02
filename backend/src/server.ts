@@ -40,7 +40,7 @@ const socketIOPubClient = createClient({
 const socketIOSubClient = socketIOPubClient.duplicate();
 
 if (env.PATCH_LOCAL_ENV) {
-  const envName = env.PATCH_LOCAL_ENV == EnvironmentId[EnvironmentId.local]
+  const envName = env.PATCH_LOCAL_ENV == EnvironmentId[EnvironmentId.dev]
     ? EnvironmentId[EnvironmentId.staging]
     : env.PATCH_LOCAL_ENV;
 

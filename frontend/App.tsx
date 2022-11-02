@@ -52,7 +52,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import boot from './src/boot';
 import * as Sentry from 'sentry-expo';
-import { apiHost, sentryDSN, inProdApp } from './src/config';
+import { apiHost, sentryDSN, inProdApp, appEnv } from './src/config';
 
 const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
@@ -69,7 +69,9 @@ Sentry.init({
       tracingOrigins: [apiHost]
     }),
   ],
-  tracesSampleRate: 1.0
+  tracesSampleRate: 1.0,
+  environment: appEnv,
+  // release: '' TODO: need to make sure this is pointing to the latest source maps for the latest update
 });
 
 const Stack = createStackNavigator<RootStackParamList>();
