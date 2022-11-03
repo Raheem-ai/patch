@@ -12,6 +12,7 @@
     "build:staging:android": "eas build --profile staging --platform android",
     "build:dev:android": "eas build --profile dev --platform android",
     "update:staging": "_UPDATE_ENVIRONMENT=staging eas update --branch staging",
+    "update:staging:ci": "_UPDATE_ENVIRONMENT=staging eas update --branch $_ENVIRONMENT --non-interactive --message $COMMIT_SHA",
     "doctor": "_DEV_ENVIRONMENT=staging expo doctor",
     "test": "jest"
   },

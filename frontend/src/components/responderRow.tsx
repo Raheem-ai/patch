@@ -17,7 +17,9 @@ type Props = {
 }
 
 const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
-    const attributes = (responder.organizations[userStore().currentOrgId]?.attributes || []).map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId));
+    const attributes = (responder.organizations[userStore().currentOrgId]?.attributes || [])
+            .map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId))
+            .filter(a => !!a);
 
     return (
         <Pressable onPress={onPress} style={[styles.responderRow, style ]}>
