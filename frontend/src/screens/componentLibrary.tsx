@@ -16,6 +16,8 @@ import { TagsListInput } from "../components/forms/inputs/defaults/defaultTagLis
 import { AttributesListInput } from "../components/forms/inputs/defaults/defaultAttributeListInputConfig";
 import { ICONS } from "../types"
 
+const fauxTestId = 'ComponentLibrary'
+
 type Props = ScreenProps<'ComponentLib'>;
 
 type Library = Demo[];
@@ -28,6 +30,7 @@ type Demo<State = any> = {
     icon?: string
 }
 
+// TODO: update this
 const lib: Library = [
     {
         name: 'Recurring DateTime Range',
@@ -38,6 +41,7 @@ const lib: Library = [
         }),
         icon: ICONS.clock,
         inputs: (state) => [RecurringDateTimeRangeInputConfig({
+            testID: fauxTestId,
             onChange: (data) => {
                 state.set(data)
             },
@@ -74,6 +78,7 @@ const lib: Library = [
         inputs: (state) => [
             [
                 RecurringDateTimeRangeInputConfig({
+                    testID: fauxTestId,
                     onChange: (recurringDateTimeRange) => {
                         state.set(Object.assign({}, state.get(), { recurringDateTimeRange }))
                     },
@@ -91,6 +96,7 @@ const lib: Library = [
                     name: 'schedule'
                 }),
                 {
+                    testID: fauxTestId,
                     onSave: (location) => {
                         state.set(Object.assign({}, state.get(), { location }))
                     },
@@ -107,6 +113,7 @@ const lib: Library = [
                     required: true
                 },
                 {
+                    testID: fauxTestId,
                     onChange: (name) => {
                         state.set(Object.assign({}, state.get(), { name }))
                     },
@@ -131,6 +138,7 @@ const lib: Library = [
         icon: ICONS.tag,
         inputs: (state) => [[
             AttributesListInput({
+                testID: fauxTestId,
                 onSave: (items) => {
                     state.set(Object.assign({}, state.get(), { attributes: items }))
                 },
@@ -192,6 +200,7 @@ const ComponentLibrary = (props: Props) => {
             : ({ expand }) => {
                 return (
                     <DescriptiveNavigationLabel 
+                        testID={fauxTestId}
                         expand={expand} 
                         name={item.name} 
                         description={item.description} />
@@ -201,11 +210,12 @@ const ComponentLibrary = (props: Props) => {
             
 
         const navigationInputConfig: NavigationFormInputConfig = {
+            testID: fauxTestId,
             name: item.name,
             label: label,
             icon: item.icon,
             screen: ({ back }) => {
-                return <Form headerLabel={item.name} inputs={inputs} submit={{ label: 'Done', handler: async () => back() }}/>
+                return <Form testID={fauxTestId} headerLabel={item.name} inputs={inputs} submit={{ label: 'Done', handler: async () => back() }}/>
             }
         }
 
@@ -214,7 +224,7 @@ const ComponentLibrary = (props: Props) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
-            <Form inputs={nestedForms} headerLabel={'Demos'}/>
+            <Form testID={fauxTestId} inputs={nestedForms} headerLabel={'Demos'}/>
         </View>
     )
     

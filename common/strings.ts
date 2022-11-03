@@ -76,6 +76,21 @@ const STRINGS = {
     LINKS: {
         helpCenter: 'Documentation',
         newTicket: 'Report an issue',
+        errorMessages: {
+            unknownLink: () => `Sorry we don't recognize that link. Please make sure it is correct.`,
+            badSignUpThroughOrgLink: () => `The link you clicked to sign up through an org is invalid. Make sure it is correct.`,
+            badJoinOrgLink: () => `The link you clicked to join an org is invalid. Make sure it is correct.`,
+
+            
+        }
+    },
+    APP_UPDATES: {
+        prompt: {
+            title: `New update available`,
+            message: `Would you like to reload the latest update?`,
+            updateLater: `Update later`,
+            updateNow: `Update now`
+        }
     },
     INTERFACE: {
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,

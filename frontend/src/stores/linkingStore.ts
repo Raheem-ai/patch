@@ -6,6 +6,8 @@ import { LinkExperience, LinkParams } from '../../../common/models';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { resolveErrorMessage } from '../errors';
+import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
+import STRINGS from '../../../common/strings';
 
 @Store(ILinkingStore)
 export default class LinkingStore implements ILinkingStore {
@@ -16,32 +18,54 @@ export default class LinkingStore implements ILinkingStore {
         makeAutoObservable(this)
     }
 
-    get baseUrl() {
-        return Linking.createURL('');
-    }
-
     init = async () => {
         //make sure login is settled so linking handlers have access to that info
         await userStore().init();
-
-        Linking.addEventListener('url', this.handleLink)
-
-        // for linking from background
-        const url = await Linking.getInitialURL()
-
-        if (url) {
-            this.handleLink({ url });
-        }
+        await alertStore().init();
+        
+        /**
+         * TODO: might need to make LinkExperienceDef.run() be async and
+         * do some async shenanigans to 
+         * await the call to handle link for ones that require async 
+         * setup...branch handles when we are opened with a link 
+         * immediately but gives us no way to check if we need to wait or not
+         * something like a 
+         * 
+         * let initialLinkSetup = null
+         * 
+         * Branch.subscribe(e => {
+         *   initialLinkSetup = this.handleLink(...)
+         * })
+         * 
+         * await sleep(0)
+         * 
+         * if (initialLinkSetup) {
+         *    await initialLinkSetup
+         * }
+         * 
+         */
+        Branch.subscribe((event: BranchSubscriptionEvent) => {
+            if (event 
+                && event.params 
+                && !event.error 
+                && event.params['+clicked_branch_link'] 
+                && event.uri
+            ) {
+                this.handleBranchLink(event)
+            }
+        })
     }
 
-    handleLink = ({ url }: { url: string }) => {
-        const { path, queryParams } = Linking.parse(url);
+    handleBranchLink = (event: BranchSubscriptionEvent) => {
+        const { queryParams } = Linking.parse(event.params['~referring_link'] || '');
         
-        if (LinkConfig[path]) {
-            LinkConfig[path as LinkExperience].run(queryParams);
+        const { exp, ...params } = queryParams || {};
+
+        if (!!exp && LinkConfig[exp]) {
+            LinkConfig[exp as LinkExperience].run(params || {});
         } else {
-            // TODO: old or bad link
-            // should have a default view for this to route to
+            // TODO: should this have a default view for this to route to?
+            alertStore().toastError(STRINGS.LINKS.errorMessages.unknownLink(), true, true)
         }
     }
 
@@ -63,6 +87,8 @@ export default class LinkingStore implements ILinkingStore {
    
 }
 
+// Note: each experience should validate its data before navigating to 
+// the associated screen
 type LinkExperienceDef<Exp extends LinkExperience> = {
     run: (params: LinkParams[Exp]) => void
 }
@@ -74,6 +100,11 @@ type LinkExperiences = {
 const LinkConfig: LinkExperiences = {
     [LinkExperience.SignUpThroughOrganization]: {
         run: (params) => {
+            if (!(params.email && params.orgId && params.pendingId)) {
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink(), true, true);
+                return
+            }
+
             if (!navigationRef.current) {
                 runInAction(() => {
                     linkingStore().initialRoute = routerNames.signUpThroughOrg;
@@ -86,6 +117,11 @@ const LinkConfig: LinkExperiences = {
     },
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
+            if (!(params.email && params.orgId && params.pendingId)) {
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badJoinOrgLink(), true, true);
+                return
+            }
+
             // TODO: flesh out this flow when user already exists
             // NOTE: this requires us to have the concept of multiple orgs in the app
             // or at least the concept of users who don't belong to an org
@@ -113,7 +149,6 @@ const LinkConfig: LinkExperiences = {
             if (!navigationRef.current) {
                 runInAction(() => {
                     linkingStore().initialRoute = routerNames.updatePassword;
-                    linkingStore().initialRouteParams = params;
                 })
             } else if (navigationStore().currentRoute != routerNames.updatePassword) {
                 navigateTo(routerNames.updatePassword)

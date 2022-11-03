@@ -1,12 +1,9 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { ILinkingStore, INewUserStore, IUserStore, linkingStore, userStore } from './interfaces';
-import * as Linking from 'expo-linking'
-import { LinkExperience, LinkParams } from '../../../common/models';
-import { navigateTo, navigationRef } from '../navigation';
-import { routerNames } from '../types';
+import { INewUserStore, userStore } from './interfaces';
 import { persistent } from '../meta';
 import { PhoneNumberRegex } from '../../../common/constants';
+import { linkBaseUrl } from '../config';
 
 @Store(INewUserStore)
 export default class NewUserStore implements INewUserStore {
@@ -68,7 +65,7 @@ export default class NewUserStore implements INewUserStore {
             this.phone,
             this.roleIds,
             this.attributes,
-            linkingStore().baseUrl
+            linkBaseUrl
         );
     }
 }

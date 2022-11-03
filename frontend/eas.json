@@ -1,0 +1,31 @@
+{
+  "cli": {
+    "version": "^2.4.1"
+  },
+  "build": {
+    "prod": {
+      "channel": "prod",
+      "env": {
+        "_ENVIRONMENT": "prod"
+      },
+      "expoCli": "5.4.3"
+    },
+    "staging": {
+      "extends": "prod",
+      "distribution": "internal",
+      "channel": "staging",
+      "env": {
+        "_ENVIRONMENT": "staging"
+      }
+    },
+    "dev": {
+      "extends": "staging",
+      "developmentClient": "true",
+      "distribution": "internal",
+      "channel": "dev",
+      "env": {
+        "_ENVIRONMENT": "dev"
+      }
+    }
+  }
+}

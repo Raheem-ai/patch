@@ -7,6 +7,8 @@ import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
 export interface IBaseStore {
+    // we can have this be optional because the @Store() decorator
+    // adds an init() impl even if the store doesn't have its own setup
     init?(): Promise<void>,
     // should this be clearUserData?
     clear(): void
@@ -389,7 +391,6 @@ export namespace IHeaderStore {
 }
 
 export interface ILinkingStore extends IBaseStore {
-    baseUrl: string
     initialRoute: keyof RootStackParamList;
     initialRouteParams: any
 
@@ -579,6 +580,14 @@ export interface IManageAttributesStore extends CategorizedItemStore {
     getAttribute(categoryId: string, attributeId: string): Attribute
 };
 
+export namespace IAppUpdateStore {
+    export const id = Symbol('IAppUpdateStore');
+}
+
+export interface IAppUpdateStore extends IBaseStore {
+    waitingForReload: boolean
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -603,8 +612,7 @@ export const manageTagsStore = () => getStore<IManageTagsStore>(IManageTagsStore
 export const manageAttributesStore = () => getStore<IManageAttributesStore>(IManageAttributesStore);
 export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
 export const organizationSettingsStore = () => getStore<IOrganizationSettingsStore>(IOrganizationSettingsStore);
-
-
+export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
 
 export const AllStores = [
     IUserStore,
@@ -630,5 +638,6 @@ export const AllStores = [
     IManageAttributesStore,
     IManageTagsStore,
     INavigationStore,
-    IOrganizationSettingsStore
+    IOrganizationSettingsStore,
+    IAppUpdateStore
 ]

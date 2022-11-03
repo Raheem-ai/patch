@@ -20,11 +20,11 @@ then
 
     echo $(pwd)
 
-    echo "# logging into expo"
-    node_modules/expo-cli/bin/expo.js login --non-interactive 
-    
-    echo "# publishing to release channel '$_ENVIRONMENT'"
-    node_modules/expo-cli/bin/expo.js publish --release-channel $_ENVIRONMENT
+    # echo "# logging into expo"
+    # node_modules/expo-cli/bin/expo.js login --non-interactive 
+
+    echo "# publishing update to branch '$_ENVIRONMENT'"
+    node_modules/eas-cli/bin/run update --branch $_ENVIRONMENT --non-interactive
 else
     echo "# no frontend changes to deploy"
 fi
