@@ -24,7 +24,7 @@ then
     # node_modules/expo-cli/bin/expo.js login --non-interactive 
 
     echo "# publishing update to branch '$_ENVIRONMENT'"
-    node_modules/eas-cli/bin/run update --branch $_ENVIRONMENT --non-interactive
+    node_modules/eas-cli/bin/run update --branch $_ENVIRONMENT --non-interactive --message $COMMIT_SHA
 else
     echo "# no frontend changes to deploy"
 fi
