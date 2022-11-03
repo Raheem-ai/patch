@@ -185,13 +185,13 @@ function appId() {
 }
 
 function appEnv() {
-	return !!DEV_ENV 
+	return UPDATE_ENVIRONMENT || (!!DEV_ENV 
 		? 'dev'
-		: ENV
+		: ENV)
 }
 
 function backendEnv() {
-	return ENV || DEV_ENV
+	return UPDATE_ENVIRONMENT || ENV || DEV_ENV
 }
 
 function branchConfig() {
@@ -314,6 +314,6 @@ const config = {
 	}
 }
 
-// console.log(config)
+console.log(config)
 
 export default config
