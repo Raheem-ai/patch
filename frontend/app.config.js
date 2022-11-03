@@ -5,7 +5,7 @@ const path = require('path');
 // NOTE: put your ngrok url here for development
 let apiHost = ''
 // increment every time you do a build you're going to submit a new release 
-const RELEASE_NUMBER = '0.0.8'
+const RELEASE_NUMBER = '0.0.9'
 // increment this any time you want to submit a new release to the play store
 const BUILD_COUNT = 3
 
