@@ -29,6 +29,7 @@ const TestIds = {
             requests: 'headerNavigationRequests',
             channels: 'headerNavigationChannels',
             team: 'headerNavigationTeam',
+            componentLib: 'headerNavigationComponentLib'
         },
         actions: {
             createRequest: 'headerActionsCreateRequest'
@@ -142,9 +143,15 @@ const TestIds = {
         signInButton: 'landingScreenSignInButton'
     },
     signIn: {
-        email: 'signInEmail',
-        password: 'signInPassword',
-        submit: 'signInSubmit'
+        email: 'signIn::email',
+        password: 'signIn::password',
+        submit: 'signIn::submit'
+    },
+    signUpThroughOrg: {
+        screen: 'signUpThroughOrg',
+        email: 'signUpThroughOrg::email',
+        name: 'signUpThroughOrg::name',
+        password: 'signUpThroughOrg::password'
     },
     home: {
         screen: 'homeScreen'

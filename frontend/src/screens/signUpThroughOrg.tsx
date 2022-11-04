@@ -11,6 +11,7 @@ import { InlineFormInputConfig } from "../components/forms/types";
 import { resolveErrorMessage } from "../errors";
 import { navigateTo } from "../navigation";
 import { alertStore, IAlertStore, ILinkingStore, IUserStore, linkingStore, userStore } from "../stores/interfaces";
+import TestIds from "../test/ids";
 import { routerNames, ScreenProps } from "../types";
 
 type Props = ScreenProps<'SignUpThroughOrg'>;
@@ -36,6 +37,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
     }, []);
 
     const headerProps: BackButtonHeaderProps = {
+        testID: TestIds.signUpThroughOrg.screen,
         save: {
             handler: async () => {
                 try {
@@ -62,9 +64,11 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
     }
 
     const config: FormProps = {
+        testID: TestIds.signUpThroughOrg.screen,
         headerLabel: 'Add your name and a password to sign up', 
         inputs: [
             {
+                testID: TestIds.signUpThroughOrg.email,
                 onChange: () => {},
                 val() {
                     return pendingUser?.email
@@ -78,6 +82,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 type: 'TextInput'
             },
             {
+                testID: TestIds.signUpThroughOrg.name,
                 val: () => nameVal.get(),
                 onChange: (currentVal) => {
                     nameVal.set(currentVal);
@@ -89,6 +94,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                 required: true
             },
             {
+                testID: TestIds.signUpThroughOrg.password,
                 val: () =>  passwordVal.get(),
                 onChange: (currentVal) => passwordVal.set(currentVal),
                 isValid: () => !!passwordVal.get(),

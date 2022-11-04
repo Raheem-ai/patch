@@ -8,7 +8,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
 
-    "dev": "yarn run build && PATCH_LOCAL_ENV=local node lib/backend/src/index.js",
+    "dev": "yarn run build && PATCH_LOCAL_ENV=dev node lib/backend/src/index.js",
     "staging": "yarn run build && PATCH_LOCAL_ENV=staging node lib/backend/src/index.js",
     "prod": "yarn run build && PATCH_LOCAL_ENV=prod node lib/backend/src/index.js",
 

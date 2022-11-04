@@ -11,6 +11,7 @@ import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 
 import { isEmailValid } from '../../../common/constants';
+import { linkBaseUrl } from '../config';
 
 export default function ForgotPasswordForm() {
     const [email, setEmail] = useState('');
@@ -32,7 +33,7 @@ export default function ForgotPasswordForm() {
             return
         }
         try {
-            await userStore().sendResetCode(email, linkingStore().baseUrl);
+            await userStore().sendResetCode(email, linkBaseUrl);
         } catch(e) {
             alertStore().toastError(resolveErrorMessage(e), true, true);
             return

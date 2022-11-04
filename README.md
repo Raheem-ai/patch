@@ -30,15 +30,15 @@ A seperate github project that is pulled in as a git submodule, the infra projec
 
 The infra project sits in the root of the project it is embedded in. It expects a config file in the embedding projct and a designated directory outside of all projects to use as a workspace. Please read through the [Infra README](backend/infra/README.md) for setup instructions and more info.
 
-## Spinning up local environment
-As a one off step, you need to generate the local config for the backend to consume 
+## Spinning up dev (local) environment
+As a one off step, you need to generate the dev (local) config for the backend to consume 
 (You will need to re-run this whenever you add/update a secret/config in infra)
 ```sh
 # from `backend/` 
-> yarn node infra/bin/run config:generate -e local  
+> yarn node infra/bin/run config:generate -e dev  
 ```
 
-Once you have generated `backend/env/.env.local`, there are 5 commands that need to be run in different shells to simulate an environment locally
+Once you have generated `backend/env/.env.dev`, there are 5 commands that need to be run in different shells to simulate an environment locally
 
 
 Start ngrok to get a public url for your local dev server
@@ -88,7 +88,7 @@ To test building/running the container locally run
 ```sh
 # from `<root>/`
 $> docker build -f ./api.dockerfile .  # this will produce <imageId>
-$> docker run --rm --it --env-file ./backend/env/.env.local <imageId>
+$> docker run --rm --it --env-file ./backend/env/.env.dev <imageId>
 ```
 
 ### Frontend (TODO: tie this into the build)
@@ -105,6 +105,8 @@ $> expo publish --release-channel <prod | staging>
     - google maps api for Android
     - google place api
     - google geocoding api 
+    - [restrict google api key for ios app with the bundle identifier ai.raheem.patch.<env>](https://console.cloud.google.com/google/maps-apis/credentials?)
+        - also add ai.raheem.patch.dev for non-prod environments
 - set up build hooks (if we wanT ci/cd on it)
 - add secrets to secret store
     - expo build-deploy-bot-secret

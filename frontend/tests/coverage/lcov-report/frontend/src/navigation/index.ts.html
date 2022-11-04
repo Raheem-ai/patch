@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.14% </span>
+                <span class="strong">62.5% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/14</span>
+                <span class='fraction'>10/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.14% </span>
+                <span class="strong">62.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/14</span>
+                <span class='fraction'>10/16</span>
             </div>
         
             
@@ -174,7 +174,10 @@
 <a name='L109'></a><a href='#L109'>109</a>
 <a name='L110'></a><a href='#L110'>110</a>
 <a name='L111'></a><a href='#L111'>111</a>
-<a name='L112'></a><a href='#L112'>112</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -238,7 +241,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -291,6 +295,7 @@ import { userStore } from '../stores/interfaces';
 import { RootStackParamList, routerNames } from '../types';
 import * as Linking from 'expo-linking';
 import TestIds from '../test/ids';
+import { inProdApp } from '../config';
 &nbsp;
 export const navigationRef = React.createRef&lt;NavigationContainerRef&lt;RootStackParamList&gt;&gt;();
 &nbsp;
@@ -316,85 +321,86 @@ export type MainMenuOption = {
 &nbsp;
 // immediate function invocation syntax so we can have this stay a constant and consider our environment 
 export const MainMenuOptions: MainMenuOption[] = (() =&gt; {
-  let options: MainMenuOption[] = [
-    {
-      name: 'Home',
-      routeTo: 'userHomePage',
-      testId: TestIds.header.navigation.home
-    },
-    {
-      name: 'Requests',
-      routeTo: 'helpRequestList',
-      testId: TestIds.header.navigation.requests
-    },
-    {
-      name: 'Channels',
-      routeTo: 'chats',
-      testId: TestIds.header.navigation.channels
-    },
-    // {
-    //   name: 'Resources',
-    //   routeTo: 'home',
-    //   disabled: true
-    // }, 
-    // {
-    //   name: 'Schedule',
-    //   routeTo: 'signIn',
-    //   disabled: true
-    // }, 
-    {
-      name: 'Team',
-      routeTo: 'teamList',
-      testId: TestIds.header.navigation.team
-    },
-  ]
+    let options: MainMenuOption[] = [
+        {
+          name: 'Home',
+          routeTo: 'userHomePage',
+          testId: TestIds.header.navigation.home
+        },
+        {
+          name: 'Requests',
+          routeTo: 'helpRequestList',
+          testId: TestIds.header.navigation.requests
+        },
+        {
+          name: 'Channels',
+          routeTo: 'chats',
+          testId: TestIds.header.navigation.channels
+        },
+        // {
+        //   name: 'Resources',
+        //   routeTo: 'home',
+        //   disabled: true
+        // }, 
+        // {
+        //   name: 'Schedule',
+        //   routeTo: 'signIn',
+        //   disabled: true
+        // }, 
+        {
+          name: 'Team',
+          routeTo: 'teamList',
+          testId: TestIds.header.navigation.team
+        },
+    ]
 &nbsp;
-  // if (!runningOnProd) {
-  //   options.push({
-  //     name: 'Component Lib', 
-  //     routeTo: 'componentLib'
-  //   })
-  // }
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (!inProdApp) {
+      options.push({
+        name: 'Component Lib', 
+        routeTo: 'componentLib',
+        testId: TestIds.header.navigation.channels
+      })
+    }
 &nbsp;
-  return options
+    return options
 })()
 &nbsp;
 export type SubMenuOption = ({ 
-  name: string, 
-  onPress: () =&gt; void, 
-  routeTo?: undefined, 
-  disabled?: undefined
+    name: string, 
+    onPress: () =&gt; void, 
+    routeTo?: undefined, 
+    disabled?: undefined
 } | {  
-  name:string, 
-  disabled?: boolean,
-  routeTo: keyof typeof routerNames, 
-  onPress?: undefined 
+    name:string, 
+    disabled?: boolean,
+    routeTo: keyof typeof routerNames, 
+    onPress?: undefined 
 })
 &nbsp;
-export const SubMenuOptions: SubMenuOption[] = [
-  {
-    name: 'Profile',
-    onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >      userStore().pushCurrentUser(userStore().user);</span>
-<span class="cstat-no" title="statement not covered" >      navigateTo(routerNames.userDetails);</span>
+export const SubMenuOptions: SubMenuOption[] = [    
+    {
+        name: 'Profile',
+        onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >            userStore().pushCurrentUser(userStore().user);</span>
+<span class="cstat-no" title="statement not covered" >            navigateTo(routerNames.userDetails);</span>
+        }
+    }, 
+    {
+        name: 'Settings',
+        routeTo: 'settings',
+    }, 
+    {
+        name: 'Help',
+        onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >            Linking.openURL('https://help.getpatch.org/');</span>
+        }
+    }, 
+    {
+        name: 'Sign out',
+        onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >            userStore().signOut();</span>
+        }
     }
-  }, 
-  {
-    name: 'Settings',
-    routeTo: 'settings',
-  }, 
-  {
-    name: 'Help',
-    onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >      Linking.openURL('https://help.getpatch.org/');</span>
-    }
-  }, 
-  {
-    name: 'Sign out',
-    onPress: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >      userStore().signOut();</span>
-    }
-  }
 ]
 &nbsp;</pre></td></tr></table></pre>
 
@@ -403,7 +409,7 @@ export const SubMenuOptions: SubMenuOption[] = [
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-10-06T20:28:54.833Z
+                at 2022-11-02T21:48:15.173Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -37,9 +37,6 @@ export async function userHasPermissions(user: UserDoc, org: OrganizationDoc, re
 }
 
 export function getLinkUrl<Exp extends LinkExperience>(baseUrl: string, exp: Exp, params: LinkParams[Exp]): string {
-    const expoSection = baseUrl.startsWith('exp')
-        ? '--/'
-        :'';
-
-    return `${baseUrl}/${expoSection}${exp}?${querystring.stringify(params)}`
+    const fullParams = Object.assign({}, params, { exp: exp as string })
+    return `${baseUrl}/?${querystring.stringify(fullParams as {})}`
 }
