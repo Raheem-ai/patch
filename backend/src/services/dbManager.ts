@@ -791,11 +791,36 @@ export class DBManager {
                     await user.save({ session });
                 }
 
-                // TODO: remove deleted attributes from positions that have them on them
-                // const requestsToUpdate = this.requests.find({
-                //     orgId: org.id,
-                //     positions: 
-                // })
+                // remove deleted attributes from positions that have them on them
+                const allOrgRequests = await this.requests.find({
+                    orgId: org.id
+                })
+
+                const requestsToUpdate = allOrgRequests.map(req => {
+                    let updatedPositions = false;
+
+                    for (const idx in req.positions) {
+                        const pos = req.positions[idx];
+
+                        const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
+                        
+                        if (pos.attributes.length > cleansedAttributes.length) {
+                            pos.attributes = cleansedAttributes;
+                            updatedPositions = true;
+                        }
+                    }
+
+                    if (updatedPositions) {
+                        return req
+                    } else {
+                        return null
+                    }
+                }).filter(r => !!r)
+
+                for (const req of requestsToUpdate) {
+                    req.markModified('positions');
+                    await req.save({ session });
+                }
 
                 return org;
             }

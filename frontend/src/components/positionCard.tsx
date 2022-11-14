@@ -34,7 +34,7 @@ const PositionCard = observer(({
             return null
         }
 
-        return category.items.find(item => item.id == attr.itemId).name
+        return category.items.find(item => item.id == attr.itemId)?.name
     }).filter(a => !!a)
 
     const min = onlyMissingUsers
