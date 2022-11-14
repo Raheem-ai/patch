@@ -765,8 +765,8 @@ export class DBManager {
         if (categoryIndex >= 0) {
             const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeId);
 
-            // Remove the Attribute from the Attribute Category list.
             if (attributeIndex >= 0) {
+                // Remove the Attribute from the Attribute Category list.
                 org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
                 org.markModified('attributeCategories');
 
@@ -790,6 +790,12 @@ export class DBManager {
                     user.markModified('organizations');
                     await user.save({ session });
                 }
+
+                // TODO: remove deleted attributes from positions that have them on them
+                // const requestsToUpdate = this.requests.find({
+                //     orgId: org.id,
+                //     positions: 
+                // })
 
                 return org;
             }

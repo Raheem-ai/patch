@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -229,7 +229,11 @@ export default class RequestStore implements IRequestStore {
         isRequestAdmin: boolean
     ): PositionScopedMetadata {
         
-        const haveAllAttributes = position.attributes.every(attr => !!targetUserAttributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId));
+        const haveAllAttributes = position.attributes.every(attr => {
+            const isValidAttr = !!manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
+            // either attr isn't valid or user has it 
+            return !isValidAttr || !!targetUserAttributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId);
+        });
         
         const haveRole =  (position.role == DefaultRoleIds.Anyone)
             || !!targetUserRoles.find(role => role.id == position.role);

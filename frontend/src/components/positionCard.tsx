@@ -29,8 +29,13 @@ const PositionCard = observer(({
     
     const attrNames = pos.attributes.map(attr => {
         const category = manageAttributesStore().attributeCategories.get(attr.categoryId);
+
+        if (!category) {
+            return null
+        }
+
         return category.items.find(item => item.id == attr.itemId).name
-    })
+    }).filter(a => !!a)
 
     const min = onlyMissingUsers
         ? pos.min - pos.joinedUsers.length

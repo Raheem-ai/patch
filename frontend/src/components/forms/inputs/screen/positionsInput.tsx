@@ -8,7 +8,7 @@ import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } 
 import { VisualArea } from '../../../helpers/visualArea';
 import { unwrap } from "../../../../../../common/utils"
 import { DefaultRoleIds, Position } from "../../../../../../common/models"
-import { organizationStore } from "../../../../stores/interfaces"
+import { manageAttributesStore, organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
 import { observable } from "mobx"
@@ -74,7 +74,7 @@ const PositionsInput = observer(({
         },
         AttributesListInput({
             testID: TestIds.inputs.positions.inputs.attributes(wrappedTestID),
-            val: () => position.get().attributes,
+            val: () => (position.get().attributes || []).filter(attr => !!manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)),
             onSave: (val) => { 
                 const cpy = Object.assign({}, position.get(), { attributes: val }) as Position
                 position.set(cpy) 

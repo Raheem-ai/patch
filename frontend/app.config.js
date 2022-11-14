@@ -194,6 +194,16 @@ function backendEnv() {
 	return UPDATE_ENVIRONMENT || ENV || DEV_ENV
 }
 
+function scheme() {
+	const env = appEnv();
+
+	return 'raheem';
+	// TODO: test this on dev/staging first
+	// return env == 'prod'
+	// 	? 'raheem'
+	// 	: `raheem-${env}`
+}
+
 function branchConfig() {
 	const env = appEnv();
 
@@ -219,7 +229,7 @@ const config = {
 	  "version": VERSION,
 	  "orientation": "portrait",
 	  "icon": "./assets/icon.png",
-	  "scheme": "raheem",
+	  "scheme": scheme(),
 	  "splash": {
 		"image": "./assets/splash.png",
 		"resizeMode": "contain",
@@ -314,6 +324,6 @@ const config = {
 	}
 }
 
-console.log(config)
+// console.log(config)
 
 export default config
