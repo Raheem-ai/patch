@@ -35,12 +35,12 @@ const dimensions = Dimensions.get('screen');
 const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const [isLoading, setIsLoading] = useState(true);
 
-    const request = requestStore().currentRequest;
-    const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
+    const request = () => requestStore().currentRequest;
+    // const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
     const [initialTab, setInitialTab] = useState(RequestDetailsTabs.Overview);
 
-    const userIsOnRequest = userOnRequest(userStore().user.id, request);
+    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
     const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
     const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
@@ -66,7 +66,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 setIsLoading(false)
             }
 
-            await requestStore().ackRequestNotification(request.id)
+            await requestStore().ackRequestNotification(request().id)
         })();
     }, []);
 
@@ -196,10 +196,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
      // TODO: check to make sure address is findable and, if not, use lat/long (though that shouldn't happen since address is constructed from a google map )
      // const mapsLink = 'https://www.google.com/maps/dir/?api=1&destination=' + locLat + ',' + locLong;
-
-    const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
-
     const mapClick = () => {
+        const mapsLink = requestStore().currentRequest.location && 'https://www.google.com/maps/search/?api=1&query=' + requestStore().currentRequest.location.address;
         Linking.openURL(mapsLink);
     }
 
@@ -249,7 +247,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 backgroundColor: Colors.backgrounds.standard,
                 marginBottom: 12
             }}>
-                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request.id} />
+                <StatusSelector style={{ paddingHorizontal: 20, paddingTop:  14 }}  withLabels large requestId={request().id} />
             </View>
         )
     }
@@ -275,7 +273,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     const closeRequest = async () => {
         try {
             await requestStore().closeRequest(requestStore().currentRequest.id);
-            setRequestIsOpen(false);
+            // setRequestIsOpen(false);
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
         }
@@ -309,7 +307,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const reopenRequest = () => async () => {
         await requestStore().reopenRequest(requestStore().currentRequest.id);
-        setRequestIsOpen(true);
+        // setRequestIsOpen(true);
     }
 
     // TODO: Added this getter because "requestIsOpen" state variable isn't being computed properly.
@@ -318,7 +316,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return requestStore().currentRequest?.status != RequestStatus.Closed;
     }
 
-    if (isLoading || !request) {
+    if (isLoading || !request()) {
         return <Loader/>
     }
 
@@ -403,7 +401,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             if (!isRequestAdmin) {
                 return null
             } else {
-                const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request.id);
+                const requestMetadata = requestStore().getRequestMetadata(userStore().user.id, request().id);
                 const numNotified = requestMetadata.notificationsSentTo.size;
 
                 const notifiedUsers = new Map(requestMetadata.notificationsSentTo);
@@ -425,8 +423,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     positionName: string
                 }[] = []
 
-                for (const pos of request.positions) {
-                    const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request.id, pos.id);
+                for (const pos of request().positions) {
+                    const posMeta = requestStore().getPositionScopedMetadata(userStore().user.id, request().id, pos.id);
                     
                     posMeta.pendingJoinRequests.forEach(userId => {
                         pendingRequests.push({
@@ -475,7 +473,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     positionName, 
                     rightElem 
                 }: { userId: string, positionName: string, rightElem: () => JSX.Element }) => {
-                    const userName = userStore().users.get(userId)?.name;
+                    // TODO: what should this name label be when someone has their account completely removed
+                    const userName = userStore().users.get(userId)?.name || STRINGS.REQUESTS.POSITIONS.removedUserName;
 
                     return (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
@@ -496,6 +495,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 }: { userId: string, timestamp: Date }) => {
                     const userName = userStore().users.get(userId)?.name;
 
+                    // TODO: "(Removed)" is actually currently users that have had their whole account deleted
+                    // vs being removed from the org (we still have old org members in the user store)
                     return (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                             <Text style={!userName && { fontStyle: 'italic'}}>{`${userName ? userName : STRINGS.REQUESTS.POSITIONS.removedUserName}`}</Text>
@@ -519,7 +520,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                         const deny = async () => {
                             try {
-                                await requestStore().denyRequestToJoinRequest(userId, request.id, positionId)
+                                await requestStore().denyRequestToJoinRequest(userId, request().id, positionId)
                             } catch (e) {
                                 alertStore().toastError(resolveErrorMessage(e));
                             }
@@ -528,7 +529,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                         const approve = async () => {                        
                             try {
-                                await requestStore().approveRequestToJoinRequest(userId, request.id, positionId)
+                                await requestStore().approveRequestToJoinRequest(userId, request().id, positionId)
                             } catch (e) {
                                 alertStore().toastError(resolveErrorMessage(e));
                             }
@@ -644,7 +645,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     setEventDetailsOpen(!eventDetailsOpen)
                     
                     if (!eventDetailsOpen) {
-                        await requestStore().ackRequestsToJoinNotification(request.id)
+                        await requestStore().ackRequestsToJoinNotification(request().id)
                     }
                 }
 
@@ -722,10 +723,10 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     { teamEventDetails() }
                 </View>
                 {
-                    request.positions.length > 0 
-                        ? request.positions.map(pos => {
+                    request().positions.length > 0 
+                        ? request().positions.map(pos => {
                             return (
-                                <PositionDetailsCard key={pos.id} requestId={request.id} pos={pos}/>
+                                <PositionDetailsCard key={pos.id} requestId={request().id} pos={pos}/>
                             )
                         })
                         : <View style={{ padding: 20, paddingBottom: 0 }}>

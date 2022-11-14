@@ -59,11 +59,13 @@ const Settings = ({ navigation, route }: Props) => {
             */
             {
                 name: 'updatePassword',
+                testID: TestIds.settings.inputs.updatePassword,
                 expandOverride: (expand) => {
                     navigateTo(routerNames.updatePassword)
                 },
                 label: ({ expand }) => {
                     return <DescriptiveNavigationLabel 
+                        testID={TestIds.settings.inputs.updatePassword}
                         expand={ expand } 
                         name={STRINGS.PAGE_TITLES.updatePassword} />
                 },

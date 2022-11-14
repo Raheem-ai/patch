@@ -52,7 +52,7 @@ export default class UpdateStore implements IUpdateStore {
                 await this.updateOrg(packet.params.orgId, packet.event)
             }
         } catch (e) {
-
+            console.error(`Error in onEvent: ${e}`)
         }
     }
 
@@ -72,7 +72,8 @@ export default class UpdateStore implements IUpdateStore {
         requestId: string,
         event: RequestEventType
     ) => {
-        await requestStore().getRequests(Array.from(this.reqState.specificIds.values()))
+        const ids = Array.from(this.reqState.specificIds.values());
+        await requestStore().getRequests(ids)
     }, {
         minWait: this.minWait,
         maxWait: this.maxWait,
@@ -97,7 +98,8 @@ export default class UpdateStore implements IUpdateStore {
         userId: string,
         event: UserEventType
     ) => {
-        await userStore().updateOrgUsers(Array.from(this.userState.specificIds.values()))
+        const ids = Array.from(this.userState.specificIds.values());
+        await userStore().updateOrgUsers(ids)
     }, {
         minWait: this.minWait,
         maxWait: this.maxWait,

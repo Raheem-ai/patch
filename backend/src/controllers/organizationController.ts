@@ -103,6 +103,15 @@ export class OrganizationController implements APIController<
         return res;
     }
 
+    /**
+     * 
+     * TODO: have this return a smarter result ie
+     * {
+     *  members: User[],
+     *  membersRemovedFromOrg: User[],
+     *  deletedUsers: string[] // users that no longer have an account at all
+     * }
+     */
     @Post(API.server.getTeamMembers())
     @RequireAllPermissions([])
     async getTeamMembers(

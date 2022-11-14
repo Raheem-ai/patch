@@ -88,7 +88,7 @@ To test building/running the container locally run
 ```sh
 # from `<root>/`
 $> docker build -f ./api.dockerfile .  # this will produce <imageId>
-$> docker run --rm --it --env-file ./backend/env/.env.dev <imageId>
+$> docker run --rm -it --env-file ./backend/env/.env.dev <imageId>
 ```
 
 ### Frontend (TODO: tie this into the build)

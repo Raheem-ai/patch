@@ -659,20 +659,23 @@ export class MySocketService {
         const admins = new Map<string, Partial<SendConfig>>()
         
         org.members.forEach((member: UserModel) => {
-            console.log(member)
 
-            const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
-                return org.roleDefinitions.find(def => def.id == roleId)
-            })
+            try {
+                const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
+                    return org.roleDefinitions.find(def => def.id == roleId)
+                }).filter(r => !!r)
 
-            const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
+                const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
 
-            if (userIsAdmin) {
-                admins.set(member.id, {
-                    userId: member.id,
-                    userName: member.name,
-                    pushToken: (member as unknown as UserModel).push_token
-                })
+                if (userIsAdmin) {
+                    admins.set(member.id, {
+                        userId: member.id,
+                        userName: member.name,
+                        pushToken: (member as unknown as UserModel).push_token
+                    })
+                }
+            } catch (e) {
+                console.error(`Error trying to collect possbile request admin: ${member.id}`)
             }
         })
 

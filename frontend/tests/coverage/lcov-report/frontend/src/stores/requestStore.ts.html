@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">29.36% </span>
+                <span class="strong">29.25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>79/269</span>
+                <span class='fraction'>79/270</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">13.01% </span>
+                <span class="strong">12.83% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>19/146</span>
+                <span class='fraction'>19/148</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">29.57% </span>
+                <span class="strong">29.34% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>76/257</span>
+                <span class='fraction'>76/259</span>
             </div>
         
             
@@ -751,7 +751,11 @@
 <a name='L686'></a><a href='#L686'>686</a>
 <a name='L687'></a><a href='#L687'>687</a>
 <a name='L688'></a><a href='#L688'>688</a>
-<a name='L689'></a><a href='#L689'>689</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L689'></a><a href='#L689'>689</a>
+<a name='L690'></a><a href='#L690'>690</a>
+<a name='L691'></a><a href='#L691'>691</a>
+<a name='L692'></a><a href='#L692'>692</a>
+<a name='L693'></a><a href='#L693'>693</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -983,6 +987,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1441,7 +1449,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -1670,7 +1678,11 @@ export default class RequestStore implements IRequestStore {
         isRequestAdmin: boolean
     ): PositionScopedMetadata {
         
-        const haveAllAttributes = <span class="cstat-no" title="statement not covered" >position.attributes.every(<span class="fstat-no" title="function not covered" >at</span>tr =&gt; <span class="cstat-no" title="statement not covered" >!!targetUserAttributes.find(<span class="fstat-no" title="function not covered" >us</span>erAttr =&gt; <span class="cstat-no" title="statement not covered" >userAttr.categoryId == attr.categoryId &amp;&amp; userAttr.itemId == attr.itemId)</span>)</span>;</span>
+        const haveAllAttributes = <span class="cstat-no" title="statement not covered" >position.attributes.every(<span class="fstat-no" title="function not covered" >at</span>tr =&gt; {</span>
+            const isValidAttr = <span class="cstat-no" title="statement not covered" >!!manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)</span>
+            // either attr isn't valid or user has it 
+<span class="cstat-no" title="statement not covered" >            return !isValidAttr || !!targetUserAttributes.find(<span class="fstat-no" title="function not covered" >us</span>erAttr =&gt; <span class="cstat-no" title="statement not covered" >userAttr.categoryId == attr.categoryId &amp;&amp; userAttr.itemId == attr.itemId)</span>;</span>
+        });
         
         const haveRole =  <span class="cstat-no" title="statement not covered" >(position.role == DefaultRoleIds.Anyone)</span>
             || !!targetUserRoles.find(<span class="fstat-no" title="function not covered" >ro</span>le =&gt; <span class="cstat-no" title="statement not covered" >role.id == position.role)</span>;
@@ -2134,7 +2146,7 @@ export default class RequestStore implements IRequestStore {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-02T21:48:15.173Z
+                at 2022-11-14T18:56:39.021Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

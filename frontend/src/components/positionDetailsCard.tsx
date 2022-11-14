@@ -84,7 +84,7 @@ const PositionDetailsCard = observer(({
                 isDesired: isDesiredAttribute(attr)
             }
         })
-        .filter(x => !!x)
+        .filter(x => !!x.name)
         .sort((a, b) => a.isDesired && !b.isDesired ? -1 : b.isDesired && !a.isDesired ? 1 : 0)
         
         return {
