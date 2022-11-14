@@ -116,6 +116,7 @@ export class Server {
   }
 
   async $beforeInit() {
+    // TODO: need to setup way for this to connect to the vpc network for staging/prod when running locally
     await Promise.all([socketIOPubClient.connect(), socketIOSubClient.connect()])
   }
 }
