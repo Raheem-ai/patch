@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, ScrollView, View, TextStyle, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { IconButton } from "react-native-paper";
 import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view";
-import STRINGS from "../../../strings";
+import STRINGS from "../../../../common/strings";
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
