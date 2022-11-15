@@ -93,6 +93,8 @@ const STRINGS = {
         }
     },
     INTERFACE: {
+        add: 'Add',
+        save: 'Save',
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
         editElement: (el?: string) => `Edit${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
@@ -102,6 +104,10 @@ const STRINGS = {
         newPassword: 'New password',
         firstname: 'First Name',
         lastname: 'Last Name',
+        name: 'Name',
+        bio: 'Bio',
+        pronouns: 'Pronouns',
+        phone: 'Phone',
         email: 'Email',
         invitationCode: 'Invitation code',
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
@@ -109,6 +115,10 @@ const STRINGS = {
         unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
         availabilityAlertTitle: `Set your status`,
         availabilityAlertMessage: (onDuty: boolean) => `You are currently ${onDuty ? STRINGS.INTERFACE.available() : STRINGS.INTERFACE.unavailable()}.`, 
+        anyNumber: `Any number`,
+        orMore: `or more`,
+        exactly: (value: number) => `Exactly ${value}`,
+        toValue: (value: number) => `to ${value}`
     },
     PAGE_TITLES: {
         landing: 'Landing',
@@ -239,7 +249,7 @@ const STRINGS = {
             userNotFound: (email?: string) => `No account found with that email and password.`,
             passwordTooShort: `Use at least ${minPasswordLength} characters.`,
         },
-        
+        editAttributes: `Edit attributes`,
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
@@ -254,6 +264,11 @@ const STRINGS = {
         nameRole: 'Name this role',
         setPermissions: 'Set permissions',
         rolesAndPermissions: 'Roles + permissions',
+        permissions: 'Permissions',
+        roleAdmin: 'Admin',
+        roleDispatcher: 'Dispatcher',
+        roleResponder: 'Responder',
+        roleTrainee: 'Trainee',
         cannotEditRole: (roleName: string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName: string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',

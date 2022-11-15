@@ -38,7 +38,7 @@ export const AttributesListInput = (config: AttributesListInputConfig) => {
             return items.filter(item => !!manageAttributesStore().getAttribute(item.categoryId, item.itemId));
         },
         editStore: manageAttributesStore().editStore,
-        editHeaderLabel: 'Edit attributes',
+        editHeaderLabel: STRINGS.ACCOUNT.editAttributes,
         addCategoryPlaceholderLabel: STRINGS.INTERFACE.addCategory(),
         addItemPlaceholderLabel: STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.attribute()),
         editPermissions: manageAttributesStore().editPermissions,

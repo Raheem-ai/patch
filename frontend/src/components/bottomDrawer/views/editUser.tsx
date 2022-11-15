@@ -73,7 +73,7 @@ export default class EditUser extends React.Component {
 
                     bottomDrawerStore().hide();
                 },
-                label: 'Save',
+                label: STRINGS.INTERFACE.save,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -181,8 +181,8 @@ export default class EditUser extends React.Component {
                     isValid: () => {
                         return editUserStore().rolesValid
                     },
-                    headerLabel: 'Roles',
-                    placeholderLabel: 'Roles',
+                    headerLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
+                    placeholderLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
                     previewLabel: () => editUserStore().roles.map(roleId => {
                             return organizationStore().roles.get(roleId)?.name
                         }).join(),
@@ -223,7 +223,7 @@ export default class EditUser extends React.Component {
                 isValid: () => editUserStore().nameValid,
                 testID: this.formIds.inputs.name,
                 name: 'name',
-                placeholderLabel: () => 'Name',
+                placeholderLabel: () => STRINGS.INTERFACE.name,
                 type: 'TextInput',
                 icon: ICONS.responder,
                 required: true
@@ -235,8 +235,8 @@ export default class EditUser extends React.Component {
                 testID: this.formIds.inputs.bio,
                 name: 'bio',
                 previewLabel: () => editUserStore().bio,
-                headerLabel: () => 'Bio',
-                placeholderLabel: () => 'Bio',
+                headerLabel: () => STRINGS.INTERFACE.bio,
+                placeholderLabel: () => STRINGS.INTERFACE.bio,
                 type: 'TextArea',
             } as ScreenFormInputConfig<'TextArea'>,
             {
@@ -245,7 +245,7 @@ export default class EditUser extends React.Component {
                 isValid: () => editUserStore().pronounsValid,
                 testID: this.formIds.inputs.pronouns,
                 name: 'pronouns',
-                placeholderLabel: () => 'Pronouns',
+                placeholderLabel: () => STRINGS.INTERFACE.pronouns,
                 type: 'TextInput',
             } as InlineFormInputConfig<'TextInput'>],
             [{
@@ -254,7 +254,7 @@ export default class EditUser extends React.Component {
                 isValid: () => editUserStore().phoneValid,
                 testID: this.formIds.inputs.phone,
                 name: 'phone',
-                placeholderLabel: () => 'Phone',
+                placeholderLabel: () => STRINGS.INTERFACE.phone,
                 type: 'TextInput',
                 props: {
                     inputType: 'phone-pad',
@@ -268,7 +268,7 @@ export default class EditUser extends React.Component {
                 isValid: () => editUserStore().emailValid,
                 testID: this.formIds.inputs.email,
                 name: 'email',
-                placeholderLabel: () => 'Email',
+                placeholderLabel: () => STRINGS.INTERFACE.email,
                 type: 'TextInput',
                 props: {
                     inputType: 'email-address',
@@ -281,8 +281,8 @@ export default class EditUser extends React.Component {
                     val: () => editUserStore().roles,
                     onSave: (roles) => editUserStore().roles = roles,
                     isValid: () => editUserStore().rolesValid,
-                    headerLabel: 'Roles',
-                    placeholderLabel: 'Roles',
+                    headerLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
+                    placeholderLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
                     previewLabel: () => editUserStore().roles.map(roleId => {
                             return organizationStore().roles.get(roleId)?.name
                         }).join(),

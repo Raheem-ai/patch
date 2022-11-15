@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { Keyboard, Pressable, ScrollView, View, TextStyle, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { IconButton } from "react-native-paper";
 import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view";
+import STRINGS from "../../../strings";
 import { resolveErrorMessage } from "../../errors";
 import useFirstRenderCheck from "../../hooks/useFirstRenderCheck";
 import { alertStore, IEditCategorizedItemStore, nativeEventStore } from "../../stores/interfaces";
@@ -54,7 +55,7 @@ export const EditCategorizedItemForm = observer(({
                     alertStore().toastError(resolveErrorMessage(e));
                 }
             },
-            label: 'Save'
+            label: STRINGS.INTERFACE.save
         },
         cancel: {
             handler: async () => {

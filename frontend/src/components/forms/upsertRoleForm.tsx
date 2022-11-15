@@ -60,7 +60,7 @@ const UpsertRoleForm = ({
         },
         testID: TestIds.upsertRolesForm.inputs.permissionGroups(wrappedTestID),
         name: 'permissionGroups',
-        headerLabel: () => 'Permissions',
+        headerLabel: () => STRINGS.SETTINGS.permissions,
         placeholderLabel: () => STRINGS.SETTINGS.setPermissions,
         previewLabel: () => {
             return upsertRoleStore().permissionGroups.map(p => {
@@ -100,7 +100,7 @@ const UpsertRoleForm = ({
             },
             save: {
                 handler: save,
-                label: 'Save',
+                label: STRINGS.INTERFACE.save,
                 validator: isAdminRole ? () => false : isValid
             },
             label: headerLabel,
@@ -144,7 +144,7 @@ const UpsertRoleForm = ({
                         <BackButtonHeader {...headerProps} />
                         { isAdminRole 
                             ? <View style={{ paddingLeft: 60, padding: 20, borderStyle: 'solid', borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
-                                <Text style={{ fontSize: 16 }}>{STRINGS.SETTINGS.cannotDeleteRole('Admin')}</Text>
+                                <Text style={{ fontSize: 16 }}>{STRINGS.SETTINGS.cannotDeleteRole(STRINGS.SETTINGS.roleAdmin)}</Text>
                             </View>
                             : null
                         }
