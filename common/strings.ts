@@ -150,7 +150,7 @@ const STRINGS = {
         positions: 'Responders needed',
         priority: 'Priority',
         tags: 'Tags',
-        requestIsClosed: 'This request has been closed.',
+        requestIsClosed: 'This request has been archived.',
         noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
         NOTIFICATIONS: {
             notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
@@ -182,11 +182,11 @@ const STRINGS = {
             removedUserName: '(Removed)',
         },
         TOGGLE: {
-            toggleRequest: (isOpen: boolean) => isOpen ? `Close this request` : `Re-open this request`,
+            toggleRequest: (isOpen: boolean) => isOpen ? `Archive this request` : `Re-open this request`,
             title: `Type of request`,
-            message: `Are you sure you want to close this request without specifying its type?`,
-            add: `Add now`,
-            close: `Close anyway`
+            message: `Are you sure you want to archive this request without specifying its type?`,
+            add: `Add type`,
+            close: `Archive`
         },
         ACTIONS: {
             addResponders: 'Add responders',
