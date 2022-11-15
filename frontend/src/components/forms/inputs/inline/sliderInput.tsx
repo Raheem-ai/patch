@@ -4,7 +4,7 @@ import React from "react";
 import { View, StyleSheet, LayoutChangeEvent, Animated } from "react-native";
 import { PanGestureHandler, PanGestureHandlerProps } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
-import STRINGS from "../../../../../strings";
+import STRINGS from "../../../../../../common/strings";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
 
