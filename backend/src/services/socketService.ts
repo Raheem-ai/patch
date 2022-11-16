@@ -63,7 +63,8 @@ export class MySocketService {
 
             // make sure old socket linked to user is removed from room            
             const existingSockets = await this.adapter.fetchSockets({
-                rooms: new Set([user.id])
+                rooms: new Set([user.id]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             for (const socket of existingSockets) {
@@ -173,7 +174,8 @@ export class MySocketService {
 
         // drop packet if they aren't connected 
         const sockets = await this.adapter.fetchSockets({
-            rooms: new Set([userId])
+            rooms: new Set([userId]),
+            except: new Set() // lib has a bug that this fixes
         })
 
         const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
@@ -731,7 +733,8 @@ export class MySocketService {
         for (const config of configs) {
 
             const sockets = await this.adapter.fetchSockets({
-                rooms: new Set([config.userId])
+                rooms: new Set([config.userId]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             const socket = sockets[0] as SocketIO.Socket;
