@@ -406,7 +406,7 @@ export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: 
     [RequestStatus.OnTheWay]: 'On the way',
     [RequestStatus.OnSite]: 'On site',
     [RequestStatus.Done]: 'Finished',
-    [RequestStatus.Closed]: 'Closed'
+    [RequestStatus.Closed]: 'Archived'
 }
 
 export type ResponderRequestStatuses = 
@@ -1717,20 +1717,20 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
             { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
             { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
             { name: 'Cantonese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan04' },
-            { name: 'Hatian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
+            { name: 'Haitian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
             { name: 'Jamaican Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan06' },
             { name: 'Other Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan07' },
             { name: 'French', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan08' },
             { name: 'Hindi', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan09' },
             { name: 'Korean', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan10' },
             { name: 'Mandarin', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan11' },
+            { name: 'Oromo', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan17' },
             { name: 'Portuguese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan12' },
             { name: 'Spanish', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan13' },
+            { name: 'Swahili', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan18' },
             { name: 'Tagalog', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan14' },
             { name: 'Vietnamese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan15' },
             { name: 'Yoruba', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan16' },
-            { name: 'Oromo', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan17' },
-            { name: 'Swahili', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan18' },
             { name: 'Other language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan99' },
         ]
     },
