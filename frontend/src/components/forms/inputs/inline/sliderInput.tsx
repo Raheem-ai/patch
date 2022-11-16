@@ -4,6 +4,7 @@ import React from "react";
 import { View, StyleSheet, LayoutChangeEvent, Animated } from "react-native";
 import { PanGestureHandler, PanGestureHandlerProps } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
+import STRINGS from "../../../../../../common/strings";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
 
@@ -441,8 +442,8 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             : this.maxKnobValue
 
         return this.isExactValue 
-            ? leftVal == 0 || leftVal == MORE ? 'Any number' :  `Exactly ${leftVal}`
-            : `${leftVal} ${rightVal == MORE ? 'or more' : `to ${rightVal}`}`
+            ? leftVal == 0 || leftVal == MORE ? STRINGS.INTERFACE.anyNumber :  STRINGS.INTERFACE.exactly(leftVal)
+            : `${leftVal} ${rightVal == MORE ? STRINGS.INTERFACE.orMore : STRINGS.INTERFACE.toValue(rightVal)}`
 
     }
 

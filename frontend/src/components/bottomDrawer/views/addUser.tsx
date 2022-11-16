@@ -54,7 +54,7 @@ export default class AddUser extends React.Component {
                     alertStore().toastSuccess(STRINGS.ACCOUNT.invitationSuccessful(invitedUser.email, invitedUser.phone))
                     bottomDrawerStore().hide();
                 },
-                label: 'Send Invite',
+                label: STRINGS.ACCOUNT.sendInvite,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -91,7 +91,7 @@ export default class AddUser extends React.Component {
                     },
                     testID: TestIds.addUser.inputs.email,
                     name: 'email',
-                    placeholderLabel: () => 'Email',
+                    placeholderLabel: () => STRINGS.INTERFACE.email,
                     type: 'TextInput',
                     props: {
                         inputType: 'email-address',
@@ -108,7 +108,7 @@ export default class AddUser extends React.Component {
                     },
                     testID: TestIds.addUser.inputs.phone,
                     name: 'phone',
-                    placeholderLabel: () => 'Phone',
+                    placeholderLabel: () => STRINGS.INTERFACE.phone,
                     type: 'TextInput',
                     props: {
                         inputType: 'phone-pad',
@@ -121,8 +121,8 @@ export default class AddUser extends React.Component {
                         newUserStore().roleIds = val
                     },
                     isValid: () => newUserStore().roleIDsValid,
-                    headerLabel: 'Roles',
-                    placeholderLabel: 'Roles',
+                    headerLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
+                    placeholderLabel: STRINGS.cap(STRINGS.ELEMENTS.role(true)),
                     previewLabel: () => newUserStore().roleIds.map(roleId => {
                         return organizationStore().roles.get(roleId)?.name
                     }).join(),

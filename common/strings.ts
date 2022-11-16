@@ -93,6 +93,8 @@ const STRINGS = {
         }
     },
     INTERFACE: {
+        add: 'Add',
+        save: 'Save',
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
         editElement: (el?: string) => `Edit${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
@@ -102,6 +104,10 @@ const STRINGS = {
         newPassword: 'New password',
         firstname: 'First Name',
         lastname: 'Last Name',
+        name: 'Name',
+        bio: 'Bio',
+        pronouns: 'Pronouns',
+        phone: 'Phone',
         email: 'Email',
         invitationCode: 'Invitation code',
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
@@ -109,6 +115,10 @@ const STRINGS = {
         unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
         availabilityAlertTitle: `Set your status`,
         availabilityAlertMessage: (onDuty: boolean) => `You are currently ${onDuty ? STRINGS.INTERFACE.available() : STRINGS.INTERFACE.unavailable()}.`, 
+        anyNumber: `Any number`,
+        orMore: `or more`,
+        exactly: (value: number) => `Exactly ${value}`,
+        toValue: (value: number) => `to ${value}`
     },
     PAGE_TITLES: {
         landing: 'Landing',
@@ -150,7 +160,7 @@ const STRINGS = {
         positions: 'Responders needed',
         priority: 'Priority',
         tags: 'Tags',
-        requestIsClosed: 'This request has been closed.',
+        requestIsClosed: 'This request has been archived.',
         noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
         NOTIFICATIONS: {
             notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
@@ -183,11 +193,11 @@ const STRINGS = {
             deletedUserName: `(Deleted)`,
         },
         TOGGLE: {
-            toggleRequest: (isOpen: boolean) => isOpen ? `Close this request` : `Re-open this request`,
+            toggleRequest: (isOpen: boolean) => isOpen ? `Archive this request` : `Re-open this request`,
             title: `Type of request`,
-            message: `Are you sure you want to close this request without specifying its type?`,
-            add: `Add now`,
-            close: `Close anyway`
+            message: `Are you sure you want to archive this request without specifying its type?`,
+            add: `Add type`,
+            close: `Archive`
         },
         ACTIONS: {
             addResponders: 'Add responders',
@@ -240,7 +250,7 @@ const STRINGS = {
             userNotFound: (email?: string) => `No account found with that email and password.`,
             passwordTooShort: `Use at least ${minPasswordLength} characters.`,
         },
-        
+        editAttributes: `Edit attributes`,
         noPermissionToEditRoles: `You do not have permission to edit Roles associated with your profile.`,
         noPermissionToEditAttributes: `You do not have permission to edit Attributes associated with your profile.`,
         noPermissionToEditUserRoles: `You do not have permission to edit Roles associated with this user's profile.`,
@@ -255,6 +265,8 @@ const STRINGS = {
         nameRole: 'Name this role',
         setPermissions: 'Set permissions',
         rolesAndPermissions: 'Roles + permissions',
+        permissions: 'Permissions',
+        roleAdmin: 'Admin',
         cannotEditRole: (roleName: string) => `The ${roleName} role cannot be edited`,
         cannotDeleteRole: (roleName: string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',
