@@ -1,4 +1,4 @@
-import { makeAutoObservable, ObservableMap, runInAction } from 'mobx';
+import { makeAutoObservable, ObservableMap, ObservableSet, runInAction } from 'mobx';
 import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
 import { Store } from './meta';
 import { appUpdateStore, IUserStore, navigationStore } from './interfaces';
@@ -31,6 +31,7 @@ export default class UserStore implements IUserStore {
     currentUser: ClientSideFormat<ProtectedUser>;
 
     users: ObservableMap<string, ClientSideFormat<ProtectedUser>> = new ObservableMap()
+    deletedUsers: ObservableSet<string> = new ObservableSet()
 
     constructor() {
         makeAutoObservable(this)
@@ -58,13 +59,12 @@ export default class UserStore implements IUserStore {
     }
 
     clear() {
-        runInAction(() => {
-            this.user = null
-            this.authToken = null
-            this.currentOrgId = null
-            this.users = new ObservableMap()
-            this.passwordResetLoginCode = null
-        })
+        this.user = null
+        this.authToken = null
+        this.currentOrgId = null
+        this.users = new ObservableMap()
+        this.passwordResetLoginCode = null
+        this.deletedUsers = new ObservableSet()
     }
 
     orgContext(token?: string): OrgContext {
@@ -186,16 +186,22 @@ export default class UserStore implements IUserStore {
     }
 
     async updateOrgUsers(userIds?: string[], orgCtx?: OrgContext): Promise<void> {
-        const users = await this.api.getTeamMembers(orgCtx || this.orgContext(), userIds);
+        const userMetadata = await this.api.getTeamMembers(orgCtx || this.orgContext(), userIds);
 
         const updatedUserMap = {};
 
-        for (const user of users) {
+        for (const user of userMetadata.orgMembers) {
+            updatedUserMap[user.id] = user
+        }
+
+        for (const user of userMetadata.removedOrgMembers) {
             updatedUserMap[user.id] = user
         }
 
         runInAction(() => {
             this.users.merge(updatedUserMap);
+            
+            userMetadata.deletedUsers.forEach(id => this.deletedUsers.add(id))
         })
     }
 

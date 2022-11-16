@@ -3,7 +3,7 @@ import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
 import { Format, Pattern, Required } from "@tsed/schema";
 import API from 'common/api';
-import { LinkExperience, LinkParams, MinOrg, MinRole, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, Role, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles } from "common/models";
+import { LinkExperience, LinkParams, MinOrg, MinRole, OrganizationMetadata, PatchEventType, PatchPermissions, PendingUser, ProtectedUser, Role, AttributeCategory, MinAttributeCategory, MinTagCategory, TagCategory, Attribute, MinAttribute, MinTag, Tag, DefaultRoleIds, CategorizedItemUpdates, CategorizedItem, DefaultRoles, TeamMemberMetadata } from "common/models";
 import { APIController, OrgId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc } from "../models/user";
@@ -103,15 +103,6 @@ export class OrganizationController implements APIController<
         return res;
     }
 
-    /**
-     * 
-     * TODO: have this return a smarter result ie
-     * {
-     *  members: User[],
-     *  membersRemovedFromOrg: User[],
-     *  deletedUsers: string[] // users that no longer have an account at all
-     * }
-     */
     @Post(API.server.getTeamMembers())
     @RequireAllPermissions([])
     async getTeamMembers(
@@ -123,39 +114,43 @@ export class OrganizationController implements APIController<
         const protectedOrg = await this.db.protectedOrganization(org); 
         
         const orgMembers = protectedOrg.members;
-        const removedOrgMembers = protectedOrg.removedMembers;
+        const removedMembers = protectedOrg.removedMembers;
 
         if (userIds && userIds.length) {
-            const specificMembers: ProtectedUser[] = [];
-            const usersNotInOrg: string[] = [];
+            const orgMembers: ProtectedUser[] = [];
+            const removedOrgMembers: ProtectedUser[] = [];
+            const deletedUsers: string[] = [];
 
             for (const id of userIds) {
                 const idx = orgMembers.findIndex(member => member.id == id);
 
                 if (idx != -1) {
-                    specificMembers.push(orgMembers[idx])
+                    orgMembers.push(orgMembers[idx])
                 } else {
-                    const removedIdx = removedOrgMembers.findIndex(member => member.id == id);
+                    const removedIdx = removedMembers.findIndex(member => member.id == id);
 
                     if (removedIdx != -1) {
-                        specificMembers.push(removedOrgMembers[removedIdx])
+                        removedOrgMembers.push(removedMembers[removedIdx])
                     } else {
-                        usersNotInOrg.push(id);
+                        deletedUsers.push(id);
                     }
                 }
             }
 
-            if (usersNotInOrg.length) {
-                throw new Unauthorized(STRINGS.ACCOUNT.notInOrg(usersNotInOrg, org.name))
-            }
-
-            return specificMembers
+            return {
+                orgMembers,
+                removedOrgMembers,
+                deletedUsers
+            } as TeamMemberMetadata
 
         } else {
-            return [
-                ...orgMembers,
-                ...removedOrgMembers
-            ]
+
+            return {
+                orgMembers,
+                removedOrgMembers: removedMembers,
+                deletedUsers: []
+            } as TeamMemberMetadata
+
         }
     }
 
