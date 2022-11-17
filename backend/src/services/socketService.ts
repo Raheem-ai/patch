@@ -63,7 +63,8 @@ export class MySocketService {
 
             // make sure old socket linked to user is removed from room            
             const existingSockets = await this.adapter.fetchSockets({
-                rooms: new Set([user.id])
+                rooms: new Set([user.id]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             for (const socket of existingSockets) {
@@ -121,6 +122,9 @@ export class MySocketService {
                 await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
             // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestRespondersRequestToJoin: 
+                await this.handleRequestRespondersRequestToJoin(params as PatchEventParams[PatchEventType.RequestRespondersRequestToJoin])
+                break;
             case PatchEventType.RequestRespondersAccepted:
                 await this.handleRequestRespondersAccepted(params as PatchEventParams[PatchEventType.RequestRespondersAccepted]) 
                 break;
@@ -170,7 +174,8 @@ export class MySocketService {
 
         // drop packet if they aren't connected 
         const sockets = await this.adapter.fetchSockets({
-            rooms: new Set([userId])
+            rooms: new Set([userId]),
+            except: new Set() // lib has a bug that this fixes
         })
 
         const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
@@ -391,6 +396,33 @@ export class MySocketService {
             event: PatchEventType.RequestRespondersLeft,
             params: payload
         });
+    }
+
+    async handleRequestRespondersRequestToJoin(params: PatchEventParams[PatchEventType.RequestRespondersRequestToJoin]) {
+        const request = await this.db.resolveRequest(params.requestId);
+        const org = await this.db.resolveOrganization(params.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+
+        const adminConfigs: SendConfig[] = [];
+
+        const requesterName = requestAdmins.get(params.responderId)?.userName
+            || (await this.db.resolveUser(params.responderId)).name
+
+        const userRequestedBody = notificationLabel(PatchEventType.RequestRespondersRequestToJoin, request.displayId, requesterName, org.requestPrefix)
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            if (admin.userId != params.responderId) {
+                admin.body = userRequestedBody
+                adminConfigs.push(admin as SendConfig)
+            }
+        }
+
+        await this.send(adminConfigs, {
+            event: PatchEventType.RequestRespondersRequestToJoin,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersRequestToJoin>)
     }
 
     async handleRequestRespondersAccepted(params: PatchEventParams[PatchEventType.RequestRespondersAccepted]) {
@@ -684,7 +716,10 @@ export class MySocketService {
 
     async userInOrg(orgId: string | OrganizationDoc, userId: string) {
         const org = await this.db.resolveOrganization(orgId);
-        return org.members.includes(userId)
+        
+        return org.members.some(ref => {
+            return ref == userId || (ref as UserModel).id == userId
+        })
     }
 
     async send(
@@ -698,7 +733,8 @@ export class MySocketService {
         for (const config of configs) {
 
             const sockets = await this.adapter.fetchSockets({
-                rooms: new Set([config.userId])
+                rooms: new Set([config.userId]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             const socket = sockets[0] as SocketIO.Socket;

@@ -202,7 +202,7 @@ const PositionDetailsCard = observer(({
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>
             </View>
             { userDetails.length 
-                ? <View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20, flexDirection: 'row' }}>
+                ? <View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20 }}>
                     {
                         userDetails.map(details => {
                             return (
@@ -219,9 +219,7 @@ const PositionDetailsCard = observer(({
                                                             <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
                                                             <Text style={styles.visualDelim}>{STRINGS.visualDelim}</Text>
                                                         </>
-                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
-                                                        
-                                                    return 
+                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>                                                        
                                                 })
                                             }
                                         </View>
@@ -261,6 +259,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     removeUser: {
+        flexGrow: 1,
         alignItems: 'flex-end',
         marginRight: 16
     },

@@ -98,6 +98,7 @@ export class DBManager {
     // TODO: need special type to see full user models on this that aren't a ref
     async fullOrganization(orgId: string | OrganizationDoc) {
         const org = await this.resolveOrganization(orgId);
+        // TODO: I think this might be redundant with getOrganization's populate?
         const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
 
         return populatedOrg;
