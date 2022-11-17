@@ -3,22 +3,24 @@ import { ColorValue, StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'r
 import { IconButton, Text } from 'react-native-paper';
 import { Colors, ICONS } from '../types';
 import {parseFullName} from 'parse-full-name';
+import { userStore } from '../stores/interfaces';
+import { observer } from 'mobx-react';
 
-type UserIconProps = { 
-    user?: { 
-        name: string
-    }, 
+type UserIconProps = {
+    userId?: string,
     style?: ViewStyle,
     large?: boolean
     emptyIconColor?: string
 }
 
-const UserIcon = ({ 
-    user, 
+const UserIcon = observer(({ 
+    userId, 
     style,
     large,
     emptyIconColor
 } : UserIconProps) => {
+
+    const user = userStore().users.get(userId);
 
     if (!user) {
         if (style?.backgroundColor && !style.borderColor) {
@@ -39,6 +41,9 @@ const UserIcon = ({
     // single names resolve as last name for some reason?!?!
     const first = userName.first || userName.last;
     const last = userName.first ? userName.last : null;
+
+    // for futre ui treatment for users removed from org still in a chat
+    const inOrg = userStore().userInOrg(user);
 
     // either FL for Firstname Lastname or 
     // Fi for Firstname
@@ -62,7 +67,7 @@ const UserIcon = ({
             ]}>{initials}</Text>
         </View>
     )
-}
+})
 
 const styles = StyleSheet.create({
     userIcon: {

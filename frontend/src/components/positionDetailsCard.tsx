@@ -207,7 +207,7 @@ const PositionDetailsCard = observer(({
                         userDetails.map(details => {
                             return (
                                 <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}>
-                                    <UserIcon user={{ name: details.name }} style={{marginTop: 2, flexGrow: 0}}/>
+                                    <UserIcon userId={details.userId} style={{marginTop: 2, flexGrow: 0}}/>
                                     <View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}>
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
