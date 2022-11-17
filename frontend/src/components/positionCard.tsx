@@ -52,7 +52,7 @@ const PositionCard = observer(({
         }
 
         if (user) {
-            userIcons.push(<UserIcon user={{ name: user.name }}/>)
+            userIcons.push(<UserIcon userId={user.id}/>)
         } else {
             userIcons.push(<UserIcon/>)
         }

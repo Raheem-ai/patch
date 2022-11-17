@@ -24,7 +24,7 @@ const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }:
     return (
         <Pressable onPress={onPress} style={[styles.responderRow, style ]}>
             <View style={styles.userIconContainer}>
-                <UserIcon user={responder} large/>
+                <UserIcon userId={responder.id} large/>
             </View>
             <View style={{ flex: 1, justifyContent: 'center' }}> 
                 <View>

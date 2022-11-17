@@ -19,7 +19,8 @@ import {
     MinRole,
     CategorizedItemUpdates,
     AdminEditableUser,
-    CategorizedItem
+    CategorizedItem,
+    TeamMemberMetadata
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -120,7 +121,7 @@ export interface IApiClient {
     createNewRequest: AuthenticatedWithOrg<(request: MinHelpRequest) => Promise<HelpRequest>>
     getRequests: AuthenticatedWithOrg<(requestIds?: string[]) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
-    getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<ProtectedUser[]>>
+    getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<TeamMemberMetadata>>
     
     editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>

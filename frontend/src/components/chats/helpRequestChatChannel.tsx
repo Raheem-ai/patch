@@ -52,7 +52,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
 
                         return (
                             <View style={[styles.messageRow, isMe ? styles.myMessageRow : null]}>
-                                <UserIcon user={user} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/>
+                                <UserIcon userId={message.userId} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/>
                                 <View style={[styles.messageBubble, isMe ? styles.myMessageBubble : null, { maxWidth: bubbleWidth }]}>
                                     <Text style={styles.messageText}>{message.message}</Text>
                                 </View>

@@ -166,7 +166,7 @@ const HelpRequestCard = observer(({
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                        <UserIcon user={responder} style={ 
+                        <UserIcon userId={responder.id} style={ 
                             i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
                                 ? dark
                                     ? styles.assignedResponderIconDark

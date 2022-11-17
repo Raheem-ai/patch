@@ -40,6 +40,12 @@ export type MinUser = AtLeast<User, 'email' | SystemProperties | 'name'>
 
 export type ProtectedUser = Omit<User, PrivateProperties | SystemProperties>;
 
+export type TeamMemberMetadata = {
+    orgMembers: ProtectedUser[],
+    removedOrgMembers: ProtectedUser[],
+    deletedUsers: string[]
+}
+
 // this will change from being the same as ProtectedUser when we get
 // more profile fields
 export type Me = Omit<User, SystemProperties>

@@ -24,6 +24,7 @@ export interface IUserStore extends IBaseStore {
     users: Map<string, ClientSideFormat<ProtectedUser>>
     usersInOrg: ClientSideFormat<ProtectedUser>[]
     usersRemovedFromOrg: ClientSideFormat<ProtectedUser>[]
+    deletedUsers: Set<string>;
     currentUser: ClientSideFormat<ProtectedUser>
     loadingCurrentUser: boolean
 

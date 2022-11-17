@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, TextStyle, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ICONS, ScreenProps } from "../types";
 import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
@@ -473,14 +473,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     positionName, 
                     rightElem 
                 }: { userId: string, positionName: string, rightElem: () => JSX.Element }) => {
-                    // TODO: what should this name label be when someone has their account completely removed
-                    const userName = userStore().users.get(userId)?.name || STRINGS.REQUESTS.POSITIONS.removedUserName;
+                    const user = userStore().users.get(userId);
+                    const isInOrg = !!user && userStore().userInOrg(user);
+                    const userName = user?.name;
+
+                    const userLabel = userName 
+                        ? isInOrg
+                            ? userName
+                            : STRINGS.REQUESTS.POSITIONS.removedUserName(userName)
+                        : STRINGS.REQUESTS.POSITIONS.deletedUserName;
 
                     return (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
-                                    <Text>{`${userName} ${STRINGS.visualDelim} `}</Text>
+                                    <Text>{`${userLabel} ${STRINGS.visualDelim} `}</Text>
                                     <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
                                 </Text>
                             </View>
@@ -493,13 +500,21 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     userId, 
                     timestamp
                 }: { userId: string, timestamp: Date }) => {
-                    const userName = userStore().users.get(userId)?.name;
+                    const user = userStore().users.get(userId);
+                    const isInOrg = !!user && userStore().userInOrg(user);
+                    const userName = user?.name;
 
-                    // TODO: "(Removed)" is actually currently users that have had their whole account deleted
-                    // vs being removed from the org (we still have old org members in the user store)
+                    const userLabel = userName 
+                        ? isInOrg
+                            ? userName
+                            : STRINGS.REQUESTS.POSITIONS.removedUserName(userName)
+                        : STRINGS.REQUESTS.POSITIONS.deletedUserName;
+                    
+                    const userLabelStyle: StyleProp<TextStyle> = (userName && isInOrg) ? {} : { fontStyle: 'italic' };
+
                     return (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                            <Text style={!userName && { fontStyle: 'italic'}}>{`${userName ? userName : STRINGS.REQUESTS.POSITIONS.removedUserName}`}</Text>
+                            <Text style={userLabelStyle}>{userLabel}</Text>
                             <Text>{dateToTimeString(timestamp)}</Text>
                         </View>
                     )
