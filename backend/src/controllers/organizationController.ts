@@ -113,8 +113,8 @@ export class OrganizationController implements APIController<
         const org = await this.db.resolveOrganization(orgId);
         const protectedOrg = await this.db.protectedOrganization(org); 
         
-        const orgMembers = protectedOrg.members;
-        const removedMembers = protectedOrg.removedMembers;
+        const protectedOrgMembers = protectedOrg.members;
+        const protectedRemovedMembers = protectedOrg.removedMembers;
 
         if (userIds && userIds.length) {
             const orgMembers: ProtectedUser[] = [];
@@ -122,15 +122,15 @@ export class OrganizationController implements APIController<
             const deletedUsers: string[] = [];
 
             for (const id of userIds) {
-                const idx = orgMembers.findIndex(member => member.id == id);
+                const idx = protectedOrgMembers.findIndex(member => member.id == id);
 
                 if (idx != -1) {
-                    orgMembers.push(orgMembers[idx])
+                    orgMembers.push(protectedOrgMembers[idx])
                 } else {
-                    const removedIdx = removedMembers.findIndex(member => member.id == id);
+                    const removedIdx = protectedRemovedMembers.findIndex(member => member.id == id);
 
                     if (removedIdx != -1) {
-                        removedOrgMembers.push(removedMembers[removedIdx])
+                        removedOrgMembers.push(protectedRemovedMembers[removedIdx])
                     } else {
                         deletedUsers.push(id);
                     }
@@ -146,8 +146,8 @@ export class OrganizationController implements APIController<
         } else {
 
             return {
-                orgMembers,
-                removedOrgMembers: removedMembers,
+                orgMembers: protectedOrgMembers,
+                removedOrgMembers: protectedRemovedMembers,
                 deletedUsers: []
             } as TeamMemberMetadata
 

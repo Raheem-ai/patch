@@ -25,7 +25,7 @@ export default class RequestStore implements IRequestStore {
                 return new ObservableMap(entries)
             }
         }
-    }) requests: Map<string, HelpRequest> = new ObservableMap();
+    }) requests: ObservableMap<string, HelpRequest> = new ObservableMap();
 
     // make sure we don't only rely on a successful api call to turn off the crumbs
     @securelyPersistent({
@@ -48,7 +48,7 @@ export default class RequestStore implements IRequestStore {
                 return new ObservableSet(values.length ? values : [])
             }
         }
-    }) seenRequestsToJoinRequest = new Set<string>();
+    }) seenRequestsToJoinRequest = new Set<string>(); //TODO: check if this needs to be an ObservableSet
     
     @persistent() currentRequestIdStack: string[] = [];
     @persistent() filter = HelpRequestFilter.Active;
@@ -557,7 +557,15 @@ export default class RequestStore implements IRequestStore {
     async updateChatReceipt(request: HelpRequest): Promise<void> {
         const chat = request.chat;
 
-        if (!!chat && chat.lastMessageId > chat.userReceipts[userStore().user.id]) {
+        if (!chat) {
+            return
+        }
+
+        const usersLastMessageId = chat.userReceipts[userStore().user.id];
+        const userHasSeenChat = !!usersLastMessageId;
+        const userHasUnreadMessages = !userHasSeenChat || chat.lastMessageId > usersLastMessageId
+
+        if (userHasUnreadMessages) {
             const updatedReq = await api().updateRequestChatReceipt({
                 requestId: request.id,
                 orgId: request.orgId,
@@ -673,8 +681,12 @@ export default class RequestStore implements IRequestStore {
         this.updateRequestInternals(updatedReq);
     }
 
+    // TODO: check that merge works as expected in all cases
     updateOrAddReq(updatedReq: HelpRequest) {
-        this.requests.set(updatedReq.id, updatedReq);
+        this.requests.merge({
+            [updatedReq.id]: updatedReq
+        })
+        // this.requests.set(updatedReq.id, updatedReq);
     }
 
     /** 
@@ -683,11 +695,17 @@ export default class RequestStore implements IRequestStore {
      * AND 
      * 2) the property is used directly by a view (vs indirectly through computed props of the store)
      * */ 
-    updateRequestInternals(updatedReq: HelpRequest) {
-        const req = this.requests.get(updatedReq.id);
 
-        for (const prop in updatedReq) {
-            req[prop] = updatedReq[prop]
-        }
+    
+    // TODO: check that merge works as expected in all cases
+    updateRequestInternals(updatedReq: HelpRequest) {
+        this.requests.merge({
+            [updatedReq.id]: updatedReq
+        })
+        // const req = this.requests.get(updatedReq.id);
+
+        // for (const prop in updatedReq) {
+        //     req[prop] = updatedReq[prop]
+        // }
     }
 }

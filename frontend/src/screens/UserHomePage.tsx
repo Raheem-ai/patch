@@ -131,7 +131,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 {
                     requestStore().myActiveRequests.map(r => {
                         return (
-                            <HelpRequestCard style={styles.activeRequestCard} request={r}/>
+                            <HelpRequestCard style={styles.activeRequestCard} requestId={r.id}/>
                         )
                     })
                 }

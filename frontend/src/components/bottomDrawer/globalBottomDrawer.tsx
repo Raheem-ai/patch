@@ -62,7 +62,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
             <HelpRequestCard 
                 key='activeRequestTab' 
                 onPress={onPress}
-                request={requestStore().activeRequest} 
+                requestId={requestStore().activeRequest.id} 
                 style={[
                     styles.activeRequestCard,
                     { zIndex: styles.container.zIndex }
