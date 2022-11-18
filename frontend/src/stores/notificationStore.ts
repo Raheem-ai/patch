@@ -127,7 +127,9 @@ export default class NotificationStore implements INotificationStore {
         Notifications.removeNotificationSubscription(this.notificationResponseSub)
     }
 
+    // when getting an event from the socket this is not tricggeting the whole loop 
     async onEvent(patchNotification: PatchNotification) {
+        console.log('notificationStore().onEvent()')
         await Notifications.scheduleNotificationAsync({
             content: {
                 body: patchNotification.body,
@@ -138,7 +140,12 @@ export default class NotificationStore implements INotificationStore {
         })
     }
 
+    /**
+     * 1) need to test socket scenario against staging...or figure out how to test it locally?
+     * 2) Should we have a handleNotificationFromSocket()? function
+     */
 
+    // 2) this gets run after showing/not showing the real notification that came in
     handleNotification = async <T extends NotificationEventType>(notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
@@ -192,6 +199,7 @@ export default class NotificationStore implements INotificationStore {
     }
 }
 
+// 1) this gets called by os when a real notification comes in
 Notifications.setNotificationHandler({
     handleNotification: async (notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket;
