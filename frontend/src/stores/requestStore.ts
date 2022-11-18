@@ -597,22 +597,22 @@ export default class RequestStore implements IRequestStore {
 
         const updatedReq = await api().ackRequestNotification(this.orgContext(), requestId);
         
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async joinRequest(requestId: string, positionId: string) {
         const updatedReq = await api().joinRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq)
+        this.updateOrAddReq(updatedReq)
     }
 
     async leaveRequest(requestId: string, positionId: string) {
         const updatedReq = await api().leaveRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq)
+        this.updateOrAddReq(updatedReq)
     }
 
     async requestToJoinRequest(requestId: string, positionId: string) {
         const updatedReq = await api().requestToJoinRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     positionAckKey(userId: string, requestId: string, positionId: string) {
@@ -655,7 +655,7 @@ export default class RequestStore implements IRequestStore {
             const updatedReq = await api().ackRequestsToJoinNotification(this.orgContext(), requestId, unseenJoinRequests);
         
             runInAction(() => {
-                this.updateRequestInternals(updatedReq);
+                this.updateOrAddReq(updatedReq);
             })
         }
     }
@@ -664,7 +664,7 @@ export default class RequestStore implements IRequestStore {
         const updatedReq = await api().confirmRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
         
         runInAction(() => {
-            this.updateRequestInternals(updatedReq);
+            this.updateOrAddReq(updatedReq);
             // handle case where: Request -> approve -> leave -> request
             // TODO: test this works as expected once the 404 fix is in
             this.seenRequestsToJoinRequest.delete(this.positionAckKey(userId, requestId, positionId))
@@ -673,39 +673,17 @@ export default class RequestStore implements IRequestStore {
 
     async denyRequestToJoinRequest(userId: string, requestId: string, positionId: string) {
         const updatedReq = await api().declineRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async removeUserFromRequest(userId: string, requestId: string, positionId: string) {
         const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
-    // TODO: check that merge works as expected in all cases
     updateOrAddReq(updatedReq: HelpRequest) {
         this.requests.merge({
             [updatedReq.id]: updatedReq
         })
-        // this.requests.set(updatedReq.id, updatedReq);
-    }
-
-    /** 
-     * NOTE: use when you're changing a property on the updated Request that
-     * 1) is an update to an array 
-     * AND 
-     * 2) the property is used directly by a view (vs indirectly through computed props of the store)
-     * */ 
-
-    
-    // TODO: check that merge works as expected in all cases
-    updateRequestInternals(updatedReq: HelpRequest) {
-        this.requests.merge({
-            [updatedReq.id]: updatedReq
-        })
-        // const req = this.requests.get(updatedReq.id);
-
-        // for (const prop in updatedReq) {
-        //     req[prop] = updatedReq[prop]
-        // }
     }
 }
