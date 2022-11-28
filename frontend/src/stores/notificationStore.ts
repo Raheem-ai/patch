@@ -127,12 +127,11 @@ export default class NotificationStore implements INotificationStore {
         Notifications.removeNotificationSubscription(this.notificationResponseSub)
     }
 
-    // when getting an event from the socket this is not tricggeting the whole loop 
+    // when getting an event from the socket, schedule for a notification to be immediately processed
     async onEvent(patchNotification: PatchNotification) {
-        console.log('notificationStore().onEvent()')
         await Notifications.scheduleNotificationAsync({
             content: {
-                body: patchNotification.body,
+                body: patchNotification.body || '_default', // need this as the api ignores this call if body is falsy
                 data: patchNotification.payload,
                 categoryIdentifier: patchNotification.payload.event
             },
@@ -140,17 +139,10 @@ export default class NotificationStore implements INotificationStore {
         })
     }
 
-    /**
-     * 1) need to test socket scenario against staging...or figure out how to test it locally?
-     * 2) Should we have a handleNotificationFromSocket()? function
-     */
-
-    // 2) this gets run after showing/not showing the real notification that came in
+    // 2) this gets run after showing/not showing the real notification that came in (or was scheduled)
     handleNotification = async <T extends NotificationEventType>(notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
-
-        console.log('handleNotificatoin: ', type)
 
         const notificationHandler = NotificationHandlers[type];
         
