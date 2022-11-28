@@ -28,7 +28,7 @@ export default class UserStore implements IUserStore {
     passwordResetLoginCode = null;
     loadingCurrentUser = false;
 
-    currentUser: ClientSideFormat<ProtectedUser>;
+    currentUserId: string;
 
     users: ObservableMap<string, ClientSideFormat<ProtectedUser>> = new ObservableMap()
     deletedUsers: ObservableSet<string> = new ObservableSet()
@@ -76,6 +76,10 @@ export default class UserStore implements IUserStore {
 
     userInOrg = (user: Pick<User, 'organizations'>) => {
         return !!user.organizations[this.currentOrgId]
+    }
+
+    get currentUser(): ClientSideFormat<ProtectedUser> {
+        return this.users.get(this.currentUserId);
     }
 
     get usersInOrg() {
@@ -242,7 +246,7 @@ export default class UserStore implements IUserStore {
 
     // TODO: remove this as a concept (should change routing to handle userId in route path)
     pushCurrentUser(user: ClientSideFormat<ProtectedUser>) {
-        this.currentUser = user;
+        this.currentUserId = user.id;
     }
 
     async editUser(userId: string, user: Partial<AdminEditableUser>) {
@@ -264,7 +268,7 @@ export default class UserStore implements IUserStore {
             this.user = me;
 
             if (this.currentUser.id == me.id) {
-                this.currentUser = me;
+                this.currentUserId = me.id;
             }
         })
 
@@ -280,7 +284,7 @@ export default class UserStore implements IUserStore {
         
         runInAction(() => {
             this.users.set(user.id, user);
-            this.currentUser = null
+            this.currentUserId = null
         })
     }
 
