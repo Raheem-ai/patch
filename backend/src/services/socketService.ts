@@ -435,34 +435,22 @@ export class MySocketService {
 
         const joinedConfigs: SendConfig[] = [];
         let acceptedConfig: SendConfig;
-        
-        const responderName = usersOnRequest.get(params.responderId)?.userName 
-            || requestAdmins.get(params.responderId)?.userName
-            || (await this.db.resolveUser(params.responderId)).name
 
+        const accepted = await this.userIdToSendConfig(params.responderId, [usersOnRequest, requestAdmins])
+        
         // make sure user hasn't been removed from org
         if (!(await this.userInOrg(org, params.responderId))) {
             // if they have, the acceptance is a noop
             return
         }
 
-        let accepter = requestAdmins.get(params.accepterId);
+        const accepter = await this.userIdToSendConfig(params.accepterId, [usersOnRequest, requestAdmins])
 
-        if (!accepter) {
-            const fullAccepter = await this.db.resolveUser(params.accepterId);
-            
-            accepter = {
-                userId: fullAccepter.id,
-                userName: fullAccepter.name,
-                pushToken: fullAccepter.push_token,    
-            }
-        }
-
-        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName, org.requestPrefix)
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, accepted.userName, org.requestPrefix)
         const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersAccepted, request.displayId, accepter.userName, org.requestPrefix)
 
         acceptedConfig = {
-            ...accepter,
+            ...accepted,
             body: userAcceptedBody
         } as SendConfig
 
@@ -712,6 +700,26 @@ export class MySocketService {
         })
 
         return admins;
+    }
+
+    async userIdToSendConfig(userId: string, prefetchedStores?: Map<string, Partial<SendConfig>>[]) {
+        if (prefetchedStores) {
+            for (const store of prefetchedStores) {
+                const config = store.get(userId);
+                
+                if (config) {
+                    return config;
+                }
+            }
+        }
+
+        const user = await this.db.resolveUser(userId);
+        
+        return {
+            userId: user.id,
+            userName: user.name,
+            pushToken: user.push_token
+        } as Partial<SendConfig>
     }
 
     async userInOrg(orgId: string | OrganizationDoc, userId: string) {
