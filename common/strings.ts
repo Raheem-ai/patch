@@ -189,7 +189,8 @@ const STRINGS = {
             removeFromPositionDialogText: (userName: string) => `${userName} will no longer be on this position.`,
             removeFromPositionDialogOptionNo: 'Cancel',
             removeFromPositionDialogOptionYes:  `Remove`,    
-            removedUserName: '(Removed)',
+            removedUserName: (name: string) => `${name} (Removed)`,
+            deletedUserName: `(Deleted)`,
         },
         TOGGLE: {
             toggleRequest: (isOpen: boolean) => isOpen ? `Archive this request` : `Re-open this request`,

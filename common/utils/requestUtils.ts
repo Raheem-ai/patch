@@ -1,4 +1,4 @@
-import { CategorizedItem, DefaultRoleIds, HelpRequest, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
+import { CategorizedItem, DefaultRoleIds, HelpRequest, Organization, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 import STRINGS from "../strings";
 
 export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>, usersRemovedFromOrg: string[]): RequestStatus {
@@ -91,7 +91,7 @@ export function userCanJoinRequestPosition(
     request: Pick<HelpRequest, 'positions' | 'teamEvents'>, 
     positionId: string,
     user: ProtectedUser,
-    orgId: string
+    org: Pick<Organization, 'attributeCategories' | 'id'>
 ) {
     // const userAttributes = user.organizations[orgId]?.attributes;
     // const userRoles = user.organizations[orgId]?.roles;
@@ -101,7 +101,7 @@ export function userCanJoinRequestPosition(
         return false;
     }
 
-    const qualified = userQualifiedForPosition(pos, user, orgId);
+    const qualified = userQualifiedForPosition(pos, user, org);
     const currentlyKicked = userCurrentlyKickedFromRequestPosition(request.teamEvents, pos.id, user.id)
 
     return qualified && !currentlyKicked;
@@ -110,11 +110,19 @@ export function userCanJoinRequestPosition(
 export function userQualifiedForPosition(
     pos: Position, 
     user: ProtectedUser,
-    orgId: string
+    org: Pick<Organization, 'attributeCategories' | 'id'>
 ) {
-    const haveAllAttributes = pos.attributes.every(attr => !!user.organizations[orgId]?.attributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId));
+    // TODO: this could be more efficient by building sets if it ever comes to that
+    const haveAllAttributes = pos.attributes.every(attr => {
+        const isValidAttr = !!org.attributeCategories.find(cat => {
+            return cat.id == attr.categoryId && !!cat.attributes.find(catAttr => catAttr.id == attr.itemId)
+        })
+
+        return !isValidAttr || !!user.organizations[org.id]?.attributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId)
+    });
+    
     const haveRole = pos.role == DefaultRoleIds.Anyone
-        || user.organizations[orgId]?.roleIds.find(roleId => roleId == pos.role)
+        || user.organizations[org.id]?.roleIds.find(roleId => roleId == pos.role)
 
     return haveAllAttributes && haveRole;
 }

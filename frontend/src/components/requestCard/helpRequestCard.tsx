@@ -14,7 +14,7 @@ import TestIds from "../../test/ids";
 import { requestDisplayName } from "../../../../common/utils/requestUtils"
 
 type Props = {
-    request: HelpRequest,
+    requestId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
@@ -23,13 +23,14 @@ type Props = {
 };
 
 const HelpRequestCard = observer(({ 
-    request, 
+    requestId, 
     style,
     dark,
     minimal,
     onMapView,
     onPress
 } : Props) => {
+    const request = requestStore().requests.get(requestId);
 
     const [statusOpen, setStatusOpen] = useState(false);
 
@@ -166,7 +167,7 @@ const HelpRequestCard = observer(({
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                        <UserIcon user={responder} style={ 
+                        <UserIcon userId={responder.id} style={ 
                             i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
                                 ? dark
                                     ? styles.assignedResponderIconDark

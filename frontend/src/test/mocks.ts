@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, Organization, OrganizationMetadata, ProtectedUser, RequestStatus, User } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, ProtectedUser, RequestStatus, User } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -87,4 +87,12 @@ export function MockUsers(): User[] {
             bio: '',
         }
     ]
+}
+
+export function MockTeamMemberMetadata(): TeamMemberMetadata { 
+    return { 
+        orgMembers: MockUsers(),
+        removedOrgMembers: [],
+        deletedUsers: []
+    }
 }

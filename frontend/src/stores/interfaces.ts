@@ -24,6 +24,7 @@ export interface IUserStore extends IBaseStore {
     users: Map<string, ClientSideFormat<ProtectedUser>>
     usersInOrg: ClientSideFormat<ProtectedUser>[]
     usersRemovedFromOrg: ClientSideFormat<ProtectedUser>[]
+    deletedUsers: Set<string>;
     currentUser: ClientSideFormat<ProtectedUser>
     loadingCurrentUser: boolean
 
@@ -235,7 +236,6 @@ export interface IRequestStore extends IBaseStore {
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateOrAddReq(updatedReq: HelpRequest): void
-    updateRequestInternals(updatedReq: HelpRequest): void
     
     joinRequest(reqId: string, positionId: string): Promise<void>
     leaveRequest(reqId: string, positionId: string): Promise<void>
