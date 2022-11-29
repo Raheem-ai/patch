@@ -13,7 +13,7 @@ type Props = ScreenProps<'HelpRequestList'>;
 
 const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
     [HelpRequestFilter.Active]: 'Active',
-    [HelpRequestFilter.Closed]: 'Closed',
+    [HelpRequestFilter.Closed]: 'Archived',
     [HelpRequestFilter.All]: 'All'
 }
 
