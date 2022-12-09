@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { requestStore, userStore } from "../../stores/interfaces";
+import { nativeEventStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
@@ -100,6 +100,8 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                                 autoFocus
                                 value={message} 
                                 style={styles.messageInput} 
+                                onFocus={nativeEventStore().onTextFieldFocus}
+                                onBlur={nativeEventStore().onTextFieldBlur}
                                 onChangeText={(s: string) => setMessage(s)}/>
                         </View>
                         <IconButton 
@@ -204,7 +206,8 @@ const styles = StyleSheet.create({
         marginVertical: 12
     },
     myMessageRow: {
-        direction: 'rtl'
+        // direction: 'rtl',
+        flexDirection: 'row-reverse'
     },
     userIcon: {
         marginHorizontal: 12,
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
     }, 
     myMessageBubble: {
         backgroundColor: 'rgba(103, 49, 146, .2)',
-        marginLeft: 12
+        marginRight: 12
     },
     messageText: {
         color: '#000'

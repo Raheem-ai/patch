@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, StyleProp, ViewStyle } from 'react-native';
-import { HeaderHeight, InteractiveHeaderHeight, TabbedScreenHeaderHeight } from '../../constants';
+import { ActiveRequestTabHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid, TabbedScreenHeaderHeight } from '../../constants';
 import { bottomDrawerStore } from '../../stores/interfaces';
+import Constants from 'expo-constants';
 
 type KeyboardAwareProps = React.PropsWithChildren<{
     insideTabView?: boolean;
@@ -17,7 +18,9 @@ const KeyboardAwareArea = observer(function(props: KeyboardAwareProps) {
 
     const headerOffset = isInNonMinimizableBottomDrawerView
         ? InteractiveHeaderHeight
-        : HeaderHeight
+        : isAndroid
+            ? Constants.statusBarHeight
+            : HeaderHeight;
 
     const verticalOffset = headerOffset 
         + (props.insideTabView

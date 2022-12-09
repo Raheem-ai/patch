@@ -4,7 +4,6 @@ import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore,
 import TestIds from "../../test/ids"
 import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
-import { requestDisplayName } from "../../../../common/utils/requestUtils"
 import STRINGS from "../../../../common/strings"
 
 export type IHeaderAction = {
@@ -113,7 +112,7 @@ const HeaderConfig: {
                 // yet so make sure we don't throw trying to access it
                 : requestStore().currentRequest?.displayId;
 
-            return requestDisplayName(prefix(), id)
+            return STRINGS.REQUESTS.requestDisplayName(prefix(), id)
         };
 
         const leftActions = [{

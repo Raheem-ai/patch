@@ -9,7 +9,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
 import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
-import { isPasswordValid } from '../../../common/constants';
+import { isPasswordValid } from '../../../common/utils/validationUtils';
 
 export default function UpdatePasswordForm() {
     const [password, setPassword] = useState('');

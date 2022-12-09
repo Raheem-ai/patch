@@ -7,7 +7,6 @@ import { HelpRequest, RequestDetailsTabs } from "../../../../common/models";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames, ICONS } from "../../types";
-import { requestDisplayName } from "../../../../common/utils/requestUtils"
 import STRINGS from "../../../../common/strings";
 
 type Props = {
@@ -62,7 +61,7 @@ const HelpRequestChatPreview = observer(({
         return (
             <View style={{flexDirection: 'column', flex: 1}}>
                 <View style={styles.headerRow}>
-                    <Text style={styles.idText}>{requestDisplayName(prefix, id)}</Text>
+                    <Text style={styles.idText}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</Text>
                 </View>
                 <View style={styles.detailsRow}>
                     <Text style={styles.detailText} numberOfLines={3}>

@@ -9,12 +9,13 @@ export default class NativeEventStore implements INativeEventStore {
     keyboardHeight = 0
     keyboardOpen = false;
     keyboardInTransition = false;
+    keyboardOpening = false;
+    keyboardClosing = false;
 
     constructor() {
         makeAutoObservable(this)
 
-        // covering all the bases as willHide/Show is smoother but doesn't have as much
-        // support on android
+        // covering all the bases as willHide/Show is smoother but only keyboardDidShow and keyboardDidHide events are available on Android
         Keyboard.addListener('keyboardDidShow', this.onKeyboardDidShow);
         Keyboard.addListener('keyboardDidHide', this.onKeyboardDidHide);
         Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow);
@@ -34,17 +35,29 @@ export default class NativeEventStore implements INativeEventStore {
         })
     }
 
+    onTextFieldFocus = () => {
+        this.keyboardOpening = true;
+    }
+
+    onTextFieldBlur = () => {
+        this.keyboardClosing = true;
+    }
+
     onKeyboardDidShow = (e: KeyboardEvent) => {
         const toHeight = e.endCoordinates.height;
         this.keyboardHeight = toHeight;
         this.keyboardOpen = true;
         this.keyboardInTransition = false;
+        this.keyboardOpening = false;
+        this.keyboardClosing = false;
     }
 
     onKeyboardDidHide = (e: KeyboardEvent) => {
         this.keyboardHeight = 0
         this.keyboardOpen = false
         this.keyboardInTransition = false;
+        this.keyboardOpening = false;
+        this.keyboardClosing = false;
     }
 
     onKeyboardWillShow = (e: KeyboardEvent) => {

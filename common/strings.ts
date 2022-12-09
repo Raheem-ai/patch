@@ -1,4 +1,3 @@
-import { requestDisplayName } from './utils/requestUtils';
 import { minPasswordLength } from '../common/constants';
 
 type CaseAndNumber = {
@@ -136,7 +135,7 @@ const STRINGS = {
         helpRequestList: 'Requests',
         helpRequestMap: 'Requests',
         helpRequestIdWhileLoading: '',
-        helpRequestChat: (prefix: string, id: string) => `Channel for ${requestDisplayName(prefix, id)}`,
+        helpRequestChat: (prefix: string, id: string) => `Channel for ${STRINGS.REQUESTS.requestDisplayName(prefix, id)}`,
         teamList: 'Team',
         settings: 'Settings',
         channels: 'Channels',
@@ -147,9 +146,14 @@ const STRINGS = {
         forgotPasswordSubject: `Reset Patch password`,
     },
     REQUESTS: {
+        requestDisplayName: (prefix, requestId) => {
+            return !!(prefix && requestId)
+                ? prefix + '–' + requestId
+                : STRINGS.cap(STRINGS.ELEMENTS.request());
+        },
         updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
         createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
-        editRequestTitle: (prefix: string, requestName: string) => `Edit ${requestDisplayName(prefix, requestName)}`,
+        editRequestTitle: (prefix: string, requestName: string) => `Edit ${STRINGS.REQUESTS.requestDisplayName(prefix, requestName)}`,
         description: 'Description',
         callStart: 'Call start',
         callEnd: 'Call end',

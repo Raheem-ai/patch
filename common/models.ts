@@ -1,6 +1,5 @@
 import { AtLeast } from '.';
 import { allEnumValues } from './utils';
-import { positionStats } from './utils/requestUtils';
 
 export type AnyFunction = (...args: any[]) => any;
 
@@ -402,10 +401,9 @@ export enum RequestStatus {
     Closed
 }
 
-export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((req: HelpRequest, usersRemovedFromOrg: string[]) => string) } = {
+export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((stats: AggregatePositionStats) => string) } = {
     [RequestStatus.Unassigned]: 'Unassigned',
-    [RequestStatus.PartiallyAssigned]: (req: HelpRequest, usersRemovedFromOrg: string[]) => {
-        const stats = positionStats(req.positions, usersRemovedFromOrg);
+    [RequestStatus.PartiallyAssigned]: (stats: AggregatePositionStats) => {
         return `${stats.totalMinFilled} of ${stats.totalMinToFill}`
     },
     [RequestStatus.Ready]: 'Ready',
@@ -1761,3 +1759,9 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
         ]
     }
 ]
+
+export type AggregatePositionStats = {
+    totalMinFilled: number,
+    totalMinToFill: number,
+    totalFilled: number
+}

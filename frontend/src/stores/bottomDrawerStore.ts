@@ -1,5 +1,5 @@
 import { Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, formStore, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions, Keyboard } from 'react-native';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
@@ -82,6 +82,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         await requestStore().init();
         await userStore().init();
         await navigationStore().init();
+        await formStore().init();
 
         if (userStore().signedIn) {
             this.setupAnimationReactions()
@@ -195,10 +196,13 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     get activeRequestShouldShow() {
         const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
+        
         const onActiveRequestDetails = navigationStore().currentRoute == routerNames.helpRequestDetails 
             && requestStore().currentRequest.id == requestStore().activeRequest.id;
 
-        return !(this.drawerShowing && this.expanded) && !onDisabledRoute && !onActiveRequestDetails
+        const hideOnAndroid = isAndroid && ((nativeEventStore().keyboardOpening || nativeEventStore().keyboardOpen) && !nativeEventStore().keyboardClosing);
+
+        return !(this.drawerShowing && this.expanded) && !onDisabledRoute && !onActiveRequestDetails && !hideOnAndroid && !formStore().belowSurface
     }
 
     get drawerShouldShow() {

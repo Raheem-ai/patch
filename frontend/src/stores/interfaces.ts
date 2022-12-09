@@ -3,6 +3,7 @@ import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
 import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
+import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -372,8 +373,12 @@ export const BottomDrawerHandleHeight = 64;
 export interface INativeEventStore extends IBaseStore {
     readonly keyboardHeight: number;
     keyboardOpen: boolean;
+    keyboardOpening: boolean;
+    keyboardClosing: boolean;
 
     hideKeyboard(): Promise<void>
+    onTextFieldFocus(): void
+    onTextFieldBlur(): void
 }
 
 export namespace INativeEventStore {
@@ -588,6 +593,19 @@ export interface IAppUpdateStore extends IBaseStore {
     waitingForReload: boolean
 }
 
+export namespace IFormStore {
+    export const id = Symbol('IFormStore');
+}
+
+export interface IFormStore extends IBaseStore {
+    inputViewMap: FormInputViewMap
+    belowSurface: boolean
+
+    increaseDepth(): void
+    decreaseDepth(): void
+    clearDepth(): void
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -613,6 +631,7 @@ export const manageAttributesStore = () => getStore<IManageAttributesStore>(IMan
 export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
 export const organizationSettingsStore = () => getStore<IOrganizationSettingsStore>(IOrganizationSettingsStore);
 export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
+export const formStore = () => getStore<IFormStore>(IFormStore);
 
 export const AllStores = [
     IUserStore,
@@ -639,5 +658,6 @@ export const AllStores = [
     IManageTagsStore,
     INavigationStore,
     IOrganizationSettingsStore,
-    IAppUpdateStore
+    IAppUpdateStore,
+    IFormStore
 ]

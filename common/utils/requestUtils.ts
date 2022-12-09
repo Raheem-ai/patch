@@ -1,5 +1,4 @@
-import { CategorizedItem, DefaultRoleIds, HelpRequest, Organization, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
-import STRINGS from "../strings";
+import { AggregatePositionStats, DefaultRoleIds, HelpRequest, Organization, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 
 export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>, usersRemovedFromOrg: string[]): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
@@ -32,12 +31,6 @@ export function getPreviousOpenStatus(request: Pick<HelpRequest, 'statusEvents'>
     }
 
     return RequestStatus.Unassigned;
-}
-
-type AggregatePositionStats = {
-    totalMinFilled: number,
-    totalMinToFill: number,
-    totalFilled: number
 }
 
 export function positionStats(positions: Position[], usersRemovedFromOrg?: string[]): AggregatePositionStats {
@@ -187,10 +180,4 @@ export function usersAssociatedWithRequest(req: Pick<HelpRequest, 'dispatcherId'
 
 export function userOnRequest(userId: string, req: Pick<HelpRequest, 'positions'>) {
     return req.positions.some(pos => pos.joinedUsers.includes(userId))
-}
-
-export function requestDisplayName(prefix, requestId) {
-    return !!(prefix && requestId)
-        ? prefix + '–' + requestId
-        : STRINGS.cap(STRINGS.ELEMENTS.request());
 }
