@@ -329,7 +329,8 @@ export interface IBottomDrawerStore extends IBaseStore {
 
     drawerContentHeight: Animated.AnimatedInterpolation
     contentHeight: Animated.AnimatedInterpolation
-
+    
+    contentHeightChange(): Promise<void>
     show(view: BottomDrawerView, expanded?: boolean): void;
     hide(): void// should this take an optional callback?
     expand(): void
@@ -373,12 +374,8 @@ export const BottomDrawerHandleHeight = 64;
 export interface INativeEventStore extends IBaseStore {
     readonly keyboardHeight: number;
     keyboardOpen: boolean;
-    keyboardOpening: boolean;
-    keyboardClosing: boolean;
 
     hideKeyboard(): Promise<void>
-    onTextFieldFocus(): void
-    onTextFieldBlur(): void
 }
 
 export namespace INativeEventStore {
@@ -562,6 +559,7 @@ export namespace IManageAttributesStore {
 
 export interface INavigationStore extends IBaseStore {
     currentRoute: keyof RootStackParamList;
+    currentTab: string;
 
     navigateToSync: (targetRoute) => Promise<void>
 }

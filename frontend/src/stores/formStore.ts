@@ -107,7 +107,9 @@ export default class FormStore implements IFormStore {
     }
 
     constructor() {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {
+            inputViewMap: false // don't want to make the classes in this map observable
+        })
     }
 
     clear() {
