@@ -26,7 +26,7 @@ const KeyboardAwareArea = observer(function(props: KeyboardAwareProps) {
         + (props.insideTabView
             ? TabbedScreenHeaderHeight
             : 0) 
-        
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"} 

@@ -393,8 +393,6 @@ export default class Form extends React.Component<FormProps> {
         const back = () => {
             navigation.goBack()
             this.props.onBack?.()
-            // TODO: make sure we dont need this
-            // formStore().leavingScreenView()
         }
 
         return config.screen({ back })
