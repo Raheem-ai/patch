@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { requestStore, userStore } from "../../stores/interfaces";
+import { bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
@@ -97,7 +97,17 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                             <TextInput 
                                 testID={TestIds.requestChatChannel.textInput}
                                 multiline
-                                autoFocus
+                                ref={(textInputRef) => {
+                                    if (textInputRef) {
+                                        setTimeout(async () => {
+                                            // autofocus on ios happens while contentHeight animations are still
+                                            // happening which messes with the KeyboardAwareArea...this waits for 
+                                            // height changes to settle and then focuses
+                                            await bottomDrawerStore().contentHeightChange()
+                                            textInputRef.focus()
+                                        })
+                                    }
+                                }}
                                 value={message} 
                                 style={styles.messageInput} 
                                 onChangeText={(s: string) => setMessage(s)}/>
@@ -204,7 +214,8 @@ const styles = StyleSheet.create({
         marginVertical: 12
     },
     myMessageRow: {
-        direction: 'rtl'
+        // direction: 'rtl',
+        flexDirection: 'row-reverse'
     },
     userIcon: {
         marginHorizontal: 12,
@@ -225,7 +236,7 @@ const styles = StyleSheet.create({
     }, 
     myMessageBubble: {
         backgroundColor: 'rgba(103, 49, 146, .2)',
-        marginLeft: 12
+        marginRight: 12
     },
     messageText: {
         color: '#000'

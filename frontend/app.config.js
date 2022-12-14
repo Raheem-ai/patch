@@ -2,23 +2,17 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
+import { 
+	inEASBuild, 
+	ENV, 
+	prodSecretSuffix, 
+	stagingSecretSuffix, 
+	devSecretSuffix,
+	servicesJsonPath
+} from './eas_build/constants';
+
 // NOTE: put your ngrok url here for development
 let apiHost = ''
-// increment every time you do a build you're going to submit a new release 
-const RELEASE_NUMBER = '0.0.9'
-// increment this any time you want to submit a new release to the play store
-const BUILD_COUNT = 3
-
-// provided by build
-const ENV = process.env._ENVIRONMENT 
-// provided by local runner
-const DEV_ENV = process.env._DEV_ENVIRONMENT 
-// provided by whatever script is running update
-const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
-// only needed during build (provided by eas build env)
-// const PLATFORM = process.env.EAS_BUILD_PLATFORM
-// running in eas build env
-const inEASBuild = process.env.EAS_BUILD == 'true';
 
 /**
  * ONLY NEEDED FOR BUILD TIME
@@ -28,8 +22,16 @@ const inEASBuild = process.env.EAS_BUILD == 'true';
  * 
  * For Android: 
  * - corresponds to "versionName"
+ * 
+ * NOTE: increment every time you do a build you're going to submit a new release 
  */
- let VERSION = RELEASE_NUMBER
+const VERSION = '0.0.9'
+// increment this any time you want to submit a new release to the play store
+const BUILD_COUNT = 3
+// provided by local runner
+const DEV_ENV = process.env._DEV_ENVIRONMENT 
+// provided by whatever script is running update
+const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
 
 // just signifies if a build of a particular version is for prod/staging and ios/android of that version
 // and these values will throw if we are doing a real build without passing in the required env variables
@@ -38,10 +40,11 @@ let IOS_BUILD_NUMBER = '2'
 let ANDROID_VERSION_CODE = BUILD_COUNT
 // let ANDROID_VERSION_CODE = -1
 
- let SENTRY_AUTH_TOKEN = ''
- let SENTRY_DSN = ''
- let GOOGLE_MAPS_KEY = ''
- let BRANCH_KEY = ''
+let SENTRY_AUTH_TOKEN = ''
+let SENTRY_DSN = ''
+let GOOGLE_MAPS_KEY = ''
+let GOOGLE_FCM_KEY = ''
+let BRANCH_KEY = ''
 
 function loadLocalEnv(env) {
 	const envConfigPath = path.resolve(__dirname, `../backend/env/.env.${env}`) 
@@ -83,10 +86,8 @@ function resolveVersionInfo(env) {
 }
 
 function resolveSecrets(env) {
-	const prodSecretSuffix = '_PROD'
-	const stagingSecretSuffix = '_STAGING'
-
 	let googleMapsKey = 'GOOGLE_MAPS'
+	let googleFCMKey = 'GOOGLE_FCM_CREDS'
 	let sentryKey = 'SENTRY_CREDS'
 	let branchKey = 'BRANCH_CREDS'
 
@@ -95,12 +96,17 @@ function resolveSecrets(env) {
 		googleMapsKey += prodSecretSuffix
 		sentryKey += prodSecretSuffix
 		branchKey += prodSecretSuffix
+		googleFCMKey += prodSecretSuffix
 	} else if (inEASBuild 
 		&& (env == 'staging' || env == 'dev') // dev & staging use the same secrets for now
 	) {
 		googleMapsKey += stagingSecretSuffix
 		sentryKey += stagingSecretSuffix
 		branchKey += stagingSecretSuffix
+
+		googleFCMKey += env == 'dev'
+			? devSecretSuffix
+			: stagingSecretSuffix
 	}
 
 	// NOTE:
@@ -289,6 +295,7 @@ const config = {
 		}
 	  },
 	  "android": {
+		"googleServicesFile": servicesJsonPath,
 		"versionCode": ANDROID_VERSION_CODE,
 		"adaptiveIcon": {
 		  "foregroundImage": "./assets/adaptive-icon.png",

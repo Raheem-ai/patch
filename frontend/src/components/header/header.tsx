@@ -7,7 +7,7 @@ import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOpti
 import { RootStackParamList, routerNames, Colors, ICONS } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore, formStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
 import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, InteractiveHeaderHeight, isAndroid } from '../../constants';
 import { unwrap } from '../../../../common/utils';
@@ -173,6 +173,7 @@ const Header = observer((props: Props) => {
                 }
 
                 navigateTo(routerNames[opt.routeTo])
+                formStore().clearDepth()
                 closeHeader()
             }
         }
@@ -207,6 +208,7 @@ const Header = observer((props: Props) => {
 
                 if (opt.routeTo) {
                     navigateTo(routerNames[opt.routeTo])
+                    formStore().clearDepth()
                 } else if (opt.onPress) {
                     opt.onPress()
                 }

@@ -15,7 +15,6 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import TestIds from "../../../test/ids";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import { rightNow } from "../../../../../common/utils";
 
 type Props = {}
@@ -69,7 +68,14 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.REQUESTS.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
+                    const reqName = STRINGS.REQUESTS.requestDisplayName(
+                        organizationStore().metadata.requestPrefix, 
+                        createdReq.displayId
+                    )
+
+                    const successMsg = STRINGS.REQUESTS.createdRequestSuccess(reqName)
+
+                    alertStore().toastSuccess(successMsg)
                     createRequestStore().clear()
                     bottomDrawerStore().hide()
                 },

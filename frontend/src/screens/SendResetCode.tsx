@@ -10,7 +10,7 @@ import STRINGS from '../../../common/strings';
 import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 
-import { isEmailValid } from '../../../common/constants';
+import { isEmailValid } from '../../../common/utils/validationUtils';
 import { linkBaseUrl } from '../config';
 
 export default function ForgotPasswordForm() {

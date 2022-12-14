@@ -13,7 +13,6 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
 
@@ -60,8 +59,15 @@ class EditHelpRequest extends React.Component<Props> {
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
+
+                    const reqName = STRINGS.REQUESTS.requestDisplayName(
+                        organizationStore().metadata.requestPrefix, 
+                        requestStore().currentRequest.displayId
+                    )
+
+                    const successMsg = STRINGS.REQUESTS.updatedRequestSuccess(reqName)
         
-                    alertStore().toastSuccess(STRINGS.REQUESTS.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
+                    alertStore().toastSuccess(successMsg)
         
                     bottomDrawerStore().hide()
                 },

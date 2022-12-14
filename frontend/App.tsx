@@ -139,7 +139,7 @@ function App() {
                         barStyle={'light-content'}
                         // just for android so it's behavior is *more* similiar to ios
                         translucent={true} />
-                    <Stack.Navigator screenOptions={{ header, headerMode: 'float' }} initialRouteName={initialRoute}>
+                    <Stack.Navigator screenOptions={{ header, headerMode: 'float', gestureEnabled: false }} initialRouteName={initialRoute}>
                         {/* <Stack.Screen name={routerNames.landing} component={LandingPage} /> */}
                         <Stack.Screen name={routerNames.landing} component={SignInForm} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />

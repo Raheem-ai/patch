@@ -1,5 +1,5 @@
 import { Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, formStore, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions, Keyboard } from 'react-native';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
@@ -11,6 +11,7 @@ import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
+import { RequestDetailsTabs } from '../../../common/models';
 
 /**
  * open minimizable view
@@ -43,6 +44,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     // non bottom drawer content height here is weird
     contentHeight = new Animated.Value(0)
     drawerContentHeight = new Animated.Value(0)
+    contentHeightInFlux = false
 
     expanded: boolean = false;
     showing: boolean = false;
@@ -82,6 +84,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         await requestStore().init();
         await userStore().init();
         await navigationStore().init();
+        await formStore().init();
 
         if (userStore().signedIn) {
             this.setupAnimationReactions()
@@ -160,7 +163,21 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                 duration: 300,
                 useNativeDriver: false
             })
-        ]).start()
+        ]).start(() => {
+            runInAction(() => {
+                this.contentHeightInFlux = false
+            }) 
+        })
+
+        this.contentHeightInFlux = true;
+    }
+
+    async contentHeightChange() {
+        if (!this.contentHeightInFlux) {
+            return
+        }
+
+        await when(() => !this.contentHeightInFlux)
     }
 
     get viewId() {
@@ -195,10 +212,14 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
     get activeRequestShouldShow() {
         const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
+        
         const onActiveRequestDetails = navigationStore().currentRoute == routerNames.helpRequestDetails 
             && requestStore().currentRequest.id == requestStore().activeRequest.id;
 
-        return !(this.drawerShowing && this.expanded) && !onDisabledRoute && !onActiveRequestDetails
+        const inRequestDetailsChat = navigationStore().currentRoute == routerNames.helpRequestDetails 
+            && navigationStore().currentTab == RequestDetailsTabs.Channel;
+
+        return !(this.drawerShowing && this.expanded) && !onDisabledRoute && !onActiveRequestDetails && !inRequestDetailsChat && !formStore().belowSurface
     }
 
     get drawerShouldShow() {

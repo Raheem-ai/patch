@@ -1,9 +1,11 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 import { VisualArea } from "./helpers/visualArea";
 import { Colors } from "../types";
 import { TabbedScreenHeaderHeight } from "../constants";
+import { navigationStore } from "../stores/interfaces";
+import { runInAction } from "mobx";
 
 type TabConfig = {
     label : string,
@@ -49,6 +51,20 @@ const TabbedScreen: React.FC<Props> = ({
     const initialTab = defaultTab
         ? tabs.find((t) => t.label == defaultTab) || null
         : tabs[0] || null;
+    
+    useEffect(() => {
+        runInAction(() => {
+            navigationStore().currentTab = initialTab.label
+        })
+    }, [])
+
+    const selectTab = (tab: TabConfig) => {
+        setSelectedTab(tab)
+        
+        runInAction(() => {
+            navigationStore().currentTab = tab.label
+        })
+    }
 
     const [ selectedTab, setSelectedTab ] = useState<TabConfig>(initialTab);
 
@@ -61,7 +77,7 @@ const TabbedScreen: React.FC<Props> = ({
                     : i == 0;
 
             return (
-                <Pressable key={t.label} onPress={() => setSelectedTab(t)} style={[
+                <Pressable key={t.label} onPress={() => selectTab(t)} style={[
                     styles.headerSection,
                     i == 0 ? styles.firstSection : null,
                     i == tabs.length - 1 ? styles.lastSection : null,
