@@ -6,6 +6,7 @@ import { Colors } from "../types";
 import { TabbedScreenHeaderHeight } from "../constants";
 import { navigationStore } from "../stores/interfaces";
 import { runInAction } from "mobx";
+import { red100 } from "react-native-paper/lib/typescript/styles/colors";
 
 type TabConfig = {
     label : string,
@@ -130,7 +131,6 @@ const styles = StyleSheet.create({
     header: {
         height: TabbedScreenHeaderHeight,
         width: Dimensions.get('screen').width,
-        paddingTop: 16,
         backgroundColor: Colors.backgrounds.tabs,
     },
     body: {
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     headerSection: {
         paddingHorizontal: 4,
         marginHorizontal: 8,
+        paddingTop: 16,
     },
     firstSection: {
         marginLeft: 16,
