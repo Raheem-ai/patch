@@ -158,5 +158,4 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.backgrounds.standard,
         borderBottomWidth: 3
     }
-
 })
