@@ -6,7 +6,6 @@ import { Colors } from "../types";
 import { TabbedScreenHeaderHeight } from "../constants";
 import { navigationStore } from "../stores/interfaces";
 import { runInAction } from "mobx";
-import { red100 } from "react-native-paper/lib/typescript/styles/colors";
 
 type TabConfig = {
     label : string,
