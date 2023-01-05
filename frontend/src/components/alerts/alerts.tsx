@@ -69,7 +69,7 @@ export const Alerts = observer(() => {
                 <ScrollView>
                     <Text style={styles.toastText}>{alertStore().toast.message}</Text>
                 </ScrollView>
-                {!alertStore().toast.dismissable
+                {(alertStore().toast.dismissable !== undefined) && !alertStore().toast.dismissable
                     ? null
                     : <IconButton
                         style={styles.toastDismissButton}
