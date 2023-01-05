@@ -15,7 +15,6 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import TestIds from "../../../test/ids";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import { rightNow } from "../../../../../common/utils";
 
 type Props = {}
@@ -69,11 +68,18 @@ class CreateHelpRequest extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    alertStore().toastSuccess(STRINGS.REQUESTS.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
+                    const reqName = STRINGS.REQUESTS.requestDisplayName(
+                        organizationStore().metadata.requestPrefix, 
+                        createdReq.displayId
+                    )
+
+                    const successMsg = STRINGS.REQUESTS.createdRequestSuccess(reqName)
+
+                    alertStore().toastSuccess(successMsg)
                     createRequestStore().clear()
                     bottomDrawerStore().hide()
                 },
-                label: 'Add',
+                label: STRINGS.INTERFACE.add,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -122,16 +128,16 @@ class CreateHelpRequest extends React.Component<Props> {
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: () => createRequestStore().notes,
-                        headerLabel: () => 'Description',
-                        placeholderLabel: () => 'Description',
+                        headerLabel: () => STRINGS.REQUESTS.description,
+                        placeholderLabel: () => STRINGS.REQUESTS.description,
                         type: 'TextArea',
                         required: true,
                     },
                     // Type of request
                     {
                         type: 'CategorizedItemList',
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
+                        headerLabel: () => STRINGS.REQUESTS.requestType,
+                        placeholderLabel: () => STRINGS.REQUESTS.requestType,
                         onSave: (type) => createRequestStore().type = categorizedItemsToRequestType(type),
                         val: () => {
                             return requestTypesToCategorizedItems(createRequestStore().type)
@@ -160,8 +166,8 @@ class CreateHelpRequest extends React.Component<Props> {
                         testID: TestIds.createRequest.inputs.location,
                         name: 'location',
                         previewLabel: () => createRequestStore().location?.address,
-                        headerLabel: () => 'Location',
-                        placeholderLabel: () => 'Location',
+                        headerLabel: () => STRINGS.REQUESTS.Location,
+                        placeholderLabel: () => STRINGS.REQUESTS.Location,
                         type: 'Map',
                         // required: true
                     },
@@ -178,7 +184,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.createRequest.inputs.callStart,
                         name: 'callStart',
-                        placeholderLabel: () => 'Call start',
+                        placeholderLabel: () => STRINGS.REQUESTS.callStart,
                         type: 'TextInput',
                         icon: ICONS.timeCallStarted,
                         props: {
@@ -200,7 +206,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.createRequest.inputs.callEnd,
                         name: 'callEnd',
-                        placeholderLabel: () => 'Call end',
+                        placeholderLabel: () => STRINGS.REQUESTS.callEnd,
                         type: 'TextInput',
                         props: {
                             inlineAction: {
@@ -220,7 +226,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.createRequest.inputs.callerName,
                         name: 'callerName',
-                        placeholderLabel: () => 'Caller name',
+                        placeholderLabel: () => STRINGS.REQUESTS.callerName,
                         type: 'TextInput',
 //                        icon: ICONS.callerContactInfo
                         // required: true
@@ -236,7 +242,7 @@ class CreateHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.createRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
-                        placeholderLabel: () => 'Caller contact info',
+                        placeholderLabel: () => STRINGS.REQUESTS.callerContactInfo,
                         type: 'TextInput',
                     },
                 ],
@@ -250,8 +256,8 @@ class CreateHelpRequest extends React.Component<Props> {
                         return createRequestStore().positions;
                     },
                     isValid: () => true,
-                    headerLabel: () => 'Responders needed',
-                    placeholderLabel: () => 'Responders needed',
+                    headerLabel: () => STRINGS.REQUESTS.positions,
+                    placeholderLabel: () => STRINGS.REQUESTS.positions,
                     icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
@@ -274,8 +280,8 @@ class CreateHelpRequest extends React.Component<Props> {
                     testID: TestIds.createRequest.inputs.priority,
                     name: 'priority',
                     previewLabel: () => RequestPriorityToLabelMap[createRequestStore().priority],
-                    headerLabel: () => 'Priority',
-                    placeholderLabel: () => 'Priority',
+                    headerLabel: () => STRINGS.REQUESTS.priority,
+                    placeholderLabel: () => STRINGS.REQUESTS.priority,
                     type: 'List',
                     icon: createRequestStore().priority == 2 
                         ? ICONS.priority3

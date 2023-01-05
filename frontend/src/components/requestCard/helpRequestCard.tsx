@@ -11,10 +11,10 @@ import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
 import TestIds from "../../test/ids";
-import { requestDisplayName } from "../../../../common/utils/requestUtils"
+import { positionStats } from "../../../../common/utils/requestUtils";
 
 type Props = {
-    request: HelpRequest,
+    requestId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
@@ -23,13 +23,14 @@ type Props = {
 };
 
 const HelpRequestCard = observer(({ 
-    request, 
+    requestId, 
     style,
     dark,
     minimal,
     onMapView,
     onPress
 } : Props) => {
+    const request = requestStore().requests.get(requestId);
 
     const [statusOpen, setStatusOpen] = useState(false);
 
@@ -61,7 +62,7 @@ const HelpRequestCard = observer(({
         return (
 
             <View style={styles.headerRow}>
-                <Text style={[styles.idText, dark ? styles.darkText : null]}>{requestDisplayName(prefix, id)}</Text>
+                <Text style={[styles.idText, dark ? styles.darkText : null]}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</Text>
                 {
                     address
                         ? <View style={styles.locationContainer}>
@@ -166,7 +167,7 @@ const HelpRequestCard = observer(({
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                        <UserIcon user={responder} style={ 
+                        <UserIcon userId={responder.id} style={ 
                             i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
                                 ? dark
                                     ? styles.assignedResponderIconDark
@@ -197,7 +198,7 @@ const HelpRequestCard = observer(({
         
         const label = typeof potentialLabel == 'string'
             ? potentialLabel
-            : potentialLabel(request, userStore().usersRemovedFromOrg.map(u => u.id));
+            : potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(u => u.id)));
 
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
             && (!request.chat.userReceipts[userStore().user.id] 

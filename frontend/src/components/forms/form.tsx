@@ -6,12 +6,11 @@ import { computed, observable, runInAction } from "mobx";
 import { FormInputConfig, InlineFormInputViewConfig, ScreenFormInputViewConfig, SectionScreenViewProps, SectionInlineViewProps, ScreenFormInputConfig, InlineFormInputConfig, SectionLabelViewProps, CompoundFormInputConfig, StandAloneFormInputConfig, NavigationFormInputConfig, ValidatableFormInputConfig, Grouped, AdHocScreenConfig } from "./types";
 import { unwrap } from "../../../../common/utils";
 import { Colors, ICONS } from "../../types";
-import { nativeEventStore } from "../../stores/interfaces";
+import { formStore, nativeEventStore } from "../../stores/interfaces";
 import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
-import { FormViewMap } from "./config";
 
 const Stack = createStackNavigator();
 
@@ -210,7 +209,7 @@ export default class Form extends React.Component<FormProps> {
                             groupPosition={position}/>
             } else {
             
-                const viewConfig = FormViewMap[inputConfig.type];
+                const viewConfig = formStore().inputViewMap[inputConfig.type];
 
                 if (!viewConfig) {
                     throw `View config for input type: ${inputConfig.type} hasn't been set up`
@@ -400,7 +399,7 @@ export default class Form extends React.Component<FormProps> {
     }
 
     inputScreen = (inputConfig: ScreenFormInputConfig) => ({ navigation, route }: StackScreenProps<any>) => {
-        const viewConfig = FormViewMap[inputConfig.type];
+        const viewConfig = formStore().inputViewMap[inputConfig.type];
 
         const ScreenComponent: ComponentType<SectionScreenViewProps> = (viewConfig as ScreenFormInputViewConfig).screenComponent;
         
@@ -418,6 +417,7 @@ export default class Form extends React.Component<FormProps> {
             const back = () => {
                 navigation.goBack()
                 this.props.onBack?.()
+                formStore().decreaseDepth()
             }
 
             const paramsFromLabel = route.params;
@@ -437,6 +437,7 @@ export default class Form extends React.Component<FormProps> {
         const back = () => {
             navigation.goBack()
             this.props.onBack?.()
+            formStore().decreaseDepth()
         }
 
         return inputConfig.screen({ back });
@@ -453,7 +454,7 @@ export default class Form extends React.Component<FormProps> {
     render() {
         return (
             <NavigationContainer sentry-label={this.props.testID}  independent onStateChange={this.saveRoute}>
-                <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: Colors.backgrounds.standard }}}  initialRouteName={this.homeScreenId}>
+                <Stack.Navigator screenOptions={{ gestureEnabled: false, headerShown: false, cardStyle: { backgroundColor: Colors.backgrounds.standard }}}  initialRouteName={this.homeScreenId}>
                     {/* setup form home screen */}
                     <Stack.Screen name={this.homeScreenId} component={this.listView} />
                     {   // setup navigation input screen components
@@ -529,6 +530,7 @@ const DefaultSection = observer((props: {
             return;
         }
 
+        formStore().increaseDepth()
         props.openLink(props.linkTo);
     }
 
@@ -681,6 +683,7 @@ const LabelSection = observer((props: {
             return;
         }
 
+        formStore().increaseDepth()
         props.openLink(props.linkTo, params);
     }
 
@@ -756,6 +759,7 @@ const NavigationSection = observer((props: {
             return;
         }
 
+        formStore().increaseDepth()
         props.openLink(props.linkTo);
     }
 
@@ -804,7 +808,7 @@ const NavigationSection = observer((props: {
                 {
                     typeof props.inputConfig.label == 'function'
                         ? <View style={{ flex: 1 }}>
-                            { props.inputConfig.label({ expand: resolvedExpand }) }
+                            { props.inputConfig.label({ expand: resolvedExpand, testID: props.inputConfig.testID }) }
                         </View>
                         : <Text style={[styles.label, { flex: 1 }]}>{props.inputConfig.label}</Text>
                 }

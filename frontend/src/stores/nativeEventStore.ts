@@ -13,8 +13,7 @@ export default class NativeEventStore implements INativeEventStore {
     constructor() {
         makeAutoObservable(this)
 
-        // covering all the bases as willHide/Show is smoother but doesn't have as much
-        // support on android
+        // covering all the bases as willHide/Show is smoother but only keyboardDidShow and keyboardDidHide events are available on Android
         Keyboard.addListener('keyboardDidShow', this.onKeyboardDidShow);
         Keyboard.addListener('keyboardDidHide', this.onKeyboardDidHide);
         Keyboard.addListener('keyboardWillShow', this.onKeyboardWillShow);

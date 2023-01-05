@@ -63,8 +63,9 @@ export class ResponderController implements APIController<
     ) {
 
         const req = await this.db.resolveRequest(requestId);
+        const org = await this.db.resolveOrganization(orgId)
 
-        if (userCanJoinRequestPosition(req, positionId, user, orgId)) {
+        if (userCanJoinRequestPosition(req, positionId, user, org)) {
             const res = await this.db.joinRequest(orgId, requestId, user.id, positionId);
 
             await this.pubSub.sys(PatchEventType.RequestRespondersJoined, {

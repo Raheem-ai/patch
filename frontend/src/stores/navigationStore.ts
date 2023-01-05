@@ -9,6 +9,7 @@ import { NavigationContainerEventMap } from '@react-navigation/native';
 @Store(INavigationStore)
 export default class NavigationStore implements INavigationStore {
     currentRoute: keyof RootStackParamList = null;
+    currentTab: string = null
 
     constructor() {
         makeAutoObservable(this)

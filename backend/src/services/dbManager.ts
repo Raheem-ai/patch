@@ -98,6 +98,7 @@ export class DBManager {
     // TODO: need special type to see full user models on this that aren't a ref
     async fullOrganization(orgId: string | OrganizationDoc) {
         const org = await this.resolveOrganization(orgId);
+        // TODO: I think this might be redundant with getOrganization's populate?
         const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
 
         return populatedOrg;
@@ -765,8 +766,8 @@ export class DBManager {
         if (categoryIndex >= 0) {
             const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeId);
 
-            // Remove the Attribute from the Attribute Category list.
             if (attributeIndex >= 0) {
+                // Remove the Attribute from the Attribute Category list.
                 org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
                 org.markModified('attributeCategories');
 
@@ -789,6 +790,37 @@ export class DBManager {
                     user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                     user.markModified('organizations');
                     await user.save({ session });
+                }
+
+                // remove deleted attributes from positions that have them on them
+                const allOrgRequests = await this.requests.find({
+                    orgId: org.id
+                })
+
+                const requestsToUpdate = allOrgRequests.map(req => {
+                    let updatedPositions = false;
+
+                    for (const idx in req.positions) {
+                        const pos = req.positions[idx];
+
+                        const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
+                        
+                        if (pos.attributes.length > cleansedAttributes.length) {
+                            pos.attributes = cleansedAttributes;
+                            updatedPositions = true;
+                        }
+                    }
+
+                    if (updatedPositions) {
+                        return req
+                    } else {
+                        return null
+                    }
+                }).filter(r => !!r)
+
+                for (const req of requestsToUpdate) {
+                    req.markModified('positions');
+                    await req.save({ session });
                 }
 
                 return org;

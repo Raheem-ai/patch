@@ -24,7 +24,7 @@ import {hideAsync} from 'expo-splash-screen';
 import boot from './src/boot';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockUsers } from './src/test/mocks';
+import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from './src/test/mocks';
 import { headerStore, navigationStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -125,7 +125,7 @@ async function mockSignIn() {
         // mocked apis
         signInMock: jest.spyOn(APIClient.prototype, 'signIn').mockResolvedValue(MockAuthTokens()),
         getMeMock: jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser),
-        getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockUsers()),
+        getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata()),
         getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
         getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
         getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),

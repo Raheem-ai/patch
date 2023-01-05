@@ -168,7 +168,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                                 <View key={r.id} style={styles.cardContainer}>
                                     <HelpRequestCard 
                                         onPress={onCardPressed}
-                                        request={r} 
+                                        requestId={r.id} 
                                         onMapView
                                         style={styles.card} 
                                         dark={requestStore().activeRequest?.id == r.id}/>

@@ -127,10 +127,11 @@ export default class NotificationStore implements INotificationStore {
         Notifications.removeNotificationSubscription(this.notificationResponseSub)
     }
 
+    // when getting an event from the socket, schedule for a notification to be immediately processed
     async onEvent(patchNotification: PatchNotification) {
         await Notifications.scheduleNotificationAsync({
             content: {
-                body: patchNotification.body,
+                body: patchNotification.body || '_default', // need this as the api ignores this call if body is falsy
                 data: patchNotification.payload,
                 categoryIdentifier: patchNotification.payload.event
             },
@@ -138,12 +139,10 @@ export default class NotificationStore implements INotificationStore {
         })
     }
 
-
+    // 2) this gets run after showing/not showing the real notification that came in (or was scheduled)
     handleNotification = async <T extends NotificationEventType>(notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket<T>;
         const type = payload.event as T;
-
-        console.log('handleNotificatoin: ', type)
 
         const notificationHandler = NotificationHandlers[type];
         
@@ -192,6 +191,7 @@ export default class NotificationStore implements INotificationStore {
     }
 }
 
+// 1) this gets called by os when a real notification comes in
 Notifications.setNotificationHandler({
     handleNotification: async (notification: Notification) => {
         const payload = notification.request.content.data as PatchEventPacket;

@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -25,7 +25,7 @@ export default class RequestStore implements IRequestStore {
                 return new ObservableMap(entries)
             }
         }
-    }) requests: Map<string, HelpRequest> = new ObservableMap();
+    }) requests: ObservableMap<string, HelpRequest> = new ObservableMap();
 
     // make sure we don't only rely on a successful api call to turn off the crumbs
     @securelyPersistent({
@@ -48,7 +48,7 @@ export default class RequestStore implements IRequestStore {
                 return new ObservableSet(values.length ? values : [])
             }
         }
-    }) seenRequestsToJoinRequest = new Set<string>();
+    }) seenRequestsToJoinRequest = new Set<string>(); //TODO: check if this needs to be an ObservableSet
     
     @persistent() currentRequestIdStack: string[] = [];
     @persistent() filter = HelpRequestFilter.Active;
@@ -229,7 +229,11 @@ export default class RequestStore implements IRequestStore {
         isRequestAdmin: boolean
     ): PositionScopedMetadata {
         
-        const haveAllAttributes = position.attributes.every(attr => !!targetUserAttributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId));
+        const haveAllAttributes = position.attributes.every(attr => {
+            const isValidAttr = !!manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)
+            // either attr isn't valid or user has it 
+            return !isValidAttr || !!targetUserAttributes.find(userAttr => userAttr.categoryId == attr.categoryId && userAttr.itemId == attr.itemId);
+        });
         
         const haveRole =  (position.role == DefaultRoleIds.Anyone)
             || !!targetUserRoles.find(role => role.id == position.role);
@@ -553,7 +557,15 @@ export default class RequestStore implements IRequestStore {
     async updateChatReceipt(request: HelpRequest): Promise<void> {
         const chat = request.chat;
 
-        if (!!chat && chat.lastMessageId > chat.userReceipts[userStore().user.id]) {
+        if (!chat) {
+            return
+        }
+
+        const usersLastMessageId = chat.userReceipts[userStore().user.id];
+        const userHasSeenChat = !!usersLastMessageId;
+        const userHasUnreadMessages = !userHasSeenChat || chat.lastMessageId > usersLastMessageId
+
+        if (userHasUnreadMessages) {
             const updatedReq = await api().updateRequestChatReceipt({
                 requestId: request.id,
                 orgId: request.orgId,
@@ -585,22 +597,22 @@ export default class RequestStore implements IRequestStore {
 
         const updatedReq = await api().ackRequestNotification(this.orgContext(), requestId);
         
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async joinRequest(requestId: string, positionId: string) {
         const updatedReq = await api().joinRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq)
+        this.updateOrAddReq(updatedReq)
     }
 
     async leaveRequest(requestId: string, positionId: string) {
         const updatedReq = await api().leaveRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq)
+        this.updateOrAddReq(updatedReq)
     }
 
     async requestToJoinRequest(requestId: string, positionId: string) {
         const updatedReq = await api().requestToJoinRequest(this.orgContext(), requestId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     positionAckKey(userId: string, requestId: string, positionId: string) {
@@ -643,7 +655,7 @@ export default class RequestStore implements IRequestStore {
             const updatedReq = await api().ackRequestsToJoinNotification(this.orgContext(), requestId, unseenJoinRequests);
         
             runInAction(() => {
-                this.updateRequestInternals(updatedReq);
+                this.updateOrAddReq(updatedReq);
             })
         }
     }
@@ -652,7 +664,7 @@ export default class RequestStore implements IRequestStore {
         const updatedReq = await api().confirmRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
         
         runInAction(() => {
-            this.updateRequestInternals(updatedReq);
+            this.updateOrAddReq(updatedReq);
             // handle case where: Request -> approve -> leave -> request
             // TODO: test this works as expected once the 404 fix is in
             this.seenRequestsToJoinRequest.delete(this.positionAckKey(userId, requestId, positionId))
@@ -661,29 +673,17 @@ export default class RequestStore implements IRequestStore {
 
     async denyRequestToJoinRequest(userId: string, requestId: string, positionId: string) {
         const updatedReq = await api().declineRequestToJoinRequest(this.orgContext(), requestId, userId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     async removeUserFromRequest(userId: string, requestId: string, positionId: string) {
         const updatedReq = await api().removeUserFromRequest(this.orgContext(), userId, requestId, positionId);
-        this.updateRequestInternals(updatedReq);
+        this.updateOrAddReq(updatedReq);
     }
 
     updateOrAddReq(updatedReq: HelpRequest) {
-        this.requests.set(updatedReq.id, updatedReq);
-    }
-
-    /** 
-     * NOTE: use when you're changing a property on the updated Request that
-     * 1) is an update to an array 
-     * AND 
-     * 2) the property is used directly by a view (vs indirectly through computed props of the store)
-     * */ 
-    updateRequestInternals(updatedReq: HelpRequest) {
-        const req = this.requests.get(updatedReq.id);
-
-        for (const prop in updatedReq) {
-            req[prop] = updatedReq[prop]
-        }
+        this.requests.merge({
+            [updatedReq.id]: updatedReq
+        })
     }
 }

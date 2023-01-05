@@ -188,7 +188,8 @@ const TestIds = {
         inputs: {
             orgName: 'settingsForm::orgName',
             requestPrefix: 'settingsForm::requestPrefix',
-            createRequestChats: 'settingsForm::createRequestChats'
+            createRequestChats: 'settingsForm::createRequestChats',
+            updatePassword: 'settingsForm::updatePassword'
         },
         navInputs: {
             manageRoles: 'settingsForm::manageRoles',

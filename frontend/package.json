@@ -16,7 +16,8 @@
     "update:staging:ci": "_UPDATE_ENVIRONMENT=staging eas update --branch $_ENVIRONMENT --non-interactive --message $COMMIT_SHA",
     "update:prod:ci": "_UPDATE_ENVIRONMENT=prod eas update --branch $_ENVIRONMENT --non-interactive --message $_RELEASE_ID",
     "doctor": "_DEV_ENVIRONMENT=staging expo doctor",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "node ./eas_build/preInstall.mjs"
   },
   "jest": {
     "preset": "jest-expo",
@@ -26,6 +27,7 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "**/*.{js,jsx,ts,tsx}",
+      "!**/dist/**",
       "!**/coverage/**",
       "!**/node_modules/**",
       "!**/babel.config.js",

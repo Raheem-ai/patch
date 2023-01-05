@@ -13,7 +13,6 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
 
@@ -60,12 +59,19 @@ class EditHelpRequest extends React.Component<Props> {
                     } finally {
                         bottomDrawerStore().endSubmitting()
                     }
+
+                    const reqName = STRINGS.REQUESTS.requestDisplayName(
+                        organizationStore().metadata.requestPrefix, 
+                        requestStore().currentRequest.displayId
+                    )
+
+                    const successMsg = STRINGS.REQUESTS.updatedRequestSuccess(reqName)
         
-                    alertStore().toastSuccess(STRINGS.REQUESTS.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))
+                    alertStore().toastSuccess(successMsg)
         
                     bottomDrawerStore().hide()
                 },
-                label: 'Save',
+                label: STRINGS.INTERFACE.save,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -106,16 +112,16 @@ class EditHelpRequest extends React.Component<Props> {
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: () => editRequestStore().notes,
-                        headerLabel: () => 'Description',
-                        placeholderLabel: () => 'Description',
+                        headerLabel: () => STRINGS.REQUESTS.description,
+                        placeholderLabel: () => STRINGS.REQUESTS.description,
                         type: 'TextArea',
                         required: true
                     },
                     // Type of request
                     {
                         type: 'CategorizedItemList',
-                        headerLabel: () => 'Type of request',
-                        placeholderLabel: () => 'Type of request',
+                        headerLabel: () => STRINGS.REQUESTS.requestType,
+                        placeholderLabel: () => STRINGS.REQUESTS.requestType,
                         onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
                         val: () => {
                             return requestTypesToCategorizedItems(editRequestStore().type)
@@ -144,8 +150,8 @@ class EditHelpRequest extends React.Component<Props> {
                         testID: TestIds.editRequest.inputs.location,
                         name: 'location',
                         previewLabel: () => editRequestStore().location?.address,
-                        headerLabel: () => 'Location',
-                        placeholderLabel: () => 'Location',
+                        headerLabel: () => STRINGS.REQUESTS.Location,
+                        placeholderLabel: () => STRINGS.REQUESTS.Location,
                         type: 'Map',
                         // required: true
                     },
@@ -162,7 +168,7 @@ class EditHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.editRequest.inputs.callStart,
                         name: 'callStart',
-                        placeholderLabel: () => 'Call start',
+                        placeholderLabel: () => STRINGS.REQUESTS.callStart,
                         type: 'TextInput',
                         icon: ICONS.timeCallStarted,
                         props: {
@@ -184,7 +190,7 @@ class EditHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.editRequest.inputs.callEnd,
                         name: 'callEnd',
-                        placeholderLabel: () => 'Call end',
+                        placeholderLabel: () => STRINGS.REQUESTS.callEnd,
                         type: 'TextInput',
                         props: {
                             inlineAction: {
@@ -204,7 +210,7 @@ class EditHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.editRequest.inputs.callerName,
                         name: 'callerName',
-                        placeholderLabel: () => 'Caller name',
+                        placeholderLabel: () => STRINGS.REQUESTS.callerName,
                         type: 'TextInput',
                         // required: true
                     },
@@ -219,7 +225,7 @@ class EditHelpRequest extends React.Component<Props> {
                         },
                         testID: TestIds.editRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
-                        placeholderLabel: () => 'Caller contact info',
+                        placeholderLabel: () => STRINGS.REQUESTS.callerContactInfo,
                         type: 'TextInput',
                     },
                 ],
@@ -232,8 +238,8 @@ class EditHelpRequest extends React.Component<Props> {
                         return editRequestStore().positions;
                     },
                     isValid: () => true,
-                    headerLabel: () => 'Responders needed',
-                    placeholderLabel: () => 'Responders needed',
+                    headerLabel: () => STRINGS.REQUESTS.positions,
+                    placeholderLabel: () => STRINGS.REQUESTS.positions,
                     icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
@@ -261,8 +267,8 @@ class EditHelpRequest extends React.Component<Props> {
                             ? ICONS.priority2
                             : ICONS.priority1,
                     previewLabel: () => RequestPriorityToLabelMap[editRequestStore().priority],
-                    headerLabel: () => 'Priority',
-                    placeholderLabel: () => 'Priority',
+                    headerLabel: () => STRINGS.REQUESTS.priority,
+                    placeholderLabel: () => STRINGS.REQUESTS.priority,
                     type: 'List',
                     props: {
                         options: allEnumValues(RequestPriority),

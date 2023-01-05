@@ -63,7 +63,8 @@ export class MySocketService {
 
             // make sure old socket linked to user is removed from room            
             const existingSockets = await this.adapter.fetchSockets({
-                rooms: new Set([user.id])
+                rooms: new Set([user.id]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             for (const socket of existingSockets) {
@@ -121,6 +122,9 @@ export class MySocketService {
                 await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
             // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestRespondersRequestToJoin: 
+                await this.handleRequestRespondersRequestToJoin(params as PatchEventParams[PatchEventType.RequestRespondersRequestToJoin])
+                break;
             case PatchEventType.RequestRespondersAccepted:
                 await this.handleRequestRespondersAccepted(params as PatchEventParams[PatchEventType.RequestRespondersAccepted]) 
                 break;
@@ -170,7 +174,8 @@ export class MySocketService {
 
         // drop packet if they aren't connected 
         const sockets = await this.adapter.fetchSockets({
-            rooms: new Set([userId])
+            rooms: new Set([userId]),
+            except: new Set() // lib has a bug that this fixes
         })
 
         const packet: PatchEventPacket<PatchEventType.UserForceLogout> = {
@@ -393,6 +398,33 @@ export class MySocketService {
         });
     }
 
+    async handleRequestRespondersRequestToJoin(params: PatchEventParams[PatchEventType.RequestRespondersRequestToJoin]) {
+        const request = await this.db.resolveRequest(params.requestId);
+        const org = await this.db.resolveOrganization(params.orgId);
+        const fullOrg = await this.db.fullOrganization(org);
+
+        const requestAdmins = await this.requestAdminsInOrg(fullOrg);
+
+        const adminConfigs: SendConfig[] = [];
+
+        const requesterName = requestAdmins.get(params.responderId)?.userName
+            || (await this.db.resolveUser(params.responderId)).name
+
+        const userRequestedBody = notificationLabel(PatchEventType.RequestRespondersRequestToJoin, request.displayId, requesterName, org.requestPrefix)
+
+        for (const admin of Array.from(requestAdmins.values())) {
+            if (admin.userId != params.responderId) {
+                admin.body = userRequestedBody
+                adminConfigs.push(admin as SendConfig)
+            }
+        }
+
+        await this.send(adminConfigs, {
+            event: PatchEventType.RequestRespondersRequestToJoin,
+            params
+        } as PatchEventPacket<PatchEventType.RequestRespondersRequestToJoin>)
+    }
+
     async handleRequestRespondersAccepted(params: PatchEventParams[PatchEventType.RequestRespondersAccepted]) {
         const request = await this.db.resolveRequest(params.requestId);
         const org = await this.db.resolveOrganization(params.orgId);
@@ -403,34 +435,22 @@ export class MySocketService {
 
         const joinedConfigs: SendConfig[] = [];
         let acceptedConfig: SendConfig;
-        
-        const responderName = usersOnRequest.get(params.responderId)?.userName 
-            || requestAdmins.get(params.responderId)?.userName
-            || (await this.db.resolveUser(params.responderId)).name
 
+        const accepted = await this.userIdToSendConfig(params.responderId, [usersOnRequest, requestAdmins])
+        
         // make sure user hasn't been removed from org
         if (!(await this.userInOrg(org, params.responderId))) {
             // if they have, the acceptance is a noop
             return
         }
 
-        let accepter = requestAdmins.get(params.accepterId);
+        const accepter = await this.userIdToSendConfig(params.accepterId, [usersOnRequest, requestAdmins])
 
-        if (!accepter) {
-            const fullAccepter = await this.db.resolveUser(params.accepterId);
-            
-            accepter = {
-                userId: fullAccepter.id,
-                userName: fullAccepter.name,
-                pushToken: fullAccepter.push_token,    
-            }
-        }
-
-        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, responderName, org.requestPrefix)
+        const userJoinedBody = notificationLabel(PatchEventType.RequestRespondersJoined, request.displayId, accepted.userName, org.requestPrefix)
         const userAcceptedBody = notificationLabel(PatchEventType.RequestRespondersAccepted, request.displayId, accepter.userName, org.requestPrefix)
 
         acceptedConfig = {
-            ...accepter,
+            ...accepted,
             body: userAcceptedBody
         } as SendConfig
 
@@ -659,29 +679,55 @@ export class MySocketService {
         const admins = new Map<string, Partial<SendConfig>>()
         
         org.members.forEach((member: UserModel) => {
-            console.log(member)
 
-            const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
-                return org.roleDefinitions.find(def => def.id == roleId)
-            })
+            try {
+                const userRoles = (member.organizations[org.id]?.roleIds || []).map(roleId => {
+                    return org.roleDefinitions.find(def => def.id == roleId)
+                }).filter(r => !!r)
 
-            const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
+                const userIsAdmin = resolvePermissionsFromRoles(userRoles).has(PatchPermissions.RequestAdmin)
 
-            if (userIsAdmin) {
-                admins.set(member.id, {
-                    userId: member.id,
-                    userName: member.name,
-                    pushToken: (member as unknown as UserModel).push_token
-                })
+                if (userIsAdmin) {
+                    admins.set(member.id, {
+                        userId: member.id,
+                        userName: member.name,
+                        pushToken: (member as unknown as UserModel).push_token
+                    })
+                }
+            } catch (e) {
+                console.error(`Error trying to collect possbile request admin: ${member.id}`)
             }
         })
 
         return admins;
     }
 
+    async userIdToSendConfig(userId: string, prefetchedStores?: Map<string, Partial<SendConfig>>[]) {
+        if (prefetchedStores) {
+            for (const store of prefetchedStores) {
+                const config = store.get(userId);
+                
+                if (config) {
+                    return config;
+                }
+            }
+        }
+
+        const user = await this.db.resolveUser(userId);
+        
+        return {
+            userId: user.id,
+            userName: user.name,
+            pushToken: user.push_token
+        } as Partial<SendConfig>
+    }
+
     async userInOrg(orgId: string | OrganizationDoc, userId: string) {
         const org = await this.db.resolveOrganization(orgId);
-        return org.members.includes(userId)
+        
+        return org.members.some(ref => {
+            return ref == userId || (ref as UserModel).id == userId
+        })
     }
 
     async send(
@@ -695,7 +741,8 @@ export class MySocketService {
         for (const config of configs) {
 
             const sockets = await this.adapter.fetchSockets({
-                rooms: new Set([config.userId])
+                rooms: new Set([config.userId]),
+                except: new Set() // lib has a bug that this fixes
             })
 
             const socket = sockets[0] as SocketIO.Socket;

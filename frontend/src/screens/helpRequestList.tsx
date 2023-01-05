@@ -13,7 +13,7 @@ type Props = ScreenProps<'HelpRequestList'>;
 
 const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
     [HelpRequestFilter.Active]: 'Active',
-    [HelpRequestFilter.Closed]: 'Closed',
+    [HelpRequestFilter.Closed]: 'Archived',
     [HelpRequestFilter.All]: 'All'
 }
 
@@ -70,7 +70,7 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
                 {
                     requestStore().filteredSortedRequests.map(r => {
                         return (
-                            <HelpRequestCard style={styles.card} key={r.id} request={r} />
+                            <HelpRequestCard style={styles.card} key={r.id} requestId={r.id} />
                         )
                     })
                 }

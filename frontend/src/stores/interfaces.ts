@@ -3,6 +3,7 @@ import React from 'react';
 import { Animated } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
 import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
+import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
 
@@ -24,6 +25,7 @@ export interface IUserStore extends IBaseStore {
     users: Map<string, ClientSideFormat<ProtectedUser>>
     usersInOrg: ClientSideFormat<ProtectedUser>[]
     usersRemovedFromOrg: ClientSideFormat<ProtectedUser>[]
+    deletedUsers: Set<string>;
     currentUser: ClientSideFormat<ProtectedUser>
     loadingCurrentUser: boolean
 
@@ -235,7 +237,6 @@ export interface IRequestStore extends IBaseStore {
     updateChatReceipt(request: HelpRequest): Promise<void>
     sendMessage(request: HelpRequest, message: string): Promise<void>
     updateOrAddReq(updatedReq: HelpRequest): void
-    updateRequestInternals(updatedReq: HelpRequest): void
     
     joinRequest(reqId: string, positionId: string): Promise<void>
     leaveRequest(reqId: string, positionId: string): Promise<void>
@@ -328,7 +329,8 @@ export interface IBottomDrawerStore extends IBaseStore {
 
     drawerContentHeight: Animated.AnimatedInterpolation
     contentHeight: Animated.AnimatedInterpolation
-
+    
+    contentHeightChange(): Promise<void>
     show(view: BottomDrawerView, expanded?: boolean): void;
     hide(): void// should this take an optional callback?
     expand(): void
@@ -557,6 +559,7 @@ export namespace IManageAttributesStore {
 
 export interface INavigationStore extends IBaseStore {
     currentRoute: keyof RootStackParamList;
+    currentTab: string;
 
     navigateToSync: (targetRoute) => Promise<void>
 }
@@ -588,6 +591,19 @@ export interface IAppUpdateStore extends IBaseStore {
     waitingForReload: boolean
 }
 
+export namespace IFormStore {
+    export const id = Symbol('IFormStore');
+}
+
+export interface IFormStore extends IBaseStore {
+    inputViewMap: FormInputViewMap
+    belowSurface: boolean
+
+    increaseDepth(): void
+    decreaseDepth(): void
+    clearDepth(): void
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -613,6 +629,7 @@ export const manageAttributesStore = () => getStore<IManageAttributesStore>(IMan
 export const navigationStore = () => getStore<INavigationStore>(INavigationStore);
 export const organizationSettingsStore = () => getStore<IOrganizationSettingsStore>(IOrganizationSettingsStore);
 export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
+export const formStore = () => getStore<IFormStore>(IFormStore);
 
 export const AllStores = [
     IUserStore,
@@ -639,5 +656,6 @@ export const AllStores = [
     IManageTagsStore,
     INavigationStore,
     IOrganizationSettingsStore,
-    IAppUpdateStore
+    IAppUpdateStore,
+    IFormStore
 ]

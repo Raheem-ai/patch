@@ -4,10 +4,11 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
 import { PermissionGroupMetadata } from "../../../../../../common/models"
 import { unwrap } from "../../../../../../common/utils"
+import STRINGS from "../../../../../../common/strings"
 import { resolvePermissionGroups } from "../../../../../../common/utils/permissionUtils"
 import { SectionLabelViewProps } from "../../types"
 
-const DefaultPlaceholder = 'Set permissions'
+const DefaultPlaceholder = STRINGS.SETTINGS.setPermissions
 
 const PermissionGroupListLabel = observer(({ config, expand }: SectionLabelViewProps<'PermissionGroupList'>) => {
 

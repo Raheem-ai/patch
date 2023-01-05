@@ -84,7 +84,7 @@ const PositionDetailsCard = observer(({
                 isDesired: isDesiredAttribute(attr)
             }
         })
-        .filter(x => !!x)
+        .filter(x => !!x.name)
         .sort((a, b) => a.isDesired && !b.isDesired ? -1 : b.isDesired && !a.isDesired ? 1 : 0)
         
         return {
@@ -202,12 +202,12 @@ const PositionDetailsCard = observer(({
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>
             </View>
             { userDetails.length 
-                ? <View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20, flexDirection: 'row' }}>
+                ? <View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20 }}>
                     {
                         userDetails.map(details => {
                             return (
                                 <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}>
-                                    <UserIcon user={{ name: details.name }} style={{marginTop: 2, flexGrow: 0}}/>
+                                    <UserIcon userId={details.userId} style={{marginTop: 2, flexGrow: 0}}/>
                                     <View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}>
                                         <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -219,9 +219,7 @@ const PositionDetailsCard = observer(({
                                                             <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
                                                             <Text style={styles.visualDelim}>{STRINGS.visualDelim}</Text>
                                                         </>
-                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
-                                                        
-                                                    return 
+                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>                                                        
                                                 })
                                             }
                                         </View>
@@ -261,6 +259,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     removeUser: {
+        flexGrow: 1,
         alignItems: 'flex-end',
         marginRight: 16
     },
