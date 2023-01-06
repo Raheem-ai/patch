@@ -73,11 +73,11 @@ const Header = observer((props: Props) => {
                 message: STRINGS.INTERFACE.availabilityAlertMessage(userStore().isOnDuty),
                 actions: [
                     {
-                        label: `${userStore().isOnDuty ? STRINGS.INTERFACE.available(true) : STRINGS.INTERFACE.unavailable(true)}`,
+                        label: `${STRINGS.INTERFACE.cancel}`,
                         onPress: () => {}
                     },
                     {   
-                        label: `${userStore().isOnDuty ? STRINGS.INTERFACE.unavailable(true) : STRINGS.INTERFACE.available(true)}`,
+                        label: `${STRINGS.INTERFACE.toggleAvailability(userStore().isOnDuty)}`,
                         onPress: () => userStore().toggleOnDuty(),
                         confirming: true
                     }

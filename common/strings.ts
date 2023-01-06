@@ -94,6 +94,7 @@ const STRINGS = {
     INTERFACE: {
         add: 'Add',
         save: 'Save',
+        cancel: 'Cancel',
         addElement: (el?: string) => `Add${el ? ' ' + el : ''}`,
         editElement: (el?: string) => `Edit${el ? ' ' + el : ''}`,
         addCategory: (el?: string) => `Add${el ? ' ' + el : ''} category`,
@@ -110,6 +111,7 @@ const STRINGS = {
         email: 'Email',
         invitationCode: 'Invitation code',
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,
+        toggleAvailability: (available?: boolean) => `I'm ${available ? STRINGS.INTERFACE.unavailable() : STRINGS.INTERFACE.available()}`,
         available: (cap?: boolean) => cap ? `Available` : `available`, 
         unavailable: (cap?: boolean) => cap ? `Unavailable` : `unavailable`, 
         availabilityAlertTitle: `Set your status`,
