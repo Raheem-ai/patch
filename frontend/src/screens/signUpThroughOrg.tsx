@@ -47,7 +47,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
                         name: nameVal.get()
                     })
                 } catch(e) {
-                    alertStore().toastError(resolveErrorMessage(e), false, true);
+                    alertStore().toastError(resolveErrorMessage(e), true);
                     return
                 }
 

@@ -27,7 +27,7 @@ export default function UpdatePasswordForm() {
     const updatePassword = async () => {
 
         if (!passwordIsValid) {
-            alertStore().toastError(errorMessage, true, true);
+            alertStore().toastError(errorMessage, true);
             return
         }
 
@@ -36,11 +36,11 @@ export default function UpdatePasswordForm() {
         try {
             await userStore().updatePassword(password);
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e), true, true);
+            alertStore().toastError(resolveErrorMessage(e), true);
             return
         }
 
-        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, false, true);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.passwordUpdated, true);
 
         setTimeout(() => {
             if(loggedInWithCode) {
