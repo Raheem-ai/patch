@@ -10,6 +10,7 @@ const STRINGS = {
     emailAddresses: {
         help: `help@getpatch.org`,
     },
+    connectionUnreliable: () => `Unreliable internet ${STRINGS.visualDelim} Limited functionality`,
     cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
         // To do: refactor role and request props to be simpler
@@ -49,6 +50,7 @@ const STRINGS = {
     visualDelim: '·',
     errorMessages: {
         unknownElement: (element: string) => `Unknown ${element}`,
+        offlineApiCallError: () => `Internet connection is required for this action. Try again when you have a cellular signal or wifi.`,
     },
     responders: (n: number) => (n == 1) ? 'responder' : 'responders',
     nResponders: (n: number) => `${n == 0 ? 'No' : n} ${STRINGS.responders(n)}`,

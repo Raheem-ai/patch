@@ -384,12 +384,21 @@ export namespace INativeEventStore {
 
 export interface IHeaderStore extends IBaseStore {
     isOpen: boolean;
+    announcementHeight: Animated.Value;
     open(): void;
     close(): void;
 }
 
 export namespace IHeaderStore {
     export const id = Symbol('IHeaderStore');
+}
+
+export interface IConnectionStore extends IBaseStore {
+    isConnected: boolean;
+}
+
+export namespace IConnectionStore {
+    export const id = Symbol('IConnectionStore');
 }
 
 export interface ILinkingStore extends IBaseStore {
@@ -478,6 +487,9 @@ export type ToastConfig = {
 export interface IAlertStore extends IBaseStore {
     toast?: ToastConfig
     prompt?: PromptConfig
+    alertTop: Animated.AnimatedInterpolation;
+    alertWidth: number;
+    alertLeft: number;
     
     toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
     toastError(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
@@ -630,6 +642,7 @@ export const navigationStore = () => getStore<INavigationStore>(INavigationStore
 export const organizationSettingsStore = () => getStore<IOrganizationSettingsStore>(IOrganizationSettingsStore);
 export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
 export const formStore = () => getStore<IFormStore>(IFormStore);
+export const connectionStore = () => getStore<IConnectionStore>(IConnectionStore);
 
 export const AllStores = [
     IUserStore,
@@ -657,5 +670,6 @@ export const AllStores = [
     INavigationStore,
     IOrganizationSettingsStore,
     IAppUpdateStore,
-    IFormStore
+    IFormStore,
+    IConnectionStore
 ]
