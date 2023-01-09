@@ -43,7 +43,7 @@ WORKDIR ../frontend
 COPY frontend/package.json .
 COPY frontend/yarn.lock .
 
-COPY frontend/eas_build/preInstall.mjs /app/frontend/eas_build/
+COPY frontend/eas_build/ /app/frontend/eas_build/
 # TODO: get this to only install the locked expo-cli
 RUN yarn install
 
