@@ -1,11 +1,11 @@
 import { Store } from './meta';
-import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, formStore, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
+import { BottomDrawerComponentClass, BottomDrawerConfig, BottomDrawerHandleHeight, BottomDrawerView, connectionStore, formStore, IBottomDrawerStore, INativeEventStore, IRequestStore, nativeEventStore, navigationStore, requestStore, userStore } from './interfaces';
 import { Animated, Dimensions, Keyboard } from 'react-native';
 import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import EditHelpRequest from '../components/bottomDrawer/views/editRequest';
 import AssignResponders from '../components/bottomDrawer/views/assignResponders';
 import CreateHelpRequest from '../components/bottomDrawer/views/createRequest';
-import { ActiveRequestTabHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid } from '../constants';
+import { ActiveRequestTabHeight, HeaderAnnouncementHeight, HeaderHeight, InteractiveHeaderHeight, isAndroid } from '../constants';
 import { RootStackParamList, routerNames } from '../types';
 import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
@@ -85,6 +85,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         await userStore().init();
         await navigationStore().init();
         await formStore().init();
+        await connectionStore().init();
 
         if (userStore().signedIn) {
             this.setupAnimationReactions()
@@ -116,6 +117,11 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
                     // editing something unrelated
                     this._minimize() 
                 }
+            }),
+            reaction(() => { return connectionStore().isConnected }, (_) => {
+                if (this.showing && this.expanded) {
+                    this.expand()
+                }
             })
         ]
         
@@ -129,10 +135,22 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         })
     }
 
+    get dynamicHeaderHeight() { 
+        return HeaderHeight + (connectionStore().isConnected 
+            ? 0 
+            : HeaderAnnouncementHeight)
+    }
+
+    get dynamicStatusBarHeight() { 
+        return Constants.statusBarHeight + (connectionStore().isConnected 
+            ? 0 
+            : HeaderAnnouncementHeight)
+    }
+
     calculateContentHeight = (): [number, number, string] => {
         const topUIOffset = this.minimizable
-            ? HeaderHeight
-            : HeaderHeight - InteractiveHeaderHeight;
+            ? this.dynamicHeaderHeight
+            : this.dynamicHeaderHeight - InteractiveHeaderHeight;
 
         const minimizedHandleOffset = this.minimizedHandleShowing
             ? BottomDrawerHandleHeight
@@ -144,7 +162,7 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
         const bottomUIOffset = activeRequestOffset + minimizedHandleOffset + (isAndroid ? BOTTOM_BAR_HEIGHT : 0);
 
-        const contentHeight = dimensions.height - HeaderHeight - bottomUIOffset
+        const contentHeight = dimensions.height - this.dynamicHeaderHeight - bottomUIOffset
 
         const bottomDrawerContentHeight = dimensions.height - topUIOffset - bottomUIOffset 
 
@@ -289,11 +307,11 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: !!expanded 
                 ? 0 + (newIsMinimizeable
-                    ? HeaderHeight
+                    ? this.dynamicHeaderHeight
                     : isAndroid 
-                        ? Constants.statusBarHeight
-                        : InteractiveHeaderHeight)
-                : dimensions.height - HeaderHeight - BottomDrawerHandleHeight,
+                        ? this.dynamicStatusBarHeight
+                        : this.dynamicStatusBarHeight)
+                : dimensions.height - this.dynamicHeaderHeight - BottomDrawerHandleHeight,
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start();
@@ -344,10 +362,10 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     expand = () => {
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: 0 + (this.minimizable
-                ? HeaderHeight // should only run this one as you can only expand from being minimized
+                ? this.dynamicHeaderHeight // should only run this one as you can only expand from being minimized
                 : isAndroid 
-                    ? Constants.statusBarHeight
-                    : InteractiveHeaderHeight),
+                    ? this.dynamicStatusBarHeight
+                    : this.dynamicStatusBarHeight),
             duration: 300,
             useNativeDriver: false // native can't handle layout animations
         }).start();

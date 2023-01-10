@@ -13,6 +13,7 @@ export const headerIconContainerSize = (2 * headerIconPaddingVertical) + headerI
 
 export const InteractiveHeaderHeight = headerIconContainerSize;
 export const HeaderHeight = InteractiveHeaderHeight + Constants.statusBarHeight;
+export const HeaderAnnouncementHeight = 36;
 export const TabbedScreenHeaderHeight = InteractiveHeaderHeight - 12;
 
 // external URLs

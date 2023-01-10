@@ -3717,6 +3717,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/netinfo@npm:8.2.0":
+  version: 8.2.0
+  resolution: "@react-native-community/netinfo@npm:8.2.0"
+  peerDependencies:
+    react-native: ">=0.59"
+  checksum: ff5085d900de6d143759ee8936ceb7bcbb7d28a14bd66d54076b172fda47f0896ed26ea1168cf01f6bac493d49ba5d514d24eeff78292d65a781e2926307ef46
+  languageName: node
+  linkType: hard
+
 "@react-native/assets@npm:1.0.0":
   version: 1.0.0
   resolution: "@react-native/assets@npm:1.0.0"
@@ -10059,6 +10068,7 @@ __metadata:
     "@expo/prebuild-config": ^4.0.0
     "@googlemaps/google-maps-services-js": 3.1.16
     "@react-native-async-storage/async-storage": ~1.17.3
+    "@react-native-community/netinfo": 8.2.0
     "@react-navigation/native": ^6.0.6
     "@react-navigation/stack": ^6.0.11
     "@sentry/react-native": ^3.1.1

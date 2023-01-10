@@ -1,15 +1,13 @@
 import { observer } from "mobx-react";
 import React from "react";
 import { Animated, Dimensions, StyleSheet } from "react-native";
-import { unwrap } from "../../../../common/utils";
-import { HeaderHeight, InteractiveHeaderHeight, isAndroid } from "../../constants";
 import { navigateTo } from "../../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
-import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
 import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
 import { BottomDrawerViewVisualArea } from "../helpers/visualArea";
+import { SCREEN_WIDTH } from "../../utils/dimensions";
 
 const dimensions = Dimensions.get('screen')
 
@@ -19,8 +17,6 @@ type BottomDrawerProps = { }
 export default class GlobalBottomDrawer extends React.Component<BottomDrawerProps> {
     
     drawer() {
-        const isMinimizable = bottomDrawerStore().minimizable;
-
         const ChildView = bottomDrawerStore().view;
 
         return (
@@ -28,20 +24,18 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
                 styles.container, 
                 { 
                     top: bottomDrawerStore().bottomDrawerTabTop,
-                    // Note: don't use bottomDrawerStore().drawerContentHeight here because we don't want the container 
-                    // resizing as the keyboard opens/closes
-                    height: dimensions.height 
-                        - (isMinimizable ? HeaderHeight : InteractiveHeaderHeight) 
-                        - (isAndroid ? BOTTOM_BAR_HEIGHT : 0)
+                    height: bottomDrawerStore().drawerContentHeight
                 },
                 bottomDrawerStore().expanded 
                     ? null
                     : styles.minimizedHeader
             ]}>
                 {
+                    // TODO: not sure we need <BottomDrawerVisualArea> here anymore as
+                    // this whole container is essentially one
                     bottomDrawerStore().submitting
                         ? <Loader/>
-                        : <BottomDrawerViewVisualArea>
+                        : <BottomDrawerViewVisualArea> 
                             <ChildView/>
                         </BottomDrawerViewVisualArea>
                             
@@ -98,7 +92,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
 const styles = StyleSheet.create({
     container: {
-        width: dimensions.width,
+        width: SCREEN_WIDTH,
         backgroundColor: '#fff',
         position: 'absolute',
         zIndex: 1000,
@@ -143,7 +137,7 @@ const styles = StyleSheet.create({
     },
     toggleExpandedIconContainer: {
         position: 'absolute',
-        left: (dimensions.width / 2) - (30 / 2),
+        left: (SCREEN_WIDTH / 2) - (30 / 2),
         top: -10
     },
     toggleExpandedIcon: {

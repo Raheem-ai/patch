@@ -1,9 +1,7 @@
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { Dimensions, View, TextInput as RNTextInput, StyleSheet } from "react-native";
+import { View, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
-import { HeaderHeight } from "../../../../constants";
-import { useKeyboard } from "../../../../hooks/useKeyboard";
 import TestIds from "../../../../test/ids";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import { SectionScreenViewProps } from "../../types";

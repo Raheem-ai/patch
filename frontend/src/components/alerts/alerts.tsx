@@ -1,10 +1,10 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { Dimensions, Pressable, StyleSheet, View, GestureResponderEvent } from "react-native";
+import { Dimensions, Pressable, StyleSheet, View, GestureResponderEvent, Animated } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Text, IconButton } from "react-native-paper";
-import { HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
-import { alertStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
+import { HeaderAnnouncementHeight, HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
+import { alertStore, connectionStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
 import { Colors, ICONS } from "../../types";
 
 export const Alerts = observer(() => {
@@ -16,18 +16,13 @@ export const Alerts = observer(() => {
     }
 
     const prompt = () => {
-        const dimensions = Dimensions.get('screen');
-        const width = dimensions.width - (2 * 20);
-        // const top = dimensions.height / 3;
-        const top = HeaderHeight + TabbedScreenHeaderHeight + 20;
-
-        const left = 20;
-
-        // const singleAction = alertStoreInst().prompt.actions.length == 1;
-
         return !!alertStore().prompt
             ? <> 
-            <View style={[styles.promptContainer, { width, top, left }]}>
+            <Animated.View style={[styles.promptContainer, { 
+                width: alertStore().alertWidth, 
+                left: alertStore().alertLeft,
+                top: alertStore().alertTop 
+            }]}>
                 <View style={[styles.promptTitleContainer]}>
                     <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
                 </View>
@@ -52,20 +47,19 @@ export const Alerts = observer(() => {
                         }) 
                     }
                 </View>
-            </View>
+            </Animated.View>
             <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
             </>
             : null
     }
 
     const toast = () => {
-
-        const width = Dimensions.get('screen').width - (2 * 20);
-        const top = HeaderHeight + TabbedScreenHeaderHeight + 20;
-        const left = 20;
-
         return !!alertStore().toast
-            ? <View style={[styles.toastContainer, { width, top, left }]}>
+            ? <Animated.View style={[styles.toastContainer, { 
+                width: alertStore().alertWidth, 
+                left: alertStore().alertLeft,
+                top: alertStore().alertTop 
+            }]}>
                 <ScrollView>
                     <Text style={styles.toastText}>{alertStore().toast.message}</Text>
                 </ScrollView>
@@ -78,7 +72,7 @@ export const Alerts = observer(() => {
                         onPress={() => alertStore().hideToast()}
                         size={25} />
                 }
-            </View>
+            </Animated.View>
             : null
     }
 

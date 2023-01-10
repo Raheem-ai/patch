@@ -7,9 +7,9 @@ import { MainMenuOption, MainMenuOptions, navigateTo, SubMenuOption, SubMenuOpti
 import { RootStackParamList, routerNames, Colors, ICONS } from '../../types';
 import { observer } from 'mobx-react';
 import HeaderConfig, { HeaderRouteConfig } from './headerConfig';
-import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore, formStore } from '../../stores/interfaces';
+import { headerStore, IHeaderStore, IUserStore, requestStore, userStore, alertStore, formStore, connectionStore } from '../../stores/interfaces';
 import Constants from 'expo-constants';
-import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, InteractiveHeaderHeight, isAndroid } from '../../constants';
+import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddingHorizontal, InteractiveHeaderHeight, isAndroid, HeaderAnnouncementHeight } from '../../constants';
 import { unwrap } from '../../../../common/utils';
 import TestIds from '../../test/ids';
 import STRINGS from '../../../../common/strings';
@@ -102,10 +102,19 @@ const Header = observer((props: Props) => {
             )
         })   
 
+        const connectionAnnouncement = () => {
+            return (
+                <Animated.View style={[styles.anouncementContainer, { height: headerStore().announcementHeight }]}>
+                    <Text style={styles.anouncementContainerText}>{STRINGS.connectionUnreliable()}</Text>
+                </Animated.View>
+            )
+        }
+
         return (
             <View sentry-label='Header (closed)' style={{ backgroundColor: styles.container.backgroundColor }}>
-                <Animated.View style={{ opacity }}>
-                    <View style={styles.container}>
+                <Animated.View style={[{ opacity }, styles.container]}>
+                    { connectionAnnouncement() }
+                    <View style={styles.iconBarContainer}>
                         {   leftActions.length
                             ? <View style={styles.leftIconContainer}>
                                 {
@@ -261,8 +270,22 @@ export default Header;
 const styles = StyleSheet.create({
     // CLOSED
     container: {
-        height: HeaderHeight,
+        minHeight: HeaderHeight,
+        maxHeight: HeaderHeight + HeaderAnnouncementHeight,
+        paddingTop: Constants.statusBarHeight,
         backgroundColor: Colors.backgrounds.menu,
+    },
+    anouncementContainer: {
+        height: HeaderAnnouncementHeight,
+        backgroundColor: Colors.secondary.alpha,
+        alignContent: 'center'
+    },
+    anouncementContainerText: {
+        lineHeight: HeaderAnnouncementHeight,
+        color: Colors.text.defaultReversed,
+        textAlign: 'center'
+    },
+    iconBarContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end',
     },
