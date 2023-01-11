@@ -1,10 +1,15 @@
 import { AxiosError } from "axios";
 import STRINGS from "../../../common/strings";
+import { connectionStore } from "../stores/interfaces";
 
 export function resolveErrorMessage(e: AxiosError): string {
     if (!e.isAxiosError) {
         console.log('NOT AXIOS ERROR:', e.message)
         return e.message
+    }
+
+    if (!connectionStore().isConnected) {
+        return STRINGS.errorMessages.offlineApiCallError()
     }
 
     const type = e?.response?.data?.name;

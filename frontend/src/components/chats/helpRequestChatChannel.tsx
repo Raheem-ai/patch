@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
+import { alertStore, bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
@@ -11,6 +11,7 @@ import STRINGS from "../../../../common/strings";
 import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
 import TestIds from "../../test/ids";
+import { resolveErrorMessage } from "../../errors";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -74,7 +75,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
 
             setTimeout(() => scrollRef.current.scrollToEnd({ animated: true }), 0)
         } catch (e) {
-            console.error(e)
+            alertStore().toastError(resolveErrorMessage(e));
             setLoading(false)
         }
     }

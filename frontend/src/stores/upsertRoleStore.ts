@@ -1,9 +1,8 @@
 import { makeAutoObservable } from "mobx"
 import { OrgContext } from "../../../common/api"
 import { Role } from "../../../common/models"
-import { resolveErrorMessage } from "../errors"
 import { api } from "../services/interfaces"
-import { alertStore, IUpsertRoleStore, organizationStore, userStore } from "./interfaces"
+import { IUpsertRoleStore, organizationStore, userStore } from "./interfaces"
 import { Store } from "./meta"
 
 @Store(IUpsertRoleStore)

@@ -5,9 +5,9 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { IconButton } from "react-native-paper";
 import { HelpRequest } from "../../../common/models";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
-import { ActiveRequestTabHeight, HeaderHeight } from "../constants";
+import { ActiveRequestTabHeight, HeaderAnnouncementHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";
-import { BottomDrawerHandleHeight, bottomDrawerStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
+import { BottomDrawerHandleHeight, bottomDrawerStore, connectionStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
 import { ScreenProps, routerNames, ICONS } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
@@ -112,7 +112,11 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
         ? BottomDrawerHandleHeight 
         : 0; 
 
-    const height = windowDimensions.height - HeaderHeight - bottomUIOffset;
+    const dynamicHeaderHeight = HeaderHeight + (connectionStore().isConnected 
+        ? 0 
+        : HeaderAnnouncementHeight)
+
+    const height = windowDimensions.height - dynamicHeaderHeight - bottomUIOffset;
 
     const goToActiveRequest = () => {
 

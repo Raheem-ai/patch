@@ -2,22 +2,25 @@ import fs from 'fs';
 
 import { 
 	inEASBuild, 
+    inEASUpdate,
     PLATFORM,
 	ENV, 
 	prodSecretSuffix, 
 	stagingSecretSuffix, 
 	devSecretSuffix,
-    servicesJsonPath
+    servicesJsonPath,
+    googleFCMKey
 } from './constants.js';
+
 
 if (inEASBuild) {
     // https://github.com/yarnpkg/berry/issues/2701 workaround that breaks
     // eas build-pre-install script -__-
 
     if (PLATFORM == 'android') {
-        let googleFCMKey = 'GOOGLE_FCM_CREDS'
+        let key = googleFCMKey;
 
-        googleFCMKey += ENV == 'prod'
+        key += ENV == 'prod'
             ? prodSecretSuffix
             : ENV == 'staging'
                 ? stagingSecretSuffix
@@ -26,10 +29,19 @@ if (inEASBuild) {
                     : '';
 
 
-        const servicesJson = JSON.parse(process.env[googleFCMKey]).services_json
+        const servicesJson = JSON.parse(process.env[key]).services_json
 
         fs.writeFileSync(servicesJsonPath, JSON.stringify(servicesJson));
     }
+} else if (inEASUpdate) { // ci or locally
+
+    // TODO: do setup for locally
+
+    console.log('inEASUpdate: ')
+
+    const servicesJson = JSON.parse(process.env[googleFCMKey]).services_json
+
+    fs.writeFileSync(servicesJsonPath, JSON.stringify(servicesJson));
 }
 
 // TODO: add cloud message api token (https://console.firebase.google.com/u/1/project/raheem-org/settings/cloudmessaging/android:ai.raheem.patch)

@@ -25,7 +25,7 @@ let apiHost = ''
  * 
  * NOTE: increment every time you do a build you're going to submit a new release 
  */
-const VERSION = '0.0.9'
+const VERSION = '0.0.10'
 // increment this any time you want to submit a new release to the play store
 const BUILD_COUNT = 3
 // provided by local runner

@@ -4,9 +4,10 @@ import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewSty
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
 import { assignedResponderBasedRequestStatus, positionStats } from "../../../common/utils/requestUtils";
-import { requestStore, userStore } from "../stores/interfaces";
+import { alertStore, requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 import { ICONS } from "../types"
+import { resolveErrorMessage } from "../errors";
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
@@ -122,20 +123,24 @@ export const StatusSelector = observer(({
     const currentStatusIdx = statuses.indexOf(request.status);
 
     const updateStatus = (status: RequestStatus) => async () => {
-        if (status != request.status) {
-            switch (status) {
-                case RequestStatus.OnTheWay:
-                case RequestStatus.OnSite:
-                case RequestStatus.Done:
-                    await requestStore().setRequestStatus(request.id, status);
-                    break;
-                default:
-                    await requestStore().resetRequestStatus(request.id);
-                    break;
+        try {
+            if (status != request.status) {
+                switch (status) {
+                    case RequestStatus.OnTheWay:
+                    case RequestStatus.OnSite:
+                    case RequestStatus.Done:
+                        await requestStore().setRequestStatus(request.id, status);
+                        break;
+                    default:
+                        await requestStore().resetRequestStatus(request.id);
+                        break;
+                }
             }
-        }
 
-        onStatusUpdated?.()
+            onStatusUpdated?.()
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        }
     }
 
     const noMarginIconStyles: StyleProp<ViewStyle> = {
