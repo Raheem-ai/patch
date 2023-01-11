@@ -479,7 +479,6 @@ export type PromptConfig = {
 
 export type ToastConfig = {
     message: string,
-    dismissable?: boolean,
     unauthenticated?: boolean, // outlet to allow callers to force the toast to show even if the user isnt signed in
     type: 'success' | 'error'
 }
@@ -491,8 +490,8 @@ export interface IAlertStore extends IBaseStore {
     alertWidth: number;
     alertLeft: number;
     
-    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
-    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean): void;
+    toastSuccess(message: string, unauthenticated?: boolean): void;
+    toastError(message: string, unauthenticated?: boolean): void;
 
     showPrompt(config: PromptConfig): void
     hidePrompt(): void

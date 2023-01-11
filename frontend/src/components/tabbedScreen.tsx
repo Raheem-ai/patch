@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
     header: {
         height: TabbedScreenHeaderHeight,
         width: Dimensions.get('screen').width,
-        paddingTop: 16,
         backgroundColor: Colors.backgrounds.tabs,
     },
     body: {
@@ -147,6 +146,7 @@ const styles = StyleSheet.create({
     headerSection: {
         paddingHorizontal: 4,
         marginHorizontal: 8,
+        paddingTop: 16,
     },
     firstSection: {
         marginLeft: 16,
@@ -158,5 +158,4 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.backgrounds.standard,
         borderBottomWidth: 3
     }
-
 })
