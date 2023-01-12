@@ -157,7 +157,7 @@ export default class EditUser extends React.Component {
             message: STRINGS.ACCOUNT.removeDialogText(this.onMyProfile, editUserStore().name),
             actions: [
                 {
-                    label: STRINGS.ACCOUNT.removeDialogOptionNo,
+                    label: STRINGS.ACCOUNT.removeDialogOptionNo(),
                     onPress: () => {}
                 },
                 {   

@@ -123,7 +123,7 @@ const UpsertRoleForm = ({
                 message: STRINGS.SETTINGS.removeRoleDialogText(roleName),
                 actions: [
                     {
-                        label: STRINGS.SETTINGS.removeRoleDialogOptionNo,
+                        label: STRINGS.SETTINGS.removeRoleDialogOptionNo(),
                         onPress: () => {},
                     },
                     {   

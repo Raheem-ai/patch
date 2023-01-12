@@ -168,7 +168,7 @@ const PositionDetailsCard = observer(({
             message: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogText(userStore().user.name),
             actions: [
                 {
-                    label: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogOptionNo,
+                    label: STRINGS.REQUESTS.POSITIONS.removeFromPositionDialogOptionNo(),
                     onPress: () => {},
                 },
                 {   

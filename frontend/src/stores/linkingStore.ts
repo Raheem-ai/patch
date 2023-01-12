@@ -65,7 +65,7 @@ export default class LinkingStore implements ILinkingStore {
             LinkConfig[exp as LinkExperience].run(params || {});
         } else {
             // TODO: should this have a default view for this to route to?
-            alertStore().toastError(STRINGS.LINKS.errorMessages.unknownLink(), true, true)
+            alertStore().toastError(STRINGS.LINKS.errorMessages.unknownLink(), true)
         }
     }
 
@@ -101,7 +101,7 @@ const LinkConfig: LinkExperiences = {
     [LinkExperience.SignUpThroughOrganization]: {
         run: (params) => {
             if (!(params.email && params.orgId && params.pendingId)) {
-                alertStore().toastError(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink(), true, true);
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink(), true);
                 return
             }
 
@@ -118,7 +118,7 @@ const LinkConfig: LinkExperiences = {
     [LinkExperience.JoinOrganization]: {
         run: (params) => {
             if (!(params.email && params.orgId && params.pendingId)) {
-                alertStore().toastError(STRINGS.LINKS.errorMessages.badJoinOrgLink(), true, true);
+                alertStore().toastError(STRINGS.LINKS.errorMessages.badJoinOrgLink(), true);
                 return
             }
 
@@ -140,7 +140,7 @@ const LinkConfig: LinkExperiences = {
             try {
                 await userStore().signInWithCode(params.code);
             } catch(e) {
-                alertStore().toastError(resolveErrorMessage(e), true, true);
+                alertStore().toastError(resolveErrorMessage(e), true);
                 return
             }
 

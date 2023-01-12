@@ -60,18 +60,11 @@ export const Alerts = observer(() => {
                 left: alertStore().alertLeft,
                 top: alertStore().alertTop 
             }]}>
-                <ScrollView>
-                    <Text style={styles.toastText}>{alertStore().toast.message}</Text>
-                </ScrollView>
-                {!alertStore().toast.dismissable
-                    ? null
-                    : <IconButton
-                        style={styles.toastDismissButton}
-                        icon={ICONS.dismissAlert} 
-                        color={Colors.icons.lighter}
-                        onPress={() => alertStore().hideToast()}
-                        size={25} />
-                }
+               <Pressable style={[{height: '100%', width: '100%'}]} onPress={() => alertStore().hideToast()}>
+                    <ScrollView>
+                        <Text style={styles.toastText}>{alertStore().toast.message}</Text>
+                    </ScrollView>
+                </Pressable>
             </Animated.View>
             : null
     }
@@ -134,13 +127,6 @@ const styles = StyleSheet.create({
         color: Colors.text.defaultReversed,
         padding: 0,
         marginVertical: 4,
-        alignSelf: 'flex-start'
-    },
-    toastDismissButton: {
-        height: 'auto', 
-        margin: 0, 
-        marginLeft: 8, 
-        width: 25, 
         alignSelf: 'flex-start'
     },
     promptActionsContainer: {

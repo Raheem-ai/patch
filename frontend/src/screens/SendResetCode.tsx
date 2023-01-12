@@ -29,17 +29,17 @@ export default function ForgotPasswordForm() {
     const sendCode = async () => {
 
         if (!emailIsValid) {
-            alertStore().toastError(STRINGS.ACCOUNT.emailProbablyNotRight, false, true);
+            alertStore().toastError(STRINGS.ACCOUNT.emailProbablyNotRight, true);
             return
         }
         try {
             await userStore().sendResetCode(email, linkBaseUrl);
         } catch(e) {
-            alertStore().toastError(resolveErrorMessage(e), true, true);
+            alertStore().toastError(resolveErrorMessage(e), true);
             return
         }
         
-        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, false, true);
+        alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, true);
         setEmail('');
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
     }

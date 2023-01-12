@@ -14,6 +14,7 @@ export default class AlertStore implements IAlertStore {
     
     toast?: ToastConfig = null;
     prompt?: PromptConfig = null;
+    hideToastTimer = null;
 
     constructor() {
         makeAutoObservable(this)
@@ -37,38 +38,36 @@ export default class AlertStore implements IAlertStore {
         return this.horizontalGutter;
     }
 
-    toastSuccess(message: string, dismissable?: boolean, unauthenticated?: boolean) {
+    toastSuccess(message: string, unauthenticated?: boolean) {
         this.toast = {
             message,
-            dismissable,
             unauthenticated,
             type: 'success'
         }
 
         //TODO: start fade in animation (opacity can useNativeDriver!)
-        if (!dismissable) {
-            setTimeout(() => {
-                // todo start fadeout animation here 
-                runInAction(() =>  this.toast = null)
-            }, this.defaultToastTime)
-        }
+        // make sure only one timer is running
+        clearTimeout(this.hideToastTimer);
+        this.hideToastTimer = setTimeout(() => {
+            // todo start fadeout animation here
+            runInAction(() =>  this.hideToast())
+        }, this.defaultToastTime)
     }
 
-    toastError(message: string, dismissable?: boolean, unauthenticated?: boolean) {
+    toastError(message: string, unauthenticated?: boolean) {
         this.toast = {
             message,
-            dismissable,
             unauthenticated,
             type: 'success'
         }
 
-        //TODO: start fade in animation
-        if (!dismissable) {
-            setTimeout(() => {
-                // todo start fadeout animation here
-                runInAction(() =>  this.toast = null)
-            }, this.defaultToastTime)
-        }
+        //TODO: start fade in animation (opacity can useNativeDriver!)
+        // make sure only one timer is running
+        clearTimeout(this.hideToastTimer);
+        this.hideToastTimer = setTimeout(() => {
+            // todo start fadeout animation here
+            runInAction(() =>  this.hideToast())
+        }, this.defaultToastTime)
     }
     
     showPrompt(config: PromptConfig) {
@@ -80,6 +79,8 @@ export default class AlertStore implements IAlertStore {
     }
 
     hideToast() {
+        // stop timer in case this was user-initiated
+        clearTimeout(this.hideToastTimer);
         this.toast = null;
     }
 
