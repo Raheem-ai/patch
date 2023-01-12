@@ -45,10 +45,10 @@ export default class AlertStore implements IAlertStore {
             type: 'success'
         }
 
-        //TODO: start fade in animation
+        //TODO: start fade in animation (opacity can useNativeDriver!)
         if (!dismissable) {
             setTimeout(() => {
-                // todo start fadeout animation here
+                // todo start fadeout animation here 
                 runInAction(() =>  this.toast = null)
             }, this.defaultToastTime)
         }
