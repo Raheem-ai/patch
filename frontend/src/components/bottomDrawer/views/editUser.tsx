@@ -91,10 +91,17 @@ export default class EditUser extends React.Component {
                         ? <View style={styles.actionButtonsContainer}>
                             <PatchButton 
                                 testID={this.formIds.removeUser}
-                                mode='outlined'
-                                uppercase={false}
-                                label={ STRINGS.ACCOUNT.removeUser(this.onMyProfile) }
+                                mode='text'
+                                style={ styles.actionButton }
+                                label={ STRINGS.ACCOUNT.removeUser(this.onMyProfile, organizationStore().metadata.name) }
                                 onPress={this.promptToRemoveUser} />
+                                { this.onMyProfile 
+                            ? <PatchButton 
+                                testID={this.formIds.removeUser}
+                                mode='text'
+                                label={ STRINGS.ACCOUNT.deletePatchAccount }
+                                onPress={this.promptToDeleteAccount} />
+                            : null }
                         </View>
                         : null
                     }
@@ -153,7 +160,7 @@ export default class EditUser extends React.Component {
 
     promptToRemoveUser = () => {
         alertStore().showPrompt({
-            title:  STRINGS.ACCOUNT.removeDialogTitle(this.onMyProfile),
+            title:  STRINGS.ACCOUNT.removeDialogTitle(this.onMyProfile, organizationStore().metadata.name),
             message: STRINGS.ACCOUNT.removeDialogText(this.onMyProfile, editUserStore().name),
             actions: [
                 {
@@ -163,6 +170,24 @@ export default class EditUser extends React.Component {
                 {   
                     label: STRINGS.ACCOUNT.removeDialogOptionYes(this.onMyProfile, editUserStore().name),
                     onPress: this.removeUserFromOrg,
+                    confirming: true
+                }
+            ]
+        })
+    }
+
+    promptToDeleteAccount = () => {
+        alertStore().showPrompt({
+            title:  STRINGS.ACCOUNT.deleteDialogTitle,
+            message: STRINGS.ACCOUNT.deleteDialogText,
+            actions: [
+                {
+                    label: STRINGS.ACCOUNT.deleteDialogOptionNo(),
+                    onPress: () => {}
+                },
+                {   
+                    label: STRINGS.ACCOUNT.deleteDialogOptionYes(),
+                    onPress: () => {/* this.deleteUserFromOrg */} ,
                     confirming: true
                 }
             ]
@@ -317,19 +342,16 @@ export default class EditUser extends React.Component {
     }
 }
 
-
 const styles = StyleSheet.create({
     actionButtonsContainer: {
-        alignContent: 'center',
-        margin: 20
+        display: "flex",
+        flexDirection: "column",
+        alignContent: 'flex-start',
+        margin: 20,
+        marginTop: 8,
+        marginBottom: 36,
     },
     actionButton: {
-        borderColor: Colors.primary.alpha,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderRadius: 24,
-        height: 48,
-        justifyContent: 'center',
-        marginHorizontal: 38
-    },
+        paddingVertical: 16,
+    }
 })
