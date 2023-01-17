@@ -45,7 +45,7 @@ export default class AlertStore implements IAlertStore {
             type: 'success'
         }
 
-        //TODO: start fade in animation
+        //TODO: start fade in animation (opacity can useNativeDriver!)
         // make sure only one timer is running
         clearTimeout(this.hideToastTimer);
         this.hideToastTimer = setTimeout(() => {
@@ -61,7 +61,7 @@ export default class AlertStore implements IAlertStore {
             type: 'success'
         }
 
-        //TODO: start fade in animation
+        //TODO: start fade in animation (opacity can useNativeDriver!)
         // make sure only one timer is running
         clearTimeout(this.hideToastTimer);
         this.hideToastTimer = setTimeout(() => {
