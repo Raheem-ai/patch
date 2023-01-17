@@ -38,9 +38,18 @@ export const Alerts = observer(() => {
                             }
 
                             return (
-                                <View style={{ flex: 1, justifyContent: 'center', alignContent: 'center' }}>
+                                <View style={[
+                                    styles.promptActionsItemContainer, a.confirming
+                                        ? { flexGrow: 0,
+                                            flexShrink: 1,
+                                            paddingRight: 12, }
+                                        : null]}>
                                     <Pressable onPress={onPress}>
-                                        <Text style={[styles.promptActionLabel, a.confirming ? styles.promptConfirmActionLabel : null]}>{a.label}</Text>
+                                        <Text style={[
+                                            styles.promptActionLabel, 
+                                            a.confirming 
+                                                ? styles.promptConfirmActionLabel 
+                                                : null]}>{a.label}</Text>
                                     </Pressable>
                                 </View>
                             )
@@ -135,6 +144,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // paddingVertical: 8
     },
+    promptActionsItemContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center', 
+        flexGrow: 1,
+        flexShrink: 0,
+        paddingRight: 48,
+    },
     promptTitleContainer: {
         marginBottom: 4
     },
@@ -152,7 +169,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: Colors.text.defaultReversed,
         fontWeight: '400', 
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
     promptConfirmActionLabel: {
         fontWeight: '900'
