@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, ObservableSet, runInAction } from 'mobx';
 import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
 import { Store } from './meta';
-import { appUpdateStore, IUserStore, navigationStore } from './interfaces';
+import { alertStore, appUpdateStore, IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';
 import { navigateTo } from '../navigation';
 import { RootStackParamList, routerNames } from '../types';
@@ -10,6 +10,10 @@ import { getService } from '../services/meta';
 import { IAPIService } from '../services/interfaces';
 import { clearAllStores } from './utils';
 import { clearAllServices } from '../services/utils';
+import { termsOfServiceLink, termsOfServiceVersion } from '../config';
+import { resolveErrorMessage } from '../errors';
+import { termsOfServicePrompt } from './promptUtils';
+import { Linking } from 'react-native';
 
 @Store(IUserStore)
 export default class UserStore implements IUserStore {
@@ -39,6 +43,7 @@ export default class UserStore implements IUserStore {
 
     async init() {
         await appUpdateStore().init()
+        await alertStore().init()
 
         if (this.signedIn) {
             // make sure this doesn't throw because any store that depends on the user store
@@ -52,6 +57,9 @@ export default class UserStore implements IUserStore {
                 // which will clear all stores and reroute to the correct screen
                 await this.updateOrgUsers([]);
                 await this.getLatestMe();
+
+                this.checkTOS();
+
             } catch (e) {
                 console.error(e)
             }
@@ -65,6 +73,32 @@ export default class UserStore implements IUserStore {
         this.users = new ObservableMap()
         this.passwordResetLoginCode = null
         this.deletedUsers = new ObservableSet()
+    }
+
+    checkTOS = () => {
+        if (termsOfServiceVersion != this.user.acceptedTOSVersion) {
+            this.promptTOS()
+        }
+    }
+
+    promptTOS = () => {
+        alertStore().showPrompt(termsOfServicePrompt(
+            () => {
+                this.signOut();
+            },
+            async () => {
+                try {
+                    await this.editMe({
+                        acceptedTOSVersion: termsOfServiceVersion,
+                    })
+                } catch (e) {
+                    alertStore().toastError(resolveErrorMessage(e))
+                }
+            },
+            () => {
+                Linking.openURL(termsOfServiceLink)
+            }
+        ))
     }
 
     orgContext(token?: string): OrgContext {
@@ -124,6 +158,8 @@ export default class UserStore implements IUserStore {
         }
 
         await this.getLatestMe({ me: user, token })
+
+        this.checkTOS()
     }
     
     async signIn(email: string, password: string) {
@@ -262,12 +298,13 @@ export default class UserStore implements IUserStore {
     }
     
     async editMe(user: Partial<EditableMe>, protectedUser?: Partial<AdminEditableUser>) {
-        const me = await this.api.editMe(this.orgContext(), user, protectedUser)
+        const me = await this.api.editMe(this.orgContext(), user, protectedUser || {})
 
         runInAction(() => {
             this.user = me;
 
-            if (this.currentUser.id == me.id) {
+            // TODO: not totally sure why this is needed?
+            if (this.currentUser?.id == me.id) {
                 this.currentUserId = me.id;
             }
         })

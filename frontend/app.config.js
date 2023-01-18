@@ -227,6 +227,14 @@ function branchConfig() {
 	}
 }
 
+function termsOfServiceVersion() {
+	return `v1_1_17_23`
+}
+
+function termsOfServiceLink() {
+	return 'https://getpatch.org/terms/'
+}
+
 const config = {
 	"expo": {
 	  "name": appName(),
@@ -320,7 +328,9 @@ const config = {
 		"sentryDSN": SENTRY_DSN,
 		"appEnv": appEnv(),
 		"backendEnv": backendEnv(),
-		"linkBaseUrl": branchConfig().iosAppDomain
+		"linkBaseUrl": branchConfig().iosAppDomain,
+		"termsOfServiceVersion": termsOfServiceVersion(),
+		"termsOfServiceLink": termsOfServiceLink()
 	  },
 	  "runtimeVersion": {
 		"policy": "nativeVersion"

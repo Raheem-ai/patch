@@ -243,6 +243,7 @@ export const ICONS = {
     priority2: 'chevron-double-up',
     priority3: 'chevron-triple-up',
     timestamp: 'clock-plus-outline',
+    linkOut: 'open-in-new'
 }
 
 export const globalStyles = StyleSheet.create({

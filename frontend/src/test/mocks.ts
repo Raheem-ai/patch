@@ -68,6 +68,7 @@ export function MockUsers(): User[] {
             displayColor: '',
             pronouns: 'they/them',
             bio: '',
+            acceptedTOSVersion: ''
         },
         {
             id: '__dispatcher',
@@ -85,6 +86,7 @@ export function MockUsers(): User[] {
             displayColor: '',
             pronouns: 'they/them',
             bio: '',
+            acceptedTOSVersion: ''
         }
     ]
 }

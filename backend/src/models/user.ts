@@ -63,6 +63,8 @@ export class UserModel implements User {
     @Property()
     displayColor: string
 
+    @Property()
+    acceptedTOSVersion: string
 }
 
 export type UserDoc = UserModel & Document;

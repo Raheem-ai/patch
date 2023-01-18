@@ -1,6 +1,6 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
-import { Animated } from 'react-native';
+import { Animated, TextStyle } from 'react-native';
 import { ClientSideFormat } from '../../../common/api';
 import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
@@ -473,7 +473,7 @@ type PromptAction = {
 
 export type PromptConfig = {
     title: string,
-    message: string,
+    message: string | ((textStyling: TextStyle) => JSX.Element), 
     actions: [PromptAction] | [PromptAction, PromptAction]
 }
 

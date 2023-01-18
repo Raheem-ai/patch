@@ -270,6 +270,11 @@ const STRINGS = {
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
         removedUserSuccess: (name: string) => `Successfully removed ${name} from your organization.`,
         updatedProfileSuccess: (name?: string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
+        termsOfServiceDialogTitle: () => `Update to Terms of Service`,
+        termsOfServiceDialogMessage: () => `We've updated our Terms of Service. To continue using Patch, please review and accept the updated terms.`,
+        termsOfServiceDialogLink: () => `Terms of Service`,
+        termsOfServiceDialogOptionYes: () => `Accept`,
+        termsOfServiceDialogOptionNo: () => `Sign out`,
     },
     SETTINGS: {
         rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',

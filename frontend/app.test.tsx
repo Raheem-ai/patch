@@ -10,6 +10,8 @@ jest.mock('expo-constants', () => {
         appEnv: 'dev',
         backendEnv: '',
         linkBaseUrl: '',
+        termsOfServiceVersion: '',
+        termsOfServiceLink: ''
     }
   
     //Mock the default export and named export 'foo'
