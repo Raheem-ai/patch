@@ -265,6 +265,12 @@ const STRINGS = {
         noPermissionToEditUserAttributes: `You do not have permission to edit Attributes associated with this user's profile.`,
         removedUserSuccess: (name: string) => `Successfully removed ${name} from your organization.`,
         updatedProfileSuccess: (name?: string) => `Successfully updated ${name ? name + `'s` : `your`} profile.`,
+        termsOfServiceDialogTitle: () => `Accept Terms?`,
+        termsOfServiceDialogMessagePart1: () => `We have recently updated our `,
+        termsOfServiceDialogMessagePart2: () => `Terms of Service`,
+        termsOfServiceDialogMessagePart3: () => `. Please accept them to continue using the app.`,
+        termsOfServiceDialogOptionYes: () => `Accept`,
+        termsOfServiceDialogOptionNo: () => `Sign out`,
     },
     SETTINGS: {
         rolesIntroA: 'Use Roles to specify who does what for a Shift or Request.',

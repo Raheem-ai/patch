@@ -19,6 +19,7 @@ export interface User {
     race?: string
     pronouns?: string
     bio?: string
+    acceptedTOSVersion?: string
     // location?
 }
 

@@ -16,6 +16,12 @@ export const Alerts = observer(() => {
     }
 
     const prompt = () => {
+        const msg = alertStore().prompt.message;
+
+        const promptMessage = typeof msg == 'function'
+            ? msg(styles.promptMessageLabel)
+            : <Text style={styles.promptMessageLabel}>{msg}</Text>
+
         return !!alertStore().prompt
             ? <> 
             <Animated.View style={[styles.promptContainer, { 
@@ -27,7 +33,7 @@ export const Alerts = observer(() => {
                     <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
                 </View>
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    <Text style={styles.promptMessageLabel}>{alertStore().prompt.message}</Text>
+                    { promptMessage }
                 </ScrollView>
                 <View style={[styles.promptActionsContainer]}>
                     { 
