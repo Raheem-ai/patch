@@ -16,56 +16,60 @@ export const Alerts = observer(() => {
     }
 
     const prompt = () => {
+        if (!alertStore().prompt) {
+            return null;
+        }
+
         const msg = alertStore().prompt.message;
 
         const promptMessage = typeof msg == 'function'
             ? msg(styles.promptMessageLabel)
             : <Text style={styles.promptMessageLabel}>{msg}</Text>
 
-        return !!alertStore().prompt
-            ? <> 
-            <Animated.View style={[styles.promptContainer, { 
-                width: alertStore().alertWidth, 
-                left: alertStore().alertLeft,
-                top: alertStore().alertTop 
-            }]}>
-                <View style={[styles.promptTitleContainer]}>
-                    <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
-                </View>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    { promptMessage }
-                </ScrollView>
-                <View style={[styles.promptActionsContainer]}>
-                    { 
-                        alertStore().prompt.actions.map(a => {
-                            const onPress = () => {
-                                alertStore().hidePrompt()
-                                a.onPress()
-                            }
+        return (
+            <> 
+                <Animated.View style={[styles.promptContainer, { 
+                    width: alertStore().alertWidth, 
+                    left: alertStore().alertLeft,
+                    top: alertStore().alertTop 
+                }]}>
+                    <View style={[styles.promptTitleContainer]}>
+                        <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
+                    </View>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        { promptMessage }
+                    </ScrollView>
+                    <View style={[styles.promptActionsContainer]}>
+                        { 
+                            alertStore().prompt.actions.map(a => {
+                                const onPress = () => {
+                                    alertStore().hidePrompt()
+                                    a.onPress()
+                                }
 
-                            return (
-                                <View style={[
-                                    styles.promptActionsItemContainer, a.confirming
-                                        ? { flexGrow: 0,
-                                            flexShrink: 1,
-                                            paddingRight: 12, }
-                                        : null]}>
-                                    <Pressable onPress={onPress}>
-                                        <Text style={[
-                                            styles.promptActionLabel, 
-                                            a.confirming 
-                                                ? styles.promptConfirmActionLabel 
-                                                : null]}>{a.label}</Text>
-                                    </Pressable>
-                                </View>
-                            )
-                        }) 
-                    }
-                </View>
-            </Animated.View>
-            <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
+                                return (
+                                    <View style={[
+                                        styles.promptActionsItemContainer, a.confirming
+                                            ? { flexGrow: 0,
+                                                flexShrink: 1,
+                                                paddingRight: 12, }
+                                            : null]}>
+                                        <Pressable onPress={onPress}>
+                                            <Text style={[
+                                                styles.promptActionLabel, 
+                                                a.confirming 
+                                                    ? styles.promptConfirmActionLabel 
+                                                    : null]}>{a.label}</Text>
+                                        </Pressable>
+                                    </View>
+                                )
+                            }) 
+                        }
+                    </View>
+                </Animated.View>
+                <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
             </>
-            : null
+        )
     }
 
     const toast = () => {

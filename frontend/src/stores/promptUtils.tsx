@@ -1,7 +1,9 @@
 // Here so stores can import functions to create React elements without having to be tsx files themselves
 
-import { Text } from "react-native-paper";
+import { Pressable } from "react-native";
+import { IconButton, Text } from "react-native-paper";
 import STRINGS from "../../../common/strings";
+import { Colors, ICONS } from "../types";
 import { PromptConfig } from "./interfaces";
 
 
@@ -14,11 +16,29 @@ export function termsOfServicePrompt(
         title: STRINGS.ACCOUNT.termsOfServiceDialogTitle(),
         message: (textStyle) => {
             return (
-                <Text style={textStyle} >
-                    { STRINGS.ACCOUNT.termsOfServiceDialogMessagePart1() }
-                    <Text style={[ textStyle, {textDecorationLine: 'underline', textDecorationColor: textStyle.color} ]} onPress={onLinkPressed}>{ STRINGS.ACCOUNT.termsOfServiceDialogMessagePart2() }</Text>
-                    { STRINGS.ACCOUNT.termsOfServiceDialogMessagePart3() }
-                </Text>
+                <>
+                    <Text style={textStyle}>
+                        { STRINGS.ACCOUNT.termsOfServiceDialogMessage() }
+                    </Text>
+                    <Pressable onPress={onLinkPressed} style={{ flexDirection: 'row', marginTop: 12, alignItems: 'center' }}>
+                        <IconButton
+                            style={{ alignSelf: 'center', margin: 0 , width: 20}}
+                            icon={ICONS.linkOut} 
+                            color={Colors.primary.alpha}
+                            size={20} />
+                        <Text style={[ 
+                            textStyle, 
+                            { 
+                                textDecorationLine: 'underline', 
+                                textDecorationColor: Colors.primary.alpha, 
+                                color: Colors.primary.alpha,
+                                marginLeft: 4
+                            } 
+                        ]}>
+                            { STRINGS.ACCOUNT.termsOfServiceDialogLink() }
+                        </Text>
+                    </Pressable>
+                </>
             )
         },
         actions: [
