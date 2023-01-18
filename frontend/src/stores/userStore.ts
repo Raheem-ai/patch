@@ -11,7 +11,6 @@ import { IAPIService } from '../services/interfaces';
 import { clearAllStores } from './utils';
 import { clearAllServices } from '../services/utils';
 import { termsOfServiceLink, termsOfServiceVersion } from '../config';
-import STRINGS from '../../../common/strings';
 import { resolveErrorMessage } from '../errors';
 import { termsOfServicePrompt } from './promptUtils';
 import { Linking } from 'react-native';
