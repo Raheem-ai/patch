@@ -3,7 +3,7 @@ echo git fetch --depth=10 --tags patch:Raheem-ai/patch.git $COMMIT_SHA
 git fetch --depth=10 --tags patch:Raheem-ai/patch.git $COMMIT_SHA
 
 # gets me the list of tags with the latest first
-tagString=$(git tag --list "rc-*" --sort=creatordate)
+tagString=$(git tag --list "rc-*" --sort=-taggerdate)
 tags=($(echo $tagString | tr " " "\n"))
 
 # choose latest tag
