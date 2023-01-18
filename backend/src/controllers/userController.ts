@@ -95,6 +95,10 @@ export class ValidatedMe implements Partial<EditableMe> {
     @Optional()
     @Property()
     bio: string
+
+    @Optional()
+    @Property()
+    acceptedTOSVersion: string;
 }
 
 const googleMapsApiKey = config.GOOGLE_MAPS.get().api_key;
