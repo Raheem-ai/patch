@@ -1,7 +1,6 @@
 {
   "cli": {
-    "version": "^2.4.1",
-    "appVersionSource": "remote"
+    "version": "^2.4.1"
   },
   "build": {
     "prod": {
@@ -17,6 +16,12 @@
       "channel": "staging",
       "env": {
         "_ENVIRONMENT": "staging"
+      }
+    },
+    "staging-simulator": {
+      "extends": "staging",
+      "ios": {
+        "simulator": true
       }
     },
     "dev": {

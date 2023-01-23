@@ -27,15 +27,14 @@ let apiHost = ''
  * a new build because of native code changes or build time native 
  * config changes
  */
-const VERSION = '0.0.11'
+const VERSION = '0.0.13'
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
 const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
 
-// these values auto-increment during expo builds of the same native version so we don't have to 
-// worry about it
-let IOS_BUILD_NUMBER = 1
+// these values shouldn't need to change 
+let IOS_BUILD_NUMBER = "1"
 let ANDROID_VERSION_CODE = 1
 
 let SENTRY_AUTH_TOKEN = ''
@@ -265,7 +264,7 @@ const config = {
 			"remote-notification"
 		  ]
 		},
-		// "buildNumber": IOS_BUILD_NUMBER,
+		"buildNumber": IOS_BUILD_NUMBER,
 		"bundleIdentifier": appId(),
 		"config": {
 		  "googleMapsApiKey": GOOGLE_MAPS_KEY
@@ -273,7 +272,7 @@ const config = {
 	  },
 	  "android": {
 		"googleServicesFile": servicesJsonPath,
-		// "versionCode": ANDROID_VERSION_CODE,
+		"versionCode": ANDROID_VERSION_CODE,
 		"adaptiveIcon": {
 		  "foregroundImage": "./assets/adaptive-icon.png",
 		  "backgroundColor": "#FFFFFF"
@@ -302,7 +301,7 @@ const config = {
 		"termsOfServiceLink": termsOfServiceLink()
 	  },
 	  "runtimeVersion": {
-		"policy": "appVersion"
+		"policy": "nativeVersion"
 	  },
 	  "updates": {
 		"url": "https://u.expo.dev/ae020710-1c9f-46da-9651-9003dc40fc83"
