@@ -5,6 +5,7 @@
     "dev:prod": "_DEV_ENVIRONMENT=prod expo start --dev-client",
     "build:prod": "eas build --profile prod",
     "build:staging": "eas build --profile staging",
+    "build:staging-simulator": "eas build --profile staging-simulator",
     "build:dev": "eas build --profile dev",
     "build:prod:ios": "eas build --profile prod --platform ios",
     "build:staging:ios": "eas build --profile staging --platform ios",

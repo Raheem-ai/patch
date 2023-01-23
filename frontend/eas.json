@@ -18,6 +18,12 @@
         "_ENVIRONMENT": "staging"
       }
     },
+    "staging-simulator": {
+      "extends": "staging",
+      "ios": {
+        "simulator": true
+      }
+    },
     "dev": {
       "extends": "staging",
       "developmentClient": "true",

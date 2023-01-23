@@ -23,27 +23,23 @@ let apiHost = ''
  * For Android: 
  * - corresponds to "versionName"
  * 
- * NOTE: increment every time you do a build you're going to submit a new release 
+ * NOTE: increment every time you make a change that requires
+ * a new build because of native code changes or build time native 
+ * config changes
  */
-const VERSION = '0.0.10'
-// increment this any time you want to submit a new release to the play store
-const BUILD_COUNT = 3
+const VERSION = '0.0.13'
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
 const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
 
-// just signifies if a build of a particular version is for prod/staging and ios/android of that version
-// and these values will throw if we are doing a real build without passing in the required env variables
-let IOS_BUILD_NUMBER = '2'
-// let IOS_BUILD_NUMBER = '-1'
-let ANDROID_VERSION_CODE = BUILD_COUNT
-// let ANDROID_VERSION_CODE = -1
+// these values shouldn't need to change 
+let IOS_BUILD_NUMBER = "1"
+let ANDROID_VERSION_CODE = 1
 
 let SENTRY_AUTH_TOKEN = ''
 let SENTRY_DSN = ''
 let GOOGLE_MAPS_KEY = ''
-let GOOGLE_FCM_KEY = ''
 let BRANCH_KEY = ''
 
 function loadLocalEnv(env) {
@@ -67,27 +63,8 @@ function resolveApiHost(env) {
 			: apiHost || stagingApiHost // for dev let defined local url override but fallback to staging
 }
 
-function resolveVersionInfo(env) {
-	if (env == 'prod') {
-		// ANDROID_VERSION_CODE = ((BUILD_COUNT - 1) * 2) + 1
-		// VERSION = RELEASE_NUMBER
-		// IOS_BUILD_NUMBER = '1'
-	} else if (env == 'staging') {
-		// ANDROID_VERSION_CODE = ((BUILD_COUNT - 1) * 2)
-		// IOS_BUILD_NUMBER = '0.0.1'
-
-		// if (PLATFORM == 'ios') {
-		// 	VERSION = RELEASE_NUMBER
-		// } else if (PLATFORM == 'android') {
-		// 	VERSION = `${RELEASE_NUMBER}-staging`
-		// }
-		// VERSION = RELEASE_NUMBER
-	}
-}
-
 function resolveSecrets(env) {
 	let googleMapsKey = 'GOOGLE_MAPS'
-	let googleFCMKey = 'GOOGLE_FCM_CREDS'
 	let sentryKey = 'SENTRY_CREDS'
 	let branchKey = 'BRANCH_CREDS'
 
@@ -96,17 +73,12 @@ function resolveSecrets(env) {
 		googleMapsKey += prodSecretSuffix
 		sentryKey += prodSecretSuffix
 		branchKey += prodSecretSuffix
-		googleFCMKey += prodSecretSuffix
 	} else if (inEASBuild 
 		&& (env == 'staging' || env == 'dev') // dev & staging use the same secrets for now
 	) {
 		googleMapsKey += stagingSecretSuffix
 		sentryKey += stagingSecretSuffix
 		branchKey += stagingSecretSuffix
-
-		googleFCMKey += env == 'dev'
-			? devSecretSuffix
-			: stagingSecretSuffix
 	}
 
 	// NOTE:
@@ -131,9 +103,6 @@ if (inEASBuild) { // running eas build on ci server
 	
 	// make sure api is pointing to the right environment
 	resolveApiHost(ENV)
-
-	// set correction versioning info
-	resolveVersionInfo(ENV)
 
 	resolveSecrets(ENV)
 
@@ -164,7 +133,6 @@ if (inEASBuild) { // running eas build on ci server
 	// or provided by env
 	resolveSecrets(UPDATE_ENVIRONMENT)
 } else {
-	// *** is this true? ***
 	// throw `This file shouldn't be used without providing either _ENVIRONMENT, _DEV_ENVIRONMENT, or _UPDATE_ENV env variable`
 }
 
