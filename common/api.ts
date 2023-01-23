@@ -95,6 +95,7 @@ export interface IApiClient {
     reportPushToken: Authenticated<(token: string) => Promise<void>>
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
+    deleteMyAccount: Authenticated<() => Promise<void>>
 
     updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 
@@ -180,6 +181,9 @@ type ApiRoutes = {
         },
         editMe: () => {
             return `/editMe`
+        },
+        deleteMyAccount: () => {
+            return '/deleteMyAccount'
         },
         broadcastRequest: () => {
             return '/broadcastRequest'
@@ -343,6 +347,9 @@ type ApiRoutes = {
         },
         me: () => {
             return `${this.base}${this.namespaces.users}${this.server.me()}`
+        },
+        deleteMyAccount: () => {
+            return `${this.base}${this.namespaces.users}${this.server.deleteMyAccount()}`
         },
         editMe: () => {
             return `${this.base}${this.namespaces.users}${this.server.editMe()}`

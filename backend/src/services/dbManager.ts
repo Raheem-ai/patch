@@ -122,6 +122,26 @@ export class DBManager {
         return await newUser.save();
     }
 
+    async deleteUser(userId: string | UserDoc) {
+        const user = await this.resolveUser(userId);
+
+        // delete the user from all orgs they are currently a part of
+        const orgIds = Object.keys(user.organizations);
+
+        for (const orgId in orgIds) {
+            await this.removeUserFromOrganization(orgId, user, true)
+        }
+
+        // TODO: remove user from the removedUsers of any org they were previously in
+
+        // delete any authCodes associated w/ user
+        const authCodes = await this.authCodes.find({ userId: user.id });
+        await this.bulkDelete(this.authCodes, authCodes)
+
+        // delete the user from the global space
+        await user.delete()
+    }
+
     async acceptInviteToOrg(orgId: string | OrganizationDoc, pendingId: string, existingUser: UserDoc) {
         const org = await this.resolveOrganization(orgId);
         const idx = org?.pendingUsers?.findIndex(u => u.pendingId == pendingId);
@@ -329,7 +349,7 @@ export class DBManager {
         }, session)
     }
 
-    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc) {
+    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, fullDelete?: boolean) {
         const user = await this.resolveUser(userId);
 
         const org = await this.resolveOrganization(orgId);
@@ -349,10 +369,15 @@ export class DBManager {
             }
         }), 1)
 
-        org.removedMembers ||= []
+        // if just removing the user from the org but not deleting 
+        // their account, keep them in the deleted users of that org
+        // so their name etc. is still viewable in historical data
+        if (!fullDelete) {
+            org.removedMembers ||= []
 
-        if (!org.removedMembers.includes(userId)) {
-            org.removedMembers.push(userId);
+            if (!org.removedMembers.includes(userId)) {
+                org.removedMembers.push(userId);
+            }
         }
 
         // save both
@@ -1654,6 +1679,10 @@ export class DBManager {
     }
 
     async bulkDelete<T>(model: Model<T>, docs: Document<T>[]) {
+        if (!(docs && docs.length)) {
+            return
+        }
+
         const bulkOps = docs.map(doc => ({
             deleteOne: {
                 filter: { _id: doc._id },

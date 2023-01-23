@@ -187,7 +187,13 @@ export default class EditUser extends React.Component {
                 },
                 {   
                     label: STRINGS.ACCOUNT.deleteDialogOptionYes(),
-                    onPress: () => {/* this.deleteUserFromOrg */} ,
+                    onPress: async () => {
+                        try {
+                            await userStore().deleteMyAccount()
+                        } catch (e) {
+                            alertStore().toastError(resolveErrorMessage(e));
+                        }
+                    },
                     confirming: true
                 }
             ]

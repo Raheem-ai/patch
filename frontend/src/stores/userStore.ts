@@ -188,6 +188,11 @@ export default class UserStore implements IUserStore {
         }
     }
 
+    async deleteMyAccount() {
+        await this.api.deleteMyAccount({ token: this.authToken })
+        this.onSignOut()
+    }
+
     /**
      * Code that should be run whenever a user logs out or is logged out
      * by the system.
