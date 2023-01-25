@@ -170,6 +170,11 @@ export class OrganizationController implements APIController<
 
         const existingUser = await this.db.getUser({ email });
 
+        //user is already a member of the org
+        if (existingUser && existingUser.organizations[orgId]) {
+            throw STRINGS.ACCOUNT.errorMessages.alreadyAMember;
+        }
+
         const pendingUser: PendingUser = {
             email,
             phone,

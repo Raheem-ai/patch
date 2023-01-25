@@ -423,6 +423,13 @@ export class DBManager {
     async addPendingUserToOrg(orgId: string | OrganizationDoc, pendingUser: PendingUser) {
         const org = await this.resolveOrganization(orgId);
 
+        const existingUserIdx = org.pendingUsers.findIndex((user) => user.email == pendingUser.email);
+
+        // make sure only latest invite is honored
+        if (existingUserIdx != -1) {
+            org.pendingUsers.splice(existingUserIdx, 1)
+        }
+
         // TODO: we should put an orgInvites field or something on the user (if they already exist)
         // so you can know you have invites without having to do a huge search across every org
         // in the db...then this would update with the user (if they exist) in a transaction
