@@ -69,7 +69,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string
     ) {
-        const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId);
+        const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId, false);
 
         const res = {
             org: await this.db.protectedOrganization(org),

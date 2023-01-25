@@ -122,24 +122,46 @@ export class DBManager {
         return await newUser.save();
     }
 
-    async deleteUser(userId: string | UserDoc) {
-        const user = await this.resolveUser(userId);
+    async deleteUser(userId: string | UserDoc, session?: ClientSession) {
+        return this.transaction(async (session) => {
+            const user = await this.resolveUser(userId);
 
-        // delete the user from all orgs they are currently a part of
-        const orgIds = Object.keys(user.organizations);
+            // delete the user from all orgs they are currently a part of
+            const orgIds = Object.keys(user.organizations);
 
-        for (const orgId in orgIds) {
-            await this.removeUserFromOrganization(orgId, user, true)
-        }
+            for (const orgId of orgIds) {
+                // skip orgs user was previously removed from
+                if (user.organizations[orgId]) {
+                    await this.removeUserFromOrganization(orgId, user, true, session)
+                }
+            }
 
-        // TODO: remove user from the removedUsers of any org they were previously in
+            // remove user from the removedUsers of any org they were previously removed from
+            const previousOrgs = await this.orgs.find({
+                removedMembers: {
+                    $elemMatch: {
+                        $eq: user.id
+                    }
+                }
+            });
 
-        // delete any authCodes associated w/ user
-        const authCodes = await this.authCodes.find({ userId: user.id });
-        await this.bulkDelete(this.authCodes, authCodes)
+            for (const org of previousOrgs) {
+                const removedIdx = org.removedMembers.indexOf(user.id);
+            
+                if (removedIdx != -1) {
+                    org.removedMembers.splice(removedIdx, 1);
+                    await org.save({ session })
+                }
+            }
 
-        // delete the user from the global space
-        await user.delete()
+            // delete any authCodes associated w/ user
+            const authCodes = await this.authCodes.find({ userId: user.id });
+            await this.bulkDelete(this.authCodes, authCodes, session)
+
+            // delete the user from the global space
+            await user.delete({ session })
+
+        }, session)
     }
 
     async acceptInviteToOrg(orgId: string | OrganizationDoc, pendingId: string, existingUser: UserDoc) {
@@ -340,6 +362,13 @@ export class DBManager {
         // add the userId to the members array
         org.members.push(userId)
 
+        // remove them from the removedUsers array if they were previously removed 
+        const removedIdx = org.removedMembers.indexOf(user.id);
+        
+        if (removedIdx != -1) {
+            org.removedMembers.splice(removedIdx, 1);
+        }
+
         // save both in transaction
         return this.transaction(async (session) => {
             return [
@@ -349,7 +378,7 @@ export class DBManager {
         }, session)
     }
 
-    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, fullDelete?: boolean) {
+    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, fullDelete: boolean, session?: ClientSession) {
         const user = await this.resolveUser(userId);
 
         const org = await this.resolveOrganization(orgId);
@@ -386,7 +415,7 @@ export class DBManager {
                 await org.save({ session }),
                 await user.save({ session })
             ] as [ OrganizationDoc, UserDoc ];
-        })
+        }, session)
     }
 
 
@@ -1678,7 +1707,7 @@ export class DBManager {
         await model.bulkWrite(bulkOps);
     }
 
-    async bulkDelete<T>(model: Model<T>, docs: Document<T>[]) {
+    async bulkDelete<T>(model: Model<T>, docs: Document<T>[], session?: ClientSession) {
         if (!(docs && docs.length)) {
             return
         }
@@ -1689,7 +1718,9 @@ export class DBManager {
             }
         }))
 
-        await model.bulkWrite(bulkOps);
+        await this.transaction(async (session) => {
+            await model.bulkWrite(bulkOps, { session });
+        }, session)
     }
 
     async resolveOrganization(orgId: string | OrganizationDoc) {
