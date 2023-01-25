@@ -118,6 +118,7 @@ export class UsersController implements APIController<
     | 'editUser'
     | 'sendResetCode'
     | 'updatePassword'
+    | 'deleteMyAccount'
 > {
     @Inject(DBManager) db: DBManager;
     @Inject(UserModel) users: MongooseModel<UserModel>;
@@ -259,6 +260,12 @@ export class UsersController implements APIController<
         return this.db.me(user);
     }
 
+    @Post(API.server.deleteMyAccount())
+    @Authenticate()
+    async deleteMyAccount(@User() user: UserDoc) {
+        return this.db.deleteUser(user);
+    }
+
     @Post(API.server.reportLocation())
     @Authenticate()
     async reportLocation(
@@ -384,7 +391,6 @@ export class UsersController implements APIController<
 
         await this.emailService.sendResetPasswordEmail(link, email, user.name);
     }
-
 
     @Post(API.server.signInWithCode())
     async signInWithCode(

@@ -665,46 +665,46 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 }
 
                 return pendingRequests.length + deniedRequests.length + Array.from(viewedUsers.entries()).length + joinedUsers.length + Array.from(notifiedUsers.entries()).length > 0
-                ? <View>
-                    <Pressable 
-                        style={{ 
-                            padding: 20, 
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                        }} 
-                        onPress={toggleTeamDetails}
-                    >
-                        <View>
-                            <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
-                        </View>
-                        { newLabel
-                            ? <View style={{ flex: 1 }}>
-                                <Text style={{ 
-                                    color: Colors.primary.alpha, 
-                                    fontSize: 14
-                                }}>{newLabel}</Text>
+                    ? <View>
+                        <Pressable 
+                            style={{ 
+                                padding: 20, 
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }} 
+                            onPress={toggleTeamDetails}
+                        >
+                            <View>
+                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
                             </View>
-                            : null
+                            { newLabel
+                                ? <View style={{ flex: 1 }}>
+                                    <Text style={{ 
+                                        color: Colors.primary.alpha, 
+                                        fontSize: 14
+                                    }}>{newLabel}</Text>
+                                </View>
+                                : null
+                            }
+                            <IconButton 
+                                style={styles.largeIcon}
+                                size={styles.largeIcon.height}
+                                color={'#999'}
+                                icon={!eventDetailsOpen ? ICONS.filterOpen : ICONS.filterClose}/>
+                        </Pressable>
+                        {
+                            eventDetailsOpen
+                                ? <View>
+                                    { requestSection() }
+                                    { joinedSection() }
+                                    { viewedSection() }
+                                    { notificationsSection() }
+                                </View>
+                                : null
                         }
-                        <IconButton 
-                            style={styles.largeIcon}
-                            size={styles.largeIcon.height}
-                            color={'#999'}
-                            icon={!eventDetailsOpen ? ICONS.filterOpen : ICONS.filterClose}/>
-                    </Pressable>
-                    {
-                        eventDetailsOpen
-                            ? <View>
-                                { requestSection() }
-                                { joinedSection() }
-                                { viewedSection() }
-                                { notificationsSection() }
-                            </View>
-                            : null
-                    }
-                </View>
-                : <View style={{height: 20}}></View>
+                    </View>
+                    : <View style={{height: 20}}></View>
             }
         }
 

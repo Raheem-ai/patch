@@ -36,6 +36,7 @@ export interface IUserStore extends IBaseStore {
     signUp(minUser: MinUser): Promise<void>
     signOut(): Promise<void>
     onSignOut: (route?: keyof RootStackParamList) => void
+    deleteMyAccount(): Promise<void>
 
     updateOrgUsers(userIds: string[]): Promise<void>
     toggleOnDuty(): Promise<void>
