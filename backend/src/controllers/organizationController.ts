@@ -69,7 +69,7 @@ export class OrganizationController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('userId') userId: string
     ) {
-        const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId);
+        const [ org, removedUser ] = await this.db.removeUserFromOrganization(orgId, userId, false);
 
         const res = {
             org: await this.db.protectedOrganization(org),
@@ -169,6 +169,11 @@ export class OrganizationController implements APIController<
         const org = await this.db.resolveOrganization(orgId)
 
         const existingUser = await this.db.getUser({ email });
+
+        //user is already a member of the org
+        if (existingUser && existingUser.organizations[orgId]) {
+            throw STRINGS.ACCOUNT.errorMessages.alreadyAMember;
+        }
 
         const pendingUser: PendingUser = {
             email,

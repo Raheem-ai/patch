@@ -122,6 +122,48 @@ export class DBManager {
         return await newUser.save();
     }
 
+    async deleteUser(userId: string | UserDoc, session?: ClientSession) {
+        return this.transaction(async (session) => {
+            const user = await this.resolveUser(userId);
+
+            // delete the user from all orgs they are currently a part of
+            const orgIds = Object.keys(user.organizations);
+
+            for (const orgId of orgIds) {
+                // skip orgs user was previously removed from
+                if (user.organizations[orgId]) {
+                    await this.removeUserFromOrganization(orgId, user, true, session)
+                }
+            }
+
+            // remove user from the removedUsers of any org they were previously removed from
+            const previousOrgs = await this.orgs.find({
+                removedMembers: {
+                    $elemMatch: {
+                        $eq: user.id
+                    }
+                }
+            });
+
+            for (const org of previousOrgs) {
+                const removedIdx = org.removedMembers.indexOf(user.id);
+            
+                if (removedIdx != -1) {
+                    org.removedMembers.splice(removedIdx, 1);
+                    await org.save({ session })
+                }
+            }
+
+            // delete any authCodes associated w/ user
+            const authCodes = await this.authCodes.find({ userId: user.id });
+            await this.bulkDelete(this.authCodes, authCodes, session)
+
+            // delete the user from the global space
+            await user.delete({ session })
+
+        }, session)
+    }
+
     async acceptInviteToOrg(orgId: string | OrganizationDoc, pendingId: string, existingUser: UserDoc) {
         const org = await this.resolveOrganization(orgId);
         const idx = org?.pendingUsers?.findIndex(u => u.pendingId == pendingId);
@@ -320,6 +362,13 @@ export class DBManager {
         // add the userId to the members array
         org.members.push(userId)
 
+        // remove them from the removedUsers array if they were previously removed 
+        const removedIdx = org.removedMembers.indexOf(user.id);
+        
+        if (removedIdx != -1) {
+            org.removedMembers.splice(removedIdx, 1);
+        }
+
         // save both in transaction
         return this.transaction(async (session) => {
             return [
@@ -329,7 +378,7 @@ export class DBManager {
         }, session)
     }
 
-    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc) {
+    async removeUserFromOrganization(orgId: string | OrganizationDoc, userId: string | UserDoc, fullDelete: boolean, session?: ClientSession) {
         const user = await this.resolveUser(userId);
 
         const org = await this.resolveOrganization(orgId);
@@ -349,10 +398,15 @@ export class DBManager {
             }
         }), 1)
 
-        org.removedMembers ||= []
+        // if just removing the user from the org but not deleting 
+        // their account, keep them in the deleted users of that org
+        // so their name etc. is still viewable in historical data
+        if (!fullDelete) {
+            org.removedMembers ||= []
 
-        if (!org.removedMembers.includes(userId)) {
-            org.removedMembers.push(userId);
+            if (!org.removedMembers.includes(userId)) {
+                org.removedMembers.push(userId);
+            }
         }
 
         // save both
@@ -361,13 +415,20 @@ export class DBManager {
                 await org.save({ session }),
                 await user.save({ session })
             ] as [ OrganizationDoc, UserDoc ];
-        })
+        }, session)
     }
 
 
 
     async addPendingUserToOrg(orgId: string | OrganizationDoc, pendingUser: PendingUser) {
         const org = await this.resolveOrganization(orgId);
+
+        const existingUserIdx = org.pendingUsers.findIndex((user) => user.email == pendingUser.email);
+
+        // make sure only latest invite is honored
+        if (existingUserIdx != -1) {
+            org.pendingUsers.splice(existingUserIdx, 1)
+        }
 
         // TODO: we should put an orgInvites field or something on the user (if they already exist)
         // so you can know you have invites without having to do a huge search across every org
@@ -1653,14 +1714,20 @@ export class DBManager {
         await model.bulkWrite(bulkOps);
     }
 
-    async bulkDelete<T>(model: Model<T>, docs: Document<T>[]) {
+    async bulkDelete<T>(model: Model<T>, docs: Document<T>[], session?: ClientSession) {
+        if (!(docs && docs.length)) {
+            return
+        }
+
         const bulkOps = docs.map(doc => ({
             deleteOne: {
                 filter: { _id: doc._id },
             }
         }))
 
-        await model.bulkWrite(bulkOps);
+        await this.transaction(async (session) => {
+            await model.bulkWrite(bulkOps, { session });
+        }, session)
     }
 
     async resolveOrganization(orgId: string | OrganizationDoc) {

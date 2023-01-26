@@ -217,6 +217,14 @@ export class APIClient implements IAPIService {
         return user;
     }
 
+    async deleteMyAccount(ctx: TokenContext): Promise<void> {
+        const url = `${apiHost}${API.client.deleteMyAccount()}`;
+
+        await this.tryPost<void>(url, {}, {
+            headers: this.userScopeAuthHeaders(ctx),
+        })
+    }
+
     async editMe(ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>): Promise<ClientSideFormat<Me>> {
         const url = `${apiHost}${API.client.editMe()}`;
 
