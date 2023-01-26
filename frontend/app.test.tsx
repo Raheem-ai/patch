@@ -104,14 +104,7 @@ async function mockBoot() {
     return utils
 }
 
-async function mockSignUpBoot() {
-    // mock around params for link
-    const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
-        orgId: '',
-        pendingId: '',
-        email: ''
-    };
-
+async function mockSignUpBoot(linkParams: LinkParams[LinkExperience.SignUpThroughOrganization]) {
     // mock out changes to the Branch.subscribe in linkingStore().init()
     const branchEvent: BranchSubscriptionEvent = {
         error: null,
@@ -212,12 +205,19 @@ describe('Sign Up from Invitation Scenarios', () => {
     })
 
     test('Successful sign up and navigate to home page', async () => {
+        // mock around params for link
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: '',
+            pendingId: '',
+            email: ''
+        };
+
         const {
             getByTestId,
             getMeMock,
             branchSubscribeMock,
             ...rest
-        } = await mockSignUpBoot();
+        } = await mockSignUpBoot(linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         expect(navigationStore().currentRoute).toEqual(routerNames.signUpThroughOrg);
@@ -239,7 +239,7 @@ describe('Sign Up from Invitation Scenarios', () => {
 
         // Fill out user info with mocked data.
         await act(async () => {
-            fireEvent.changeText(emailInput, mockedUser.email)
+            fireEvent.changeText(nameInput, mockedUser.name)
             fireEvent.changeText(passwordInput, mockedUser.password)
         })
 
@@ -325,15 +325,38 @@ describe('Sign Up from Invitation Scenarios', () => {
     })
 
     test('Open app with bad link should show error toast', async () => {
-        await mockSignUpBoot();
         // Can you send me a bad link so I can see what the behavior in the app is
         // and verify that it's the expected behavior for this test?
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: '',
+            pendingId: '',
+            email: ''
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            ...rest
+        } = await mockSignUpBoot(linkParams);
     })
 
     test('Backend error and show toast', async () => {
-        await mockSignUpBoot();
         // Can you send me a link for this scenario so I can see what the behavior in the app is
         // and verify that it's the expected behavior for this test?
+        // mock around params for link
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: '',
+            pendingId: '',
+            email: ''
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            ...rest
+        } = await mockSignUpBoot(linkParams);
     })
 })
 
