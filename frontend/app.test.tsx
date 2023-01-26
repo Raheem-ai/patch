@@ -27,7 +27,7 @@ import boot from './src/boot';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore } from './src/stores/interfaces';
+import { alertStore, headerStore, navigationStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
@@ -37,6 +37,8 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
+import { LinkExperience, LinkParams } from './models';
+import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -100,6 +102,40 @@ async function mockBoot() {
     await bootup;
 
     return utils
+}
+
+async function mockSignUpBoot() {
+    // mock around params for link
+    const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+        orgId: '',
+        pendingId: '',
+        email: ''
+    };
+
+    // mock out changes to the Branch.subscribe in linkingStore().init()
+    const branchEvent: BranchSubscriptionEvent = {
+        error: null,
+        params: Object.assign({}, linkParams, { /* params needed in linkingStore().init() logic */ })
+    };
+
+    // What do we do with this?
+    const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementation((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
+        // mock handleBranchLink stuff?
+        return callback(branchEvent)
+    });
+
+    const mockedUser = MockUsers()[0];
+
+    // mock out the api calls that will get triggered when the app
+    const getMeMock = jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser);
+
+    const { getByTestId, ...rest } = await mockBoot();
+    return {
+        getByTestId,
+        getMeMock,
+        branchSubscribeMock,
+        ...rest
+    }
 }
 
 async function mockSignIn() {
@@ -167,6 +203,138 @@ describe('Boot Scenarios', () => {
         // await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
         await waitFor(() => getByTestId(TestIds.signIn.submit))
     });
+})
+
+describe('Sign Up from Invitation Scenarios', () => {
+
+    afterEach(() => {
+        // TODO:: cleanup
+    })
+
+    test('Successful sign up and navigate to home page', async () => {
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            ...rest
+        } = await mockSignUpBoot();
+
+        // After boot from link, app should navigate to signUpThroughOrg page
+        expect(navigationStore().currentRoute).toEqual(routerNames.signUpThroughOrg);
+
+        const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
+        const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
+        const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
+
+        const mockedUser = MockUsers()[0];
+
+        // Users should only be able to edit their name and password on this screen.
+        // i.e. the email text box should be disabled with the email of the mocked user.
+        expect(emailInput).toBeDisabled();
+        expect(emailInput).toHaveTextContent(mockedUser.email);
+
+        // Join button should be disabled until the form fields are filled.
+        expect(joinButton).toBeDisabled();
+
+        // Fill out user info with mocked data.
+        await act(async () => {
+            fireEvent.changeText(emailInput, mockedUser.email)
+            fireEvent.changeText(passwordInput, mockedUser.password)
+        })
+
+        // Join button should be enabled after filling out form.
+        expect(joinButton).not.toBeDisabled();
+
+        // mocked apis
+        const signUpMock = jest.spyOn(APIClient.prototype, 'signUp').mockResolvedValue(MockAuthTokens());
+        const getTeamMembersMock = jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata());
+        const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
+        const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
+        const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]);
+
+        // Submit the form
+        await act(async () => {
+            fireEvent(joinButton, 'click')
+        })
+
+        // After signup, user app should reroute to the userHomePage
+        expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
+
+        // Expect alertStore().toastSuccess to be called.
+        // TODO: How do we validate toast messages?
+        // mock AlertStore.toastSuccess and expect(mockToastSuccess).toHaveBeenCalledWith(`Welcome to PATCH!`)?
+
+        await waitFor(() => {
+            expect(signUpMock).toHaveBeenCalledWith({
+                email: mockedUser.email,
+                password: mockedUser.password
+            })
+        })
+
+        await waitFor(() => {
+            expect(getMeMock).toHaveBeenCalledWith({
+                token: MockAuthTokens().accessToken
+            })
+        })
+
+        await waitFor(() => {
+            expect(getTeamMembersMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgMetadataMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgSecretsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getRequestsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => getByTestId(TestIds.home.screen));
+
+        // expect TestIds.userHome.welcomeLabel -> `Hi, ${firstName}.`
+        const userHomeWelcomeLabel = await waitFor(() => getByTestId(TestIds.userHome.welcomeLabel));
+
+        // TODO: First name only.
+        expect(userHomeWelcomeLabel.toHaveTextContent(`Hi, ${mockedUser.name}.`));
+    })
+
+    test('Open app with bad link should show error toast', async () => {
+        await mockSignUpBoot();
+        // Can you send me a bad link so I can see what the behavior in the app is
+        // and verify that it's the expected behavior for this test?
+    })
+
+    test('Backend error and show toast', async () => {
+        await mockSignUpBoot();
+        // Can you send me a link for this scenario so I can see what the behavior in the app is
+        // and verify that it's the expected behavior for this test?
+    })
 })
 
 describe('Signed in Scenarios', () => {

@@ -177,6 +177,7 @@ const TestIds = {
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
+        welcomeLabel: 'userHomePage::welcomeLabel',
         linkTo: (link: string) => `userHomePage::linkTo(${link})`,
     },
     welcome: {
