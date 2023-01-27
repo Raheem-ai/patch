@@ -36,7 +36,8 @@ const TextInput = observer(({
                     justifyContent: 'flex-start',
                     marginRight: 12,
                 }}>
-                <RNTextInput 
+                <RNTextInput
+                    testID={config.testID}
                     placeholderTextColor={Colors.text.tertiary}
                     style={[
                         { 

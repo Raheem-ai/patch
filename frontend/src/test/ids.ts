@@ -267,6 +267,12 @@ const TestIds = {
     assignResponders: {
         view: 'assignResponders'
     },
+
+    // Alert views
+    alerts: {
+        toast: 'toast',
+        prompt: 'prompt'
+    },
 }
 
 export default TestIds;
