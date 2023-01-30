@@ -38,7 +38,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { LinkExperience, LinkParams } from '../common/models';
+import { LinkExperience, LinkParams, MinUser } from '../common/models';
 import STRINGS from '../common/strings';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 
@@ -611,5 +611,72 @@ describe('Sign Up from Invitation Scenarios', () => {
     })
 
     test('Backend error and show toast', async () => {
+        console.log('Sign Up - Backend error run')
+        const mockedUser = MockUsers()[0];
+
+        // mock around params for link
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: MockOrgMetadata().id,
+            pendingId: 'xxxx',
+            email: mockedUser.email
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
+
+        // After boot from link, app should navigate to signUpThroughOrg page
+        await waitFor(() => {
+            expect(linkingStore().initialRoute).toEqual(routerNames.signUpThroughOrg);
+        })
+
+        await waitFor(() => {
+            expect(linkingStore().initialRouteParams).toEqual(linkParams);
+        })
+
+        const signUpThroughOrgPage = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+        const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
+        
+        const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
+        const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
+
+        // Join button should be disabled until the form fields are filled.
+        expect(joinButton).toBeDisabled();
+
+        // Users should only be able to edit their name and password on this screen.
+        // i.e. the email text box should be disabled with the email of the mocked user.
+        expect(emailInput.props.editable).toBe(false);
+        expect(emailInput.props.value).toBe(linkParams.email);
+
+        // Fill out user info with mocked data.
+        await act(async () => {
+            fireEvent.changeText(nameInput, mockedUser.name)
+            fireEvent.changeText(passwordInput, mockedUser.password)
+        })
+
+        // Join button should be enabled after filling out form.
+        expect(joinButton).not.toBeDisabled();
+
+        // Mock signUpThroughOrg API to throw an error
+        jest.spyOn(APIClient.prototype, 'signUpThroughOrg').mockImplementation((orgId: string, pendingId: string, minUser: MinUser) => {
+            throw new Error(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+        });
+
+        // Submit the form
+        await act(async () => {
+            fireEvent(joinButton, 'click')
+        })
+
+        // User should still be on signUpThroughOrg screen
+        await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+
+        // Expect a toast alert with the message contents from the API error to display  
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
     })
 })
