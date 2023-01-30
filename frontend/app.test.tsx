@@ -39,6 +39,7 @@ import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
 import { LinkExperience, LinkParams } from '../common/models';
+import STRINGS from '../common/strings';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
@@ -91,7 +92,7 @@ async function mockBoot() {
     const bootup = new Promise<void>((resolve) => {
         mockedBoot.mockImplementation((doneLoading: (() => void)) => {
             return originalBoot(() => {
-                console.log('UNLOCKING AFTER MOCK BOOTUP')
+                // console.log('UNLOCKING AFTER MOCK BOOTUP')
                 act(doneLoading)
                 resolve()
             })
@@ -108,10 +109,8 @@ async function mockBoot() {
 async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
     // mock out changes to the Branch.subscribe in linkingStore().init()
     const domain = 'www.test.com'
-    console.log(linkParams)
     const queryString = Object.keys(linkParams).map(paramName => `&${paramName}=${linkParams[paramName]}`).join('')
     const link = `${domain}?exp=${exp}${queryString}`
-    console.log(link)
     const branchEvent: BranchSubscriptionEvent = {
         error: null,
         uri: domain,
@@ -408,7 +407,7 @@ describe('Sign Up from Invitation Scenarios', () => {
     })
 
     test('Successful sign up and navigate to home page', async () => {
-
+        console.log('Sign Up - Successful run')
         const mockedUser = MockUsers()[0];
 
         // mock around params for link
@@ -417,7 +416,7 @@ describe('Sign Up from Invitation Scenarios', () => {
             pendingId: 'xxxx',
             email: mockedUser.email
         };
-
+        
         const {
             getByTestId,
             getMeMock,
@@ -538,26 +537,9 @@ describe('Sign Up from Invitation Scenarios', () => {
     })
 
     test('Open app with bad link should show error toast', async () => {
-        // Can you send me a bad link so I can see what the behavior in the app is
-        // and verify that it's the expected behavior for this test?
-        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
-            orgId: '',
-            pendingId: '',
-            email: ''
-        };
-        /*
-        const {
-            getByTestId,
-            getMeMock,
-            branchSubscribeMock,
-            ...rest
-        } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
-        */
-    })
+        console.log('Sign Up - Bad link run')
+        const mockedUser = MockUsers()[0];
 
-    test('Backend error and show toast', async () => {
-        // Can you send me a link for this scenario so I can see what the behavior in the app is
-        // and verify that it's the expected behavior for this test?
         // mock around params for link
         const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
             orgId: '',
@@ -565,13 +547,69 @@ describe('Sign Up from Invitation Scenarios', () => {
             email: ''
         };
 
-        /*
         const {
             getByTestId,
             getMeMock,
             branchSubscribeMock,
+            toJSON,
             ...rest
         } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
+
+        // After boot from link, app should navigate to signUpThroughOrg page
+        await waitFor(() => {
+            expect(linkingStore().initialRoute).toEqual(routerNames.signUpThroughOrg);
+        })
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink())
+
+        // TODO: The code below will still execute without error. Is that expected or only happen because of our mocks?
+        // Does that mean that the sign up form is still displayed for a user even when they get a bad signup link?
+        /*
+        const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
+        
+        const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
+        const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
+
+        // Join button should be disabled until the form fields are filled.
+        expect(joinButton).toBeDisabled();
+
+        // Users should only be able to edit their name and password on this screen.
+        // i.e. the email text box should be disabled with the email of the mocked user.
+        expect(emailInput.props.editable).toBe(false);
+        expect(emailInput.props.value).toBe(mockedUser.email);
+
+        // Fill out user info with mocked data.
+        await act(async () => {
+            fireEvent.changeText(nameInput, mockedUser.name)
+            fireEvent.changeText(passwordInput, mockedUser.password)
+        })
+
+        // Join button should be enabled after filling out form.
+        expect(joinButton).not.toBeDisabled();
+
+        // Submit the form
+        await act(async () => {
+            fireEvent(joinButton, 'click')
+        })
+
+        // After signup, user app should reroute to the userHomePage
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
+        })
+
+        await waitFor(() => getByTestId(TestIds.home.screen));
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(`Welcome to PATCH!`)
+
+        // TODO: import {parseFullName} from 'parse-full-name';
+        const userHomeWelcomeLabel = await waitFor(() => getByTestId(TestIds.userHome.welcomeLabel));
+        expect(userHomeWelcomeLabel).toHaveTextContent(`Hi, Admin.`);
         */
+    })
+
+    test('Backend error and show toast', async () => {
     })
 })
