@@ -222,6 +222,12 @@ const config = {
 		[
 			"@config-plugins/react-native-branch",
 			branchConfig()
+		],
+		[
+			"expo-screen-orientation",
+			{
+			  "initialOrientation": "PORTRAIT_UP"
+			}
 		]
 		//  TODO: reenable if we want custom notification icon/sounds
 		// [

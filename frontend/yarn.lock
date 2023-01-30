@@ -9320,6 +9320,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-screen-orientation@npm:~4.2.0":
+  version: 4.2.0
+  resolution: "expo-screen-orientation@npm:4.2.0"
+  dependencies:
+    "@expo/config-plugins": ^4.0.14
+  peerDependencies:
+    expo: "*"
+  checksum: 68b8392712b54c4599335142f02ce9072bc841c710e966f2d291a8a38865f60b862494039b24b85d1e8aef76583e1a373fce55e6673e75376bf92f463e6e39f3
+  languageName: node
+  linkType: hard
+
 "expo-secure-store@npm:~11.2.0":
   version: 11.2.0
   resolution: "expo-secure-store@npm:11.2.0"
@@ -10099,6 +10110,7 @@ __metadata:
     expo-location: ~14.2.2
     expo-modules-autolinking: ~0.8.1 || ~0.9.0
     expo-notifications: ~0.15.4
+    expo-screen-orientation: ~4.2.0
     expo-secure-store: ~11.2.0
     expo-splash-screen: ~0.15.1
     expo-status-bar: ~1.3.0
