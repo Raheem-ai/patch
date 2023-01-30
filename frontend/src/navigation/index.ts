@@ -99,10 +99,8 @@ export const SubMenuOptions: SubMenuOption[] = [
         routeTo: 'settings',
     }, 
     {
-        name: 'Help',
-        onPress: () => {
-            Linking.openURL('https://help.getpatch.org/');
-        }
+        name: 'Help & Information',
+        routeTo: 'helpAndInfo',
     }, 
     {
         name: 'Sign out',

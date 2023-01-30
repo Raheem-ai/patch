@@ -29,6 +29,7 @@ export type RootStackParamList = {
     TeamList: undefined;
     ComponentLib: undefined;
     Settings: undefined;
+    HelpAndInfo: undefined;
     Chats: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization]
 };
@@ -58,6 +59,7 @@ export const routerNames: TypedRouterNames = {
     componentLib: "ComponentLib",
     teamList: "TeamList",
     settings: "Settings",
+    helpAndInfo: "HelpAndInfo",
     chats: "Channels"
 };
 

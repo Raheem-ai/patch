@@ -229,20 +229,20 @@ const Settings = ({ navigation, route }: Props) => {
                 } as ScreenFormInputConfig<'TextArea'>
                 : null,
             */
-            canEditOrgSettings
-                ? {
-                    testID: TestIds.settings.inputs.createRequestChats,
-                    name: 'createRequestChats',
-                    type: 'Switch',
-                    val: () => true,
-                    isValid: () => true,
-                    onChange: (val) => {},
-                    disabled: true,
-                    props: {
-                        label: 'Create channels for Requests'
-                    }
-                } as InlineFormInputConfig<'Switch'>
-                :  null,
+            // canEditOrgSettings
+            //     ? {
+            //         testID: TestIds.settings.inputs.createRequestChats,
+            //         name: 'createRequestChats',
+            //         type: 'Switch',
+            //         val: () => true,
+            //         isValid: () => true,
+            //         onChange: (val) => {},
+            //         disabled: true,
+            //         props: {
+            //             label: 'Create channels for Requests'
+            //         }
+            //     } as InlineFormInputConfig<'Switch'>
+            //     :  null,
             /*
             canEditOrgSettings
                 ? {

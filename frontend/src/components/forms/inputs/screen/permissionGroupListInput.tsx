@@ -57,7 +57,8 @@ const PermissionGroupListConfig: {
     {
         icon: ICONS.channels,
         groups: [
-            PatchPermissionGroups.ManageChats,
+            // TODO: add back when we have custom chats
+            // PatchPermissionGroups.ManageChats,
             PatchPermissionGroups.InviteToChats,
             PatchPermissionGroups.SeeAllChats,
         ]
