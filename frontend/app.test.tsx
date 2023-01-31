@@ -217,24 +217,21 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         clearAllServices()
     })
 
-    test('Successful sign up and navigate to home page', async () => {
-        console.log('Sign Up - Successful run')
+    async function successfulSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
         const mockedUser = MockUsers()[0];
-
-        // mock around params for link
-        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+        const linkParams: LinkParams[Experience] = {
             orgId: MockOrgMetadata().id,
             pendingId: 'xxxx',
             email: mockedUser.email
         };
-        
+
         const {
             getByTestId,
             getMeMock,
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
+        } = await mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -345,9 +342,14 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // TODO: import {parseFullName} from 'parse-full-name';
         const userHomeWelcomeLabel = await waitFor(() => getByTestId(TestIds.userHome.welcomeLabel));
         expect(userHomeWelcomeLabel).toHaveTextContent(`Hi, Admin.`);
+    }
+
+    test('Successful sign up through org, navigate to home page', async () => {
+        console.log('Sign Up - Successful run')
+        await successfulSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
     })
 
-    test('Open app with bad link params should show error toast', async () => {
+    test('Open app with bad sign up link params, show error toast', async () => {
         console.log('Sign Up - Bad link params run')
         const mockedUser = MockUsers()[0];
 
@@ -375,34 +377,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink());
     })
 
-    test('Open app with bad link experience should show error toast', async () => {
-        console.log('Sign Up - Bad link exp run')
-        const mockedUser = MockUsers()[0];
-
-        // mock around params for link
-        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
-            orgId: MockOrgMetadata().id,
-            pendingId: 'xxxx',
-            email: mockedUser.email
-        };
-
-        const {
-            getByTestId,
-            getMeMock,
-            branchSubscribeMock,
-            toJSON,
-            ...rest
-        } = await mockLinkBoot('' as LinkExperience, linkParams);
-
-        await waitFor(() => {
-            expect(linkingStore().initialRoute).toBeNull();
-        });
-
-        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
-        expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.unknownLink());
-    })
-
-    test('Backend error and show toast', async () => {
+    test('Backend sign up error, show toast', async () => {
         console.log('Sign Up - Backend error run')
         const mockedUser = MockUsers()[0];
 
@@ -470,6 +445,38 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // Expect a toast alert with the message contents from the API error to display  
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+    })
+
+    test('Successful join org, navigate to home page', async () => {
+        console.log('Join Org - Successful run')
+        await successfulSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Open app with bad link experience, show error toast', async () => {
+        console.log('Sign Up - Bad link exp run')
+        const mockedUser = MockUsers()[0];
+
+        // mock around params for link
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: MockOrgMetadata().id,
+            pendingId: 'xxxx',
+            email: mockedUser.email
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot('' as LinkExperience, linkParams);
+
+        await waitFor(() => {
+            expect(linkingStore().initialRoute).toBeNull();
+        });
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.unknownLink());
     })
 })
 
