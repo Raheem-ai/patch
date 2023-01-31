@@ -29,8 +29,7 @@ export const Alerts = observer(() => {
 
         return (
             <> 
-                <Animated.View
-                    style={[styles.promptContainer, { 
+                <Animated.View style={[styles.promptContainer, { 
                     width: alertStore().alertWidth, 
                     left: alertStore().alertLeft,
                     top: alertStore().alertTop 
@@ -76,8 +75,7 @@ export const Alerts = observer(() => {
 
     const toast = () => {
         return !!alertStore().toast
-            ? <Animated.View
-                style={[styles.toastContainer, { 
+            ? <Animated.View style={[styles.toastContainer, { 
                 width: alertStore().alertWidth, 
                 left: alertStore().alertLeft,
                 top: alertStore().alertTop 
