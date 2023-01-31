@@ -27,15 +27,17 @@ let apiHost = ''
  * a new build because of native code changes or build time native 
  * config changes
  */
-const VERSION = '0.0.13'
+const VERSION = `0.0.14`
+// NOTE: this needs to be a positive integer that gets incremented along side VERSION
+let ANDROID_VERSION_CODE = 5
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
 const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
 
-// these values shouldn't need to change 
+// this value shouldn't need to change 
 let IOS_BUILD_NUMBER = "1"
-let ANDROID_VERSION_CODE = 1
+
 
 let SENTRY_AUTH_TOKEN = ''
 let SENTRY_DSN = ''

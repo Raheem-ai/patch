@@ -539,6 +539,9 @@ export interface IEditCategorizedItemStore extends IBaseStore {
     categories: Map<string, Category>
     pendingItems: Map<string, string>
 
+    isDirty: boolean
+    isValid: boolean
+
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void
     removeCategory: (categoryId: string) => void
