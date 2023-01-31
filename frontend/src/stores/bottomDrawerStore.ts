@@ -95,7 +95,9 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         }
 
         // doing this here cuz it's the closest thing we have to a layout store
-        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+        if (await ScreenOrientation.supportsOrientationLockAsync(ScreenOrientation.OrientationLock.PORTRAIT)) {
+            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+        }
     }
 
     startSubmitting = () => {
