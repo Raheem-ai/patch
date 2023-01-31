@@ -82,9 +82,11 @@ export default class LinkingStore implements ILinkingStore {
     }
 
     clear() {
-        
+        runInAction(() => {
+            this.initialRoute = null;
+            this.initialRouteParams = null;
+        })
     }
-   
 }
 
 // Note: each experience should validate its data before navigating to 
