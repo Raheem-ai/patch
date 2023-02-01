@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1675273794523" clover="3.2.0">
-  <project timestamp="1675273794523" name="All files">
+<coverage generated="1675280708227" clover="3.2.0">
+  <project timestamp="1675280708227" name="All files">
     <metrics statements="4954" coveredstatements="1665" conditionals="2378" coveredconditionals="516" methods="1888" coveredmethods="495" elements="9220" coveredelements="2676" complexity="0" loc="4954" ncloc="4954" packages="30" files="141" classes="141"/>
     <package name="frontend">
       <metrics statements="32" coveredstatements="31" conditionals="14" coveredconditionals="11" methods="11" coveredmethods="11"/>
@@ -4260,7 +4260,7 @@
         <line num="634" count="104" type="stmt"/>
         <line num="635" count="9" type="stmt"/>
         <line num="636" count="70" type="stmt"/>
-        <line num="637" count="37" type="stmt"/>
+        <line num="637" count="34" type="stmt"/>
         <line num="638" count="2" type="stmt"/>
         <line num="639" count="2" type="stmt"/>
         <line num="640" count="171" type="stmt"/>
@@ -4460,7 +4460,7 @@
       </file>
       <file name="meta.ts" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/src/stores/meta.ts">
         <metrics statements="17" coveredstatements="17" conditionals="14" coveredconditionals="14" methods="5" coveredmethods="5"/>
-        <line num="7" count="1511" type="stmt"/>
+        <line num="7" count="1508" type="stmt"/>
         <line num="11" count="54" type="stmt"/>
         <line num="13" count="54" type="stmt"/>
         <line num="17" count="54" type="stmt"/>
@@ -5347,7 +5347,7 @@
         <metrics statements="54" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="53" coveredmethods="7"/>
         <line num="14" count="2" type="stmt"/>
         <line num="15" count="5" type="stmt"/>
-        <line num="19" count="63" type="stmt"/>
+        <line num="19" count="62" type="stmt"/>
         <line num="20" count="22" type="stmt"/>
         <line num="21" count="12" type="stmt"/>
         <line num="22" count="2" type="stmt"/>
@@ -5398,7 +5398,7 @@
         <line num="133" count="0" type="stmt"/>
         <line num="136" count="0" type="stmt"/>
         <line num="137" count="0" type="stmt"/>
-        <line num="181" count="10" type="stmt"/>
+        <line num="182" count="10" type="stmt"/>
       </file>
       <file name="mocks.ts" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/src/test/mocks.ts">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="6" coveredmethods="6"/>
