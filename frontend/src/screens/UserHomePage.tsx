@@ -142,7 +142,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     return (
         <ScrollView testID={TestIds.home.screen}>
             <View  style={{ padding: 20 }}>
-                <Text style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
+                <Text testID={TestIds.userHome.welcomeLabel} style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
                 {defaultText()}
                 {currentResponse()}
             </View>

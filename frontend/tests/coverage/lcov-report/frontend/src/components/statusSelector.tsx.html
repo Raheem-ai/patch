@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">76.47% </span>
+                <span class="strong">73.58% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>39/51</span>
+                <span class='fraction'>39/53</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.55% </span>
+                <span class="strong">74.5% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>38/49</span>
+                <span class='fraction'>38/51</span>
             </div>
         
             
@@ -389,7 +389,13 @@
 <a name='L324'></a><a href='#L324'>324</a>
 <a name='L325'></a><a href='#L325'>325</a>
 <a name='L326'></a><a href='#L326'>326</a>
-<a name='L327'></a><a href='#L327'>327</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -515,18 +521,22 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -720,10 +730,11 @@ import React from "react";
 import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
-import { assignedResponderBasedRequestStatus } from "../../../common/utils/requestUtils";
-import { requestStore, userStore } from "../stores/interfaces";
+import { assignedResponderBasedRequestStatus, positionStats } from "../../../common/utils/requestUtils";
+import { alertStore, requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 import { ICONS } from "../types"
+import { resolveErrorMessage } from "../errors";
 &nbsp;
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) =&gt; void, style?: StyleProp&lt;ViewStyle&gt;, large?: boolean, dark?: boolean) =&gt; JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) =&gt; void, style?: StyleProp&lt;ViewStyle&gt;, large?: boolean, dark?: boolean) =&gt; {
@@ -839,20 +850,24 @@ export const StatusSelector = observer(({
     const currentStatusIdx = statuses.indexOf(request.status);
 &nbsp;
     const updateStatus = (status: RequestStatus) =&gt; <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {
-<span class="cstat-no" title="statement not covered" >        if (status != request.status) {</span>
-<span class="cstat-no" title="statement not covered" >            switch (status) {</span>
-                case RequestStatus.OnTheWay:
-                case RequestStatus.OnSite:
-                case RequestStatus.Done:
-<span class="cstat-no" title="statement not covered" >                    await requestStore().setRequestStatus(request.id, status);</span>
-<span class="cstat-no" title="statement not covered" >                    break;</span>
-                default:
-<span class="cstat-no" title="statement not covered" >                    await requestStore().resetRequestStatus(request.id);</span>
-<span class="cstat-no" title="statement not covered" >                    break;</span>
+<span class="cstat-no" title="statement not covered" >        try {</span>
+<span class="cstat-no" title="statement not covered" >            if (status != request.status) {</span>
+<span class="cstat-no" title="statement not covered" >                switch (status) {</span>
+                    case RequestStatus.OnTheWay:
+                    case RequestStatus.OnSite:
+                    case RequestStatus.Done:
+<span class="cstat-no" title="statement not covered" >                        await requestStore().setRequestStatus(request.id, status);</span>
+<span class="cstat-no" title="statement not covered" >                        break;</span>
+                    default:
+<span class="cstat-no" title="statement not covered" >                        await requestStore().resetRequestStatus(request.id);</span>
+<span class="cstat-no" title="statement not covered" >                        break;</span>
+                }
             }
-        }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        onStatusUpdated?.()</span>
+<span class="cstat-no" title="statement not covered" >            onStatusUpdated?.()</span>
+        } catch (e) {
+<span class="cstat-no" title="statement not covered" >            alertStore().toastError(resolveErrorMessage(e));</span>
+        }
     }
 &nbsp;
     const noMarginIconStyles: StyleProp&lt;ViewStyle&gt; = {
@@ -875,7 +890,7 @@ export const StatusSelector = observer(({
             
                     const label = typeof potentialLabel == 'string'
                         ? potentialLabel
-                        : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(request, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>);</span>
+                        : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>));</span>
                         
                     const oldStatusIcon = () =&gt; {
                         return &lt;StatusIcon key='oldStatusIcon' dark={dark} large={large} status={s}  onPress={updateStatus(s)} style={noMarginIconStyles}/&gt;;
@@ -946,7 +961,7 @@ export const StatusSelector = observer(({
         
                                 const label = typeof potentialLabel == 'string'
                                     ? potentialLabel
-                                    : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(request, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>);</span>
+                                    : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>));</span>
 &nbsp;
                                 // TODO: this is assuming it's always the width of the screen...take totalWidth as a prop
                                 // same thing for the padding
@@ -1048,7 +1063,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T19:45:07.992Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

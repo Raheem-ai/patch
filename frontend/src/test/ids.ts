@@ -143,6 +143,7 @@ const TestIds = {
         signInButton: 'landingScreenSignInButton'
     },
     signIn: {
+        screen: 'signIn',
         email: 'signIn::email',
         password: 'signIn::password',
         submit: 'signIn::submit'
@@ -177,6 +178,7 @@ const TestIds = {
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
+        welcomeLabel: 'userHomePage::welcomeLabel',
         linkTo: (link: string) => `userHomePage::linkTo(${link})`,
     },
     welcome: {
@@ -274,6 +276,12 @@ const TestIds = {
     },
     assignResponders: {
         view: 'assignResponders'
+    },
+
+    // Alert views
+    alerts: {
+        toast: 'toast',
+        prompt: 'prompt'
     },
 }
 

@@ -5,6 +5,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { Text, IconButton } from "react-native-paper";
 import { HeaderAnnouncementHeight, HeaderHeight, TabbedScreenHeaderHeight } from "../../constants";
 import { alertStore, connectionStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
+import TestIds from "../../test/ids";
 import { Colors, ICONS } from "../../types";
 
 export const Alerts = observer(() => {
@@ -55,7 +56,7 @@ export const Alerts = observer(() => {
                                                 paddingRight: 12, }
                                             : null]}>
                                         <Pressable onPress={onPress}>
-                                            <Text style={[
+                                            <Text testID={TestIds.alerts.prompt} style={[
                                                 styles.promptActionLabel, 
                                                 a.confirming 
                                                     ? styles.promptConfirmActionLabel 
@@ -81,7 +82,7 @@ export const Alerts = observer(() => {
             }]}>
                <Pressable style={[{height: '100%', width: '100%'}]} onPress={() => alertStore().hideToast()}>
                     <ScrollView>
-                        <Text style={styles.toastText}>{alertStore().toast.message}</Text>
+                        <Text testID={TestIds.alerts.toast} style={styles.toastText}>{alertStore().toast.message}</Text>
                     </ScrollView>
                 </Pressable>
             </Animated.View>

@@ -27,7 +27,7 @@ import boot from './src/boot';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore } from './src/stores/interfaces';
+import { headerStore, linkingStore, navigationStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
@@ -37,6 +37,9 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
+import { LinkExperience, LinkParams, MinUser } from '../common/models';
+import STRINGS from '../common/strings';
+import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -100,6 +103,40 @@ async function mockBoot() {
     await bootup;
 
     return utils
+}
+
+async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
+    // mock out changes to the Branch.subscribe in linkingStore().init()
+    const domain = 'www.test.com'
+    const queryString = Object.keys(linkParams).map(paramName => `&${paramName}=${linkParams[paramName]}`).join('')
+    const link = `${domain}?exp=${exp}${queryString}`
+    const branchEvent: BranchSubscriptionEvent = {
+        error: null,
+        uri: domain,
+        params: { 
+            "+match_guaranteed": true,
+            "+is_first_session": true,
+            "+clicked_branch_link": true,
+            "~referring_link": link
+        }
+    };
+
+    const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementationOnce((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
+        return callback(branchEvent)
+    });
+
+    const mockedUser = MockUsers()[0];
+
+    // mock out the api calls that will get triggered when the app
+    const getMeMock = jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser);
+
+    const { getByTestId, ...rest } = await mockBoot();
+    return {
+        getByTestId,
+        getMeMock,
+        branchSubscribeMock,
+        ...rest
+    }
 }
 
 async function mockSignIn() {
@@ -169,8 +206,298 @@ describe('Boot Scenarios', () => {
     });
 })
 
-describe('Signed in Scenarios', () => {
+describe('Join or Sign Up from Invitation Scenarios', () => {
 
+    afterEach(() => {
+        // TODO: Something incomplete about the cleanup process because
+        // "Signed in Scenarios" fail if they're executed after these.
+        cleanup()
+        clearAllStores()
+        clearAllServices()
+    })
+
+    async function successfulSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
+        const mockedUser = MockUsers()[0];
+        const linkParams: LinkParams[Experience] = {
+            orgId: MockOrgMetadata().id,
+            pendingId: 'xxxx',
+            email: mockedUser.email
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot(exp, linkParams);
+
+        // After boot from link, app should navigate to signUpThroughOrg page
+        await waitFor(() => {
+            expect(linkingStore().initialRoute).toEqual(routerNames.signUpThroughOrg);
+        })
+
+        await waitFor(() => {
+            expect(linkingStore().initialRouteParams).toEqual(linkParams);
+        })
+
+        const signUpThroughOrgPage = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+        const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
+        
+        const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
+        const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
+
+        // Join button should be disabled until the form fields are filled.
+        expect(joinButton).toBeDisabled();
+
+        // Users should only be able to edit their name and password on this screen.
+        // i.e. the email text box should be disabled with the email of the mocked user.
+        expect(emailInput.props.editable).toBe(false);
+        expect(emailInput.props.value).toBe(mockedUser.email);
+
+        // Fill out user info with mocked data.
+        await act(async () => {
+            fireEvent.changeText(nameInput, mockedUser.name)
+            fireEvent.changeText(passwordInput, mockedUser.password)
+        })
+
+        // Join button should be enabled after filling out form.
+        expect(joinButton).not.toBeDisabled();
+
+        // mocked apis
+        const signUpThroughOrgMock = jest.spyOn(APIClient.prototype, 'signUpThroughOrg').mockResolvedValue(MockAuthTokens());
+        const getTeamMembersMock = jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata());
+        const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
+        const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
+        const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]);
+
+        // Submit the form
+        await act(async () => {
+            fireEvent(joinButton, 'click')
+        })
+
+        // After signup, user app should reroute to the userHomePage
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
+        })
+
+        await waitFor(() => {
+            expect(signUpThroughOrgMock).toHaveBeenCalledWith(linkParams.orgId, linkParams.pendingId, {
+                email: mockedUser.email,
+                name: mockedUser.name,
+                password: mockedUser.password
+            })
+        })
+
+        await waitFor(() => {
+            expect(getMeMock).toHaveBeenCalledWith({
+                token: MockAuthTokens().accessToken
+            })
+        })
+
+        await waitFor(() => {
+            expect(getTeamMembersMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgMetadataMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getOrgSecretsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken
+                }
+            )
+        })
+
+        await waitFor(() => {
+            expect(getRequestsMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                []
+            )
+        })
+
+        await waitFor(() => getByTestId(TestIds.home.screen));
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(`Welcome to PATCH!`)
+
+        // TODO: import {parseFullName} from 'parse-full-name';
+        const userHomeWelcomeLabel = await waitFor(() => getByTestId(TestIds.userHome.welcomeLabel));
+        expect(userHomeWelcomeLabel).toHaveTextContent(`Hi, Admin.`);
+    }
+
+    async function badLinkParamsSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
+        // mock around params for link
+        const linkParams: LinkParams[Experience] = {
+            orgId: '',
+            pendingId: '',
+            email: ''
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot(exp, linkParams);
+
+        // Ensure that the app is on the sign in page
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
+
+        // Toast error should display the expected message based on LinkExperience
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        const expectedError = exp == LinkExperience.SignUpThroughOrganization ? STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink() : STRINGS.LINKS.errorMessages.badJoinOrgLink();
+        expect(toastTextComponent).toHaveTextContent(expectedError);
+    }
+
+    async function backendErrorSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
+        // Mock signUpThroughOrg API to throw an error
+        jest.spyOn(APIClient.prototype, 'signUpThroughOrg').mockImplementationOnce((orgId: string, pendingId: string, minUser: MinUser) => {
+            throw new Error(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+        });
+
+        const mockedUser = MockUsers()[0];
+
+        // mock around params for link
+        const linkParams: LinkParams[Experience] = {
+            orgId: MockOrgMetadata().id,
+            pendingId: 'xxxx',
+            email: mockedUser.email
+        };
+
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot(exp, linkParams);
+
+        // After boot from link, app should navigate to signUpThroughOrg page
+        await waitFor(() => {
+            expect(linkingStore().initialRoute).toEqual(routerNames.signUpThroughOrg);
+        })
+
+        await waitFor(() => {
+            expect(linkingStore().initialRouteParams).toEqual(linkParams);
+        })
+
+        await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+
+        // These components should exist on the header and form
+        const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
+        const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
+        const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
+
+        // Join button should be disabled until the form fields are filled.
+        expect(joinButton).toBeDisabled();
+
+        // Users should only be able to edit their name and password on this screen.
+        // i.e. the email text box should be disabled with the email of the mocked user.
+        expect(emailInput.props.editable).toBe(false);
+        expect(emailInput.props.value).toBe(linkParams.email);
+
+        // Fill out user info with mocked data.
+        await act(async () => {
+            fireEvent.changeText(nameInput, mockedUser.name)
+            fireEvent.changeText(passwordInput, mockedUser.password)
+        })
+
+        // Join button should be enabled after filling out form.
+        expect(joinButton).not.toBeDisabled();
+
+        // Submit the form
+        await act(async () => {
+            fireEvent(joinButton, 'click')
+        })
+
+        // User should still be on signUpThroughOrg screen
+        await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+
+        // Expect a toast alert with the message contents from the API error to display
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+    }
+
+    test('Successful sign up through org, navigate to home page', async () => {
+        console.log('Sign Up - Successful run')
+        await successfulSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
+    })
+
+    test('Open app with bad sign up link params, show error toast', async () => {
+        console.log('Sign Up - Bad link params run')
+        await badLinkParamsSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
+    })
+
+    test('Backend sign up error, show toast', async () => {
+        console.log('Sign Up - Backend error run')
+        await backendErrorSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
+    })
+
+    test('Successful join org, navigate to home page', async () => {
+        console.log('Join Org - Successful run')
+        await successfulSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Open app with bad join org link params, show error toast', async () => {
+        console.log('Join Org - Bad link params run')
+        await badLinkParamsSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Backend join organization error, show toast', async () => {
+        console.log('Join Org - Backend error run')
+        await backendErrorSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Open app with bad link experience, show error toast', async () => {
+        console.log('Sign Up - Bad link exp run')
+        const mockedUser = MockUsers()[0];
+
+        // mock around params for link
+        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+            orgId: MockOrgMetadata().id,
+            pendingId: 'xxxx',
+            email: mockedUser.email
+        };
+
+        // Pass empty string as the LinkExperience to cause error
+        const {
+            getByTestId,
+            getMeMock,
+            branchSubscribeMock,
+            toJSON,
+            ...rest
+        } = await mockLinkBoot('' as LinkExperience, linkParams);
+
+        // Ensure that the app is on the sign in page
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
+
+        // Toast error alert should show the unknown link text 
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.unknownLink());
+    })
+})
+
+describe('Signed in Scenarios', () => {
     afterEach(() => {
         cleanup()
         clearAllStores()
@@ -356,5 +683,4 @@ describe('Signed in Scenarios', () => {
 
         expect(requestDetailsNotes).toHaveTextContent(mockRequest.notes)
     })
-
 })

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.53% </span>
+                <span class="strong">58.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/13</span>
+                <span class='fraction'>7/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.18% </span>
+                <span class="strong">72.22% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>15/22</span>
+                <span class='fraction'>13/18</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.53% </span>
+                <span class="strong">58.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/13</span>
+                <span class='fraction'>7/12</span>
             </div>
         
             
@@ -253,15 +253,7 @@
 <a name='L188'></a><a href='#L188'>188</a>
 <a name='L189'></a><a href='#L189'>189</a>
 <a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a>
-<a name='L192'></a><a href='#L192'>192</a>
-<a name='L193'></a><a href='#L193'>193</a>
-<a name='L194'></a><a href='#L194'>194</a>
-<a name='L195'></a><a href='#L195'>195</a>
-<a name='L196'></a><a href='#L196'>196</a>
-<a name='L197'></a><a href='#L197'>197</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -284,10 +276,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -336,11 +324,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20x</span>
 <span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -458,15 +446,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { observer } from "mobx-react";
 import React from "react";
 import { Animated, Dimensions, StyleSheet } from "react-native";
-import { unwrap } from "../../../../common/utils";
-import { HeaderHeight, InteractiveHeaderHeight, isAndroid } from "../../constants";
 import { navigateTo } from "../../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, headerStore, navigationStore, requestStore, userStore } from "../../stores/interfaces";
 import { Colors, routerNames } from "../../types";
-import { BOTTOM_BAR_HEIGHT } from "../../utils/dimensions";
 import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
 import { BottomDrawerViewVisualArea } from "../helpers/visualArea";
+import { SCREEN_WIDTH } from "../../utils/dimensions";
 &nbsp;
 const dimensions = Dimensions.get('screen')
 &nbsp;
@@ -476,8 +462,6 @@ type BottomDrawerProps = { }
 export default class GlobalBottomDrawer extends React.Component&lt;BottomDrawerProps&gt; {
     
     drawer() {
-        const isMinimizable = bottomDrawerStore().minimizable;
-&nbsp;
         const ChildView = bottomDrawerStore().view;
 &nbsp;
         return (
@@ -485,20 +469,18 @@ export default class GlobalBottomDrawer extends React.Component&lt;BottomDrawerP
                 styles.container, 
                 { 
                     top: bottomDrawerStore().bottomDrawerTabTop,
-                    // Note: don't use bottomDrawerStore().drawerContentHeight here because we don't want the container 
-                    // resizing as the keyboard opens/closes
-                    height: dimensions.height 
-                        - (isMinimizable ? HeaderHeight : <span class="branch-1 cbranch-no" title="branch not covered" >InteractiveHeaderHeight) </span>
-                        - (isAndroid ? <span class="branch-0 cbranch-no" title="branch not covered" >BOTTOM_BAR_HEIGHT </span>: 0)
+                    height: bottomDrawerStore().drawerContentHeight
                 },
                 bottomDrawerStore().expanded 
                     ? null
                     : styles.minimizedHeader
             ]}&gt;
                 {
+                    // TODO: not sure we need &lt;BottomDrawerVisualArea&gt; here anymore as
+                    // this whole container is essentially one
                     bottomDrawerStore().submitting
                         ? &lt;Loader/&gt;
-                        : &lt;BottomDrawerViewVisualArea&gt;
+                        : &lt;BottomDrawerViewVisualArea&gt; 
                             &lt;ChildView/&gt;
                         &lt;/BottomDrawerViewVisualArea&gt;
                             
@@ -519,7 +501,7 @@ export default class GlobalBottomDrawer extends React.Component&lt;BottomDrawerP
             &lt;HelpRequestCard 
                 key='activeRequestTab' 
                 onPress={onPress}
-                request={requestStore().activeRequest} 
+                requestId={requestStore().activeRequest.id} 
                 style={[
                     styles.activeRequestCard,
                     { zIndex: styles.container.zIndex }
@@ -555,7 +537,7 @@ export default class GlobalBottomDrawer extends React.Component&lt;BottomDrawerP
 &nbsp;
 const styles = StyleSheet.create({
     container: {
-        width: dimensions.width,
+        width: SCREEN_WIDTH,
         backgroundColor: '#fff',
         position: 'absolute',
         zIndex: 1000,
@@ -600,7 +582,7 @@ const styles = StyleSheet.create({
     },
     toggleExpandedIconContainer: {
         position: 'absolute',
-        left: (dimensions.width / 2) - (30 / 2),
+        left: (SCREEN_WIDTH / 2) - (30 / 2),
         top: -10
     },
     toggleExpandedIcon: {
@@ -658,7 +640,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T19:45:07.992Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

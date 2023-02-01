@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">4.34% </span>
+                <span class="strong">4% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/46</span>
+                <span class='fraction'>2/50</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/17</span>
+                <span class='fraction'>0/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">4.65% </span>
+                <span class="strong">4.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/43</span>
+                <span class='fraction'>2/47</span>
             </div>
         
             
@@ -319,7 +319,20 @@
 <a name='L254'></a><a href='#L254'>254</a>
 <a name='L255'></a><a href='#L255'>255</a>
 <a name='L256'></a><a href='#L256'>256</a>
-<a name='L257'></a><a href='#L257'>257</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -419,6 +432,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -483,6 +506,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -580,7 +604,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { PatchPermissions, RequestStatus } from "../../../../common/models";
-import { requestStore, userStore } from "../../stores/interfaces";
+import { alertStore, bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
 import UserIcon from "../userIcon";
@@ -588,6 +612,7 @@ import STRINGS from "../../../../common/strings";
 import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
 import TestIds from "../../test/ids";
+import { resolveErrorMessage } from "../../errors";
 &nbsp;
 type Props =  {
     inTabbedScreen?: boolean
@@ -629,7 +654,7 @@ const RequestChatChannel = observer(<span class="fstat-no" title="function not c
 &nbsp;
 <span class="cstat-no" title="statement not covered" >                        return (</span>
                             &lt;View style={[styles.messageRow, isMe ? styles.myMessageRow : null]}&gt;
-                                &lt;UserIcon user={user} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/&gt;
+                                &lt;UserIcon userId={message.userId} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/&gt;
                                 &lt;View style={[styles.messageBubble, isMe ? styles.myMessageBubble : null, { maxWidth: bubbleWidth }]}&gt;
                                     &lt;Text style={styles.messageText}&gt;{message.message}&lt;/Text&gt;
                                 &lt;/View&gt;
@@ -651,7 +676,7 @@ const RequestChatChannel = observer(<span class="fstat-no" title="function not c
 &nbsp;
 <span class="cstat-no" title="statement not covered" >            setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >scrollRef.current.scrollToEnd({ animated: true }),</span> 0)</span>
         } catch (e) {
-<span class="cstat-no" title="statement not covered" >            console.error(e)</span>
+<span class="cstat-no" title="statement not covered" >            alertStore().toastError(resolveErrorMessage(e));</span>
 <span class="cstat-no" title="statement not covered" >            setLoading(false)</span>
         }
     }
@@ -674,7 +699,17 @@ const RequestChatChannel = observer(<span class="fstat-no" title="function not c
                             &lt;TextInput 
                                 testID={TestIds.requestChatChannel.textInput}
                                 multiline
-                                autoFocus
+                                ref={<span class="fstat-no" title="function not covered" >(t</span>extInputRef) =&gt; {
+<span class="cstat-no" title="statement not covered" >                                    if (textInputRef) {</span>
+<span class="cstat-no" title="statement not covered" >                                        setTimeout(<span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
+                                            // autofocus on ios happens while contentHeight animations are still
+                                            // happening which messes with the KeyboardAwareArea...this waits for 
+                                            // height changes to settle and then focuses
+<span class="cstat-no" title="statement not covered" >                                            await bottomDrawerStore().contentHeightChange()</span>
+<span class="cstat-no" title="statement not covered" >                                            textInputRef.focus()</span>
+                                        })
+                                    }
+                                }}
                                 value={message} 
                                 style={styles.messageInput} 
                                 onChangeText={<span class="fstat-no" title="function not covered" >(s</span>: string) =&gt; <span class="cstat-no" title="statement not covered" >setMessage(s)}</span>/&gt;
@@ -777,11 +812,10 @@ const styles = StyleSheet.create({
     },
     messageRow: {
         flexDirection: 'row',
-        direction: 'ltr',
         marginVertical: 12
     },
     myMessageRow: {
-        direction: 'rtl'
+        flexDirection: 'row-reverse'
     },
     userIcon: {
         marginHorizontal: 12,
@@ -801,8 +835,10 @@ const styles = StyleSheet.create({
         marginLeft: 2,
     }, 
     myMessageBubble: {
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 1,
         backgroundColor: 'rgba(103, 49, 146, .2)',
-        marginLeft: 12
+        marginRight: 12
     },
     messageText: {
         color: '#000'
@@ -838,7 +874,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T19:45:07.992Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

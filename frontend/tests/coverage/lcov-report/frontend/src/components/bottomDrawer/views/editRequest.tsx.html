@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/76</span>
+                <span class='fraction'>0/78</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/74</span>
+                <span class='fraction'>0/76</span>
             </div>
         
             
@@ -375,8 +375,13 @@
 <a name='L310'></a><a href='#L310'>310</a>
 <a name='L311'></a><a href='#L311'>311</a>
 <a name='L312'></a><a href='#L312'>312</a>
-<a name='L313'></a><a href='#L313'>313</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -437,6 +442,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -702,7 +714,6 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
 &nbsp;
@@ -749,12 +760,19 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                     } finally {
 <span class="cstat-no" title="statement not covered" >                        bottomDrawerStore().endSubmitting()</span>
                     }
+&nbsp;
+                    const reqName = <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.requestDisplayName(</span>
+                        organizationStore().metadata.requestPrefix, 
+                        requestStore().currentRequest.displayId
+                    )
+&nbsp;
+                    const successMsg = <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.updatedRequestSuccess(reqName)</span>
         
-<span class="cstat-no" title="statement not covered" >                    alertStore().toastSuccess(STRINGS.REQUESTS.updatedRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, requestStore().currentRequest.displayId)))</span>
+<span class="cstat-no" title="statement not covered" >                    alertStore().toastSuccess(successMsg)</span>
         
 <span class="cstat-no" title="statement not covered" >                    bottomDrawerStore().hide()</span>
                 },
-                label: 'Save',
+                label: STRINGS.INTERFACE.save,
                 validator: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
 <span class="cstat-no" title="statement not covered" >                    return this.formInstance.get()?.isValid.get()</span>
                 }
@@ -795,16 +813,16 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >editRequestStore().notes,</span>
-                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Description',</span>
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Description',</span>
+                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.description,</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.description,</span>
                         type: 'TextArea',
                         required: true
                     },
                     // Type of request
                     {
                         type: 'CategorizedItemList',
-                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Type of request',</span>
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Type of request',</span>
+                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.requestType,</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.requestType,</span>
                         onSave: <span class="fstat-no" title="function not covered" >(t</span>ype) =&gt; <span class="cstat-no" title="statement not covered" >editRequestStore().type = categorizedItemsToRequestType(type),</span>
                         val: <span class="fstat-no" title="function not covered" >()</span> =&gt; {
 <span class="cstat-no" title="statement not covered" >                            return requestTypesToCategorizedItems(editRequestStore().type)</span>
@@ -833,8 +851,8 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         testID: TestIds.editRequest.inputs.location,
                         name: 'location',
                         previewLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >editRequestStore().location?.address,</span>
-                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Location',</span>
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Location',</span>
+                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.Location,</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.Location,</span>
                         type: 'Map',
                         // required: true
                     },
@@ -851,7 +869,7 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.editRequest.inputs.callStart,
                         name: 'callStart',
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Call start',</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.callStart,</span>
                         type: 'TextInput',
                         icon: ICONS.timeCallStarted,
                         props: {
@@ -873,7 +891,7 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.editRequest.inputs.callEnd,
                         name: 'callEnd',
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Call end',</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.callEnd,</span>
                         type: 'TextInput',
                         props: {
                             inlineAction: {
@@ -893,7 +911,7 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.editRequest.inputs.callerName,
                         name: 'callerName',
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Caller name',</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.callerName,</span>
                         type: 'TextInput',
                         // required: true
                     },
@@ -908,7 +926,7 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.editRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
-                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Caller contact info',</span>
+                        placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.callerContactInfo,</span>
                         type: 'TextInput',
                     },
                 ],
@@ -921,8 +939,8 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
 <span class="cstat-no" title="statement not covered" >                        return editRequestStore().positions;</span>
                     },
                     isValid: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >true,</span>
-                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Responders needed',</span>
-                    placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Responders needed',</span>
+                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.positions,</span>
+                    placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.positions,</span>
                     icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
@@ -950,8 +968,8 @@ class EditHelpRequest extends React.Component&lt;Props&gt; {
                             ? ICONS.priority2
                             : ICONS.priority1,
                     previewLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >RequestPriorityToLabelMap[editRequestStore().priority],</span>
-                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Priority',</span>
-                    placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Priority',</span>
+                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.priority,</span>
+                    placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.priority,</span>
                     type: 'List',
                     props: {
                         options: allEnumValues(RequestPriority),
@@ -1006,7 +1024,7 @@ export default EditHelpRequest
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T19:45:07.992Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>

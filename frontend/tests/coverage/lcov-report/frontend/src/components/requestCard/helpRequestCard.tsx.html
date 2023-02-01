@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55.29% </span>
+                <span class="strong">55.81% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>47/85</span>
+                <span class='fraction'>48/86</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">56.09% </span>
+                <span class="strong">56.62% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>46/82</span>
+                <span class='fraction'>47/83</span>
             </div>
         
             
@@ -544,7 +544,8 @@
 <a name='L479'></a><a href='#L479'>479</a>
 <a name='L480'></a><a href='#L480'>480</a>
 <a name='L481'></a><a href='#L481'>481</a>
-<a name='L482'></a><a href='#L482'>482</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L482'></a><a href='#L482'>482</a>
+<a name='L483'></a><a href='#L483'>483</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -576,6 +577,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1038,10 +1040,10 @@ import { ActiveRequestTabHeight } from "../../constants";
 import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
 import TestIds from "../../test/ids";
-import { requestDisplayName } from "../../../../common/utils/requestUtils"
+import { positionStats } from "../../../../common/utils/requestUtils";
 &nbsp;
 type Props = {
-    request: HelpRequest,
+    requestId: string,
     style?: StyleProp&lt;ViewStyle&gt;,
     dark?: boolean,
     minimal?: boolean,
@@ -1050,13 +1052,14 @@ type Props = {
 };
 &nbsp;
 const HelpRequestCard = observer(({ 
-    request, 
+    requestId, 
     style,
     dark,
     minimal,
     onMapView,
     onPress
 } : Props) =&gt; {
+    const request = requestStore().requests.get(requestId);
 &nbsp;
     const [statusOpen, setStatusOpen] = useState(false);
 &nbsp;
@@ -1088,7 +1091,7 @@ const HelpRequestCard = observer(({
         return (
 &nbsp;
             &lt;View style={styles.headerRow}&gt;
-                &lt;Text style={[styles.idText, dark ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.darkText </span>: null]}&gt;{requestDisplayName(prefix, id)}&lt;/Text&gt;
+                &lt;Text style={[styles.idText, dark ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.darkText </span>: null]}&gt;{STRINGS.REQUESTS.requestDisplayName(prefix, id)}&lt;/Text&gt;
                 {
                     address
                         ? <span class="branch-0 cbranch-no" title="branch not covered" >&lt;View style={styles.locationContainer}&gt;</span>
@@ -1193,7 +1196,7 @@ const HelpRequestCard = observer(({
 <span class="cstat-no" title="statement not covered" >            if(i &lt; maxJoinedToShow) {</span>
 <span class="cstat-no" title="statement not covered" >                assignedResponders.push(</span>
                     &lt;View style={{zIndex: 0-i}}&gt;
-                        &lt;UserIcon user={responder} style={ 
+                        &lt;UserIcon userId={responder.id} style={ 
                             i &lt; (joinedResponders.size - 1) &amp;&amp; (i &lt; maxJoinedToShow - 1) 
                                 ? dark
                                     ? styles.assignedResponderIconDark
@@ -1224,7 +1227,7 @@ const HelpRequestCard = observer(({
         
         const label = typeof potentialLabel == 'string'
             ? potentialLabel
-            : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(request, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>);</span>
+            : <span class="branch-1 cbranch-no" title="branch not covered" >potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(<span class="fstat-no" title="function not covered" >u </span>=&gt; <span class="cstat-no" title="statement not covered" >u.id)</span>));</span>
 &nbsp;
         const hasUnreadMessages = (request.chat &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >request.chat.messages.length) </span>
             &amp;&amp; (<span class="branch-2 cbranch-no" title="branch not covered" >!request.chat.userReceipts[userStore().user.id] </span>
@@ -1513,7 +1516,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T19:45:07.992Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
