@@ -143,6 +143,7 @@ const TestIds = {
         signInButton: 'landingScreenSignInButton'
     },
     signIn: {
+        screen: 'signIn',
         email: 'signIn::email',
         password: 'signIn::password',
         submit: 'signIn::submit'

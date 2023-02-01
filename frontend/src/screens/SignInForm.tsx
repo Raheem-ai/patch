@@ -35,7 +35,7 @@ export default function SignInForm( { navigation } : Props) {
 
     return(
         <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+                testID={TestIds.signIn.screen} behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
             <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                 <ScrollView
                     showsVerticalScrollIndicator={false} 

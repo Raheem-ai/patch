@@ -91,7 +91,7 @@ async function mockBoot() {
     const bootup = new Promise<void>((resolve) => {
         mockedBoot.mockImplementation((doneLoading: (() => void)) => {
             return originalBoot(() => {
-                // console.log('UNLOCKING AFTER MOCK BOOTUP')
+                console.log('UNLOCKING AFTER MOCK BOOTUP')
                 act(doneLoading)
                 resolve()
             })
@@ -359,13 +359,11 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             ...rest
         } = await mockLinkBoot(exp, linkParams);
 
-        // TODO: Which screen do we expect to be on here?
-        await waitFor(() => {
-            expect(linkingStore().initialRoute).toBeNull();
-        });
+        // Ensure that the app is on the sign in page
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
 
+        // Toast error should display the expected message based on LinkExperience
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
-
         const expectedError = exp == LinkExperience.SignUpThroughOrganization ? STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink() : STRINGS.LINKS.errorMessages.badJoinOrgLink();
         expect(toastTextComponent).toHaveTextContent(expectedError);
     }
@@ -402,9 +400,10 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             expect(linkingStore().initialRouteParams).toEqual(linkParams);
         })
 
-        const signUpThroughOrgPage = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+        await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
+
+        // These components should exist on the header and form
         const joinButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.signUpThroughOrg.screen)));
-        
         const nameInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.name));
         const emailInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.email));
         const passwordInput = await waitFor(() => getByTestId(TestIds.signUpThroughOrg.password));
@@ -434,7 +433,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // User should still be on signUpThroughOrg screen
         await waitFor(() => getByTestId(TestIds.signUpThroughOrg.screen));
 
-        // Expect a toast alert with the message contents from the API error to display  
+        // Expect a toast alert with the message contents from the API error to display
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
     }
@@ -489,10 +488,10 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             ...rest
         } = await mockLinkBoot('' as LinkExperience, linkParams);
 
-        await waitFor(() => {
-            expect(linkingStore().initialRoute).toBeNull();
-        });
+        // Ensure that the app is on the sign in page
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
 
+        // Toast error alert should show the unknown link text 
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.unknownLink());
     })
