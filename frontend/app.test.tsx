@@ -344,17 +344,9 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         expect(userHomeWelcomeLabel).toHaveTextContent(`Hi, Admin.`);
     }
 
-    test('Successful sign up through org, navigate to home page', async () => {
-        console.log('Sign Up - Successful run')
-        await successfulSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
-    })
-
-    test('Open app with bad sign up link params, show error toast', async () => {
-        console.log('Sign Up - Bad link params run')
-        const mockedUser = MockUsers()[0];
-
+    async function badLinkParamsSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
         // mock around params for link
-        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+        const linkParams: LinkParams[Experience] = {
             orgId: '',
             pendingId: '',
             email: ''
@@ -366,7 +358,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
+        } = await mockLinkBoot(exp, linkParams);
 
         // TODO: Which screen do we expect to be on here?
         await waitFor(() => {
@@ -374,15 +366,21 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         });
 
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
-        expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink());
-    })
 
-    test('Backend sign up error, show toast', async () => {
-        console.log('Sign Up - Backend error run')
+        const expectedError = exp == LinkExperience.SignUpThroughOrganization ? STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink() : STRINGS.LINKS.errorMessages.badJoinOrgLink();
+        expect(toastTextComponent).toHaveTextContent(expectedError);
+    }
+
+    async function backendErrorSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
+        // Mock signUpThroughOrg API to throw an error
+        jest.spyOn(APIClient.prototype, 'signUpThroughOrg').mockImplementationOnce((orgId: string, pendingId: string, minUser: MinUser) => {
+            throw new Error(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+        });
+
         const mockedUser = MockUsers()[0];
 
         // mock around params for link
-        const linkParams: LinkParams[LinkExperience.SignUpThroughOrganization] = {
+        const linkParams: LinkParams[Experience] = {
             orgId: MockOrgMetadata().id,
             pendingId: 'xxxx',
             email: mockedUser.email
@@ -394,7 +392,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(LinkExperience.SignUpThroughOrganization, linkParams);
+        } = await mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -429,11 +427,6 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // Join button should be enabled after filling out form.
         expect(joinButton).not.toBeDisabled();
 
-        // Mock signUpThroughOrg API to throw an error
-        jest.spyOn(APIClient.prototype, 'signUpThroughOrg').mockImplementation((orgId: string, pendingId: string, minUser: MinUser) => {
-            throw new Error(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
-        });
-
         // Submit the form
         await act(async () => {
             fireEvent(joinButton, 'click')
@@ -445,11 +438,36 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // Expect a toast alert with the message contents from the API error to display  
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+    }
+
+    test('Successful sign up through org, navigate to home page', async () => {
+        console.log('Sign Up - Successful run')
+        await successfulSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
+    })
+
+    test('Open app with bad sign up link params, show error toast', async () => {
+        console.log('Sign Up - Bad link params run')
+        await badLinkParamsSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
+    })
+
+    test('Backend sign up error, show toast', async () => {
+        console.log('Sign Up - Backend error run')
+        await backendErrorSignUpOrJoin(LinkExperience.SignUpThroughOrganization);
     })
 
     test('Successful join org, navigate to home page', async () => {
         console.log('Join Org - Successful run')
         await successfulSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Open app with bad join org link params, show error toast', async () => {
+        console.log('Join Org - Bad link params run')
+        await badLinkParamsSignUpOrJoin(LinkExperience.JoinOrganization);
+    })
+
+    test('Backend join organization error, show toast', async () => {
+        console.log('Join Org - Backend error run')
+        await backendErrorSignUpOrJoin(LinkExperience.JoinOrganization);
     })
 
     test('Open app with bad link experience, show error toast', async () => {
