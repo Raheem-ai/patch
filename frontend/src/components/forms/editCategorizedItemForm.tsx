@@ -55,6 +55,9 @@ export const EditCategorizedItemForm = observer(({
                     alertStore().toastError(resolveErrorMessage(e));
                 }
             },
+            validator: () => {
+                return store.isValid
+            },
             label: STRINGS.INTERFACE.save
         },
         cancel: {

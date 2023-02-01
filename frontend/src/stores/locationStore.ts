@@ -10,6 +10,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Location } from '../../../common/models';
 import { api } from '../services/interfaces';
+import { Camera } from 'react-native-maps';
 
 @Store(ILocationStore)
 export default class LocationStore implements ILocationStore {
@@ -19,12 +20,25 @@ export default class LocationStore implements ILocationStore {
     
     public lastKnownLocation: Location = null;
 
+    public defaultCamera: Camera = {
+        center: {
+            latitude: 29.998258850010608,
+            longitude: -98.68551313877106
+        },
+        zoom: 3,
+        altitude: 0,
+        pitch: 0,
+        heading: 0
+    }
+
     public foregroundCallbacksMap: Map<string, (loc: LocationObject) => void> = new Map();
     
     private locationDestructor: () => void = null;
 
     constructor() {
-        makeAutoObservable(this);
+        makeAutoObservable(this, {
+            defaultCamera: false
+        });
     }
 
     clear() {

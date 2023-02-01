@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, View, TextInput as RNTextInput, StyleSheet, Keyboard, Pressable } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { IMapsService } from "../../../../services/interfaces";
@@ -7,12 +7,13 @@ import { getService } from "../../../../services/meta";
 import { locationStore, nativeEventStore } from "../../../../stores/interfaces";
 import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-import MapView, { MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Camera, MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
 import { AddressableLocation } from "../../../../../../common/models";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import TestIds from "../../../../test/ids";
 import { Colors, ICONS } from "../../../../types";
+import { when } from "mobx";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const wrappedTestID = TestIds.inputs.mapInput.wrapper(config.testID)
@@ -21,8 +22,8 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
 
     const [suggestions, setSuggestions] = useState<PlaceAutocompleteResult[]>([]);
     const [chosenSuggestion, setChosenSuggestion] = useState<PlaceAutocompleteResult>(null);
-    const [searchText, setSearchText] = useState('');
-    const [targetCoords, setTargetCoords] = useState<LatLngLiteral>(null);
+    const [searchText, setSearchText] = useState(config.val()?.address || '');
+    const [targetCoords, setTargetCoords] = useState<LatLngLiteral>(config.val() ? { lat: config.val().latitude, lng: config.val().longitude } : null);
     const [inputActive, setInputActive] = useState(false);
     const [manuallyChosenLocation, setManuallyChosenLocation] = useState<GeocodeResult>(null);
 
@@ -30,14 +31,39 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
 
     // react native papers types are broken here
     const textInputInstance = useRef<RNTextInput>();
-    
-    const initialRegion = locationStore().lastKnownLocation
-        ? {
-            latitude: locationStore().lastKnownLocation.coords.latitude,
-            longitude: locationStore().lastKnownLocation.coords.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-        } : undefined
+
+    const initialCamera: Camera = Object.assign(
+        {}, 
+        locationStore().defaultCamera, 
+        // NOTE: need to combine them like this cuz otherwise mobx complains
+        // that we're trying to overwrite a value because the references are getting
+        // set
+        locationStore().lastKnownLocation || config.val()
+            ? {
+                center: {
+                    latitude: config.val()?.latitude || locationStore().lastKnownLocation.coords.latitude,
+                    longitude: config.val()?.longitude || locationStore().lastKnownLocation.coords.longitude
+                },
+                zoom: 12
+            }
+            : {}
+    )
+
+    useEffect(() => {
+        if (!locationStore().lastKnownLocation) {
+            when(() => !!locationStore().lastKnownLocation, () => {                
+                if (!targetCoords) {
+                    mapInstance.current?.animateCamera({ 
+                        center: {
+                            latitude: locationStore().lastKnownLocation.coords.latitude,
+                            longitude: locationStore().lastKnownLocation.coords.longitude
+                        }, 
+                        zoom: 12
+                    })
+                }
+            })
+        }
+    }, [])
 
     const isSaveable = manuallyChosenLocation || chosenSuggestion;
 
@@ -63,10 +89,13 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
         })
 
         setTimeout(() => {
-            mapInstance.current.animateCamera({ center: {
-                latitude: coords.latitude,
-                longitude: coords.longitude
-            }})
+            mapInstance.current.animateCamera({ 
+                center: {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                },
+                zoom: 12
+            })
         }, 0)
 
         try {
@@ -108,10 +137,13 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
             lng: coords.long
         })
 
-        mapInstance.current.animateCamera({ center: {
-            latitude: coords.lat,
-            longitude: coords.long
-        }})
+        mapInstance.current.animateCamera({ 
+            center: {
+                latitude: coords.lat,
+                longitude: coords.long
+            },
+            zoom: 12
+        })
     }
 
     const textInputFocused = () => {
@@ -152,7 +184,7 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                     sentry-label={TestIds.inputs.mapInput.map(wrappedTestID)}
                     provider={PROVIDER_GOOGLE} 
                     showsUserLocation={true}
-                    initialRegion={initialRegion}
+                    initialCamera={initialCamera}
                     onPress={mapPressed}
                     ref={mapInstance}
                     style={{ flex: 1 }}>
