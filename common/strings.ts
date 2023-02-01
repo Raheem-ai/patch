@@ -142,6 +142,7 @@ const STRINGS = {
         helpRequestChat: (prefix: string, id: string) => `Channel for ${STRINGS.REQUESTS.requestDisplayName(prefix, id)}`,
         teamList: 'Team',
         settings: 'Settings',
+        helpAndInfo: 'Help & Info',
         channels: 'Channels',
         componentLibrary: 'Component Library',
         createRequest: 'Create Request',
@@ -305,6 +306,13 @@ const STRINGS = {
             tagNotInCategory: (tag: string, category: string) => `Tag ${tag} does not exist in Tag Category ${category}.`,
             unknownTagInCategory: (tag: string, category: string, organization: string) => `Unknown Tag (${tag}) in Tag Category (${category}) in organization (${organization})`
         },
+    }, 
+    HELP_AND_INFO: {
+        version: (appVersion: string) => `You are using version ${appVersion} of Patch`,
+        helpCenterLabel: () => 'Help Center',
+        fileTicketLabel: () => 'File a ticket',
+        termsLabel: () => 'Terms of Use',
+        privacyLabel: () => 'Privacy Policy',
     }
 }
 

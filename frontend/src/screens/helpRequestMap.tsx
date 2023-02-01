@@ -49,13 +49,19 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     }, [idx])
 
-    const initialRegion = locationStore().lastKnownLocation
+    const initialCamera = Object.assign(
+        {}, 
+        locationStore().defaultCamera,
+        locationStore().lastKnownLocation
             ? {
-                latitude: locationStore().lastKnownLocation.coords.latitude,
-                longitude: locationStore().lastKnownLocation.coords.longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-            } : undefined
+                center: {
+                    latitude: locationStore().lastKnownLocation.coords.latitude,
+                    longitude: locationStore().lastKnownLocation.coords.longitude
+                },
+                zoom: 12
+            }
+            : {}
+    )
 
     const onTouchMove = (event: GestureResponderEvent) => {
         setDeltaTouchX(event.nativeEvent.pageX - startTouchX)
@@ -127,7 +133,6 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
             const activeIdx = requestStore().filteredSortedRequestsWithLocation.findIndex(r => r.id == requestStore().activeRequest?.id);
 
             if (activeIdx != -1) {
-                console.log('setidx', activeIdx + 1, (activeIdx) * windowDimensions.width)
                 setIdx(activeIdx + 1)
                 setVisualDeltaX(-((activeIdx) * windowDimensions.width))
                 setDeltaTouchX(0)
@@ -141,7 +146,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                 ref={mapInstance}
                 provider={PROVIDER_GOOGLE} 
                 showsUserLocation={true}
-                initialRegion={initialRegion}
+                initialCamera={initialCamera}
                 style={{ height: height }}>
                     { requestStore().filteredSortedRequestsWithLocation.length 
                             ? <Marker

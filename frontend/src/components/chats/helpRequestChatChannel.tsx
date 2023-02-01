@@ -211,11 +211,9 @@ const styles = StyleSheet.create({
     },
     messageRow: {
         flexDirection: 'row',
-        direction: 'ltr',
         marginVertical: 12
     },
     myMessageRow: {
-        // direction: 'rtl',
         flexDirection: 'row-reverse'
     },
     userIcon: {
@@ -236,6 +234,8 @@ const styles = StyleSheet.create({
         marginLeft: 2,
     }, 
     myMessageBubble: {
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 1,
         backgroundColor: 'rgba(103, 49, 146, .2)',
         marginRight: 12
     },

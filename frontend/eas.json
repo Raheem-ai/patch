@@ -1,14 +1,15 @@
 {
   "cli": {
-    "version": "^2.4.1"
+    "version": "^3.5.0"
   },
   "build": {
     "prod": {
       "channel": "prod",
       "env": {
+        "YARN_ENABLE_IMMUTABLE_INSTALLS": "false",
         "_ENVIRONMENT": "prod"
       },
-      "expoCli": "5.4.3"
+      "expoCli": "6.2.1"
     },
     "staging": {
       "extends": "prod",

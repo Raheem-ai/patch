@@ -220,6 +220,9 @@ const HeaderConfig: {
     [routerNames.settings]: {
         title: STRINGS.PAGE_TITLES.settings
     },
+    [routerNames.helpAndInfo]: {
+        title: STRINGS.PAGE_TITLES.helpAndInfo
+    },
     [routerNames.chats]: {
         title: STRINGS.PAGE_TITLES.channels
     }

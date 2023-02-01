@@ -1,6 +1,7 @@
 import { Notification, NotificationResponse } from 'expo-notifications';
 import React from 'react';
 import { Animated, TextStyle } from 'react-native';
+import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
 import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
@@ -60,6 +61,7 @@ export interface ILocationStore extends IBaseStore {
     hasBackgroundPermission: boolean 
     hasFullPermission: boolean 
     lastKnownLocation: Location
+    defaultCamera: Camera
     foregroundCallbacks: ((loc: Location) => void)[]
 
     askForPermission(): Promise<boolean>
@@ -536,6 +538,9 @@ export namespace IEditCategorizedItemStore {
 export interface IEditCategorizedItemStore extends IBaseStore {
     categories: Map<string, Category>
     pendingItems: Map<string, string>
+
+    isDirty: boolean
+    isValid: boolean
 
     addCategory: (categoryName: string) => void
     editCategory: (categoryId: string, categoryName: string) => void

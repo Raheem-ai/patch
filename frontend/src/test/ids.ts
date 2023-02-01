@@ -198,6 +198,15 @@ const TestIds = {
             manageTags: 'settingsForm::manageTags'
         }
     },
+    helpAndInfo: {
+        form: 'helpAndInfoForm',
+        navInputs: {
+            helpCenter: 'helpAndInfoForm::helpCenter',
+            fileATicket: 'helpAndInfoForm::fileATicket',
+            termsOfUse: 'helpAndInfoForm::termsOfUse',
+            privacyPolicy: 'helpAndInfoForm::privacyPolicy'
+        }
+    },
 
     // BottomDrawer views
     createRequest: {

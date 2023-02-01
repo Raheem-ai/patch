@@ -36,6 +36,22 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
         return `temp-${ctx}-${uuid.v1()}`
     }
 
+    get isDirty() {
+        return !!this.categoryNameChanges.length
+            || !!this.itemNameChanges.length
+            || !!this.deletedCategories.length
+            || !!Object.keys(this.deletedItems).map(items => items.length).reduce((sum, curr) => sum + curr, 0)
+            || !!Object.keys(this.newCategories).length
+            || !!Array.from(this.newItems.values()).map(items => Object.keys(items).length).reduce((sum, curr) => sum + curr, 0)
+            || !!this.pendingItems.size
+    }
+
+    get isValid() {
+        return this.isDirty 
+            && this.categoryNameChanges.every(change => !!change.name) 
+            && this.itemNameChanges.every(change => !!change.name)
+    }
+
     get definedCategories() {
         return this.baseCategories()
     }
@@ -117,11 +133,6 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
     }
 
     editCategory = (categoryId: string, categoryName: string) => {
-        if (!categoryName.length) {
-            // don't allow fully deleting a name to be a valid state
-            return;
-        }
-        
         if (this.newCategories[categoryId]) {
             this.newCategories = Object.assign({}, this.newCategories, {
                 [categoryId]: {
@@ -186,11 +197,6 @@ export default class EditCategorizedItemStore implements IEditCategorizedItemSto
     }
 
     editItem = (categoryId: string, itemId: string, itemName: string) => {
-        if (!itemName.length) {
-            // don't allow fully deleting a name to be a valid state
-            return
-        }
-
         if (!!this.newCategories[categoryId]) {
             // edit new category items within the new category itself
             const cpy = Object.assign({}, this.newCategories);
