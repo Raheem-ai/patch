@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.12% </span>
+                <span class="strong">3.17% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/64</span>
+                <span class='fraction'>2/63</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.17% </span>
+                <span class="strong">3.22% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/63</span>
+                <span class='fraction'>2/62</span>
             </div>
         
             
@@ -344,8 +344,7 @@
 <a name='L279'></a><a href='#L279'>279</a>
 <a name='L280'></a><a href='#L280'>280</a>
 <a name='L281'></a><a href='#L281'>281</a>
-<a name='L282'></a><a href='#L282'>282</a>
-<a name='L283'></a><a href='#L283'>283</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L282'></a><a href='#L282'>282</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -568,8 +567,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -599,6 +596,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -831,12 +829,12 @@ const PositionDetailsCard = observer(<span class="fstat-no" title="function not 
                 &lt;View style={{ marginTop: 20, marginRight: 20 }}&gt;{ actions() }&lt;/View&gt;
             &lt;/View&gt;
             { userDetails.length 
-                ? &lt;View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20, flexDirection: 'row' }}&gt;
+                ? &lt;View style={{ borderTopColor: Colors.borders.list, borderTopWidth: 1, marginBottom: 20 }}&gt;
                     {
                         userDetails.map(<span class="fstat-no" title="function not covered" >de</span>tails =&gt; {
 <span class="cstat-no" title="statement not covered" >                            return (</span>
                                 &lt;View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}&gt;
-                                    &lt;UserIcon user={{ name: details.name }} style={{marginTop: 2, flexGrow: 0}}/&gt;
+                                    &lt;UserIcon userId={details.userId} style={{marginTop: 2, flexGrow: 0}}/&gt;
                                     &lt;View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}&gt;
                                         &lt;Text style={{ fontWeight: 'bold' }}&gt;{details.name}&lt;/Text&gt;
                                         &lt;View style={{ flexDirection: 'row', flexWrap: 'wrap' }}&gt;
@@ -848,9 +846,7 @@ const PositionDetailsCard = observer(<span class="fstat-no" title="function not 
                                                             &lt;Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }&gt;{attr.name}&lt;/Text&gt;
                                                             &lt;Text style={styles.visualDelim}&gt;{STRINGS.visualDelim}&lt;/Text&gt;
                                                         &lt;/&gt;
-                                                        : &lt;Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }&gt;{attr.name}&lt;/Text&gt;
-                                                        
-<span class="cstat-no" title="statement not covered" >                                                    return </span>
+                                                        : &lt;Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }&gt;{attr.name}&lt;/Text&gt;                                                        
                                                 })
                                             }
                                         &lt;/View&gt;
@@ -890,6 +886,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary.alpha,
     },
     removeUser: {
+        flexGrow: 1,
         alignItems: 'flex-end',
         marginRight: 16
     },
@@ -916,7 +913,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T17:49:54.268Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

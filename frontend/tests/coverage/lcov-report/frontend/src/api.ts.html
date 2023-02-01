@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.84% </span>
+                <span class="strong">1.81% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/163</span>
+                <span class='fraction'>3/165</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.22% </span>
+                <span class="strong">3.17% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/62</span>
+                <span class='fraction'>2/63</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">1.84% </span>
+                <span class="strong">1.81% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/163</span>
+                <span class='fraction'>3/165</span>
             </div>
         
             
@@ -719,7 +719,15 @@
 <a name='L654'></a><a href='#L654'>654</a>
 <a name='L655'></a><a href='#L655'>655</a>
 <a name='L656'></a><a href='#L656'>656</a>
-<a name='L657'></a><a href='#L657'>657</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L657'></a><a href='#L657'>657</a>
+<a name='L658'></a><a href='#L658'>658</a>
+<a name='L659'></a><a href='#L659'>659</a>
+<a name='L660'></a><a href='#L660'>660</a>
+<a name='L661'></a><a href='#L661'>661</a>
+<a name='L662'></a><a href='#L662'>662</a>
+<a name='L663'></a><a href='#L663'>663</a>
+<a name='L664'></a><a href='#L664'>664</a>
+<a name='L665'></a><a href='#L665'>665</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -746,7 +754,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -936,6 +944,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1376,7 +1392,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -1592,6 +1608,14 @@ export class APIClient implements IAPIService {
         })).data
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        return user;</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    as</span>ync deleteMyAccount(ctx: TokenContext): Promise&lt;void&gt; {
+        const url = <span class="cstat-no" title="statement not covered" >`${apiHost}${API.client.deleteMyAccount()}`;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        await this.tryPost&lt;void&gt;(url, {}, {</span>
+            headers: this.userScopeAuthHeaders(ctx),
+        })
     }
 &nbsp;
 <span class="fstat-no" title="function not covered" >    as</span>ync editMe(ctx: OrgContext, me: Partial&lt;Me&gt;, protectedUser?: Partial&lt;AdminEditableUser&gt;): Promise&lt;ClientSideFormat&lt;Me&gt;&gt; {
@@ -1910,10 +1934,10 @@ export class APIClient implements IAPIService {
     }
 &nbsp;
 &nbsp;
-<span class="fstat-no" title="function not covered" >    as</span>ync getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise&lt;ProtectedUser[]&gt; {
+<span class="fstat-no" title="function not covered" >    as</span>ync getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise&lt;TeamMemberMetadata&gt; {
         const url = <span class="cstat-no" title="statement not covered" >`${apiHost}${API.client.getTeamMembers()}`;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        return (await this.tryPost&lt;ProtectedUser[]&gt;(url, {</span>
+<span class="cstat-no" title="statement not covered" >        return (await this.tryPost&lt;TeamMemberMetadata&gt;(url, {</span>
             userIds
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
@@ -2038,7 +2062,7 @@ export class APIClient implements IAPIService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T17:49:54.268Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

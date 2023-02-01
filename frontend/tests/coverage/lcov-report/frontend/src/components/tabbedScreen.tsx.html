@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">78.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>15/19</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">80% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/5</span>
+                <span class='fraction'>6/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">91.66% </span>
+                <span class="strong">78.94% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/12</span>
+                <span class='fraction'>15/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -208,7 +208,25 @@
 <a name='L143'></a><a href='#L143'>143</a>
 <a name='L144'></a><a href='#L144'>144</a>
 <a name='L145'></a><a href='#L145'>145</a>
-<a name='L146'></a><a href='#L146'>146</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -258,6 +276,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -353,12 +385,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState } from "react"
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useEffect, useState } from "react"
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 import { VisualArea } from "./helpers/visualArea";
 import { Colors } from "../types";
 import { TabbedScreenHeaderHeight } from "../constants";
+import { navigationStore } from "../stores/interfaces";
+import { runInAction } from "mobx";
 &nbsp;
 type TabConfig = {
     label : string,
@@ -404,6 +438,20 @@ const TabbedScreen: React.FC&lt;Props&gt; = ({
     const initialTab = defaultTab
         ? tabs.find((t) =&gt; t.label == defaultTab) || <span class="branch-1 cbranch-no" title="branch not covered" >null</span>
         : <span class="branch-1 cbranch-no" title="branch not covered" >tabs[0] || null;</span>
+    
+    useEffect(() =&gt; {
+        runInAction(() =&gt; {
+            navigationStore().currentTab = initialTab.label
+        })
+    }, [])
+&nbsp;
+    const selectTab = <span class="fstat-no" title="function not covered" >(t</span>ab: TabConfig) =&gt; {
+<span class="cstat-no" title="statement not covered" >        setSelectedTab(tab)</span>
+        
+<span class="cstat-no" title="statement not covered" >        runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            navigationStore().currentTab = tab.label</span>
+        })
+    }
 &nbsp;
     const [ selectedTab, setSelectedTab ] = useState&lt;TabConfig&gt;(initialTab);
 &nbsp;
@@ -416,7 +464,7 @@ const TabbedScreen: React.FC&lt;Props&gt; = ({
                     : i == 0;
 &nbsp;
             return (
-                &lt;Pressable key={t.label} onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setSelectedTab(t)}</span> style={[
+                &lt;Pressable key={t.label} onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >selectTab(t)}</span> style={[
                     styles.headerSection,
                     i == 0 ? styles.firstSection : null,
                     i == tabs.length - 1 ? styles.lastSection : null,
@@ -469,7 +517,6 @@ const styles = StyleSheet.create({
     header: {
         height: TabbedScreenHeaderHeight,
         width: Dimensions.get('screen').width,
-        paddingTop: 16,
         backgroundColor: Colors.backgrounds.tabs,
     },
     body: {
@@ -486,6 +533,7 @@ const styles = StyleSheet.create({
     headerSection: {
         paddingHorizontal: 4,
         marginHorizontal: 8,
+        paddingTop: 16,
     },
     firstSection: {
         marginLeft: 16,
@@ -497,15 +545,15 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.backgrounds.standard,
         borderBottomWidth: 3
     }
-&nbsp;
-})</pre></td></tr></table></pre>
+})
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T17:49:54.268Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

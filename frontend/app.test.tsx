@@ -480,6 +480,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             email: mockedUser.email
         };
 
+        // Pass empty string as the LinkExperience to cause error
         const {
             getByTestId,
             getMeMock,

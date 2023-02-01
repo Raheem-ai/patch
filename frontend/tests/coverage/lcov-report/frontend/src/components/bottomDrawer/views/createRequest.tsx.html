@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.22% </span>
+                <span class="strong">59.25% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>46/79</span>
+                <span class='fraction'>48/81</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">59.74% </span>
+                <span class="strong">60.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>46/77</span>
+                <span class='fraction'>48/79</span>
             </div>
         
             
@@ -393,8 +393,13 @@
 <a name='L328'></a><a href='#L328'>328</a>
 <a name='L329'></a><a href='#L329'>329</a>
 <a name='L330'></a><a href='#L330'>330</a>
-<a name='L331'></a><a href='#L331'>331</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -463,6 +468,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -740,7 +752,6 @@ import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
 import TestIds from "../../../test/ids";
 import { ICONS } from "../../../types";
-import { requestDisplayName } from "../../../../../common/utils/requestUtils";
 import { rightNow } from "../../../../../common/utils";
 &nbsp;
 type Props = {}
@@ -794,11 +805,18 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         bottomDrawerStore().endSubmitting()
                     }
 &nbsp;
-                    alertStore().toastSuccess(STRINGS.REQUESTS.createdRequestSuccess(requestDisplayName(organizationStore().metadata.requestPrefix, createdReq.displayId)))
+                    const reqName = STRINGS.REQUESTS.requestDisplayName(
+                        organizationStore().metadata.requestPrefix, 
+                        createdReq.displayId
+                    )
+&nbsp;
+                    const successMsg = STRINGS.REQUESTS.createdRequestSuccess(reqName)
+&nbsp;
+                    alertStore().toastSuccess(successMsg)
                     createRequestStore().clear()
                     bottomDrawerStore().hide()
                 },
-                label: 'Add',
+                label: STRINGS.INTERFACE.add,
                 validator: () =&gt; {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -847,16 +865,16 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         name: 'description',
                         icon: ICONS.request,
                         previewLabel: () =&gt; createRequestStore().notes,
-                        headerLabel: () =&gt; 'Description',
-                        placeholderLabel: () =&gt; 'Description',
+                        headerLabel: () =&gt; STRINGS.REQUESTS.description,
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.description,
                         type: 'TextArea',
                         required: true,
                     },
                     // Type of request
                     {
                         type: 'CategorizedItemList',
-                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Type of request',</span>
-                        placeholderLabel: () =&gt; 'Type of request',
+                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.requestType,</span>
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.requestType,
                         onSave: <span class="fstat-no" title="function not covered" >(t</span>ype) =&gt; <span class="cstat-no" title="statement not covered" >createRequestStore().type = categorizedItemsToRequestType(type),</span>
                         val: () =&gt; {
                             return requestTypesToCategorizedItems(createRequestStore().type)
@@ -885,8 +903,8 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         testID: TestIds.createRequest.inputs.location,
                         name: 'location',
                         previewLabel: () =&gt; createRequestStore().location?.address,
-                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Location',</span>
-                        placeholderLabel: () =&gt; 'Location',
+                        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.Location,</span>
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.Location,
                         type: 'Map',
                         // required: true
                     },
@@ -903,7 +921,7 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.createRequest.inputs.callStart,
                         name: 'callStart',
-                        placeholderLabel: () =&gt; 'Call start',
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.callStart,
                         type: 'TextInput',
                         icon: ICONS.timeCallStarted,
                         props: {
@@ -925,7 +943,7 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.createRequest.inputs.callEnd,
                         name: 'callEnd',
-                        placeholderLabel: () =&gt; 'Call end',
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.callEnd,
                         type: 'TextInput',
                         props: {
                             inlineAction: {
@@ -945,7 +963,7 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.createRequest.inputs.callerName,
                         name: 'callerName',
-                        placeholderLabel: () =&gt; 'Caller name',
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.callerName,
                         type: 'TextInput',
 //                        icon: ICONS.callerContactInfo
                         // required: true
@@ -961,7 +979,7 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         },
                         testID: TestIds.createRequest.inputs.callerContactInfo,
                         name: 'callerContactInfo',
-                        placeholderLabel: () =&gt; 'Caller contact info',
+                        placeholderLabel: () =&gt; STRINGS.REQUESTS.callerContactInfo,
                         type: 'TextInput',
                     },
                 ],
@@ -975,8 +993,8 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                         return createRequestStore().positions;
                     },
                     isValid: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >true,</span>
-                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Responders needed',</span>
-                    placeholderLabel: () =&gt; 'Responders needed',
+                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.positions,</span>
+                    placeholderLabel: () =&gt; STRINGS.REQUESTS.positions,
                     icon: ICONS.accountMultiple,
                     props: {
                         editPermissions: [PatchPermissions.RequestAdmin]
@@ -999,8 +1017,8 @@ class CreateHelpRequest extends React.Component&lt;Props&gt; {
                     testID: TestIds.createRequest.inputs.priority,
                     name: 'priority',
                     previewLabel: () =&gt; RequestPriorityToLabelMap[createRequestStore().priority],
-                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >'Priority',</span>
-                    placeholderLabel: () =&gt; 'Priority',
+                    headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.REQUESTS.priority,</span>
+                    placeholderLabel: () =&gt; STRINGS.REQUESTS.priority,
                     type: 'List',
                     icon: createRequestStore().priority == 2 
                         ? <span class="branch-0 cbranch-no" title="branch not covered" >ICONS.priority3</span>
@@ -1060,7 +1078,7 @@ export default CreateHelpRequest
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2022-11-14T18:56:39.021Z
+                at 2023-02-01T17:49:54.268Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>
