@@ -53,6 +53,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import boot from './src/boot';
 import * as Sentry from 'sentry-expo';
 import { apiHost, sentryDSN, inProdApp, appEnv } from './src/config';
+import HelpAndInfo from './src/screens/helpAndInfo';
 
 const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
@@ -161,6 +162,7 @@ function App() {
                         <Stack.Screen name={routerNames.componentLib} component={userScreen(routerNames.componentLib, visualArea(ComponentLibrary))}/>
                         <Stack.Screen name={routerNames.userDetails} component={userScreen(routerNames.userDetails, visualArea(UserDetails))}/>
                         <Stack.Screen name={routerNames.settings} component={userScreen(routerNames.settings, Settings)}/>
+                        <Stack.Screen name={routerNames.helpAndInfo} component={userScreen(routerNames.helpAndInfo, HelpAndInfo)}/>
                         <Stack.Screen name={routerNames.chats} component={userScreen(routerNames.chats, visualArea(Chats))}/>
                     </Stack.Navigator>
                     <Alerts/>

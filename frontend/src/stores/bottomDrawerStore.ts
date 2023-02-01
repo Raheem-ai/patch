@@ -12,6 +12,7 @@ import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
 import { RequestDetailsTabs } from '../../../common/models';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 /**
  * open minimizable view
@@ -91,6 +92,11 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             this.setupAnimationReactions()
         } else {
             when(() => userStore().signedIn, this.setupAnimationReactions)
+        }
+
+        // doing this here cuz it's the closest thing we have to a layout store
+        if (await ScreenOrientation.supportsOrientationLockAsync(ScreenOrientation.OrientationLock.PORTRAIT)) {
+            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
         }
     }
 
