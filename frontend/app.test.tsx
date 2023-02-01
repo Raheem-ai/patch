@@ -1,6 +1,5 @@
 import { render, fireEvent, waitFor, act, cleanup, waitForElementToBeRemoved } from '@testing-library/react-native';
 import '@testing-library/jest-native/extend-expect';
-const util = require('util')
 
 jest.mock('expo-constants', () => {
     const originalModule = jest.requireActual('expo-constants');
