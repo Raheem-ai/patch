@@ -85,7 +85,7 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         >{'Sign in'}</Button>
-                        <Text style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
+                        <Text testID={TestIds.signIn.forgot} style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
                         {/* <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text> */}
                     </View>
                 </ScrollView>

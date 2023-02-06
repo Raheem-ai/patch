@@ -40,6 +40,7 @@ import * as commonUtils from '../common/utils';
 import { LinkExperience, LinkParams, MinUser } from '../common/models';
 import STRINGS from '../common/strings';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
+import { TokenContext } from './api';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -105,8 +106,7 @@ async function mockBoot() {
     return utils
 }
 
-async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
-    // mock out changes to the Branch.subscribe in linkingStore().init()
+function linkExperienceToBranchEvent<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
     const domain = 'www.test.com'
     const queryString = Object.keys(linkParams).map(paramName => `&${paramName}=${linkParams[paramName]}`).join('')
     const link = `${domain}?exp=${exp}${queryString}`
@@ -120,6 +120,13 @@ async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, 
             "~referring_link": link
         }
     };
+
+    return branchEvent;
+}
+
+async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
+    // mock out changes to the Branch.subscribe in linkingStore().init()
+    const branchEvent = linkExperienceToBranchEvent(exp, linkParams);
 
     const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementationOnce((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
         return callback(branchEvent)
@@ -135,6 +142,29 @@ async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, 
         getByTestId,
         getMeMock,
         branchSubscribeMock,
+        ...rest
+    }
+}
+
+async function mockDeferredLinkBoot() {
+    let respondToLinkHandle: (branchEvent: BranchSubscriptionEvent) => void;
+
+    const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementationOnce((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
+        respondToLinkHandle = (branchEvent: BranchSubscriptionEvent) => callback(branchEvent);
+        return () => {};
+    });
+
+    const mockedUser = MockUsers()[0];
+
+    // mock out the api calls that will get triggered when the app
+    const getMeMock = jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser);
+
+    const { getByTestId, ...rest } = await mockBoot();
+    return {
+        getByTestId,
+        getMeMock,
+        branchSubscribeMock,
+        respondToLinkHandle,
         ...rest
     }
 }
@@ -338,6 +368,11 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(`Welcome to PATCH!`)
 
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
+
         // TODO: import {parseFullName} from 'parse-full-name';
         const userHomeWelcomeLabel = await waitFor(() => getByTestId(TestIds.userHome.welcomeLabel));
         expect(userHomeWelcomeLabel).toHaveTextContent(`Hi, Admin.`);
@@ -366,6 +401,10 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         const expectedError = exp == LinkExperience.SignUpThroughOrganization ? STRINGS.LINKS.errorMessages.badSignUpThroughOrgLink() : STRINGS.LINKS.errorMessages.badJoinOrgLink();
         expect(toastTextComponent).toHaveTextContent(expectedError);
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
     }
 
     async function backendErrorSignUpOrJoin<Experience extends LinkExperience.JoinOrganization | LinkExperience.SignUpThroughOrganization>(exp: Experience) {
@@ -436,6 +475,10 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // Expect a toast alert with the message contents from the API error to display
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.inviteNotFound(linkParams.email, linkParams.orgId));
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
     }
 
     test('Successful sign up through org, navigate to home page', async () => {
@@ -494,6 +537,142 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
         // Toast error alert should show the unknown link text 
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.LINKS.errorMessages.unknownLink());
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
+    })
+})
+
+describe('Password Scenarios', () => {
+    afterEach(() => {
+        cleanup()
+        clearAllStores()
+        clearAllServices()
+    })
+
+    // TODO: Test from brand new boot as well (e.g. not deferred mockboot)
+    test('Reset password', async () => {
+        console.log('Reset password run...')
+        const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await mockDeferredLinkBoot();
+
+        // Ensure that the app is on the sign in screen
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
+
+        const forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
+
+        await act(async() => {
+            fireEvent(forgotPasswordText, 'press')
+        })
+
+        // Ensure that the app is on the send reset code screen
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode);
+        })
+        await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
+
+        // Press cancel, send us back to sign in screen
+        const cancelInput = await waitFor(() => getByTestId(TestIds.sendResetCode.cancel))
+        await act(async() => {
+            fireEvent(cancelInput, 'press')
+        })
+
+        // Ensure that the app is on the sign in screen
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.landing);
+        })
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
+
+        // TODO: Need to reassign forgotPassword component?
+        // forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
+
+        // Press forgot password again
+        await act(async() => {
+            fireEvent(forgotPasswordText, 'press')
+        })
+
+        // Ensure that the app is on the send reset code screen
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode);
+        })
+        await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
+        const emailInput = await waitFor(() => getByTestId(TestIds.sendResetCode.email));
+
+        const mockedUser = MockUsers()[2];
+        await act(async() => {
+            fireEvent.changeText(emailInput, mockedUser.email)
+        })
+
+        jest.spyOn(APIClient.prototype, 'sendResetCode').mockImplementationOnce((email: string, baseUrl: string) => {
+            // do nothing for the sake of the test
+            return Promise.resolve();
+        });
+
+        // Press button to send reset password link
+        const sendLinkButton = await waitFor(() => getByTestId(TestIds.sendResetCode.sendLink))
+        await act(async() => {
+            fireEvent(sendLinkButton, 'press');
+        });
+
+        // Sleep for 1 second as SendResetCode form delays
+        // before redirecting to ease the transition.
+        await new Promise(r => setTimeout(r, 1000));
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.landing);
+        })
+
+        await waitFor(() => getByTestId(TestIds.signIn.screen));
+
+        let toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.resetPasswordCodeSent);
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
+
+        // BOOT FROM RESET LINK
+        const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
+
+        const linkParams: LinkParams[LinkExperience.ResetPassword] = {
+            code: 'xxxx-code-xxxx'
+        };
+
+        const branchEvent = linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
+        await act(async() => {
+            respondToLinkHandle(branchEvent);
+        })
+
+        await waitFor(() => {
+            expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
+        });
+
+        // Ensure that the app is on the update password screen
+        await waitFor(() => {
+            expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword);
+        })
+
+        await waitFor(() => getByTestId(TestIds.updatePassword.screen));
+        const passwordInput = await waitFor(() => getByTestId(TestIds.updatePassword.password));
+        await act(async() => {
+            fireEvent.changeText(passwordInput, mockedUser.password);
+        })
+
+        jest.spyOn(APIClient.prototype, 'updatePassword').mockImplementationOnce((ctx: TokenContext, password: string, resetCode?: string) => {
+            // do nothing for the sake of the test
+            return Promise.resolve();
+        });
+
+        const updatePasswordButton = await waitFor(() => getByTestId(TestIds.updatePassword.submit))
+        await act(async() => {
+            fireEvent(updatePasswordButton, 'press');
+        });
+
+        toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.passwordUpdated);
+        // Hide toast
+        await act(async() => {
+            fireEvent(toastTextComponent, 'press')
+        })
     })
 })
 
@@ -505,6 +684,7 @@ describe('Signed in Scenarios', () => {
     })
 
     test('Stores fetch initial data after sign in and route to homepage', async () => {
+        console.log('Signed In - Fetch initial data run')
         const {
             signInMock,
             getMeMock,
@@ -570,6 +750,7 @@ describe('Signed in Scenarios', () => {
     });
 
     test('Can create request after login', async () => {
+        console.log('Signed In - Create request after login run')
         const {
             getByTestId,
             mockedUser,

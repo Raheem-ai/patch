@@ -142,9 +142,16 @@ const TestIds = {
     landingScreen: {
         signInButton: 'landingScreenSignInButton'
     },
+    sendResetCode: {
+        screen: 'sendResetCode',
+        cancel: 'sendResetCode::cancel',
+        email: 'sendResetCode::email',
+        sendLink: 'sendResetCode::sendLink',
+    },
     signIn: {
         screen: 'signIn',
         email: 'signIn::email',
+        forgot: 'signIn::forgot',
         password: 'signIn::password',
         submit: 'signIn::submit'
     },
@@ -153,6 +160,12 @@ const TestIds = {
         email: 'signUpThroughOrg::email',
         name: 'signUpThroughOrg::name',
         password: 'signUpThroughOrg::password'
+    },
+    updatePassword: {
+        screen: 'updatePassword',
+        password: 'password',
+        submit: 'submit',
+        cancel: 'cancel'
     },
     home: {
         screen: 'homeScreen'

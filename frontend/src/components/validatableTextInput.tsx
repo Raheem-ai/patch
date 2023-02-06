@@ -6,6 +6,7 @@ import { Colors, ICONS } from "../types";
 import STRINGS from "../../../common/strings";
 
 type Props = {
+    testID?: string
     value: string
     label?: string
     password?: boolean
@@ -28,6 +29,7 @@ const ValidatableTextInput = ( props: Props) => {
     return(
         <View>
             <PaperTextInput
+                testID={props.testID ? props.testID : null}
                 mode="flat"
                 secureTextEntry={secureTextEntry}
                 right={!isPassword
