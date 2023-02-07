@@ -23,7 +23,6 @@ jest.mock('expo-constants', () => {
 
 import App from './App';
 import {hideAsync} from 'expo-splash-screen';
-import boot from './src/boot';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from './src/test/mocks';
@@ -32,27 +31,22 @@ import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
 // import { StorageController } from 'mobx-persist-store';
-import { AppState } from 'react-native';
 import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
 import { AuthTokens, LinkExperience, LinkParams, MinUser } from '../common/models';
 import STRINGS from '../common/strings';
-import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { TokenContext } from './api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
+import * as test_utils from './tests/test_utils'
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
 jest.mock('expo-splash-screen')
 jest.mock('./src/meta/persistentStorage')
-
-const originalBoot = jest.requireActual('./src/boot').default;
-const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
-const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null)
 
 // // const mockedPersistentStorage = PersistentStorage as jest.MaybeMockedConstructor<StorageController>;
 // // mockedPersistentStorage.mockImplementation(function (secureKeys: string[], propConfigs: PersistentPropConfigs) { return mockAsyncStorage })
@@ -86,137 +80,6 @@ jest.mock('socket.io-client', () => {
     };
 });
 
-async function mockBoot() {
-    const mockedBoot = boot as jest.MaybeMocked<typeof boot>;
-    const mockedHideAsync = hideAsync as jest.MaybeMocked<typeof hideAsync>;
-
-    mockedHideAsync.mockImplementation(originalHideAsync);
-
-    const bootup = new Promise<void>((resolve) => {
-        mockedBoot.mockImplementation((doneLoading: (() => void)) => {
-            return originalBoot(() => {
-                console.log('UNLOCKING AFTER MOCK BOOTUP')
-                act(doneLoading)
-                resolve()
-            })
-        })
-    });
-
-    const utils = render(<App/>);
-    
-    await bootup;
-
-    return utils
-}
-
-function linkExperienceToBranchEvent<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
-    const domain = 'www.test.com'
-    const queryString = Object.keys(linkParams).map(paramName => `&${paramName}=${linkParams[paramName]}`).join('')
-    const link = `${domain}?exp=${exp}${queryString}`
-    const branchEvent: BranchSubscriptionEvent = {
-        error: null,
-        uri: domain,
-        params: { 
-            "+match_guaranteed": true,
-            "+is_first_session": true,
-            "+clicked_branch_link": true,
-            "~referring_link": link
-        }
-    };
-
-    return branchEvent;
-}
-
-async function mockLinkBoot<Experience extends LinkExperience>(exp: Experience, linkParams: LinkParams[Experience]) {
-    // mock out changes to the Branch.subscribe in linkingStore().init()
-    const branchEvent = linkExperienceToBranchEvent(exp, linkParams);
-
-    const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementationOnce((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
-        return callback(branchEvent)
-    });
-
-    const mockedUser = MockUsers()[0];
-
-    // mock out the api calls that will get triggered when the app
-    const getMeMock = jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser);
-
-    const { getByTestId, ...rest } = await mockBoot();
-    return {
-        getByTestId,
-        getMeMock,
-        branchSubscribeMock,
-        ...rest
-    }
-}
-
-async function mockDeferredLinkBoot() {
-    let respondToLinkHandle: (branchEvent: BranchSubscriptionEvent) => void;
-
-    const branchSubscribeMock = jest.spyOn(Branch, 'subscribe').mockImplementationOnce((callback: ((event: BranchSubscriptionEvent) => (() => void))) => {
-        respondToLinkHandle = (branchEvent: BranchSubscriptionEvent) => callback(branchEvent);
-        return () => {};
-    });
-
-    const mockedUser = MockUsers()[0];
-
-    // mock out the api calls that will get triggered when the app
-    const getMeMock = jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser);
-
-    const { getByTestId, ...rest } = await mockBoot();
-    return {
-        getByTestId,
-        getMeMock,
-        branchSubscribeMock,
-        respondToLinkHandle,
-        ...rest
-    }
-}
-
-async function mockSignIn() {
-    const { getByTestId, ...rest } = await mockBoot();
-
-    // TODO: reenable when we use the landing screen again
-    // const signInButton = await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
-
-    // await act(async () => {
-    //     fireEvent(signInButton, 'click');
-    // })
-   
-    const emailInput = await waitFor(() => getByTestId(TestIds.signIn.email))
-    const passwordInput = await waitFor(() => getByTestId(TestIds.signIn.password)) 
-    const submitButton = await waitFor(() => getByTestId(TestIds.signIn.submit))
-
-    const mockedUser = MockUsers()[0];
-    
-    await act(async () => {
-        fireEvent.changeText(emailInput, mockedUser.email)
-        fireEvent.changeText(passwordInput, mockedUser.password)
-    })
-
-    const response = {
-        // mocked apis
-        signInMock: jest.spyOn(APIClient.prototype, 'signIn').mockResolvedValue(MockAuthTokens()),
-        getMeMock: jest.spyOn(APIClient.prototype, 'me').mockResolvedValue(mockedUser),
-        getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata()),
-        getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
-        getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
-        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),
-
-        // mocked data
-        mockedUser,
-
-        // utils
-        getByTestId,
-        ...rest
-    }
-
-    await act(async () => {
-        fireEvent(submitButton, 'click')
-    })
-
-    return response;
-}
-
 describe('Boot Scenarios', () => {
 
     // afterEach(cleanup)
@@ -227,7 +90,7 @@ describe('Boot Scenarios', () => {
     });
 
     test('Hides the Splash Screen and shows the landing page after stores load', async () => {
-        const { getByTestId, toJSON } = await mockBoot();
+        const { getByTestId, toJSON } = await test_utils.mockBoot();
 
         expect(hideAsync).toHaveBeenCalled();
 
@@ -263,7 +126,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(exp, linkParams);
+        } = await test_utils.mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -395,7 +258,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(exp, linkParams);
+        } = await test_utils.mockLinkBoot(exp, linkParams);
 
         // Ensure that the app is on the sign in page
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -431,7 +294,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot(exp, linkParams);
+        } = await test_utils.mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -532,7 +395,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await mockLinkBoot('' as LinkExperience, linkParams);
+        } = await test_utils.mockLinkBoot('' as LinkExperience, linkParams);
 
         // Ensure that the app is on the sign in page
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -599,7 +462,7 @@ describe('Password Scenarios', () => {
         console.log('Reset password - deferred link boot')
         // Mock deferred boot boots up the app and provides a function to call
         // later when we want to reopen the app via the reset password link.
-        const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await mockDeferredLinkBoot();
+        const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await test_utils.mockDeferredLinkBoot();
 
         // Ensure that the app is on the sign in screen
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -675,7 +538,7 @@ describe('Password Scenarios', () => {
         // Simulate re-opening the app via a reset password link.
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
         const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
-        const branchEvent = linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
+        const branchEvent = test_utils.linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
         await act(async() => {
             respondToLinkHandle(branchEvent);
         })
@@ -692,7 +555,7 @@ describe('Password Scenarios', () => {
         // Boot the app from a password reset link
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
         const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
-        const { getByTestId, ...rest } = await mockLinkBoot(LinkExperience.ResetPassword, linkParams);
+        const { getByTestId, ...rest } = await test_utils.mockLinkBoot(LinkExperience.ResetPassword, linkParams);
         await waitFor(() => {
             expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
         });
@@ -706,7 +569,7 @@ describe('Password Scenarios', () => {
         const {
             getByTestId,
             toJSON
-        } = await mockSignIn()
+        } = await test_utils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
         await waitFor(() => getByTestId(TestIds.home.screen));
@@ -761,7 +624,7 @@ describe('Signed in Scenarios', () => {
             getRequestsMock,
             getByTestId,
             mockedUser
-        } = await mockSignIn()
+        } = await test_utils.mockSignIn()
 
         await waitFor(() => {
             expect(signInMock).toHaveBeenCalledWith({
@@ -824,7 +687,7 @@ describe('Signed in Scenarios', () => {
             toJSON,
             getOrgMetadataMock,
             signInMock
-        } = await mockSignIn()
+        } = await test_utils.mockSignIn()
 
         await waitFor(() => {
             expect(signInMock).toHaveBeenCalledWith({
