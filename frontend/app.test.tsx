@@ -598,9 +598,11 @@ describe('Password Scenarios', () => {
 
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.settings));
 
-        /*
+
         const newUpdatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
         await act(async() => fireEvent(newUpdatePasswordInput, 'press'));
+
+        /*
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
 
         // Fill out new password info and submit form
