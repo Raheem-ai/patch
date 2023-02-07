@@ -468,7 +468,7 @@ describe('Password Scenarios', () => {
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
         // Prese the "forgot password" text
-        const forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
+        let forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
         await act(async() => {
             fireEvent(forgotPasswordText, 'press')
         })
@@ -493,6 +493,7 @@ describe('Password Scenarios', () => {
 
         // Press forgot password again
         // this time to follow through with sending the reset code
+        forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
         await act(async() => {
             fireEvent(forgotPasswordText, 'press')
         })
