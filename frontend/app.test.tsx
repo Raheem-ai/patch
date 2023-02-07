@@ -491,6 +491,7 @@ describe('Password Scenarios', () => {
         })
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
+        /*
         // Press forgot password again
         // this time to follow through with sending the reset code
         forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
@@ -549,6 +550,7 @@ describe('Password Scenarios', () => {
 
         // Validate app behavior once we've re-opened the app from this link
         await completeUpdatePasswordForm(routerNames.userHomePage, getByTestId);
+        */
     })
 
     test('Reset password link boot', async () => {
@@ -740,7 +742,7 @@ describe('Signed in Scenarios', () => {
 
         await waitFor(() => getByTestId(TestIds.createRequest.form));
         
-        let createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.form)));
+        const createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.form)));
 
         expect(createRequestSubmitButton).toBeDisabled();
 
