@@ -310,7 +310,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             fireEvent(joinButton, 'click')
         })
 
-        // After signup, user app should reroute to the userHomePage
+        // After signup, app should reroute to the userHomePage
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
         })
@@ -554,7 +554,7 @@ describe('Password Scenarios', () => {
         clearAllServices()
     })
 
-    async function validateAfterResetLinkOpened(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    async function completeUpdatePasswordForm(redirectRoute: string, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
         // Ensure that the app is on the updatePassword screen with the proper route
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword);
@@ -591,12 +591,12 @@ describe('Password Scenarios', () => {
         // (after an intentional reroute delay for UX purposes)
         await new Promise(r => setTimeout(r, 1000));
         await waitFor(() => {
-            expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
+            expect(navigationStore().currentRoute).toEqual(redirectRoute);
         })
     }
 
     test('Reset password deferred link boot', async () => {
-        console.log('Reset password run...')
+        console.log('Reset password - deferred link boot')
         // Mock deferred boot boots up the app and provides a function to call
         // later when we want to reopen the app via the reset password link.
         const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await mockDeferredLinkBoot();
@@ -684,10 +684,11 @@ describe('Password Scenarios', () => {
         });
 
         // Validate app behavior once we've re-opened the app from this link
-        await validateAfterResetLinkOpened(getByTestId);
+        await completeUpdatePasswordForm(routerNames.userHomePage, getByTestId);
     })
 
     test('Reset password link boot', async () => {
+        console.log('Reset password - link boot')
         // Boot the app from a password reset link
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
         const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
@@ -697,7 +698,48 @@ describe('Password Scenarios', () => {
         });
 
         // Validate app behavior once we've booted the app from this link
-        await validateAfterResetLinkOpened(getByTestId);
+        await completeUpdatePasswordForm(routerNames.userHomePage, getByTestId);
+    })
+
+    test('Change password via settings', async () => {
+        console.log('Change password - settings')
+        const {
+            getByTestId,
+            toJSON
+        } = await mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open header menu
+        const openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openHeaderButton, 'click'));
+
+
+        const settingsButton = await waitFor(() => getByTestId(TestIds.header.submenu.settings));
+        fireEvent(settingsButton, 'press');
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.settings));
+
+        // TODO: Why doesn't TestIds.settings.form appear?
+        // console.log(JSON.stringify(toJSON()));
+        // await waitFor(() => getByTestId(TestIds.settings.form));
+        let updatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
+        await act(async() => fireEvent(updatePasswordInput, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
+
+        // Cancel update password
+        const cancelText = await waitFor(() => getByTestId(TestIds.updatePassword.cancel));
+        await act(async() => fireEvent(cancelText, 'press'));
+
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.settings));
+
+        updatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
+        await act(async() => fireEvent(updatePasswordInput, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
+
+        // Fill out new password info and submit form
+        await completeUpdatePasswordForm(routerNames.settings, getByTestId);
     })
 })
 
