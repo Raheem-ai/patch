@@ -65,7 +65,7 @@ const Settings = ({ navigation, route }: Props) => {
                 },
                 label: ({ expand }) => {
                     return <DescriptiveNavigationLabel 
-                        testID={TestIds.settings.inputs.updatePassword}
+                        testID={TestIds.settings.labels.updatePassword}
                         expand={ expand } 
                         name={STRINGS.PAGE_TITLES.updatePassword} />
                 },

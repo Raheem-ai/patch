@@ -31,6 +31,12 @@ const TestIds = {
             team: 'headerNavigationTeam',
             componentLib: 'headerNavigationComponentLib'
         },
+        submenu: {
+            profile: 'header::profile',
+            settings: 'header::settings',
+            helpAndInfo: 'header::helpAndInfo',
+            signOut: 'header::signOut'
+        },
         actions: {
             createRequest: 'headerActionsCreateRequest'
         }
@@ -205,6 +211,9 @@ const TestIds = {
             requestPrefix: 'settingsForm::requestPrefix',
             createRequestChats: 'settingsForm::createRequestChats',
             updatePassword: 'settingsForm::updatePassword'
+        },
+        labels: {
+            updatePassword: 'settingsForm::labels::updatePassword'
         },
         navInputs: {
             manageRoles: 'settingsForm::manageRoles',
