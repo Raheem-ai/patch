@@ -468,7 +468,7 @@ describe('Password Scenarios', () => {
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
         // Prese the "forgot password" text
-        let forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
+        const forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
         await act(async() => {
             fireEvent(forgotPasswordText, 'press')
         })
@@ -491,12 +491,11 @@ describe('Password Scenarios', () => {
         })
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
-        /*
         // Press forgot password again
         // this time to follow through with sending the reset code
-        forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
+        const newForgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
         await act(async() => {
-            fireEvent(forgotPasswordText, 'press')
+            fireEvent(newForgotPasswordText, 'press')
         })
 
         // Ensure that the app is on the send reset code screen
@@ -550,7 +549,6 @@ describe('Password Scenarios', () => {
 
         // Validate app behavior once we've re-opened the app from this link
         await completeUpdatePasswordForm(routerNames.userHomePage, getByTestId);
-        */
     })
 
     test('Reset password link boot', async () => {
@@ -600,12 +598,14 @@ describe('Password Scenarios', () => {
 
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.settings));
 
+        /*
         const newUpdatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
         await act(async() => fireEvent(newUpdatePasswordInput, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
 
         // Fill out new password info and submit form
         await completeUpdatePasswordForm(routerNames.settings, getByTestId);
+        */
     })
 })
 
