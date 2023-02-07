@@ -554,60 +554,58 @@ describe('Password Scenarios', () => {
         clearAllServices()
     })
 
-    async function validateAfterResetLink(linkParams: LinkParams[LinkExperience.ResetPassword],
-                                            signInWithCodeMock: jest.SpyInstance<Promise<AuthTokens>, [code: string]>,
-                                            getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
-        await waitFor(() => {
-            expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
-        });
-
-        // Ensure that the app is on the update password screen
+    async function validateAfterResetLinkOpened(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+        // Ensure that the app is on the updatePassword screen with the proper route
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword);
         })
 
         await waitFor(() => getByTestId(TestIds.updatePassword.screen));
-        const passwordInput = await waitFor(() => getByTestId(TestIds.updatePassword.password));
 
+        // Type in new password
+        const passwordInput = await waitFor(() => getByTestId(TestIds.updatePassword.password));
         const mockedUser = MockUsers()[2];
         await act(async() => {
             fireEvent.changeText(passwordInput, mockedUser.password);
         })
 
+        // Mock the updatePassword API call to do nothing but return without error 
         jest.spyOn(APIClient.prototype, 'updatePassword').mockImplementationOnce((ctx: TokenContext, password: string, resetCode?: string) => {
-            // do nothing for the sake of the test
             return Promise.resolve();
         });
 
+        // Submit the form to update password, triggering the mock above
         const updatePasswordButton = await waitFor(() => getByTestId(TestIds.updatePassword.submit))
         await act(async() => {
             fireEvent(updatePasswordButton, 'press');
         });
 
+        // If all is successful, the app should display a toast alert confirming the update
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.passwordUpdated);
-        // Hide toast
         await act(async() => {
             fireEvent(toastTextComponent, 'press')
         })
 
-        // Ensure that the app is on the user home page
+        // Ensure that the app properly redirects to the user home page
+        // (after an intentional reroute delay for UX purposes)
         await new Promise(r => setTimeout(r, 1000));
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage);
         })
     }
 
-    // TODO: Test from brand new boot as well (e.g. not deferred mockboot)
     test('Reset password deferred link boot', async () => {
         console.log('Reset password run...')
+        // Mock deferred boot boots up the app and provides a function to call
+        // later when we want to reopen the app via the reset password link.
         const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await mockDeferredLinkBoot();
 
         // Ensure that the app is on the sign in screen
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
+        // Prese the "forgot password" text
         const forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
-
         await act(async() => {
             fireEvent(forgotPasswordText, 'press')
         })
@@ -624,16 +622,14 @@ describe('Password Scenarios', () => {
             fireEvent(cancelInput, 'press')
         })
 
-        // Ensure that the app is on the sign in screen
+        // Ensure that the app is on the app landing screen
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.landing);
         })
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
-        // TODO: Need to reassign forgotPassword component?
-        // forgotPasswordText = await waitFor(() => getByTestId(TestIds.signIn.forgot));
-
         // Press forgot password again
+        // this time to follow through with sending the reset code
         await act(async() => {
             fireEvent(forgotPasswordText, 'press')
         })
@@ -643,69 +639,65 @@ describe('Password Scenarios', () => {
             expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode);
         })
         await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
-        const emailInput = await waitFor(() => getByTestId(TestIds.sendResetCode.email));
 
+        // Fill out the form with the mocked user data
         const mockedUser = MockUsers()[2];
+        const emailInput = await waitFor(() => getByTestId(TestIds.sendResetCode.email));
         await act(async() => {
             fireEvent.changeText(emailInput, mockedUser.email)
         })
 
+        // Mock the sendResetCode API to do nothing, but return without error for the sake of the test.
         jest.spyOn(APIClient.prototype, 'sendResetCode').mockImplementationOnce((email: string, baseUrl: string) => {
-            // do nothing for the sake of the test
             return Promise.resolve();
         });
 
-        // Press button to send reset password link
+        // Press button to send reset password link, triggering the mock above.
         const sendLinkButton = await waitFor(() => getByTestId(TestIds.sendResetCode.sendLink))
         await act(async() => {
             fireEvent(sendLinkButton, 'press');
         });
 
-        // Sleep for 1 second as SendResetCode form delays
-        // before redirecting to ease the transition.
+        // Sleep for one second to wait for the app to redirect to the landing page.
         await new Promise(r => setTimeout(r, 1000));
         await waitFor(() => {
             expect(navigationStore().currentRoute).toEqual(routerNames.landing);
         })
-
         await waitFor(() => getByTestId(TestIds.signIn.screen));
 
-        let toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        // If all was successful, the app should display a toast alert that the reset password was sent.
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.resetPasswordCodeSent);
-        // Hide toast
         await act(async() => {
             fireEvent(toastTextComponent, 'press')
         })
 
+        // Simulate re-opening the app via a reset password link.
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
-        const linkParams: LinkParams[LinkExperience.ResetPassword] = {
-            code: 'xxxx-code-xxxx'
-        };
-
+        const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
         const branchEvent = linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
         await act(async() => {
             respondToLinkHandle(branchEvent);
         })
+        await waitFor(() => {
+            expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
+        });
 
-        await validateAfterResetLink(linkParams, signInWithCodeMock, getByTestId);
+        // Validate app behavior once we've re-opened the app from this link
+        await validateAfterResetLinkOpened(getByTestId);
     })
 
     test('Reset password link boot', async () => {
-        // BOOT FROM RESET LINK
+        // Boot the app from a password reset link
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
+        const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
+        const { getByTestId, ...rest } = await mockLinkBoot(LinkExperience.ResetPassword, linkParams);
+        await waitFor(() => {
+            expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
+        });
 
-        const linkParams: LinkParams[LinkExperience.ResetPassword] = {
-            code: 'xxxx-code-xxxx'
-        };
-
-        const {
-            getByTestId,
-            getMeMock,
-            branchSubscribeMock,
-            toJSON,
-            ...rest
-        } = await mockLinkBoot(LinkExperience.ResetPassword, linkParams);
-        await validateAfterResetLink(linkParams, signInWithCodeMock, getByTestId);
+        // Validate app behavior once we've booted the app from this link
+        await validateAfterResetLinkOpened(getByTestId);
     })
 })
 
