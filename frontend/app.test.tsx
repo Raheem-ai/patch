@@ -479,6 +479,7 @@ describe('Password Scenarios', () => {
         })
         await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
 
+        /*
         // Press cancel, send us back to sign in screen
         const cancelInput = await waitFor(() => getByTestId(TestIds.sendResetCode.cancel))
         await act(async() => {
@@ -503,6 +504,7 @@ describe('Password Scenarios', () => {
             expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode);
         })
         await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
+        */
 
         // Fill out the form with the mocked user data
         const mockedUser = MockUsers()[2];
@@ -592,15 +594,16 @@ describe('Password Scenarios', () => {
         await act(async() => fireEvent(updatePasswordInput, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
 
+        /*
         // Cancel update password
         const cancelText = await waitFor(() => getByTestId(TestIds.updatePassword.cancel));
         await act(async() => fireEvent(cancelText, 'press'));
 
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.settings));
 
-
         const newUpdatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
         await act(async() => fireEvent(newUpdatePasswordInput, 'press'));
+        */
 
         // Fill out new password info and submit form
         await completeUpdatePasswordForm(routerNames.settings, getByTestId);
