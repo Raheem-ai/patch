@@ -6,7 +6,7 @@ import { Colors, ICONS } from "../types";
 import STRINGS from "../../../common/strings";
 
 type Props = {
-    testID?: string
+    testID: string
     value: string
     label?: string
     password?: boolean
