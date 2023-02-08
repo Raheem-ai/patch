@@ -41,7 +41,7 @@ import { TokenContext } from './api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
-import * as test_utils from './tests/test_utils'
+import * as testUtils from './tests/utils/testUtils'
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -90,7 +90,7 @@ describe('Boot Scenarios', () => {
     });
 
     test('Hides the Splash Screen and shows the landing page after stores load', async () => {
-        const { getByTestId, toJSON } = await test_utils.mockBoot();
+        const { getByTestId, toJSON } = await testUtils.mockBoot();
 
         expect(hideAsync).toHaveBeenCalled();
 
@@ -126,7 +126,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await test_utils.mockLinkBoot(exp, linkParams);
+        } = await testUtils.mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -258,7 +258,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await test_utils.mockLinkBoot(exp, linkParams);
+        } = await testUtils.mockLinkBoot(exp, linkParams);
 
         // Ensure that the app is on the sign in page
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -294,7 +294,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await test_utils.mockLinkBoot(exp, linkParams);
+        } = await testUtils.mockLinkBoot(exp, linkParams);
 
         // After boot from link, app should navigate to signUpThroughOrg page
         await waitFor(() => {
@@ -395,7 +395,7 @@ describe('Join or Sign Up from Invitation Scenarios', () => {
             branchSubscribeMock,
             toJSON,
             ...rest
-        } = await test_utils.mockLinkBoot('' as LinkExperience, linkParams);
+        } = await testUtils.mockLinkBoot('' as LinkExperience, linkParams);
 
         // Ensure that the app is on the sign in page
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -462,7 +462,7 @@ describe('Password Scenarios', () => {
         console.log('Reset password - deferred link boot')
         // Mock deferred boot boots up the app and provides a function to call
         // later when we want to reopen the app via the reset password link.
-        const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await test_utils.mockDeferredLinkBoot();
+        const { getByTestId, respondToLinkHandle, toJSON, ...rest } = await testUtils.mockDeferredLinkBoot();
 
         // Ensure that the app is on the sign in screen
         await waitFor(() => getByTestId(TestIds.signIn.screen));
@@ -501,7 +501,7 @@ describe('Password Scenarios', () => {
 
         // Ensure that the app is on the send reset code screen
         await waitFor(() => {
-            expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode);
+            expect(navigationStore().currentRoute).toEqual(routerNames.sendResetCode); // FAILING TEST
         })
         await waitFor(() => getByTestId(TestIds.sendResetCode.screen));
         */
@@ -541,7 +541,7 @@ describe('Password Scenarios', () => {
         // Simulate re-opening the app via a reset password link.
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
         const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
-        const branchEvent = test_utils.linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
+        const branchEvent = testUtils.linkExperienceToBranchEvent(LinkExperience.ResetPassword, linkParams);
         await act(async() => {
             respondToLinkHandle(branchEvent);
         })
@@ -558,7 +558,7 @@ describe('Password Scenarios', () => {
         // Boot the app from a password reset link
         const signInWithCodeMock = jest.spyOn(APIClient.prototype, 'signInWithCode').mockResolvedValue(MockAuthTokens());
         const linkParams: LinkParams[LinkExperience.ResetPassword] = { code: 'xxxx-code-xxxx' };
-        const { getByTestId, ...rest } = await test_utils.mockLinkBoot(LinkExperience.ResetPassword, linkParams);
+        const { getByTestId, ...rest } = await testUtils.mockLinkBoot(LinkExperience.ResetPassword, linkParams);
         await waitFor(() => {
             expect(signInWithCodeMock).toHaveBeenCalledWith(linkParams.code);
         });
@@ -572,7 +572,7 @@ describe('Password Scenarios', () => {
         const {
             getByTestId,
             toJSON
-        } = await test_utils.mockSignIn()
+        } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
         await waitFor(() => getByTestId(TestIds.home.screen));
@@ -590,11 +590,12 @@ describe('Password Scenarios', () => {
         // TODO: Why doesn't TestIds.settings.form appear?
         // console.log(JSON.stringify(toJSON()));
         // await waitFor(() => getByTestId(TestIds.settings.form));
-        let updatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
+        const updatePasswordInput = await waitFor(() => getByTestId(TestIds.settings.inputs.updatePassword));
         await act(async() => fireEvent(updatePasswordInput, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.updatePassword));
 
         /*
+        // BREAKS FIRST ASSERTION IN completeUpdatePasswordForm
         // Cancel update password
         const cancelText = await waitFor(() => getByTestId(TestIds.updatePassword.cancel));
         await act(async() => fireEvent(cancelText, 'press'));
@@ -628,7 +629,7 @@ describe('Signed in Scenarios', () => {
             getRequestsMock,
             getByTestId,
             mockedUser
-        } = await test_utils.mockSignIn()
+        } = await testUtils.mockSignIn()
 
         await waitFor(() => {
             expect(signInMock).toHaveBeenCalledWith({
@@ -691,7 +692,7 @@ describe('Signed in Scenarios', () => {
             toJSON,
             getOrgMetadataMock,
             signInMock
-        } = await test_utils.mockSignIn()
+        } = await testUtils.mockSignIn()
 
         await waitFor(() => {
             expect(signInMock).toHaveBeenCalledWith({
