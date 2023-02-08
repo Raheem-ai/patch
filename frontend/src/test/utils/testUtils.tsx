@@ -1,16 +1,16 @@
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
-import App from '../../App';
-import {APIClient} from '../../src/api'
+import App from '../../../App';
+import {APIClient} from '../../../src/api'
 import { AppState } from 'react-native';
-import boot from '../../src/boot';
+import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { LinkExperience, LinkParams } from '../../models';
-import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../src/test/mocks';
-import TestIds from '../../src/test/ids';
+import { LinkExperience, LinkParams } from '../../../models';
+import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
+import TestIds from '../../../src/test/ids';
 
-const originalBoot = jest.requireActual('../../src/boot').default;
+const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
 const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null)
 

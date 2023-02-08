@@ -41,7 +41,7 @@ import { TokenContext } from './api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
-import * as testUtils from './tests/utils/testUtils'
+import * as testUtils from './src/test/utils/testUtils'
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
