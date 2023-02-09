@@ -4,7 +4,8 @@ import 'react-native-get-random-values';
 import "reflect-metadata"
 
 import React, { useState } from 'react';
-import { StyleSheet, StatusBar } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import "react-native-gesture-handler";
 import { Provider } from 'inversify-react';
@@ -112,8 +113,20 @@ function App() {
         return <Header {...props} />
     }
 
+    const statusBar = () => {
+        return (
+          <StatusBar
+            animated={true}
+            style={'light'}
+            // just for android so it's behavior is *more* similiar to ios
+            translucent={true} />
+        )
+    }
+
     if (isLoading) {
-        return null
+        // not a real element but it configures the status bar while the 
+        // splash screen is up
+        return statusBar()
     }
 
     // safe to get here because isLoading doesn't get set until after store binding/init
@@ -135,11 +148,7 @@ function App() {
                 >
                 {/* <GlobalErrorBoundary> */}
                   <GestureHandlerRootView style={{ flex: 1 }}>
-                    <StatusBar
-                        animated={true}
-                        barStyle={'light-content'}
-                        // just for android so it's behavior is *more* similiar to ios
-                        translucent={true} />
+                    { statusBar() }
                     <Stack.Navigator screenOptions={{ header, headerMode: 'float', gestureEnabled: false }} initialRouteName={initialRoute}>
                         {/* <Stack.Screen name={routerNames.landing} component={LandingPage} /> */}
                         <Stack.Screen name={routerNames.landing} component={SignInForm} />
