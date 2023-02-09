@@ -10,6 +10,7 @@ import STRINGS from '../../../common/strings';
 import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 import { isPasswordValid } from '../../../common/utils/validationUtils';
+import TestIds from '../test/ids';
 
 export default function UpdatePasswordForm() {
     const [password, setPassword] = useState('');
@@ -25,7 +26,6 @@ export default function UpdatePasswordForm() {
       }, [password]);
 
     const updatePassword = async () => {
-
         if (!passwordIsValid) {
             alertStore().toastError(errorMessage, true);
             return
@@ -64,7 +64,7 @@ export default function UpdatePasswordForm() {
         // Setting the background color here to hide the fact that an extra space is added
         // but the error message is not visible so need to fix KeyboardAwareArea: 
         // https://linear.app/raheem/issue/RAH-632/keyboardavoidingview-not-working-on-updatepassword
-        <View style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>
+        <View testID={TestIds.updatePassword.screen} style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>
             <KeyboardAwareArea>
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
@@ -73,6 +73,7 @@ export default function UpdatePasswordForm() {
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
+                                testID={TestIds.updatePassword.password}
                                 password={true}
                                 style={styles.input}
                                 label={STRINGS.INTERFACE.password}
@@ -82,8 +83,8 @@ export default function UpdatePasswordForm() {
                                 onSubmitEditing={updatePassword}/>
                         </View>
                         <View style={styles.bottomContainer}>
-                            <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                            <Text onPress={cancel} style={styles.cancelLink}>Cancel</Text>
+                            <Button testID={TestIds.updatePassword.submit} uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
+                            <Text testID={TestIds.updatePassword.cancel} onPress={cancel} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>
                 </Pressable>

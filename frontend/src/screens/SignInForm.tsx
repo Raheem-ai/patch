@@ -2,12 +2,11 @@ import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, 
 import { Button, TextInput } from 'react-native-paper';
 import * as React from 'react';
 import { routerNames, SignInNavigationProp, Colors, ICONS } from '../types';
-import { alertStore, notificationStore, userStore } from '../stores/interfaces';
+import { alertStore, userStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
 import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
-import { block } from 'react-native-reanimated';
 import TestIds from '../test/ids';
 
 type Props = {
@@ -85,7 +84,7 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         >{'Sign in'}</Button>
-                        <Text style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
+                        <Text testID={TestIds.signIn.forgot} style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
                         {/* <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text> */}
                     </View>
                 </ScrollView>

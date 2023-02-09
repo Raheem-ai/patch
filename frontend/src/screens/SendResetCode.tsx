@@ -12,6 +12,7 @@ import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 
 import { isEmailValid } from '../../../common/utils/validationUtils';
 import { linkBaseUrl } from '../config';
+import TestIds from '../test/ids';
 
 export default function ForgotPasswordForm() {
     const [email, setEmail] = useState('');
@@ -27,7 +28,6 @@ export default function ForgotPasswordForm() {
       }, [email]);
 
     const sendCode = async () => {
-
         if (!emailIsValid) {
             alertStore().toastError(STRINGS.ACCOUNT.emailProbablyNotRight, true);
             return
@@ -38,7 +38,6 @@ export default function ForgotPasswordForm() {
             alertStore().toastError(resolveErrorMessage(e), true);
             return
         }
-        
         alertStore().toastSuccess(STRINGS.ACCOUNT.resetPasswordCodeSent, true);
         setEmail('');
         setTimeout(() => navigationRef.current.goBack(), 1000); // delay to ease transition
@@ -49,7 +48,7 @@ export default function ForgotPasswordForm() {
         // Setting the background color here to hide the fact that an extra space is added (if there's an activeRequest)
         // but the error message is not visible so need to fix KeyboardAwareArea: 
         // https://linear.app/raheem/issue/RAH-632/keyboardavoidingview-not-working-on-updatepassword
-        <View style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>
+        <View testID={TestIds.sendResetCode.screen} style={{height: '100%', backgroundColor: Colors.backgrounds.signIn}}>
             <KeyboardAwareArea>
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
@@ -63,6 +62,7 @@ export default function ForgotPasswordForm() {
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
+                                testID={TestIds.sendResetCode.email}
                                 style={styles.input}
                                 label={STRINGS.INTERFACE.email}
                                 value={email}
@@ -72,8 +72,8 @@ export default function ForgotPasswordForm() {
                                 onSubmitEditing={sendCode}/>
                         </View>
                         <View style={styles.bottomContainer}>
-                            <Button uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={sendCode}>{STRINGS.ACCOUNT.forgotPasswordButton}</Button>
-                            <Text onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
+                            <Button testID={TestIds.sendResetCode.sendLink} uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={sendCode}>{STRINGS.ACCOUNT.forgotPasswordButton}</Button>
+                            <Text testID={TestIds.sendResetCode.cancel} onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
                         </View>
                     </ScrollView>
                 </Pressable>

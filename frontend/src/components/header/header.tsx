@@ -35,8 +35,13 @@ const Header = observer((props: Props) => {
     const closeHeader = () => headerStore().close()
 
     const headerBar = () => {
+
+        // status bar is translucent and we draw under it so we need
+        // to color the background behind the status bar
         if (config.unauthenticated) {
-            return null;
+            return (
+                <View style={styles.unauthenticatedStatusBar}></View>
+            )
         }
 
         const leftActions = config.leftActions && config.leftActions.length
@@ -228,7 +233,7 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={styles.subMenuOptions}>
-                {SubMenuOptions.map(opt => <Text key={opt.name} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {SubMenuOptions.map(opt => <Text key={opt.name} testID={opt.testId} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
             </View>
         )
     }
@@ -269,6 +274,10 @@ export default Header;
 
 const styles = StyleSheet.create({
     // CLOSED
+    unauthenticatedStatusBar: {
+        height: Constants.statusBarHeight,
+        backgroundColor: Colors.backgrounds.menu
+    },
     container: {
         minHeight: HeaderHeight,
         maxHeight: HeaderHeight + HeaderAnnouncementHeight,

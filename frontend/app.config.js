@@ -29,7 +29,7 @@ let apiHost = ''
  */
 const VERSION = `1.0.0`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
-let ANDROID_VERSION_CODE = 7
+let ANDROID_VERSION_CODE = 10
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
@@ -212,11 +212,11 @@ const config = {
 	  "owner": "raheem-ai",
 	  "version": VERSION,
 	  "orientation": "portrait",
-	  "icon": "./assets/icon.png",
+	  "icon": "./assets/patch_default_logo.png",
 	  "scheme": scheme(),
 	  "splash": {
 		"image": "./assets/splash.png",
-		"resizeMode": "contain",
+		"resizeMode": "cover",
 		"backgroundColor": "#ffffff"
 	  },
 	  "plugins": [
@@ -279,11 +279,12 @@ const config = {
 		}
 	  },
 	  "android": {
+		"icon": "./assets/patch_default_logo.png",
 		"googleServicesFile": servicesJsonPath,
 		"versionCode": ANDROID_VERSION_CODE,
 		"adaptiveIcon": {
-		  "foregroundImage": "./assets/adaptive-icon.png",
-		  "backgroundColor": "#FFFFFF"
+		  "foregroundImage": "./assets/patch_adaptive_logo_foreground.png",
+		  "backgroundImage": "./assets/patch_adaptive_logo_background.png"
 		},
 		"package": appId(),
 		"permissions": [],
@@ -292,6 +293,10 @@ const config = {
 			"apiKey": GOOGLE_MAPS_KEY
 		  }
 		}
+	  },
+	  "androidStatusBar": {
+		"barStyle": "light-content",
+		"translucent": true
 	  },
 	  "web": {
 		"favicon": "./assets/favicon.png"

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">72.72% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>8/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">30% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>3/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">72.72% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>8/11</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -139,24 +139,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -164,8 +157,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -189,24 +189,24 @@ type DescriptiveNavigationLabelProps = SectionNavigationLabelViewProps &amp; {
     inlineDescription?: boolean
 }
 &nbsp;
-const DescriptiveNavigationLabel = <span class="fstat-no" title="function not covered" >({ </span>
+const DescriptiveNavigationLabel = ({ 
     testID,
     expand,
     name,
     description,
     inlineDescription
 }: DescriptiveNavigationLabelProps) =&gt; {
-    const descriptionFontSize = <span class="cstat-no" title="statement not covered" >description &amp;&amp; description.length &lt; 30</span>
-        ? 16
+    const descriptionFontSize = description &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >description.length &lt; 30</span>
+        ? <span class="branch-0 cbranch-no" title="branch not covered" >16</span>
         : 14;
 &nbsp;
-    const text = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-        const labelText = <span class="cstat-no" title="statement not covered" >&lt;Text style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}&gt;{name}&lt;/Text&gt;;</span>
-        const descriptionText = <span class="cstat-no" title="statement not covered" >&lt;Text style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}&gt;{description}&lt;/Text&gt;;</span>
+    const text = () =&gt; {
+        const labelText = &lt;Text style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}&gt;{name}&lt;/Text&gt;;
+        const descriptionText = &lt;Text style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}&gt;{description}&lt;/Text&gt;;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        if (!description) {</span>
-<span class="cstat-no" title="statement not covered" >            return labelText</span>
-        } else <span class="cstat-no" title="statement not covered" >if (description &amp;&amp; inlineDescription) {</span>
+        if (!description) {
+            return labelText
+        } else <span class="cstat-no" title="statement not covered" ><span class="missing-if-branch" title="else path not taken" >E</span>if (description &amp;&amp; inlineDescription) {</span>
 <span class="cstat-no" title="statement not covered" >            return (</span>
                 &lt;Text&gt;
                     {labelText}
@@ -222,7 +222,7 @@ const DescriptiveNavigationLabel = <span class="fstat-no" title="function not co
         }
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;Pressable 
             sentry-label={testID}
             testID={testID}
@@ -241,7 +241,7 @@ export default DescriptiveNavigationLabel;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-01T19:45:07.992Z
+                at 2023-02-08T22:17:15.583Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>

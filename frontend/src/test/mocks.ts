@@ -87,6 +87,18 @@ export function MockUsers(): User[] {
             pronouns: 'they/them',
             bio: '',
             acceptedTOSVersion: ''
+        },
+        {
+            id: '__newuser',
+            name: 'New User',
+            email: 'newuser@test.com',
+            password: 'newpa$$word1',
+            phone: '777-5556',
+            organizations: {},
+            displayColor: '',
+            pronouns: 'they/them',
+            bio: '',
+            acceptedTOSVersion: ''
         }
     ]
 }
