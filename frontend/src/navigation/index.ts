@@ -76,11 +76,13 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
 
 export type SubMenuOption = ({ 
     name: string, 
+    testId: string,
     onPress: () => void, 
     routeTo?: undefined, 
     disabled?: undefined
 } | {  
-    name:string, 
+    name:string,
+    testId: string,
     disabled?: boolean,
     routeTo: keyof typeof routerNames, 
     onPress?: undefined 
@@ -89,6 +91,7 @@ export type SubMenuOption = ({
 export const SubMenuOptions: SubMenuOption[] = [    
     {
         name: 'Profile',
+        testId: TestIds.header.submenu.profile,
         onPress: () => {
             userStore().pushCurrentUser(userStore().user);
             navigateTo(routerNames.userDetails);
@@ -97,13 +100,16 @@ export const SubMenuOptions: SubMenuOption[] = [
     {
         name: 'Settings',
         routeTo: 'settings',
+        testId: TestIds.header.submenu.settings
     }, 
     {
         name: 'Help & Information',
         routeTo: 'helpAndInfo',
+        testId: TestIds.header.submenu.helpAndInfo
     }, 
     {
         name: 'Sign out',
+        testId: TestIds.header.submenu.signOut,
         onPress: () => {
             userStore().signOut();
         }
