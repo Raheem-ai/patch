@@ -7484,7 +7484,7 @@ __metadata:
     react-native-wheel-picker-expo: ^0.4.2
     react-router-dom: ^5.2.0
     react-string-replace: ^1.1.0
-    realm: ^11.4.0
+    realm: 11.3.1
     reflect-metadata: ^0.1.13
     sentry-expo: ~6.0.0
     socket.io-client: ^4.4.0
@@ -13047,9 +13047,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"realm@npm:^11.4.0":
-  version: 11.4.0
-  resolution: "realm@npm:11.4.0"
+"realm@npm:11.3.1":
+  version: 11.3.1
+  resolution: "realm@npm:11.3.1"
   dependencies:
     "@realm/common": ^0.1.4
     "@realm/network-transport": ^0.7.2
@@ -13076,7 +13076,7 @@ __metadata:
   peerDependenciesMeta:
     react-native:
       optional: true
-  checksum: 3eb6c284851ff412e4cd5d38078667b1868de868548479250cd70ca2c31123252b03bed52174d8fd5588218b851243391f9d21537648de6a0a4cd09e3a547eea
+  checksum: ffb393ea79b476a7875699c0bdbeda1d5c68966feed7f0331211851eaf99fb0d8d685d8730d7717a2438f03971356579649bd40f50537f43c1f9c79903ceca55
   languageName: node
   linkType: hard
 
