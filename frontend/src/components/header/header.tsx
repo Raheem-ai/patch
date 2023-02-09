@@ -228,7 +228,7 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={styles.subMenuOptions}>
-                {SubMenuOptions.map(opt => <Text key={opt.name} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {SubMenuOptions.map(opt => <Text key={opt.name} testID={opt.testId} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
             </View>
         )
     }

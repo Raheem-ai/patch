@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/9</span>
+                <span class='fraction'>6/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>9/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/9</span>
+                <span class='fraction'>6/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -131,7 +131,10 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -154,23 +157,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,6 +174,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -207,6 +211,7 @@ import { Colors, ICONS } from "../types";
 import STRINGS from "../../../common/strings";
 &nbsp;
 type Props = {
+    testID: string
     value: string
     label?: string
     password?: boolean
@@ -220,21 +225,22 @@ type Props = {
 &nbsp;
 export type KeyboardType = 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad' | 'decimal-pad';
 &nbsp;
-const ValidatableTextInput = <span class="fstat-no" title="function not covered" >( </span>props: Props) =&gt; {
+const ValidatableTextInput = ( props: Props) =&gt; {
 &nbsp;
-    const [secureTextEntry, setSecureTextEntry] = <span class="cstat-no" title="statement not covered" >React.useState(!!props.password);</span>
+    const [secureTextEntry, setSecureTextEntry] = React.useState(!!props.password);
 &nbsp;
-    const isPassword = <span class="cstat-no" title="statement not covered" >!!props?.password ? props?.password : false;</span>
+    const isPassword = !!props?.password ? props?.password : false;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return(</span>
+    return(
         &lt;View&gt;
             &lt;PaperTextInput
+                testID={props.testID ? props.testID : <span class="branch-1 cbranch-no" title="branch not covered" >null}</span>
                 mode="flat"
                 secureTextEntry={secureTextEntry}
                 right={!isPassword
                     ? null
                     : &lt;PaperTextInput.Icon
-                        name={secureTextEntry ? ICONS.showPassword : ICONS.hidePassword}
+                        name={secureTextEntry ? ICONS.showPassword : <span class="branch-1 cbranch-no" title="branch not covered" >ICONS.hidePassword}</span>
                         forceTextInputFocus={false}
                         onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; {
 <span class="cstat-no" title="statement not covered" >                            setSecureTextEntry(!secureTextEntry);</span>
@@ -242,11 +248,11 @@ const ValidatableTextInput = <span class="fstat-no" title="function not covered"
                         }}
                         color={Colors.icons.dark}/&gt;
                 }
-                style={[styles.input, props.style ? props.style : null]}
+                style={[styles.input, props.style ? props.style : <span class="branch-1 cbranch-no" title="branch not covered" >null]</span>}
                 label={props.label}
                 value={props.value}
                 keyboardType={props.keyboardType}
-                onChangeText={<span class="fstat-no" title="function not covered" >(s</span>: string) =&gt; <span class="cstat-no" title="statement not covered" >props.onChangeText?.(s)}</span>
+                onChangeText={(s: string) =&gt; props.onChangeText?.(s)}
                 onSubmitEditing={<span class="fstat-no" title="function not covered" >(e</span>: NativeSyntheticEvent&lt;TextInputSubmitEditingEventData&gt;) =&gt; <span class="cstat-no" title="statement not covered" >props.onSubmitEditing?.(e)}</span>
             /&gt;
             {props.errorText?.length == 0 ? null : &lt;Text style={styles.errorMessage}&gt;{props.errorText}&lt;/Text&gt;}
@@ -274,7 +280,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-01T19:45:07.992Z
+                at 2023-02-08T22:17:15.583Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
