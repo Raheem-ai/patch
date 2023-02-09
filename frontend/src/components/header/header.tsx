@@ -35,8 +35,13 @@ const Header = observer((props: Props) => {
     const closeHeader = () => headerStore().close()
 
     const headerBar = () => {
+
+        // status bar is translucent and we draw under it so we need
+        // to color the background behind the status bar
         if (config.unauthenticated) {
-            return null;
+            return (
+                <View style={styles.unauthenticatedStatusBar}></View>
+            )
         }
 
         const leftActions = config.leftActions && config.leftActions.length
@@ -269,6 +274,10 @@ export default Header;
 
 const styles = StyleSheet.create({
     // CLOSED
+    unauthenticatedStatusBar: {
+        height: Constants.statusBarHeight,
+        backgroundColor: Colors.backgrounds.menu
+    },
     container: {
         minHeight: HeaderHeight,
         maxHeight: HeaderHeight + HeaderAnnouncementHeight,
