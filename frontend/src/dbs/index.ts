@@ -1,10 +1,14 @@
 import { container } from "../meta";
-import { IBaseDB, IOrgUserDB } from "./interfaces";
+import { GlobalUserDB } from "./globalUserDB";
+import { IBaseDB, IGlobalUserDB, IOrgUserDB } from "./interfaces";
 import { getDB } from "./meta";
 import { OrgUserDB } from "./orgUserDB";
 
 const serviceMappings: [{ id: symbol }, new () => any][] = [
-    [ IOrgUserDB, OrgUserDB ],
+    // TODO: currently can't open more than one realm at the same time
+    // might be a paths issue?
+    // [ IOrgUserDB, OrgUserDB ],
+    [ IGlobalUserDB, GlobalUserDB ]
 ];
 
 export function bindDBs() {

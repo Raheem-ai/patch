@@ -1,4 +1,4 @@
-import { when } from "mobx";
+import { runInAction, when } from "mobx";
 import { userStore } from "../stores/interfaces";
 import { getDB } from "./meta";
 import Realm from 'realm';
@@ -11,6 +11,24 @@ export type DBConfiguration = {
 @injectable()
 export abstract class BaseDB  implements IBaseDB {
     realm: Realm = null;
+    /**
+     * TODO: stores (other than userStore) will synchronize on this vs userStore().signedIn for startup
+     * ie:
+     * 
+     * 
+        async init(): Promise<void> {
+            await orgUserDB().init()
+
+            if (orgUserDB().ready) {
+                await this.initAfterSignedIn()
+            } else {
+                when(() => userStore().ready, this.initAfterSignedIn)
+            }
+        }
+     * 
+     * 
+     */
+    ready = false;
     
     abstract onInitialized(): Promise<void>
 
@@ -40,6 +58,12 @@ export abstract class BaseDB  implements IBaseDB {
         const realmUser = await realmApp.logIn(realmCreds)
 
         this.realmConfig.sync.user = realmUser;
+        
+        this.realmConfig.sync.onError = (_session, error) => {
+            (error) => {
+              console.log(error.name, error.message);
+            };
+        }
 
         console.log('opening realm')
         this.realm = await Realm.open(this.realmConfig)
@@ -51,6 +75,8 @@ export abstract class BaseDB  implements IBaseDB {
         })
  
         await this.onInitialized()
+
+        runInAction(() => this.ready = true)
     }
 
     clear(): void {
@@ -68,6 +94,14 @@ export interface IOrgUserDB extends IBaseDB {
 
 }
 
+export interface IGlobalUserDB extends IBaseDB {
+
+}
+
 export namespace IOrgUserDB {
     export const id = Symbol('IOrgUserDB');
+}
+
+export namespace IGlobalUserDB {
+    export const id = Symbol('IGlobalUserDB');
 }
