@@ -47,6 +47,7 @@ export async function createAuthToken(userId: string, etag: string, secret: { ki
     }; 
 
     const token = await new Promise<string>((resolve, reject) => {
+        // TODO: I need to make this secret a priv/pub key pair so that we can expose the pub key on an api
         jwt.sign(metadata, secret.value, opts, function(err, token) {
             if (err) {
                 reject(err)

@@ -386,7 +386,8 @@ export class DBManager {
         // remove the entry in the organization map under the org key
         if (user.organizations && user.organizations[org.id]) {
             //effectively deleting
-            await this.updateUsersOrgConfig(user, org.id, (_) => null)
+            // TODO: test this
+            await this.updateUsersOrgConfig(user, org.id, (_) => undefined)
         } 
 
         // remove the userId from the members array

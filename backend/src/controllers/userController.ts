@@ -233,6 +233,8 @@ export class UsersController implements APIController<
             throw new Unauthorized(STRINGS.ACCOUNT.wrongPassword)
         }
 
+        // TODO: need to broadcast to any clients signed in under this user that they need to sign out
+        // anywhere this etag gets changed on the backend end
         user.auth_etag = uuid.v1();
         await user.save();
 

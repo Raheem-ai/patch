@@ -14,6 +14,8 @@ import { termsOfServiceLink, termsOfServiceVersion } from '../config';
 import { resolveErrorMessage } from '../errors';
 import { termsOfServicePrompt } from './promptUtils';
 import { Linking } from 'react-native';
+import { clearAllDBs } from '../dbs/utils';
+import { realmApp } from '../dbs/constants';
 
 @Store(IUserStore)
 export default class UserStore implements IUserStore {
@@ -22,6 +24,8 @@ export default class UserStore implements IUserStore {
 
     @persistent()
     user!: ClientSideFormat<Me>;
+
+    realmUser: Realm.User;
 
     @persistent() 
     authToken: string;
@@ -56,6 +60,9 @@ export default class UserStore implements IUserStore {
                 // If any of these fail because of a stale refreshToken, api() will handle calling this.onSignOut() 
                 // which will clear all stores and reroute to the correct screen
                 await this.updateOrgUsers([]);
+
+                await this.loginToRealm(this.api.refreshToken)
+
                 await this.getLatestMe();
 
                 this.checkTOS();
@@ -157,9 +164,19 @@ export default class UserStore implements IUserStore {
             await this.updateOrgUsers([], { token, orgId })
         }
 
+        await this.loginToRealm(authTokens.refreshToken)
+
         await this.getLatestMe({ me: user, token })
 
         this.checkTOS()
+    }
+
+    async loginToRealm(refreshToken: string) {
+        // set up realm user before unlocking dbs
+        // TODO: switch back when we have JWKS api setup
+        const realmUser = await realmApp.logIn(Realm.Credentials.anonymous())
+        // const realmUser = await realmApp.logIn(Realm.Credentials.jwt(refreshToken))
+        runInAction(() => this.realmUser = realmUser)
     }
     
     async signIn(email: string, password: string) {
@@ -204,6 +221,10 @@ export default class UserStore implements IUserStore {
         navigateTo(route || routerNames.landing)
         clearAllStores()
         clearAllServices()
+        clearAllDBs()
+
+        // TODO: do we need to wait on this?
+        this.realmUser.logOut()
     }
 
     async inviteUserToOrg(email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
@@ -332,13 +353,14 @@ export default class UserStore implements IUserStore {
 
     async removeMyselfFromOrg() {
         const { user } = await this.api.removeUserFromOrg(this.orgContext(), this.currentUser.id);
-        await this.api.signOut({ token:this.authToken });
+        await this.api.signOut({ token: this.authToken });
 
         await navigationStore().navigateToSync(routerNames.signIn);
 
         setTimeout(() => {
             clearAllStores()
             clearAllServices()
+            clearAllDBs()
         }, 0)
     }
 }

@@ -22,7 +22,7 @@ export const UserOrgConfigSchema = {
     properties: {
         roleIds: 'string[]',
         attributes: `${CategorizedItemSchema.name}[]`,
-        onDuty: 'bool'
+        onDuty: 'bool?'
     }
 }
 

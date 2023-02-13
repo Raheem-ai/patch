@@ -2,6 +2,7 @@ import { injectable } from "inversify";
 import { makePersistable } from 'mobx-persist-store';
 import { container, persistentKey, securelyPersistentKey } from "../meta";
 import PersistentStorage, { persistentPropConfigKey } from "../meta/persistentStorage";
+import { dbNameKey } from "./constants";
 
 // this is gunna change alot...wrapper around realm collections
 
@@ -15,6 +16,8 @@ export function DB({ id }: { id: Symbol }) {
         const oldInit: Function = ctr.prototype.init;
 
         let initPromise: Promise<void>;
+
+        ctr.prototype[dbNameKey] = id.toString()
 
         ctr.prototype.init = async function() {
             // lets us wait on init without having to worry about erroniously

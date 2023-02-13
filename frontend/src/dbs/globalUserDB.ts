@@ -28,17 +28,13 @@ export class GlobalUserDB extends BaseDB implements IGlobalUserDB  {
         console.log(GlobalUserSchema.name, ': ', collection.length)
 
         for (const user of collection) {
-            if (user.email == 'Tevn@test.com'){
+            // if (user.email == 'Tevn@test.com'){
                 console.log(user.name, user.email, user.password)
                 // TODO: users having null organizations (that they were removed from)
                 // keeps us from being able to access them (though we can access other properties fine)
                 // Error: Exception in HostFunction: No object with key '-91012128431916384' in 'class_user_org_config'
-                console.log(user.organizations)
-            }
+                // console.log(user.organizations)
+            // }
         }
-    }
-
-    clear() {
-
     }
 }

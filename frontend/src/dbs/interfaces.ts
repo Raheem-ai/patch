@@ -3,6 +3,7 @@ import { userStore } from "../stores/interfaces";
 import { getDB } from "./meta";
 import Realm from 'realm';
 import { injectable, unmanaged } from "inversify";
+import { dbNameKey, realmApp } from "./constants";
 
 export type DBConfiguration = {
     [key in keyof Realm.ConfigurationWithSync]: key extends 'sync' ? Omit<Realm.FlexibleSyncConfiguration, 'user'> : Realm.ConfigurationWithSync[key]
@@ -40,6 +41,7 @@ export abstract class BaseDB  implements IBaseDB {
     async init(): Promise<void> {
         await userStore().init()
 
+        // we extend it later
         this.realmConfig = this.dbConfig as any;
 
         if (userStore().signedIn) {
@@ -49,38 +51,64 @@ export abstract class BaseDB  implements IBaseDB {
         }
     }
 
-    initAfterSignedIn = async () => {
-        const realmAppId = 'patch-mljxq' //TODO: come from config
-        const realmApp = Realm.App.getApp(realmAppId)
-
-        // const realmCreds = Realm.Credentials.jwt(userStore().authToken)
-        const realmCreds = Realm.Credentials.anonymous()
-        const realmUser = await realmApp.logIn(realmCreds)
-
-        this.realmConfig.sync.user = realmUser;
+    private async resolveConfig() {
+        // set user 
+        this.realmConfig.sync.user = userStore().realmUser;
         
+        // handle syncing errors
         this.realmConfig.sync.onError = (_session, error) => {
-            (error) => {
-              console.log(error.name, error.message);
-            };
+            console.log(error.name);
         }
+
+        this.realmConfig.sync.clientReset = {
+            mode: Realm.ClientResetMode.RecoverUnsyncedChanges,
+            onBefore: (localRealm: Realm) => {
+
+            },
+            onAfter: (localRealm: Realm, remoteRealm: Realm) => {
+
+            },
+            onFallback: (session: Realm.App.Sync.Session, path: string) => {
+                try{
+                    // TODO: test this
+                    this.realm.close()
+                    Realm.deleteFile(this.realmConfig);
+                    Realm.App.Sync.initiateClientReset(realmApp, path)
+                } catch (e) {
+                    console.error(`Error recovering from client reset: `, e)
+                }
+            }
+        }
+
+        // namespace each db
+        this.realmConfig.path = this[dbNameKey]
+    }
+
+    initAfterSignedIn = async () => {
+        await this.resolveConfig()
 
         console.log('opening realm')
         this.realm = await Realm.open(this.realmConfig)
         console.log('realm opened')
 
         when(() => !userStore().signedIn, () => {
-            // cleanup?
             when(() => userStore().signedIn, this.initAfterSignedIn)
         })
  
+        console.log('before onInitialize')
         await this.onInitialized()
+        console.log('after onInitialize')
 
         runInAction(() => this.ready = true)
     }
 
     clear(): void {
-
+        // cleanup?
+        // TODO: signing out and back in is causing client reset even though we are closing each realm before
+        // calling log out...is this out or order?
+        // or maybe i need to have the files namespaced by user id and then delete each file
+        // on logout?
+        this.realm.close()
     }
 }
 
@@ -105,3 +133,8 @@ export namespace IOrgUserDB {
 export namespace IGlobalUserDB {
     export const id = Symbol('IGlobalUserDB');
 }
+
+export const AllDBs = [
+    IOrgUserDB,
+    IGlobalUserDB
+]

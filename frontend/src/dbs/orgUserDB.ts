@@ -30,8 +30,4 @@ export class OrgUserDB extends BaseDB implements IOrgUserDB  {
             console.log(user)
         }
     }
-
-    clear() {
-
-    }
 }
