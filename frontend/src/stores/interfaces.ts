@@ -469,6 +469,8 @@ export namespace IAlertStore {
 }
 
 type PromptAction = {
+    // TODO: Make required?
+    testID?: string,
     label: string,
     onPress: () => void
     confirming?: boolean

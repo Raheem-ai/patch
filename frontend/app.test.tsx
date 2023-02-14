@@ -26,7 +26,7 @@ import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore } from './src/stores/interfaces';
+import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
@@ -38,6 +38,7 @@ import * as commonUtils from '../common/utils';
 import { LinkExperience, LinkParams } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
+import { OrgContext } from './api';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -331,6 +332,7 @@ describe('Signed in Scenarios', () => {
         cleanup()
         clearAllStores()
         clearAllServices()
+        jest.resetAllMocks()
     })
 
     test('Stores fetch initial data after sign in and route to homepage', async () => {
@@ -513,5 +515,87 @@ describe('Signed in Scenarios', () => {
         const requestDetailsNotes = await waitFor(() => getByTestId(TestIds.requestDetails.notes));
 
         expect(requestDetailsNotes).toHaveTextContent(mockRequest.notes)
+    })
+
+    test('Change availability', async () => {
+        console.log('Change availability run')
+        const {
+            getByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open header menu
+        let openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openHeaderButton, 'click'));
+
+        // Mock the API call to update a user's onDuty status
+        const setOnDutyMock = jest.spyOn(APIClient.prototype, 'setOnDutyStatus').mockImplementation((ctx: OrgContext, onDuty: boolean) => {
+            const updatedMockUser = MockUsers()[0];
+            updatedMockUser.organizations[MockOrgMetadata().id].onDuty = onDuty;
+            return Promise.resolve(updatedMockUser);
+        });
+
+        // Toggle user's onDuty status by firing an event on the toggle 
+        const dutyToggle = await waitFor(() => getByTestId(TestIds.header.open.toggleDuty));
+        await testUtils.checkOnDutyText(getByTestId);
+        const initialOnDutyValue = userStore().isOnDuty;
+        await act(async() => {
+            fireEvent(dutyToggle, 'onValueChange', true)
+        })
+
+        // Ensure the mock was called with the expected parameters
+        await waitFor(() => {
+            expect(setOnDutyMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                true
+            )
+        })
+
+        // Check that the updated on duty value is different than the initial value
+        const updatedOnDutyValue = userStore().isOnDuty;
+        await testUtils.checkOnDutyText(getByTestId);
+        await waitFor(() => {
+            expect(initialOnDutyValue).toEqual(!updatedOnDutyValue);
+        })
+
+        // Close the menu so we can validate that the onDuty status icon of the header works as well
+        const menuCloseIcon = await waitFor(() => getByTestId(TestIds.header.open.close));
+        await act(async() => {
+            fireEvent(menuCloseIcon, 'press')
+        })
+
+        const onDutyStatusIcon = await waitFor(() => getByTestId(TestIds.header.closed.status));
+        await act(async() => {
+            fireEvent(onDutyStatusIcon, 'press')
+        })
+
+        // Confirm prompt opens with expected text content.
+        // Press the prompt option to change our onDuty status.
+        const promptAlert = await waitFor(() => getByTestId(TestIds.alerts.prompt));
+        expect(promptAlert).toHaveTextContent(STRINGS.INTERFACE.availabilityAlertMessage(updatedOnDutyValue));
+
+        const confirmChangeInput = await waitFor(() => getByTestId(TestIds.header.availabilityPrompt.confirm));
+        await act(async() => {
+            fireEvent(confirmChangeInput, 'press')
+        })
+
+        // Confirm the final on duty status is the opposite of the previous,
+        // and the same as our initial value.
+        const finalUpdateDutyValue = userStore().isOnDuty;
+        await waitFor(() => {
+            expect(finalUpdateDutyValue).toEqual(initialOnDutyValue);
+            expect(finalUpdateDutyValue).toEqual(!updatedOnDutyValue);
+        })
+
+        // Open header to confirm the expected on duty text is displayed
+        openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openHeaderButton, 'click'));
+        await testUtils.checkOnDutyText(getByTestId);
     })
 })

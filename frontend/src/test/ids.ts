@@ -24,6 +24,14 @@ const TestIds = {
     },
     header: {
         menu: 'headerMenu',
+        open: {
+            close: 'header::close',
+            toggleDuty: 'header::toggleDuty',
+            onDutyText: 'header::onDutyText',
+        },
+        closed: {
+            status: 'header::statusIcon'
+        },
         navigation: {
             home: 'headerNavigationHome',
             requests: 'headerNavigationRequests',
@@ -39,6 +47,10 @@ const TestIds = {
         },
         actions: {
             createRequest: 'headerActionsCreateRequest'
+        },
+        availabilityPrompt: {
+            cancel: 'header::availabilityPrompt::cancel',
+            confirm: 'header::availabilityPrompt::confirm'
         }
     },
 

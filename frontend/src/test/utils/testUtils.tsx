@@ -9,7 +9,7 @@ import { hideAsync } from 'expo-splash-screen';
 import { LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
-import { linkingStore, navigationStore } from '../../stores/interfaces';
+import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
 import { routerNames } from '../../types';
 import STRINGS from '../../../../common/strings';
 import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
@@ -429,4 +429,10 @@ export async function completeUpdatePasswordForm(redirectRoute: string, getByTes
     await waitFor(() => {
         expect(navigationStore().currentRoute).toEqual(redirectRoute);
     })
+}
+
+// Signed In helpers
+export async function checkOnDutyText(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const onDutyTextComponent = await waitFor(() => getByTestId(TestIds.header.open.onDutyText));
+    expect(onDutyTextComponent).toHaveTextContent(userStore().isOnDuty ? 'Available' : 'Unavailable');
 }
