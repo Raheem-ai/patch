@@ -11,6 +11,7 @@ import { BottomDrawerViewVisualArea } from "../../helpers/visualArea";
 import STRINGS from "../../../../../common/strings";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import { observable, runInAction } from "mobx";
+import { ICONS } from "../../../types";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import TestIds from "../../../test/ids";
 
@@ -93,6 +94,7 @@ export default class AddUser extends React.Component {
                     name: 'email',
                     placeholderLabel: () => STRINGS.INTERFACE.email,
                     type: 'TextInput',
+                    icon: ICONS.sendEmail,
                     props: {
                         inputType: 'email-address',
                     },
@@ -108,6 +110,7 @@ export default class AddUser extends React.Component {
                     },
                     testID: TestIds.addUser.inputs.phone,
                     name: 'phone',
+                    icon: ICONS.callerContactInfo,
                     placeholderLabel: () => STRINGS.INTERFACE.phone,
                     type: 'TextInput',
                     props: {
@@ -128,6 +131,7 @@ export default class AddUser extends React.Component {
                     }).join(),
                     testID: TestIds.addUser.inputs.role,
                     name: 'role',
+                    icon: ICONS.permissions,
                     type: 'RoleList',
                     props: {
                         multiSelect: true,
