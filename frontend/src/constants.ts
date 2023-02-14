@@ -19,6 +19,6 @@ export const TabbedScreenHeaderHeight = InteractiveHeaderHeight - 12;
 // external URLs
 export const URLS = {
     helpCenter: 'https://help.getpatch.org/',
-    newTicket: 'https://raheemsupport.zendesk.com/hc/en-us/requests/new',
+    newTicket: 'https://help.getpatch.org/hc/en-us/requests/new',
     raheemSite: 'https://raheem.org/'
 }

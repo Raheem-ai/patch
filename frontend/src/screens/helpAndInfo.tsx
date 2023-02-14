@@ -40,7 +40,7 @@ const HelpAndInfo = ({ navigation, route }: Props) => {
                 screen: () => null,
                 expandOverride: (expand: () => void) => {
                     // TODO: this should come from config
-                    Linking.openURL('https://raheemsupport.zendesk.com/hc/en-us/requests/new');
+                    Linking.openURL('https://help.getpatch.org/hc/en-us/requests/new');
                 }
             },
             {
