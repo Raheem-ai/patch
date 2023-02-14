@@ -98,7 +98,10 @@ export default class DispatchStore implements IDispatchStore {
             if (this.selectedResponderIds.has(userId)) {
                 this.selectedResponderIds.delete(userId)
             } else {
-                this.selectedResponderIds.add(userId)
+                this.selectedResponderIds.add(userId);
+                if (this.assignableResponders.length == this.selectedResponderIds.size) {
+                    this.selectAll = !this.selectAll;
+                }
             }
         } else {
             this.selectAll = !this.selectAll;
