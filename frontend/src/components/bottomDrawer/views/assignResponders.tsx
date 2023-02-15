@@ -57,8 +57,9 @@ export default class AssignResponders extends React.Component {
                 },
                 label: () => {
                     const count = dispatchStore().selectedResponderIds.size;
-                    
-                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count);
+                    const notShown = dispatchStore().selectedResponders.filter(u => !dispatchStore().assignableResponders.includes(u));
+
+                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count, notShown.length);
                 },
                 validator: () => {
                     return !!dispatchStore().selectedResponderIds.size

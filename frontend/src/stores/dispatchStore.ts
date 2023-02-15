@@ -89,7 +89,7 @@ export default class DispatchStore implements IDispatchStore {
         if (this.selectAll) {
             this.assignableResponders.forEach(r => this.selectedResponderIds.add(r.id))
         } else {
-            this.selectedResponderIds.clear()
+            this.assignableResponders.forEach(r => this.selectedResponderIds.delete(r.id))
         }
     }
 
