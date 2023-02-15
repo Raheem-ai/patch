@@ -3,16 +3,18 @@ import { MongooseModel } from "@tsed/mongoose";
 import {Arg, OnVerify, Protocol} from "@tsed/passport";
 import {ExtractJwt, Strategy, StrategyOptions} from "passport-jwt";
 import { decode } from 'jsonwebtoken';
-import { JWTMetadata } from "../auth";
+import { getPrivateKeySecret, getPubKeySecret, JWTMetadata } from "../auth";
 import { UserModel } from "../models/user";
 import config from '../config';
 import { Unauthorized } from "@tsed/exceptions";
 import STRINGS from "common/strings";
+import { readFileSync } from "fs";
+import jose from 'node-jose'
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const UserContextKey = 'AuthorizedUser';
 
-const secretOrKeyProvider = (req, token, done) => {
+const secretOrKeyProvider = async (req, token, done) => {
     const decodedToken = decode(token, { complete: true });
 
     if (!decodedToken) {
@@ -20,14 +22,12 @@ const secretOrKeyProvider = (req, token, done) => {
         return
     }
 
-    const secret = accessTokenSecrets.find(s => s.kid == decodedToken.header.kid);
-
-    if (!secret) {
-        done(`Error: key not found: ${decodedToken.header.kid}`, null)
-        return
+    try {
+      const pubKey = await getPubKeySecret(decodedToken.header.kid)
+      done(null, pubKey.value);
+    } catch (e) {
+      done(e, null)
     }
-
-    done(null, secret.value);
 }
 
 @Protocol<StrategyOptions>({

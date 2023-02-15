@@ -7,11 +7,9 @@
     "start": "yarn run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-
     "dev": "yarn run build && PATCH_LOCAL_ENV=dev node lib/backend/src/index.js",
     "staging": "yarn run build && PATCH_LOCAL_ENV=staging node lib/backend/src/index.js",
     "prod": "yarn run build && PATCH_LOCAL_ENV=prod node lib/backend/src/index.js",
-
     "migration:create": "mongo-migrate create",
     "migration:status": "node lib/backend/src/migrations/index.js status",
     "migration:up": "node lib/backend/src/migrations/index.js up",
@@ -49,6 +47,7 @@
     "@types/express": "^4.17.13",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.3.3",
+    "@types/node-jose": "^1.1.10",
     "agenda": "^4.2.1",
     "ajv": "^8.6.2",
     "bcrypt": "^5.1.0",
@@ -69,6 +68,7 @@
     "module-alias": "^2.2.2",
     "mongo-migrate-ts": "^1.1.1",
     "mongoose": "^5.13.12",
+    "node-jose": "^2.1.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

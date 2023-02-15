@@ -171,11 +171,21 @@ export default class UserStore implements IUserStore {
         this.checkTOS()
     }
 
+    // TODO: figure out why this causes client reset when we change users
     async loginToRealm(refreshToken: string) {
         // set up realm user before unlocking dbs
-        // TODO: switch back when we have JWKS api setup
-        const realmUser = await realmApp.logIn(Realm.Credentials.anonymous())
-        // const realmUser = await realmApp.logIn(Realm.Credentials.jwt(refreshToken))
+        const realmUser = await realmApp.logIn(Realm.Credentials.jwt(refreshToken))
+
+        const existingUsers = realmApp.allUsers;
+
+        for (const user of Object.values(existingUsers)) {
+            if (user.id != realmUser.id) {
+                // remove data about any user not signed in
+                realmApp.removeUser(user)
+                // TODO: is there a wy to delete their files here too?
+            }
+        }
+
         runInAction(() => this.realmUser = realmUser)
     }
     
@@ -224,7 +234,8 @@ export default class UserStore implements IUserStore {
         clearAllDBs()
 
         // TODO: do we need to wait on this?
-        this.realmUser.logOut()
+        this.realmUser?.logOut()
+        console.log('logged out')
     }
 
     async inviteUserToOrg(email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {

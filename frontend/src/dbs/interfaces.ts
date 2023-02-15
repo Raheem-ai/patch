@@ -57,7 +57,7 @@ export abstract class BaseDB  implements IBaseDB {
         
         // handle syncing errors
         this.realmConfig.sync.onError = (_session, error) => {
-            console.log(error.name);
+            console.log(`Sync Error: `, error);
         }
 
         this.realmConfig.sync.clientReset = {
@@ -85,6 +85,8 @@ export abstract class BaseDB  implements IBaseDB {
     }
 
     initAfterSignedIn = async () => {
+        console.log('initAfterSignedIn')
+
         await this.resolveConfig()
 
         console.log('opening realm')
@@ -108,7 +110,8 @@ export abstract class BaseDB  implements IBaseDB {
         // calling log out...is this out or order?
         // or maybe i need to have the files namespaced by user id and then delete each file
         // on logout?
-        this.realm.close()
+        this.realm?.close()
+        console.log(this[dbNameKey], ' closed')
     }
 }
 
