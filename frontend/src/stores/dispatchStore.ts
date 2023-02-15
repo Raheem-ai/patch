@@ -16,7 +16,7 @@ export default class DispatchStore implements IDispatchStore {
     @persistent() eligibilityOption: EligibilityOption = EligibilityOption.Everyone
 
     statusOptions = [StatusOption.Any, StatusOption.Available]
-    eligibilityOptions = [EligibilityOption.Eligible, EligibilityOption.Everyone]
+    eligibilityOptions = [EligibilityOption.Everyone, EligibilityOption.Eligible]
 
     selectedResponderIds = new ObservableSet<string>()
 
@@ -133,6 +133,8 @@ export default class DispatchStore implements IDispatchStore {
     setEligibilityOption = (eOpt: EligibilityOption) => {
         this.eligibilityOption = eOpt
     }
+
+    // TODO: move text to strings file
 
     roleOptionToHeaderLabel = (roleId: string) => {
         return roleId == DefaultRoleIds.Anyone
