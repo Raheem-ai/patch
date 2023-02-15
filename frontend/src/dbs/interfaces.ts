@@ -81,8 +81,8 @@ export abstract class BaseDB  implements IBaseDB {
         }
 
         // namespace each db
-        this.realmConfig.path = this[dbNameKey]
-    }
+        this.realmConfig.path = `${userStore().realmUser.id}/${this[dbNameKey]}`
+    } 
 
     initAfterSignedIn = async () => {
         console.log('initAfterSignedIn')
@@ -105,12 +105,9 @@ export abstract class BaseDB  implements IBaseDB {
     }
 
     clear(): void {
-        // cleanup?
-        // TODO: signing out and back in is causing client reset even though we are closing each realm before
-        // calling log out...is this out or order?
-        // or maybe i need to have the files namespaced by user id and then delete each file
-        // on logout?
+        // remove all local db data associated with the current user user
         this.realm?.close()
+        Realm.deleteFile(this.realmConfig);
         console.log(this[dbNameKey], ' closed')
     }
 }

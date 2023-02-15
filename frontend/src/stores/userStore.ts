@@ -178,11 +178,11 @@ export default class UserStore implements IUserStore {
 
         const existingUsers = realmApp.allUsers;
 
+        // TODO: move this to onsignout
         for (const user of Object.values(existingUsers)) {
             if (user.id != realmUser.id) {
                 // remove data about any user not signed in
                 realmApp.removeUser(user)
-                // TODO: is there a wy to delete their files here too?
             }
         }
 
@@ -234,6 +234,7 @@ export default class UserStore implements IUserStore {
         clearAllDBs()
 
         // TODO: do we need to wait on this?
+        console.log(this.realmUser.id)
         this.realmUser?.logOut()
         console.log('logged out')
     }
