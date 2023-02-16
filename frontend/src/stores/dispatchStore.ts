@@ -99,15 +99,11 @@ export default class DispatchStore implements IDispatchStore {
                 this.selectedResponderIds.delete(userId)
             } else {
                 this.selectedResponderIds.add(userId);
-                if (this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
-                    this.selectAll = !this.selectAll;
-                }
             }
         } else {
-            this.selectAll = !this.selectAll;
-
             this.selectedResponderIds.delete(userId);
         }
+        this.checkSelectAll();
     }
 
     async assignRequest(requestId: string, responderIds: string[]) {
@@ -123,10 +119,10 @@ export default class DispatchStore implements IDispatchStore {
     }
 
     checkSelectAll = () => {
-        if (this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
-            this.selectAll = true;
-        } else if (!this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
+        if (this.assignableResponders.length == 0 || !this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
             this.selectAll = false;
+        } else {
+            this.selectAll = true;
         }
     }
 
