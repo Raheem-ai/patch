@@ -172,7 +172,7 @@ const STRINGS = {
         requestIsClosed: 'This request has been archived.',
         noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
         NOTIFICATIONS: {
-            notifyNPeople: (n: number, notShown?: number) => `Notify ${STRINGS.nPeople(n)}` + (!notShown || notShown == 0 ? `` : ` (${notShown} not shown)`),
+            notifyNPeople: (n: number, notShown?: number) => `Notify ${STRINGS.nPeople(n)}` + (notShown > 0 ? ` (${notShown} not shown)` : ``),
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
             nPeopleNotified: (n: number) => `${STRINGS.nPeople(n)} notified`,
             nRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,

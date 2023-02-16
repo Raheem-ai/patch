@@ -124,16 +124,27 @@ export default class DispatchStore implements IDispatchStore {
         }
     }
 
+    checkSelectAll = () => {
+        if (this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
+            this.selectAll = true;
+        } else if (!this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
+            this.selectAll = false;
+        }
+    }
+
     setRoleOption = (roleId: string) => {
-        this.roleOption = roleId
+        this.roleOption = roleId;
+        this.checkSelectAll();
     }
 
     setStatusOption = (statusOpt: StatusOption) => {
-        this.statusOption = statusOpt
+        this.statusOption = statusOpt;
+        this.checkSelectAll();
     }
 
     setEligibilityOption = (eOpt: EligibilityOption) => {
-        this.eligibilityOption = eOpt
+        this.eligibilityOption = eOpt;
+        this.checkSelectAll();
     }
 
     // TODO: move text to strings file
