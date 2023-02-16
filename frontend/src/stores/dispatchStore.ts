@@ -96,14 +96,14 @@ export default class DispatchStore implements IDispatchStore {
     async toggleResponder(userId: string) {
         if (!this.selectAll) {
             if (this.selectedResponderIds.has(userId)) {
-                this.selectedResponderIds.delete(userId)
+                this.selectedResponderIds.delete(userId);
             } else {
-                this.selectedResponderIds.add(userId)
+                this.selectedResponderIds.add(userId);
             }
         } else {
-            this.selectedResponderIds.delete(userId)
+            this.selectedResponderIds.delete(userId);
         }
-        this.checkSelectAll();
+        this.checkSelectAll()
     }
 
     async assignRequest(requestId: string, responderIds: string[]) {
