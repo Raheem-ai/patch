@@ -81,8 +81,6 @@ const STRINGS = {
             unknownLink: () => `Sorry we don't recognize that link. Please make sure it is correct.`,
             badSignUpThroughOrgLink: () => `The link you clicked to sign up through an org is invalid. Make sure it is correct.`,
             badJoinOrgLink: () => `The link you clicked to join an org is invalid. Make sure it is correct.`,
-
-            
         }
     },
     APP_UPDATES: {
@@ -121,7 +119,14 @@ const STRINGS = {
         anyNumber: `Any number`,
         orMore: `or more`,
         exactly: (value: number) => `Exactly ${value}`,
-        toValue: (value: number) => `to ${value}`
+        toValue: (value: number) => `to ${value}`,
+        filters: {
+            roleDefault: 'Any role',
+            statusDefault: 'Any status',
+            statusAvailable: 'Available',
+            eligibilityDefault: 'Everyone',
+            eligibilityEligible: 'Eligible',
+        },
     },
     PAGE_TITLES: {
         landing: 'Landing',
