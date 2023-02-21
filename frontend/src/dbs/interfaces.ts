@@ -16,6 +16,9 @@ export abstract class BaseDB  implements IBaseDB {
      * TODO: stores (other than userStore) will synchronize on this vs userStore().signedIn for startup
      * ie:
      * 
+     * Actually we need to split the user store into an auth store and a user store
+     * cus userStore() needs you to load all the org user info before unlocking and the authStore()
+     * needs to handle whether you are signed in to let other stores start to initialize
      * 
         async init(): Promise<void> {
             await orgUserDB().init()

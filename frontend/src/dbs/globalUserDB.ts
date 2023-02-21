@@ -33,7 +33,7 @@ export class GlobalUserDB extends BaseDB implements IGlobalUserDB  {
                 // TODO: users having null organizations (that they were removed from)
                 // keeps us from being able to access them (though we can access other properties fine)
                 // Error: Exception in HostFunction: No object with key '-91012128431916384' in 'class_user_org_config'
-                // console.log(user.organizations)
+                console.log(user.organizations)
             // }
         }
     }

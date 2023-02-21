@@ -171,7 +171,6 @@ export default class UserStore implements IUserStore {
         this.checkTOS()
     }
 
-    // TODO: figure out why this causes client reset when we change users
     async loginToRealm(refreshToken: string) {
         // set up realm user before unlocking dbs
         const realmUser = await realmApp.logIn(Realm.Credentials.jwt(refreshToken))
