@@ -49,6 +49,11 @@ export class DBManager {
             user[key] = undefined
         }
 
+        // mongo will return undefined if the object is empty
+        if (!user.organizations) {
+            user.organizations = {};
+        }
+
         return user
     }
 
@@ -56,7 +61,8 @@ export class DBManager {
         return { 
             id: user.id,
             name: user.name,
-            organizations: user.organizations,
+            // mongo will return undefined if the object is empty
+            organizations: user.organizations || {},
             phone: '',
             email: '',
             displayColor: ''
@@ -70,6 +76,11 @@ export class DBManager {
         // them with the initial call to the db to check auth
         for (const key in UserModel.systemProperties) {
             pubUser[key] = undefined
+        }
+
+        // mongo will return undefined if the object is empty
+        if (!user.organizations) {
+            user.organizations = {};
         }
 
         return pubUser;
@@ -307,11 +318,16 @@ export class DBManager {
         req.markModified('chat');
     }
 
-    async updateUsersOrgConfig(userOrId: string | UserDoc, orgId: string, cb: (orgConfig?: UserOrgConfig) => UserOrgConfig) {
+    async updateOrRemoveUsersOrgConfig(userOrId: string | UserDoc, orgId: string, cb: (orgConfig?: UserOrgConfig) => UserOrgConfig) {
         const user = await this.resolveUser(userOrId);
         const orgConfig = user.organizations[orgId];
         const newConfig = cb(orgConfig);
-        user.organizations[orgId] = newConfig;
+
+        if (!!newConfig) {
+            user.organizations[orgId] = newConfig;
+        } else {
+            delete user.organizations[orgId]
+        }
 
         user.markModified('organizations');
     }
@@ -352,7 +368,7 @@ export class DBManager {
         if (user.organizations[org.id]) {
             throw STRINGS.ACCOUNT.errorMessages.alreadyAMember;
         } else {
-            await this.updateUsersOrgConfig(user, org.id, (_) => ({
+            await this.updateOrRemoveUsersOrgConfig(user, org.id, (_) => ({
                 roleIds: roleIds,
                 attributes: attributes,
                 onDuty: false
@@ -386,7 +402,7 @@ export class DBManager {
         // remove the entry in the organization map under the org key
         if (user.organizations && user.organizations[org.id]) {
             //effectively deleting
-            await this.updateUsersOrgConfig(user, org.id, (_) => null)
+            await this.updateOrRemoveUsersOrgConfig(user, org.id, (_) => null)
         } 
 
         // remove the userId from the members array
@@ -530,7 +546,7 @@ export class DBManager {
             }
         }
 
-        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+        await this.updateOrRemoveUsersOrgConfig(user, orgId, (orgConfig) => {
             const roleSet = new Set(orgConfig.roleIds);
             roleIds.forEach(r => roleSet.add(r));
             return Object.assign({}, orgConfig, { roleIds: Array.from(roleSet.values()) });
@@ -916,7 +932,7 @@ export class DBManager {
             }
         }
 
-        await this.updateUsersOrgConfig(user, org.id, (orgConfig) => {
+        await this.updateOrRemoveUsersOrgConfig(user, org.id, (orgConfig) => {
             for (const categoryId of Object.keys(attributes)) {
                 // Add this category ID to the user's org config if it doesn't already exist.
                 if (!(categoryId in orgConfig.attributes)) {
@@ -943,7 +959,7 @@ export class DBManager {
             throw `User not in organization`
         }
 
-        await this.updateUsersOrgConfig(user, orgId, (orgConfig) => {
+        await this.updateOrRemoveUsersOrgConfig(user, orgId, (orgConfig) => {
             for (const categoryId of Object.keys(attributes)) {
                 if (categoryId in orgConfig.attributes) {
                     // Get pre-existing attributes in this category.
