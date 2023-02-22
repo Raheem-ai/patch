@@ -187,6 +187,7 @@ const HeaderConfig: {
         const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
+                    testId: TestIds.header.actions.editProfile,
                     icon: ICONS.edit,
                     callback: async () => {
                         if (onMyProfile) {

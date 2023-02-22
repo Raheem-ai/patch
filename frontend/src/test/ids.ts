@@ -46,7 +46,8 @@ const TestIds = {
             signOut: 'header::signOut'
         },
         actions: {
-            createRequest: 'headerActionsCreateRequest'
+            createRequest: 'headerActionsCreateRequest',
+            editProfile: 'headerActionsEditProfile'
         },
         availabilityPrompt: {
             cancel: 'header::availabilityPrompt::cancel',
@@ -74,6 +75,7 @@ const TestIds = {
         itemRowN: (testID: string, idx: number) => `${testID}::itemRow[${idx}]`,
     },
     tags: {
+        itemN: (testID: string, idx: number) => `${testID}::item[${idx}]`,
         deleteN: (testID: string, idx: number) => `${testID}::delete[${idx}]`,
     },
     // TODO: if we need to differentiate between
@@ -126,6 +128,7 @@ const TestIds = {
             optionN: (testID: string, idx: number) => `${testID}::option[${idx}]`,
         },
         roleList: {
+            labelWrapper: (testID: string) => `roleListLabel(${testID})`,
             edit: (testID: string) => `${testID}::edit`
         },
         positions: {
@@ -139,6 +142,8 @@ const TestIds = {
         },
         categorizedItemList: {
             wrapper: (testID: string) => `categorizedItemList(${testID})`,
+            labelWrapper: (testID: string) => `categorizedItemListLabel(${testID})`,
+            tagWrapper: (testID: string, categoryId: string) => `categorizedItemListTag(${testID}::${categoryId})`,
             edit: (testID: string) => `${testID}::edit`,
             search: (testID: string) => `${testID}::search`,
             searchResultN: (testID: string, idx: number) => `${testID}::searchResult[${idx}]`,
@@ -285,12 +290,13 @@ const TestIds = {
     editUser: {
         form: 'editUserForm',
         removeUser: 'editUserForm::removeUser',
+        deleteAccount: 'editUserForm::deleteAccount',
         inputs: {
             email: 'editUserForm::email',
             phone: 'editUserForm::phone',
-            name: 'editMeForm::name',
-            bio: 'editMeForm::bio',
-            pronouns: 'editMeForm::pronouns',
+            name: 'editUserForm::name',
+            bio: 'editUserForm::bio',
+            pronouns: 'editUserForm::pronouns',
             roles: 'editUserForm::roles',
             attributes: 'editUserForm::attributes',
         }
@@ -298,6 +304,7 @@ const TestIds = {
     editMe: {
         form: 'editMeForm',
         removeUser: 'editMeForm::removeUser',
+        deleteAccount: 'editMeForm::deleteAccount',
         inputs: {
             email: 'editMeForm::email',
             phone: 'editMeForm::phone',
@@ -305,7 +312,7 @@ const TestIds = {
             bio: 'editMeForm::bio',
             pronouns: 'editMeForm::pronouns',
             roles: 'editMeForm::roles',
-            attributes: 'editUserForm::attributes',
+            attributes: 'editMeForm::attributes',
         }
     },
     assignResponders: {

@@ -6,7 +6,7 @@ import { AppState } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategoryIds, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
@@ -435,4 +435,124 @@ export async function completeUpdatePasswordForm(redirectRoute: string, getByTes
 export async function checkOnDutyText(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     const onDutyTextComponent = await waitFor(() => getByTestId(TestIds.header.open.onDutyText));
     expect(onDutyTextComponent).toHaveTextContent(userStore().isOnDuty ? 'Available' : 'Unavailable');
+}
+
+export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Edit Roles
+    const editRolesTestID = TestIds.editMe.inputs.roles;
+    const rolesInput = await waitFor(() => getByTestId(TestIds.inputs.roleList.labelWrapper(editRolesTestID)));
+
+    // Expect Admin and Dispatcher tags to be present on roles input
+    let adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(TestIds.inputs.roleList.labelWrapper(editRolesTestID), 0)));
+    expect(adminRoleTag).toHaveTextContent(`Admin`)
+    const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(TestIds.inputs.roleList.labelWrapper(editRolesTestID), 1)));
+    expect(dispatcherRoleTag).toHaveTextContent(`Dispatcher`)
+
+    await act(async () => {
+        fireEvent(rolesInput, 'press');
+    })
+
+    // console.log(JSON.stringify(toJSON()));
+    const rolesWrappedTestID = TestIds.inputs.roleList.labelWrapper(TestIds.editMe.inputs.roles);
+    const editRolesWrappedTestID = TestIds.editRolesForm.wrapper(TestIds.editMe.inputs.roles);
+
+    const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(editRolesTestID)));
+    const adminRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 0)));
+    const dispatcherRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 1)));
+    const responderRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 2)));
+
+    // Add Responder role
+    await act(async () => {
+        fireEvent(responderRoleLabel, 'press');
+    })
+
+    // Remove Dispatcher role
+    await act(async () => {
+        fireEvent(dispatcherRoleLabel, 'press');
+    })
+
+    // Save roles assigned to me
+    await act(async () => {
+        fireEvent(saveRolesButton, 'press');
+    })
+
+    // Expect Admin and Responder tags to now be present on roles input
+    adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(TestIds.inputs.roleList.labelWrapper(editRolesTestID), 0)));
+    expect(adminRoleTag).toHaveTextContent(`Admin`)
+    const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(TestIds.inputs.roleList.labelWrapper(editRolesTestID), 1)));
+    expect(responderRoleTag).toHaveTextContent(`Responder`)
+}
+
+export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>, toJSON: any) {
+    const editAttributesTestID = TestIds.editMe.inputs.attributes;
+    const wrappedEditAttrsTestID = TestIds.inputs.categorizedItemList.labelWrapper(editAttributesTestID);
+    const attributesInput = await waitFor(() => getByTestId(wrappedEditAttrsTestID));
+
+    // Expect to see Attribute Tags for Hatian Creole, French, and CPR.
+    const languageAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Languages);
+    let creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
+    expect(creoleAttributeTag).toHaveTextContent(`Haitian Creole`)
+
+    const frenchAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 1)));
+    expect(frenchAttributeTag).toHaveTextContent(`French`)
+
+    const trainingsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Trainings);
+    let cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
+    expect(cprAttributeTag).toHaveTextContent(`CPR`)
+
+    // Click the attribute input label so we can edit the assigned attributes
+    await act(async () => {
+        fireEvent(attributesInput, 'click');
+    })
+
+    // Expect delete-able pills for Hatian Creole, French, and CPR
+    const categorizedItemListID = TestIds.inputs.categorizedItemList.wrapper(editAttributesTestID);
+    const pillsWrappedTestID = TestIds.inputs.categorizedItemList.pills(categorizedItemListID);
+    const creolePill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 0)));
+    expect(creolePill).toHaveTextContent(`Haitian Creole`)
+
+    const frenchPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
+    expect(frenchPill).toHaveTextContent(`French`)
+
+    let cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
+    expect(cprPill).toHaveTextContent(`CPR`)
+
+    // Delete the French attribute
+    const frenchDeleteIconButton = await waitFor(() => getByTestId(TestIds.tags.deleteN(pillsWrappedTestID, 1)));
+    await act(async () => {
+        fireEvent(frenchDeleteIconButton, 'click');
+    })
+
+    // CPR should now be the second pill
+    cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
+    expect(cprPill).toHaveTextContent(`CPR`)
+
+    // Add a new attribute (first aid)
+    const trainingsAttrID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(categorizedItemListID, 1));
+    const firstAidRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(trainingsAttrID, 2)));
+    expect(firstAidRow).toHaveTextContent(`first aid`)
+    await act(async () => {
+        fireEvent(firstAidRow, 'click');
+    })
+
+    // First aid pill should now be present
+    const firstAidPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
+    expect(firstAidPill).toHaveTextContent(`first aid`);
+
+    // Save changes
+    const saveAttrsButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(categorizedItemListID)));
+    await act(async () => {
+        fireEvent(saveAttrsButton, 'click');
+    })
+
+    // Validate the attribute label has tags for Creole, CPR, and first aid
+    creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
+    expect(creoleAttributeTag).toHaveTextContent(`Haitian Creole`);
+
+    cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
+    expect(cprAttributeTag).toHaveTextContent(`CPR`)
+
+    const skillsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Skills);
+    const firstAidAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(skillsAttrsTestId, 0)));
+    expect(firstAidAttributeTag).toHaveTextContent(`first aid`)
 }

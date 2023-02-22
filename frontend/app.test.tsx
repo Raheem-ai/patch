@@ -35,7 +35,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { LinkExperience, LinkParams } from '../common/models';
+import { AdminEditableUser, LinkExperience, LinkParams, Me } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -332,7 +332,6 @@ describe('Signed in Scenarios', () => {
         cleanup()
         clearAllStores()
         clearAllServices()
-        jest.resetAllMocks()
     })
 
     test('Stores fetch initial data after sign in and route to homepage', async () => {
@@ -528,8 +527,8 @@ describe('Signed in Scenarios', () => {
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
 
         // Open header menu
-        let openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
-        await act(async() => fireEvent(openHeaderButton, 'click'));
+        let openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
 
         // Mock the API call to update a user's onDuty status
         const setOnDutyMock = jest.spyOn(APIClient.prototype, 'setOnDutyStatus').mockImplementation((ctx: OrgContext, onDuty: boolean) => {
@@ -565,7 +564,7 @@ describe('Signed in Scenarios', () => {
         })
 
         // Close the menu so we can validate that the onDuty status icon of the header works as well
-        const menuCloseIcon = await waitFor(() => getByTestId(TestIds.header.open.close));
+        let menuCloseIcon = await waitFor(() => getByTestId(TestIds.header.open.close));
         await act(async() => {
             fireEvent(menuCloseIcon, 'press')
         })
@@ -594,8 +593,75 @@ describe('Signed in Scenarios', () => {
         })
 
         // Open header to confirm the expected on duty text is displayed
-        openHeaderButton = await waitFor(() => getByTestId(TestIds.header.menu));
-        await act(async() => fireEvent(openHeaderButton, 'click'));
+        openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
         await testUtils.checkOnDutyText(getByTestId);
+    })
+
+    test('Update profile', async () => {
+        console.log('Update profile run')
+        const {
+            getByTestId,
+            mockedUser,
+            toJSON
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open header menu
+        let openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        const profileButton = await waitFor(() => getByTestId(TestIds.header.submenu.profile));
+        await act(async () => {
+            fireEvent(profileButton, 'press');
+        })
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userDetails));
+
+        const editProfileButton = await waitFor(() => getByTestId(TestIds.header.actions.editProfile));
+        await act(async () => {
+            fireEvent(editProfileButton, 'press');
+        })
+
+        // Make sure all expected fields are present
+        const nameInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.name));
+        const bioInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.bio));
+        const pronounsInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.pronouns));
+        const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
+        const emailInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.email));
+        const removeUserButton = await waitFor(() => getByTestId(TestIds.editMe.removeUser));
+        const deleteAccountButton = await waitFor(() => getByTestId(TestIds.editMe.deleteAccount));
+
+        // Email input should be disabled/non-editable
+        expect(emailInput).toBeDisabled();
+
+        // Edit Roles
+        await testUtils.editUserRoles(getByTestId)
+
+        // Edit Attributes
+        await testUtils.editUserAttributes(getByTestId, toJSON);
+
+        // Mock the API call to edit myself
+        /*
+        const editMeMock = jest.spyOn(APIClient.prototype, 'editMe').mockImplementation((ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => {
+            const updatedMockUser = MockUsers()[0];
+            // UPDATE ROLES (and other fields changed)
+            console.log('MOCKED editMe');
+            console.log(ctx);
+            console.log(me);
+            console.log(protectedUser);
+            return Promise.resolve(updatedMockUser);
+        });*/
+
+        /*
+        console.log('PRESS saveUserButton')
+        const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
+        expect(saveUserButton).toBeDisabled();
+        await act(async () => {
+            fireEvent(saveUserButton, 'press');
+        })
+        */
     })
 })

@@ -28,7 +28,8 @@ export default function Tags(props: Props) {
             { 
                 props.tags.map((t, idx) => {
                     return (
-                        <View 
+                        <View
+                            testID={TestIds.tags.itemN(props.testID, idx)}
                             style={[
                                 styles.tagContainer, 
                                 { backgroundColor: props.dark 

@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, ProtectedUser, RequestStatus, User } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -44,8 +44,8 @@ export function MockOrgMetadata(): OrganizationMetadata {
         name: 'Mock org',
         id: 'xxx-mock-xxx',
         requestPrefix: 'MOCK',
-        roleDefinitions: [],
-        attributeCategories: [],
+        roleDefinitions: DefaultRoles,
+        attributeCategories: DefaultAttributeCategories,
         tagCategories: []
     }
 }
@@ -60,8 +60,12 @@ export function MockUsers(): User[] {
             phone: '555-5555',
             organizations: { 
                 [MockOrgMetadata().id]: {
-                    roleIds: [ DefaultRoleIds.Admin ],
-                    attributes: [],
+                    roleIds: [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher ],
+                    attributes: [
+                        { categoryId: DefaultAttributeCategoryIds.Languages, itemId: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05'},
+                        { categoryId: DefaultAttributeCategoryIds.Languages, itemId: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan08'},
+                        { categoryId: DefaultAttributeCategoryIds.Trainings, itemId: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train01'}
+                    ],
                     onDuty: false,
                 } 
             },
