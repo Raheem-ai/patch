@@ -1437,7 +1437,7 @@ export enum PatchPermissions {
     RequestAdmin = 'reqa',
     // Edit data for requests (user is on)
     EditRequestData = 'erd',
-    // Close requests (user is on)
+    // Archive requests (user is on)
     CloseRequests = 'cr'
 }
 
@@ -1552,8 +1552,8 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
         ]
     },
     [PatchPermissionGroups.CloseRequests]: {
-        name: 'Close requests',
-        description: `When on a request, archive it.`,
+        name: 'Archive requests',
+        description: `Make requests inactive.`,
         permissions: [
             PatchPermissions.CloseRequests
         ]
