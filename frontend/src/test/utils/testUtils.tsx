@@ -483,7 +483,7 @@ export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQue
     expect(responderRoleTag).toHaveTextContent(`Responder`)
 }
 
-export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>, toJSON: any) {
+export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     const editAttributesTestID = TestIds.editMe.inputs.attributes;
     const wrappedEditAttrsTestID = TestIds.inputs.categorizedItemList.labelWrapper(editAttributesTestID);
     const attributesInput = await waitFor(() => getByTestId(wrappedEditAttrsTestID));
@@ -555,4 +555,20 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
     const skillsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Skills);
     const firstAidAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(skillsAttrsTestId, 0)));
     expect(firstAidAttributeTag).toHaveTextContent(`first aid`)
+}
+
+export async function editPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
+
+    // By default, mocked user has an invalid phone number so the save button should be disabled
+    const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
+    expect(saveUserButton).toBeDisabled();
+
+    // Change the phone number to a valid 10 digit number
+    await act(async () => {
+        fireEvent.changeText(phoneInput, '7575555555')
+    });
+
+    // After entering valid value, the save button should be enabled
+    expect(saveUserButton).not.toBeDisabled();
 }

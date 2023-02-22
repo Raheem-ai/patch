@@ -602,8 +602,6 @@ describe('Signed in Scenarios', () => {
         console.log('Update profile run')
         const {
             getByTestId,
-            mockedUser,
-            toJSON
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -629,7 +627,6 @@ describe('Signed in Scenarios', () => {
         const nameInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.name));
         const bioInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.bio));
         const pronounsInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.pronouns));
-        const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
         const emailInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.email));
         const removeUserButton = await waitFor(() => getByTestId(TestIds.editMe.removeUser));
         const deleteAccountButton = await waitFor(() => getByTestId(TestIds.editMe.deleteAccount));
@@ -641,27 +638,29 @@ describe('Signed in Scenarios', () => {
         await testUtils.editUserRoles(getByTestId)
 
         // Edit Attributes
-        await testUtils.editUserAttributes(getByTestId, toJSON);
+        await testUtils.editUserAttributes(getByTestId);
 
-        // Mock the API call to edit myself
-        /*
-        const editMeMock = jest.spyOn(APIClient.prototype, 'editMe').mockImplementation((ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => {
+        // Edit phone number
+        await testUtils.editPhoneNumber(getByTestId);
+
+        // Mock editMe API call
+        jest.spyOn(APIClient.prototype, 'editMe').mockImplementation((ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => {
+            // Update mocked user with values edited during this test;
             const updatedMockUser = MockUsers()[0];
-            // UPDATE ROLES (and other fields changed)
-            console.log('MOCKED editMe');
-            console.log(ctx);
-            console.log(me);
-            console.log(protectedUser);
+            updatedMockUser.phone = me.phone;
+            updatedMockUser.organizations[ctx.orgId].roleIds = protectedUser.roleIds;
+            updatedMockUser.organizations[ctx.orgId].attributes = protectedUser.attributes;
             return Promise.resolve(updatedMockUser);
-        });*/
+        });
 
-        /*
-        console.log('PRESS saveUserButton')
         const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
-        expect(saveUserButton).toBeDisabled();
         await act(async () => {
-            fireEvent(saveUserButton, 'press');
+            fireEvent(saveUserButton, 'click');
         })
-        */
+
+        // Expect to be rerouted back to user profile and receive a toast message for successful save
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userDetails));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.updatedProfileSuccess())
     })
 })
