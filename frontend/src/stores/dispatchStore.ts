@@ -5,6 +5,7 @@ import { OrgContext } from '../../../common/api';
 import { persistent } from '../meta';
 import { api } from '../services/interfaces';
 import { DefaultRoleIds, EligibilityOption, StatusOption } from '../../../common/models';
+import STRINGS  from '../../../common/strings';
 
 @Store(IDispatchStore)
 export default class DispatchStore implements IDispatchStore {
@@ -16,7 +17,7 @@ export default class DispatchStore implements IDispatchStore {
     @persistent() eligibilityOption: EligibilityOption = EligibilityOption.Everyone
 
     statusOptions = [StatusOption.Any, StatusOption.Available]
-    eligibilityOptions = [EligibilityOption.Eligible, EligibilityOption.Everyone]
+    eligibilityOptions = [EligibilityOption.Everyone, EligibilityOption.Eligible]
 
     selectedResponderIds = new ObservableSet<string>()
 
@@ -89,7 +90,7 @@ export default class DispatchStore implements IDispatchStore {
         if (this.selectAll) {
             this.assignableResponders.forEach(r => this.selectedResponderIds.add(r.id))
         } else {
-            this.selectedResponderIds.clear()
+            this.assignableResponders.forEach(r => this.selectedResponderIds.delete(r.id))
         }
     }
 
@@ -101,10 +102,9 @@ export default class DispatchStore implements IDispatchStore {
                 this.selectedResponderIds.add(userId)
             }
         } else {
-            this.selectAll = !this.selectAll;
-
-            this.selectedResponderIds.delete(userId);
+            this.selectedResponderIds.delete(userId)
         }
+        this.checkSelectAll()
     }
 
     async assignRequest(requestId: string, responderIds: string[]) {
@@ -119,37 +119,48 @@ export default class DispatchStore implements IDispatchStore {
         }
     }
 
+    checkSelectAll = () => {
+        if (this.assignableResponders.length == 0 || !this.assignableResponders.every(r => this.selectedResponderIds.has(r.id))) {
+            this.selectAll = false;
+        } else {
+            this.selectAll = true;
+        }
+    }
+
     setRoleOption = (roleId: string) => {
-        this.roleOption = roleId
+        this.roleOption = roleId;
+        this.checkSelectAll();
     }
 
     setStatusOption = (statusOpt: StatusOption) => {
-        this.statusOption = statusOpt
+        this.statusOption = statusOpt;
+        this.checkSelectAll();
     }
 
     setEligibilityOption = (eOpt: EligibilityOption) => {
-        this.eligibilityOption = eOpt
+        this.eligibilityOption = eOpt;
+        this.checkSelectAll();
     }
 
     roleOptionToHeaderLabel = (roleId: string) => {
         return roleId == DefaultRoleIds.Anyone
-            ? 'Any role'
+            ? STRINGS.INTERFACE.filters.roleDefault
             : organizationStore().roles.get(roleId)?.name
     }
 
     statusOptionToHeaderLabel = (statusOpt: StatusOption) => {
         return statusOpt == StatusOption.Any
-            ? 'Any status'
+            ? STRINGS.INTERFACE.filters.statusDefault
             : statusOpt == StatusOption.Available
-                ? 'Available'
+                ? STRINGS.INTERFACE.filters.statusAvailable
                 : ''
     }
 
     eligibilityOptionToHeaderLabel = (eOpt: EligibilityOption) => {
         return eOpt == EligibilityOption.Everyone
-            ? 'Everyone'
+            ? STRINGS.INTERFACE.filters.eligibilityDefault
             : eOpt == EligibilityOption.Eligible
-                ? 'Eligible'
+                ? STRINGS.INTERFACE.filters.eligibilityEligible
                 : ''
     }
 

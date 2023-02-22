@@ -81,8 +81,6 @@ const STRINGS = {
             unknownLink: () => `Sorry we don't recognize that link. Please make sure it is correct.`,
             badSignUpThroughOrgLink: () => `The link you clicked to sign up through an org is invalid. Make sure it is correct.`,
             badJoinOrgLink: () => `The link you clicked to join an org is invalid. Make sure it is correct.`,
-
-            
         }
     },
     APP_UPDATES: {
@@ -121,7 +119,14 @@ const STRINGS = {
         anyNumber: `Any number`,
         orMore: `or more`,
         exactly: (value: number) => `Exactly ${value}`,
-        toValue: (value: number) => `to ${value}`
+        toValue: (value: number) => `to ${value}`,
+        filters: {
+            roleDefault: 'Any role',
+            statusDefault: 'Any status',
+            statusAvailable: 'Available',
+            eligibilityDefault: 'Everyone',
+            eligibilityEligible: 'Eligible',
+        },
     },
     PAGE_TITLES: {
         landing: 'Landing',
@@ -172,7 +177,7 @@ const STRINGS = {
         requestIsClosed: 'This request has been archived.',
         noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
         NOTIFICATIONS: {
-            notifyNPeople: (n: number) => `Notify ${STRINGS.nPeople(n)}`,
+            notifyNPeople: (n: number, notShown?: number) => `Notify ${STRINGS.nPeople(n)}` + (notShown > 0 ? ` (${notShown} not shown)` : ``),
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
             nPeopleNotified: (n: number) => `${STRINGS.nPeople(n)} notified`,
             nRespondersAsking: (n: number) => ` ${STRINGS.visualDelim} ${n} asking`,
