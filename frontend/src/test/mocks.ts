@@ -44,8 +44,8 @@ export function MockOrgMetadata(): OrganizationMetadata {
         name: 'Mock org',
         id: 'xxx-mock-xxx',
         requestPrefix: 'MOCK',
-        roleDefinitions: DefaultRoles,
-        attributeCategories: DefaultAttributeCategories,
+        roleDefinitions: JSON.parse(JSON.stringify(DefaultRoles)),
+        attributeCategories: JSON.parse(JSON.stringify(DefaultAttributeCategories)),
         tagCategories: []
     }
 }
@@ -62,9 +62,9 @@ export function MockUsers(): User[] {
                 [MockOrgMetadata().id]: {
                     roleIds: [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher ],
                     attributes: [
-                        { categoryId: DefaultAttributeCategoryIds.Languages, itemId: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05'},
-                        { categoryId: DefaultAttributeCategoryIds.Languages, itemId: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan08'},
-                        { categoryId: DefaultAttributeCategoryIds.Trainings, itemId: DefaultAttributeCategoryIds.Trainings + Delimiters.Enum + 'train01'}
+                        { categoryId: DefaultAttributeCategories[0].id, itemId: DefaultAttributeCategories[0].attributes[4].id },
+                        { categoryId: DefaultAttributeCategories[0].id, itemId: DefaultAttributeCategories[0].attributes[7].id },
+                        { categoryId: DefaultAttributeCategories[2].id, itemId: DefaultAttributeCategories[2].attributes[0].id}
                     ],
                     onDuty: false,
                 } 
