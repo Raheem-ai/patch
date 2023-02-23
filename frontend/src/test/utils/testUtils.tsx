@@ -616,7 +616,12 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
 export async function editMyPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
 
-    // By default, mocked user has an invalid phone number so the save button should be disabled
+    // Change the phone number to an invalid entry
+    await act(async () => {
+        fireEvent.changeText(phoneInput, '555-5555')
+    });
+
+    // Save button should be disabled
     const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
     expect(saveUserButton).toBeDisabled();
 
