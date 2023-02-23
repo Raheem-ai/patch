@@ -35,7 +35,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -696,31 +696,39 @@ describe('Signed in Scenarios', () => {
         expect(sendInviteButton).toHaveTextContent(STRINGS.ACCOUNT.sendInvite);
         expect(sendInviteButton).toBeDisabled();
 
-        // Get phone and email inputs
+        // Get phone and email inputs.
         const emailInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.email));
         const phoneInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.phone));
 
-        // Enter invalid values, confirm send invite button still disabled
-        await act(async () => fireEvent.changeText(emailInput, 'testNewUserATtest.com'));
-        await act(async () => fireEvent.changeText(phoneInput, '555-5555'));
+        // Valid and invalid contact info variations
+        const validPhone = '7575555555';
+        const invalidPhone = '555-5555';
+        const validEmail = 'testNewUser@test.com';
+        const invalidEmail = 'testNewUserATtest.com';
+
+        // Both fields invalid, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(emailInput, invalidEmail));
+        await act(async () => fireEvent.changeText(phoneInput, invalidPhone));
         expect(sendInviteButton).toBeDisabled();
 
-        // Enter valid phone number, leave invalid email.
-        // Invite button still disabled.
-        const validPhone = '7575555555';
+        // Valid phone but invalid email, confirm send invite button still disabled
         await act(async () => fireEvent.changeText(phoneInput, validPhone));
         expect(sendInviteButton).toBeDisabled();
 
-        // Enter valid email. Invite button should be enabled now.
-        const validEmail = 'testNewUser@test.com';
+        // Valid email but invalid phone, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(phoneInput, invalidPhone));
         await act(async () => fireEvent.changeText(emailInput, validEmail));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Both fields valid, invite button should be enabled.
+        await act(async () => fireEvent.changeText(phoneInput, validPhone));
         expect(sendInviteButton).not.toBeDisabled();
 
         // Assign some roles to new user
         await testUtils.assignNewUserRoles(getByTestId, queryByTestId);
 
         // Mock inviteUserToOrg API call
-        jest.spyOn(APIClient.prototype, 'inviteUserToOrg').mockImplementation((ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => {
+        const inviteUserToOrgMock = jest.spyOn(APIClient.prototype, 'inviteUserToOrg').mockImplementation((ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => {
             const invitedUser: PendingUser = {
                 email,
                 phone,
@@ -733,6 +741,15 @@ describe('Signed in Scenarios', () => {
 
         // Send invitation
         await act(async () => fireEvent(sendInviteButton, 'click'));
+
+        await waitFor(() => {
+            expect(inviteUserToOrgMock).toHaveBeenCalledWith({ orgId: MockOrgMetadata().id, token: MockAuthTokens().accessToken },
+                                                             validEmail,
+                                                             validPhone,
+                                                             [DefaultRoles[2].id, DefaultRoles[3].id],
+                                                             [],
+                                                             '');
+        })
 
         // Expect to be rerouted back to team list and receive a toast message for successful save
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.teamList));

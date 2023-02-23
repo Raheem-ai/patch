@@ -478,7 +478,6 @@ export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, Comm
     await act(async () => fireEvent(saveRolesButton, 'press'))
 
     const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
-
     expect(dispatcherRoleTag).toHaveTextContent(dispatcherText)
 
     const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
