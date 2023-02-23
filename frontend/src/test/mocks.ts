@@ -57,7 +57,7 @@ export function MockUsers(): User[] {
             name: 'Admin 1',
             email: 'admin@test.com',
             password: 'pa$$word',
-            phone: '555-5555',
+            phone: '5555555555',
             organizations: { 
                 [MockOrgMetadata().id]: {
                     roleIds: [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher ],
