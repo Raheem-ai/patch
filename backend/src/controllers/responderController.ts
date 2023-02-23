@@ -37,7 +37,7 @@ export class ResponderController implements APIController<
         @User() user: UserDoc,
         @Required() @BodyParams('onDuty') onDuty: boolean
     ) {
-        await this.db.updateUsersOrgConfig(user, orgId, (config: UserOrgConfig) => {
+        await this.db.updateOrRemoveUsersOrgConfig(user, orgId, (config: UserOrgConfig) => {
             config.onDuty = onDuty;
             return config;
         })

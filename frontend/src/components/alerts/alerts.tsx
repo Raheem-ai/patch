@@ -68,7 +68,7 @@ export const Alerts = observer(() => {
                         }
                     </View>
                 </Animated.View>
-                <Pressable onPress={backgroundTap} style={ styles.promptBackground }></Pressable>
+                <View style={ styles.promptBackground }></View>
             </>
         )
     }

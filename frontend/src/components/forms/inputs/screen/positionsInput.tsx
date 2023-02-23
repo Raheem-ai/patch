@@ -27,7 +27,7 @@ const PositionsInput = observer(({
         role: DefaultRoleIds.Anyone,
         attributes: [],
         joinedUsers: [],
-        min: 0,
+        min: 2,
         max: -1
     }) as Position))
     
