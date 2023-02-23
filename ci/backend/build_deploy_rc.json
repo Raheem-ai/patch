@@ -40,21 +40,6 @@
             }]
         },
         {
-            "name": "gcr.io/cloud-builders/git",
-            "entrypoint": "bash",
-            "args": [
-                "ci/common/generate_changed_files.sh"
-            ],
-            "volumes": [{
-                "name": "ssh",
-                "path": "/root/.ssh"
-            }],
-            "env": [
-                "SHORT_SHA=$SHORT_SHA",
-                "COMMIT_SHA=$COMMIT_SHA"
-            ]
-        },
-        {
             "name": "gcr.io/cloud-builders/docker",
             "entrypoint": "bash",
             "args": [
@@ -64,6 +49,24 @@
                 "PROJECT_ID=$PROJECT_ID",
                 "SHORT_SHA=$SHORT_SHA",
                 "_MERGED_BRANCH=$_MERGED_BRANCH"
+            ]
+        },
+        {
+            "name": "gcr.io/$PROJECT_ID/patch-rc:$SHORT_SHA",
+            "entrypoint": "node",
+            "args": [
+                "/app/backend/infra/bin/run",
+                "ci:shouldDeploy",
+                "-c",
+                "$COMMIT_SHA",
+                "-a"
+            ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }],
+            "env": [ 
+                "_ENVIRONMENT=$_ENVIRONMENT"
             ]
         },
         {

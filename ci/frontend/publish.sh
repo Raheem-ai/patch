@@ -1,17 +1,4 @@
-# files that should trigger a publish
-FILES_TO_INCLUDE=("common/**/*" "frontend/**/*" "ci/**/*")
-
-# files that shouldn't trigger a publish
-FILES_TO_IGNORE=("frontend/README.md")
-
-# import utils for publish logic
-my_dir="$(dirname "$0")"
-source $my_dir/../common/utils.sh
-
-# files that were changed in the commit
-FILES=$(cat changedFiles.txt) 
-
-if should_deploy FILES FILES_TO_INCLUDE FILES_TO_IGNORE;
+if test -f "/workspace/should_deploy_frontend";
 then
     echo $(pwd)
 
