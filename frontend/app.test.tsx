@@ -26,7 +26,7 @@ import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore } from './src/stores/interfaces';
+import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
@@ -35,9 +35,10 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { LinkExperience, LinkParams } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
+import { OrgContext } from './api';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -513,5 +514,247 @@ describe('Signed in Scenarios', () => {
         const requestDetailsNotes = await waitFor(() => getByTestId(TestIds.requestDetails.notes));
 
         expect(requestDetailsNotes).toHaveTextContent(mockRequest.notes)
+    })
+
+    test('Change availability', async () => {
+        console.log('Change availability run')
+        const {
+            getByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open header menu
+        let openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Mock the API call to update a user's onDuty status
+        const setOnDutyMock = jest.spyOn(APIClient.prototype, 'setOnDutyStatus').mockImplementation((ctx: OrgContext, onDuty: boolean) => {
+            const updatedMockUser = MockUsers()[0];
+            updatedMockUser.organizations[MockOrgMetadata().id].onDuty = onDuty;
+            return Promise.resolve(updatedMockUser);
+        });
+
+        // Toggle user's onDuty status by firing an event on the toggle 
+        const dutyToggle = await waitFor(() => getByTestId(TestIds.header.open.toggleDuty));
+        await testUtils.checkOnDutyText(getByTestId);
+        const initialOnDutyValue = userStore().isOnDuty;
+        await act(async() => {
+            fireEvent(dutyToggle, 'onValueChange', true)
+        })
+
+        // Ensure the mock was called with the expected parameters
+        await waitFor(() => {
+            expect(setOnDutyMock).toHaveBeenCalledWith(
+                {
+                    token: MockAuthTokens().accessToken,
+                    orgId: MockOrgMetadata().id
+                },
+                true
+            )
+        })
+
+        // Check that the updated on duty value is different than the initial value
+        const updatedOnDutyValue = userStore().isOnDuty;
+        await testUtils.checkOnDutyText(getByTestId);
+        await waitFor(() => {
+            expect(initialOnDutyValue).toEqual(!updatedOnDutyValue);
+        })
+
+        // Close the menu so we can validate that the onDuty status icon of the header works as well
+        let menuCloseIcon = await waitFor(() => getByTestId(TestIds.header.open.close));
+        await act(async() => {
+            fireEvent(menuCloseIcon, 'press')
+        })
+
+        const onDutyStatusIcon = await waitFor(() => getByTestId(TestIds.header.closed.status));
+        await act(async() => {
+            fireEvent(onDutyStatusIcon, 'press')
+        })
+
+        // Confirm prompt opens with expected text content.
+        // Press the prompt option to change our onDuty status.
+        const promptAlert = await waitFor(() => getByTestId(TestIds.alerts.prompt));
+        expect(promptAlert).toHaveTextContent(STRINGS.INTERFACE.availabilityAlertMessage(updatedOnDutyValue));
+
+        const confirmChangeInput = await waitFor(() => getByTestId(TestIds.header.availabilityPrompt.confirm));
+        await act(async() => {
+            fireEvent(confirmChangeInput, 'press')
+        })
+
+        // Confirm the final on duty status is the opposite of the previous,
+        // and the same as our initial value.
+        const finalUpdateDutyValue = userStore().isOnDuty;
+        await waitFor(() => {
+            expect(finalUpdateDutyValue).toEqual(initialOnDutyValue);
+            expect(finalUpdateDutyValue).toEqual(!updatedOnDutyValue);
+        })
+
+        // Open header to confirm the expected on duty text is displayed
+        openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+        await testUtils.checkOnDutyText(getByTestId);
+    })
+
+    test('Update profile', async () => {
+        console.log('Update profile run')
+        const {
+            getByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open header menu
+        let openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        const profileButton = await waitFor(() => getByTestId(TestIds.header.submenu.profile));
+        await act(async () => {
+            fireEvent(profileButton, 'press');
+        })
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userDetails));
+
+        const editProfileButton = await waitFor(() => getByTestId(TestIds.header.actions.editProfile));
+        await act(async () => {
+            fireEvent(editProfileButton, 'press');
+        })
+
+        // Make sure all expected fields are present
+        // Email, Roles, and Attributes input components are checked below and/or in their helpers.
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.name));
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.bio));
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.pronouns));
+        await waitFor(() => getByTestId(TestIds.editMe.removeUser));
+        await waitFor(() => getByTestId(TestIds.editMe.deleteAccount));
+
+        // Email input should be disabled/non-editable
+        const emailInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.email));
+        expect(emailInput).toBeDisabled();
+
+        // Edit Roles
+        await testUtils.editUserRoles(getByTestId)
+
+        // Edit Attributes
+        await testUtils.editUserAttributes(getByTestId);
+
+        // Edit phone number
+        await testUtils.editMyPhoneNumber(getByTestId);
+
+        // Mock editMe API call
+        jest.spyOn(APIClient.prototype, 'editMe').mockImplementation((ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => {
+            // Update mocked user with values edited during this test;
+            const updatedMockUser = MockUsers()[0];
+            updatedMockUser.phone = me.phone;
+            updatedMockUser.organizations[ctx.orgId].roleIds = protectedUser.roleIds;
+            updatedMockUser.organizations[ctx.orgId].attributes = protectedUser.attributes;
+            return Promise.resolve(updatedMockUser);
+        });
+
+        const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
+        await act(async () => {
+            fireEvent(saveUserButton, 'click');
+        })
+
+        // Expect to be rerouted back to user profile and receive a toast message for successful save
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userDetails));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.updatedProfileSuccess());
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
+
+    test('Invite to Patch', async () => {
+        console.log('Invite to Patch run...');
+        const {
+            getByTestId,
+            queryByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Navigate to Team List page
+        const teamButton = await waitFor(() => getByTestId(TestIds.userHome.goToTeam));
+        await act(async() => fireEvent(teamButton, 'click'));
+
+        await waitFor(() => getByTestId(TestIds.team.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.teamList));
+
+        // Add team member
+        const addTeamMemberButton = await waitFor(() => getByTestId(TestIds.header.actions.addTeamMember));
+        await act(async () => {
+            fireEvent(addTeamMemberButton, 'click');
+        })
+
+        // Send Invite button (technically a variant of the backButtonHeader save button)
+        // Should be disabled as valid email and phone numbers have not been entered
+        const sendInviteButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.addUser.form)));
+        expect(sendInviteButton).toHaveTextContent(STRINGS.ACCOUNT.sendInvite);
+        expect(sendInviteButton).toBeDisabled();
+
+        // Get phone and email inputs.
+        const emailInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.email));
+        const phoneInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.phone));
+
+        // Valid and invalid contact info variations
+        const validPhone = '7575555555';
+        const invalidPhone = '555-5555';
+        const validEmail = 'testNewUser@test.com';
+        const invalidEmail = 'testNewUserATtest.com';
+
+        // Both fields invalid, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(emailInput, invalidEmail));
+        await act(async () => fireEvent.changeText(phoneInput, invalidPhone));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Valid phone but invalid email, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(phoneInput, validPhone));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Valid email but invalid phone, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(phoneInput, invalidPhone));
+        await act(async () => fireEvent.changeText(emailInput, validEmail));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Both fields valid, invite button should be enabled.
+        await act(async () => fireEvent.changeText(phoneInput, validPhone));
+        expect(sendInviteButton).not.toBeDisabled();
+
+        // Assign some roles to new user
+        await testUtils.assignNewUserRoles(getByTestId, queryByTestId);
+
+        // Mock inviteUserToOrg API call
+        const inviteUserToOrgMock = jest.spyOn(APIClient.prototype, 'inviteUserToOrg').mockImplementation((ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => {
+            const invitedUser: PendingUser = {
+                email,
+                phone,
+                roleIds,
+                attributes,
+                pendingId: '__newUser'
+            };
+            return Promise.resolve(invitedUser);
+        });
+
+        // Send invitation
+        await act(async () => fireEvent(sendInviteButton, 'click'));
+
+        await waitFor(() => {
+            expect(inviteUserToOrgMock).toHaveBeenCalledWith({ orgId: MockOrgMetadata().id, token: MockAuthTokens().accessToken },
+                                                             validEmail,
+                                                             validPhone,
+                                                             [DefaultRoles[2].id, DefaultRoles[3].id],
+                                                             [],
+                                                             '');
+        })
+
+        // Expect to be rerouted back to team list and receive a toast message for successful save
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.teamList));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.invitationSuccessful(validEmail, validPhone));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
     })
 })

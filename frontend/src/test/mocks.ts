@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, ProtectedUser, RequestStatus, User } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -44,8 +44,8 @@ export function MockOrgMetadata(): OrganizationMetadata {
         name: 'Mock org',
         id: 'xxx-mock-xxx',
         requestPrefix: 'MOCK',
-        roleDefinitions: [],
-        attributeCategories: [],
+        roleDefinitions: JSON.parse(JSON.stringify(DefaultRoles)),
+        attributeCategories: JSON.parse(JSON.stringify(DefaultAttributeCategories)),
         tagCategories: []
     }
 }
@@ -57,11 +57,15 @@ export function MockUsers(): User[] {
             name: 'Admin 1',
             email: 'admin@test.com',
             password: 'pa$$word',
-            phone: '555-5555',
+            phone: '5555555555',
             organizations: { 
                 [MockOrgMetadata().id]: {
-                    roleIds: [ DefaultRoleIds.Admin ],
-                    attributes: [],
+                    roleIds: [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher ],
+                    attributes: [
+                        { categoryId: DefaultAttributeCategories[0].id, itemId: DefaultAttributeCategories[0].attributes[4].id },
+                        { categoryId: DefaultAttributeCategories[0].id, itemId: DefaultAttributeCategories[0].attributes[7].id },
+                        { categoryId: DefaultAttributeCategories[2].id, itemId: DefaultAttributeCategories[2].attributes[0].id}
+                    ],
                     onDuty: false,
                 } 
             },

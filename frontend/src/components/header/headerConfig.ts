@@ -166,6 +166,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
+                    testId: TestIds.header.actions.addTeamMember,
                     icon: ICONS.add,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.inviteUserToOrg, true);
@@ -187,6 +188,7 @@ const HeaderConfig: {
         const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
+                    testId: TestIds.header.actions.editProfile,
                     icon: ICONS.edit,
                     callback: async () => {
                         if (onMyProfile) {

@@ -97,7 +97,7 @@ export default class EditUser extends React.Component {
                                 onPress={this.promptToRemoveUser} />
                                 { this.onMyProfile 
                             ? <PatchButton 
-                                testID={this.formIds.removeUser}
+                                testID={this.formIds.deleteAccount}
                                 mode='text'
                                 label={ STRINGS.ACCOUNT.deletePatchAccount }
                                 onPress={this.promptToDeleteAccount} />

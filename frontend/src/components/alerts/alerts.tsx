@@ -25,7 +25,7 @@ export const Alerts = observer(() => {
 
         const promptMessage = typeof msg == 'function'
             ? msg(styles.promptMessageLabel)
-            : <Text style={styles.promptMessageLabel}>{msg}</Text>
+            : <Text testID={TestIds.alerts.prompt} style={styles.promptMessageLabel}>{msg}</Text>
 
         return (
             <> 
@@ -56,7 +56,7 @@ export const Alerts = observer(() => {
                                                 paddingRight: 12, }
                                             : null]}>
                                         <Pressable onPress={onPress}>
-                                            <Text testID={TestIds.alerts.prompt} style={[
+                                            <Text testID={a.testID ? a.testID : null} style={[
                                                 styles.promptActionLabel, 
                                                 a.confirming 
                                                     ? styles.promptConfirmActionLabel 

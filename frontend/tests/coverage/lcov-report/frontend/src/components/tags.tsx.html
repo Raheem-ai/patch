@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>15/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -189,7 +189,8 @@
 <a name='L124'></a><a href='#L124'>124</a>
 <a name='L125'></a><a href='#L125'>125</a>
 <a name='L126'></a><a href='#L126'>126</a>
-<a name='L127'></a><a href='#L127'>127</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -210,15 +211,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">37x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -334,26 +336,27 @@ type Props = {
     horizontalTagMargin?: number
 }
 &nbsp;
-export default function <span class="fstat-no" title="function not covered" >Tags(</span>props: Props) {
+export default function Tags(props: Props) {
 &nbsp;
-    const onDeleteTagTapped = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>dx: number, tag: string) =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >        props.onTagDeleted(idx, tag);</span>
+    const onDeleteTagTapped = (idx: number, tag: string) =&gt; () =&gt; {
+        props.onTagDeleted(idx, tag);
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;View style={[styles.container, { marginTop: props.verticalMargin }, props.centered ? styles.centeredContainer : null ]}&gt;
             { 
-                props.tags.map(<span class="fstat-no" title="function not covered" >(t</span>, idx) =&gt; {
-<span class="cstat-no" title="statement not covered" >                    return (</span>
-                        &lt;View 
+                props.tags.map((t, idx) =&gt; {
+                    return (
+                        &lt;View
+                            testID={TestIds.tags.itemN(props.testID, idx)}
                             style={[
                                 styles.tagContainer, 
                                 { backgroundColor: props.dark 
                                     ? props.disabled 
-                                        ? styles.darkDisabled.backgroundColor
+                                        ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.darkDisabled.backgroundColor</span>
                                         : styles.dark.backgroundColor 
                                     : props.disabled 
-                                        ? styles.lightDisabled.backgroundColor
+                                        ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.lightDisabled.backgroundColor</span>
                                         : styles.light.backgroundColor 
                                 },
                                 { marginBottom: props.verticalMargin },
@@ -368,10 +371,10 @@ export default function <span class="fstat-no" title="function not covered" >Tag
                                 styles.tagText, 
                                 { color: props.dark 
                                     ? props.disabled 
-                                        ? styles.darkDisabled.color
+                                        ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.darkDisabled.color</span>
                                         : styles.dark.color 
                                     : props.disabled 
-                                        ? styles.lightDisabled.color
+                                        ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.lightDisabled.color</span>
                                         : styles.light.color 
                                 },
                                 props.tagTextStyle
@@ -383,7 +386,7 @@ export default function <span class="fstat-no" title="function not covered" >Tag
                                         sentry-label={TestIds.tags.deleteN(props.testID, idx)}
                                         style={styles.closeIcon}
                                         icon={ICONS.deleteItem} 
-                                        color={props.dark ? styles.dark.color : styles.light.color}
+                                        color={props.dark ? <span class="branch-0 cbranch-no" title="branch not covered" >styles.dark.color </span>: styles.light.color}
                                         onPress={onDeleteTagTapped(idx, t)}
                                         size={styles.closeIcon.height}&gt;&lt;/IconButton&gt;
                                     : null
@@ -448,7 +451,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-08T22:17:15.583Z
+                at 2023-02-23T20:55:35.213Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
