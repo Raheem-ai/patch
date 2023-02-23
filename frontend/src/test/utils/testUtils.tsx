@@ -12,7 +12,7 @@ import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
 import { routerNames } from '../../types';
 import STRINGS from '../../../../common/strings';
-import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
+import { GetByQuery, QueryByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
 import { TokenContext } from '../../../api';
@@ -21,10 +21,12 @@ const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
 const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null);
 
+// Default Role text
 const adminText = DefaultRoles[1].name;
 const dispatcherText = DefaultRoles[2].name;
 const responderText = DefaultRoles[3].name;
 
+// Attributes text
 const haitianCreoleLanguageText = DefaultAttributeCategories[0].attributes[4].name;
 const frenchLanguageText = DefaultAttributeCategories[0].attributes[7].name;
 const firstAidSkillText = DefaultAttributeCategories[1].attributes[2].name;
@@ -446,13 +448,16 @@ export async function checkOnDutyText(getByTestId: GetByQuery<TextMatch, CommonQ
     expect(onDutyTextComponent).toHaveTextContent(userStore().isOnDuty ? 'Available' : 'Unavailable');
 }
 
-export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>, queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     // Test IDs relevant to retrieving controls to edit roles assigned to a user
     const editRolesTestID = TestIds.addUser.inputs.role;
     const rolesWrappedTestID = TestIds.inputs.roleList.labelWrapper(editRolesTestID);
 
     // Input label for Roles that shows up on the form for editing a user
     const rolesInputLabel = await waitFor(() => getByTestId(rolesWrappedTestID));
+
+    // There should be no roles present
+    expect(queryByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0))).toBeNull();
 
     // Press roles input label to navigate to the actual roles input form
     await act(async () => {
@@ -608,7 +613,7 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
     expect(firstAidAttributeTag).toHaveTextContent(firstAidSkillText)
 }
 
-export async function editPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+export async function editMyPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
 
     // By default, mocked user has an invalid phone number so the save button should be disabled

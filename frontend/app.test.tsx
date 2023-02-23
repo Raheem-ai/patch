@@ -642,7 +642,7 @@ describe('Signed in Scenarios', () => {
         await testUtils.editUserAttributes(getByTestId);
 
         // Edit phone number
-        await testUtils.editPhoneNumber(getByTestId);
+        await testUtils.editMyPhoneNumber(getByTestId);
 
         // Mock editMe API call
         jest.spyOn(APIClient.prototype, 'editMe').mockImplementation((ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => {
@@ -670,6 +670,7 @@ describe('Signed in Scenarios', () => {
         console.log('Invite to Patch run...');
         const {
             getByTestId,
+            queryByTestId,
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -716,7 +717,7 @@ describe('Signed in Scenarios', () => {
         expect(sendInviteButton).not.toBeDisabled();
 
         // Assign some roles to new user
-        await testUtils.assignNewUserRoles(getByTestId)
+        await testUtils.assignNewUserRoles(getByTestId, queryByTestId);
 
         // Mock inviteUserToOrg API call
         jest.spyOn(APIClient.prototype, 'inviteUserToOrg').mockImplementation((ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => {
