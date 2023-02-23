@@ -624,14 +624,15 @@ describe('Signed in Scenarios', () => {
         })
 
         // Make sure all expected fields are present
-        const nameInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.name));
-        const bioInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.bio));
-        const pronounsInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.pronouns));
-        const emailInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.email));
-        const removeUserButton = await waitFor(() => getByTestId(TestIds.editMe.removeUser));
-        const deleteAccountButton = await waitFor(() => getByTestId(TestIds.editMe.deleteAccount));
+        // Email, Roles, and Attributes input components are checked below and/or in their helpers.
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.name));
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.bio));
+        await waitFor(() => getByTestId(TestIds.editMe.inputs.pronouns));
+        await waitFor(() => getByTestId(TestIds.editMe.removeUser));
+        await waitFor(() => getByTestId(TestIds.editMe.deleteAccount));
 
         // Email input should be disabled/non-editable
+        const emailInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.email));
         expect(emailInput).toBeDisabled();
 
         // Edit Roles
