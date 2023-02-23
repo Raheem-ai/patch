@@ -6,7 +6,7 @@ import { AppState } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategoryIds, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
@@ -19,7 +19,16 @@ import { TokenContext } from '../../../api';
 
 const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
-const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null)
+const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null);
+
+const adminText = DefaultRoles[1].name;
+const dispatcherText = DefaultRoles[2].name;
+const responderText = DefaultRoles[3].name;
+
+const haitianCreoleLanguageText = DefaultAttributeCategories[0].attributes[4].name;
+const frenchLanguageText = DefaultAttributeCategories[0].attributes[7].name;
+const firstAidSkillText = DefaultAttributeCategories[1].attributes[2].name;
+const cprTrainingText = DefaultAttributeCategories[2].attributes[0].name;
 
 // App boot helper functions
 export async function mockBoot() {
@@ -464,10 +473,11 @@ export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, Comm
     await act(async () => fireEvent(saveRolesButton, 'press'))
 
     const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
-    expect(dispatcherRoleTag).toHaveTextContent(`Dispatcher`)
+
+    expect(dispatcherRoleTag).toHaveTextContent(dispatcherText)
 
     const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
-    expect(responderRoleTag).toHaveTextContent(`Responder`)
+    expect(responderRoleTag).toHaveTextContent(responderText)
 }
 
 export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
@@ -480,9 +490,9 @@ export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQue
 
     // Expect Admin and Dispatcher tags to be present on roles input label
     let adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
-    expect(adminRoleTag).toHaveTextContent(`Admin`)
+    expect(adminRoleTag).toHaveTextContent(adminText)
     const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
-    expect(dispatcherRoleTag).toHaveTextContent(`Dispatcher`)
+    expect(dispatcherRoleTag).toHaveTextContent(dispatcherText)
 
     // Press roles input label to navigate to the actual roles input form
     await act(async () => {
@@ -512,9 +522,9 @@ export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQue
 
     // Expect Admin and Responder tags to now be present on roles input label
     adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
-    expect(adminRoleTag).toHaveTextContent(`Admin`)
+    expect(adminRoleTag).toHaveTextContent(adminText)
     const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
-    expect(responderRoleTag).toHaveTextContent(`Responder`)
+    expect(responderRoleTag).toHaveTextContent(responderText)
 }
 
 export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
@@ -528,14 +538,14 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
     // Expect to see Attribute Tags for Hatian Creole, French, and CPR.
     const languageAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Languages);
     let creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
-    expect(creoleAttributeTag).toHaveTextContent(`Haitian Creole`)
+    expect(creoleAttributeTag).toHaveTextContent(haitianCreoleLanguageText)
 
     const frenchAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 1)));
-    expect(frenchAttributeTag).toHaveTextContent(`French`)
+    expect(frenchAttributeTag).toHaveTextContent(frenchLanguageText)
 
     const trainingsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Trainings);
     let cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
-    expect(cprAttributeTag).toHaveTextContent(`CPR`)
+    expect(cprAttributeTag).toHaveTextContent(cprTrainingText)
 
     // Click the attribute input label so we can edit the assigned attributes on the actual form
     await act(async () => {
@@ -548,13 +558,13 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
 
     // Expect delete-able pills for Hatian Creole, French, and CPR
     const creolePill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 0)));
-    expect(creolePill).toHaveTextContent(`Haitian Creole`)
+    expect(creolePill).toHaveTextContent(haitianCreoleLanguageText)
 
     const frenchPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
-    expect(frenchPill).toHaveTextContent(`French`)
+    expect(frenchPill).toHaveTextContent(frenchLanguageText)
 
     let cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
-    expect(cprPill).toHaveTextContent(`CPR`)
+    expect(cprPill).toHaveTextContent(cprTrainingText)
 
     // Delete the French Attribute
     const frenchDeleteIconButton = await waitFor(() => getByTestId(TestIds.tags.deleteN(pillsWrappedTestID, 1)));
@@ -564,20 +574,20 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
 
     // CPR should now be the second pill
     cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
-    expect(cprPill).toHaveTextContent(`CPR`)
+    expect(cprPill).toHaveTextContent(cprTrainingText)
 
     // Add a new attribute (first aid)
     // `first aid` is the third option in the Trainings category
     const trainingsAttrID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(categorizedItemListID, 1));
     const firstAidRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(trainingsAttrID, 2)));
-    expect(firstAidRow).toHaveTextContent(`first aid`)
+    expect(firstAidRow).toHaveTextContent(firstAidSkillText)
     await act(async () => {
         fireEvent(firstAidRow, 'click');
     })
 
     // First aid pill should now be presen
     const firstAidPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
-    expect(firstAidPill).toHaveTextContent(`first aid`);
+    expect(firstAidPill).toHaveTextContent(firstAidSkillText);
 
     // Save changes
     const saveAttrsButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(categorizedItemListID)));
@@ -588,14 +598,14 @@ export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, Comm
     // Validate the Attributes label now has tags for Creole, CPR, and first aid
     // in their respective categories.
     creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
-    expect(creoleAttributeTag).toHaveTextContent(`Haitian Creole`);
+    expect(creoleAttributeTag).toHaveTextContent(haitianCreoleLanguageText);
 
     cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
-    expect(cprAttributeTag).toHaveTextContent(`CPR`)
+    expect(cprAttributeTag).toHaveTextContent(cprTrainingText)
 
     const skillsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Skills);
     const firstAidAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(skillsAttrsTestId, 0)));
-    expect(firstAidAttributeTag).toHaveTextContent(`first aid`)
+    expect(firstAidAttributeTag).toHaveTextContent(firstAidSkillText)
 }
 
 export async function editPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
