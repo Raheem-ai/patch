@@ -437,6 +437,39 @@ export async function checkOnDutyText(getByTestId: GetByQuery<TextMatch, CommonQ
     expect(onDutyTextComponent).toHaveTextContent(userStore().isOnDuty ? 'Available' : 'Unavailable');
 }
 
+export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Test IDs relevant to retrieving controls to edit roles assigned to a user
+    const editRolesTestID = TestIds.addUser.inputs.role;
+    const rolesWrappedTestID = TestIds.inputs.roleList.labelWrapper(editRolesTestID);
+
+    // Input label for Roles that shows up on the form for editing a user
+    const rolesInputLabel = await waitFor(() => getByTestId(rolesWrappedTestID));
+
+    // Press roles input label to navigate to the actual roles input form
+    await act(async () => {
+        fireEvent(rolesInputLabel, 'click');
+    })
+
+    // Expect Admin, Dispatcher, and Responder inputs to exist in the Roles list
+    const adminRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 0)));
+    const dispatcherRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 1)));
+    const responderRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 2)));
+
+    // Add Dispatcher and Responder roles to user
+    await act(async () => fireEvent(dispatcherRoleLabel, 'press'))
+    await act(async () => fireEvent(responderRoleLabel, 'press'))
+
+    // After saving roles, expect tags for Responder and Dispatcher to be present on the roles input label now.
+    const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(editRolesTestID)));
+    await act(async () => fireEvent(saveRolesButton, 'press'))
+
+    const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
+    expect(dispatcherRoleTag).toHaveTextContent(`Dispatcher`)
+
+    const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
+    expect(responderRoleTag).toHaveTextContent(`Responder`)
+}
+
 export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     // Test IDs relevant to retrieving controls to edit roles assigned to a user
     const editRolesTestID = TestIds.editMe.inputs.roles;

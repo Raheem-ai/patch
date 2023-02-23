@@ -47,7 +47,8 @@ const TestIds = {
         },
         actions: {
             createRequest: 'headerActionsCreateRequest',
-            editProfile: 'headerActionsEditProfile'
+            editProfile: 'headerActionsEditProfile',
+            addTeamMember: 'headerActionsAddTeamMember'
         },
         availabilityPrompt: {
             cancel: 'header::availabilityPrompt::cancel',

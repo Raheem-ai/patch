@@ -166,6 +166,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
+                    testId: TestIds.header.actions.addTeamMember,
                     icon: ICONS.add,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.inviteUserToOrg, true);

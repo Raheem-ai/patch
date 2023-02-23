@@ -35,7 +35,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, LinkExperience, LinkParams, Me } from '../common/models';
+import { AdminEditableUser, CategorizedItem, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -662,6 +662,81 @@ describe('Signed in Scenarios', () => {
         // Expect to be rerouted back to user profile and receive a toast message for successful save
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userDetails));
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
-        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.updatedProfileSuccess())
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.updatedProfileSuccess());
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
+
+    test('Invite to Patch', async () => {
+        console.log('Invite to Patch run...');
+        const {
+            getByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Navigate to Team List page
+        const teamButton = await waitFor(() => getByTestId(TestIds.userHome.goToTeam));
+        await act(async() => fireEvent(teamButton, 'click'));
+
+        await waitFor(() => getByTestId(TestIds.team.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.teamList));
+
+        // Add team member
+        const addTeamMemberButton = await waitFor(() => getByTestId(TestIds.header.actions.addTeamMember));
+        await act(async () => {
+            fireEvent(addTeamMemberButton, 'click');
+        })
+
+        // Send Invite button (technically a variant of the backButtonHeader save button)
+        // Should be disabled as valid email and phone numbers have not been entered
+        const sendInviteButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.addUser.form)));
+        expect(sendInviteButton).toHaveTextContent(STRINGS.ACCOUNT.sendInvite);
+        expect(sendInviteButton).toBeDisabled();
+
+        // Get phone and email inputs
+        const emailInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.email));
+        const phoneInput = await waitFor(() => getByTestId(TestIds.addUser.inputs.phone));
+
+        // Enter invalid values, confirm send invite button still disabled
+        await act(async () => fireEvent.changeText(emailInput, 'testNewUserATtest.com'));
+        await act(async () => fireEvent.changeText(phoneInput, '555-5555'));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Enter valid phone number, leave invalid email.
+        // Invite button still disabled.
+        const validPhone = '7575555555';
+        await act(async () => fireEvent.changeText(phoneInput, validPhone));
+        expect(sendInviteButton).toBeDisabled();
+
+        // Enter valid email. Invite button should be enabled now.
+        const validEmail = 'testNewUser@test.com';
+        await act(async () => fireEvent.changeText(emailInput, validEmail));
+        expect(sendInviteButton).not.toBeDisabled();
+
+        // Assign some roles to new user
+        await testUtils.assignNewUserRoles(getByTestId)
+
+        // Mock inviteUserToOrg API call
+        jest.spyOn(APIClient.prototype, 'inviteUserToOrg').mockImplementation((ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) => {
+            const invitedUser: PendingUser = {
+                email,
+                phone,
+                roleIds,
+                attributes,
+                pendingId: '__newUser'
+            };
+            return Promise.resolve(invitedUser);
+        });
+
+        // Send invitation
+        await act(async () => fireEvent(sendInviteButton, 'click'));
+
+        // Expect to be rerouted back to team list and receive a toast message for successful save
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.teamList));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.invitationSuccessful(validEmail, validPhone));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
     })
 })
