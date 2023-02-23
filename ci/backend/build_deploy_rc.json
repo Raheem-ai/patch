@@ -57,10 +57,9 @@
             "args": [
                 "/app/backend/infra/bin/run",
                 "ci:shouldDeploy",
-                "-p",
-                "backend",
                 "-c",
-                "$COMMIT_SHA"
+                "$COMMIT_SHA",
+                "-a"
             ],
             "volumes": [{
                 "name": "ssh",
