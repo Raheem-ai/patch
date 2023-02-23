@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">15.38% </span>
+                <span class="strong">76.92% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/13</span>
+                <span class='fraction'>10/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>10/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">15.38% </span>
+                <span class="strong">76.92% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/13</span>
+                <span class='fraction'>10/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -190,25 +190,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -217,12 +201,28 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -288,16 +288,16 @@ type UserIconProps = {
     emptyIconColor?: string
 }
 &nbsp;
-const UserIcon = observer(<span class="fstat-no" title="function not covered" >({ </span>
+const UserIcon = observer(({ 
     userId, 
     style,
     large,
     emptyIconColor
 } : UserIconProps) =&gt; {
 &nbsp;
-    const user = <span class="cstat-no" title="statement not covered" >userStore().users.get(userId);</span>
+    const user = userStore().users.get(userId);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    if (!user) {</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!user) {
 <span class="cstat-no" title="statement not covered" >        if (style?.backgroundColor &amp;&amp; !style.borderColor) {</span>
 <span class="cstat-no" title="statement not covered" >            style.borderColor = style.backgroundColor</span>
         }
@@ -311,34 +311,34 @@ const UserIcon = observer(<span class="fstat-no" title="function not covered" >(
         )
     }
 &nbsp;
-    const userName = <span class="cstat-no" title="statement not covered" >parseFullName(user.name);</span>
+    const userName = parseFullName(user.name);
 &nbsp;
     // single names resolve as last name for some reason?!?!
-    const first = <span class="cstat-no" title="statement not covered" >userName.first || userName.last;</span>
-    const last = <span class="cstat-no" title="statement not covered" >userName.first ? userName.last : null;</span>
+    const first = userName.first || userName.last;
+    const last = userName.first ? userName.last : null;
 &nbsp;
     // for futre ui treatment for users removed from org still in a chat
-    const inOrg = <span class="cstat-no" title="statement not covered" >userStore().userInOrg(user);</span>
+    const inOrg = userStore().userInOrg(user);
 &nbsp;
     // either FL for Firstname Lastname or 
     // Fi for Firstname
-    let initials = <span class="cstat-no" title="statement not covered" >last</span>
+    let initials = last
         ? `${first[0]}${last[0]}`.toUpperCase()
-        : `${first[0].toUpperCase()}${(first[1] || '').toLowerCase()}`
+        : `${first[0].toUpperCase()}${(first[1] || <span class="branch-1 cbranch-no" title="branch not covered" >'')</span>.toLowerCase()}`
 &nbsp;
     // TO DO: differentiate available from unavailable with icon color
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;View
             style={[
                 styles.userIcon, 
                 { backgroundColor: Colors.secondary.alpha, borderColor: Colors.secondary.alpha }, 
-                large ? styles.large : null,
+                large ? styles.large : <span class="branch-1 cbranch-no" title="branch not covered" >null,</span>
                 style
             ]}
         &gt;
             &lt;Text style={[
                 { color: styles.userIcon.color },
-                large ? { fontSize: styles.large.fontSize } : null
+                large ? { fontSize: styles.large.fontSize } : <span class="branch-1 cbranch-no" title="branch not covered" >null</span>
             ]}&gt;{initials}&lt;/Text&gt;
         &lt;/View&gt;
     )
@@ -385,7 +385,7 @@ export default UserIcon;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-23T16:23:14.778Z
+                at 2023-02-23T18:03:55.358Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
