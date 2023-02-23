@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">36.84% </span>
+                <span class="strong">73.68% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/19</span>
+                <span class='fraction'>14/19</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">27.27% </span>
+                <span class="strong">63.63% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/11</span>
+                <span class='fraction'>7/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">43.75% </span>
+                <span class="strong">81.25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/16</span>
+                <span class='fraction'>13/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -151,21 +151,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">37x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -174,7 +174,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { makeAutoObservable } from 'mobx';
@@ -207,22 +207,22 @@ export default class ManageAttributesStore implements IManageAttributesStore {
         }
     }
 &nbsp;
-<span class="fstat-no" title="function not covered" >    ge</span>t attributeCategories() {
-        const map: Map&lt;string, Category&gt; = <span class="cstat-no" title="statement not covered" >new Map();</span>
+    get attributeCategories() {
+        const map: Map&lt;string, Category&gt; = new Map();
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        organizationStore().metadata.attributeCategories.forEach(<span class="fstat-no" title="function not covered" >ca</span>tegory =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >            map.set(category.id, {</span>
+        organizationStore().metadata.attributeCategories.forEach(category =&gt; {
+            map.set(category.id, {
                 name: category.name,
                 items: category.attributes
             })
         })
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        return map</span>
+        return map
     } 
 &nbsp;
-<span class="fstat-no" title="function not covered" >    ge</span>tAttribute(categoryId: string, attributeId: string): Attribute {
-        const category = <span class="cstat-no" title="statement not covered" >this.attributeCategories.get(categoryId);</span>
-<span class="cstat-no" title="statement not covered" >        return category?.items.find(<span class="fstat-no" title="function not covered" >it</span>em =&gt; <span class="cstat-no" title="statement not covered" >item.id == attributeId)</span>;</span>
+    getAttribute(categoryId: string, attributeId: string): Attribute {
+        const category = this.attributeCategories.get(categoryId);
+        return category?.items.find(item =&gt; item.id == attributeId);
     }
 &nbsp;
     onSave = <span class="fstat-no" title="function not covered" >as</span>ync (updates: CategorizedItemUpdates) =&gt; {
@@ -241,7 +241,7 @@ export default class ManageAttributesStore implements IManageAttributesStore {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-08T22:17:15.583Z
+                at 2023-02-23T15:15:24.938Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

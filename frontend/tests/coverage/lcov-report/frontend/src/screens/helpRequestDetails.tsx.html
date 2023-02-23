@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">32.58% </span>
+                <span class="strong">34.83% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>58/178</span>
+                <span class='fraction'>62/178</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">26.6% </span>
+                <span class="strong">27.52% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>29/109</span>
+                <span class='fraction'>30/109</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">21.42% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>12/56</span>
+                <span class='fraction'>14/56</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.52% </span>
+                <span class="strong">35.29% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>57/170</span>
+                <span class='fraction'>60/170</span>
             </div>
         
             
@@ -1237,9 +1237,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1297,7 +1297,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -1750,7 +1750,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2155,19 +2155,19 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) =&gt; {
         )
     }
 &nbsp;
-    const toggleRequestButton = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-        const currentRequestOpen = <span class="cstat-no" title="statement not covered" >currentRequestIsOpen();</span>
+    const toggleRequestButton = () =&gt; {
+        const currentRequestOpen = currentRequestIsOpen();
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        return (</span>
+        return (
             &lt;View style={styles.toggleRequestContainer}&gt;
                 &lt;PatchButton 
-                    testID={currentRequestOpen ? TestIds.requestDetails.closeRequest : TestIds.requestDetails.reopenRequest}
+                    testID={currentRequestOpen ? TestIds.requestDetails.closeRequest : <span class="branch-1 cbranch-no" title="branch not covered" >TestIds.requestDetails.reopenRequest}</span>
                     mode='outlined'
                     uppercase={false}
                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(currentRequestOpen)}
                     onPress={currentRequestOpen 
                         ? closeRequestOrPrompt() 
-                        : reopenRequest()
+                        : <span class="branch-1 cbranch-no" title="branch not covered" >reopenRequest()</span>
                     } /&gt;
             &lt;/View&gt;
         )
@@ -2182,7 +2182,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) =&gt; {
         }
     }
 &nbsp;
-    const closeRequestOrPrompt = <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
+    const closeRequestOrPrompt = () =&gt; <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {
 <span class="cstat-no" title="statement not covered" >        if (!requestStore().currentRequest.type.length) {</span>
 <span class="cstat-no" title="statement not covered" >            alertStore().showPrompt({</span>
                 title:  STRINGS.REQUESTS.TOGGLE.title,
@@ -2224,15 +2224,15 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) =&gt; {
     }
 &nbsp;
     const overview = () =&gt; {
-        const showCloseOpenReqButton = userIsRequestAdmin || (userIsOnRequest &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >userHasCloseRequestPermission)</span>
+        const showCloseOpenReqButton = userIsRequestAdmin || (<span class="branch-1 cbranch-no" title="branch not covered" >userIsOnRequest </span>&amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >userHasCloseRequestPermission)</span>
 &nbsp;
         return (
         &lt;&gt;
             &lt;WrappedScrollView 
                 showsVerticalScrollIndicator={false} 
                 style={{backgroundColor: (showCloseOpenReqButton 
-                    ? <span class="branch-0 cbranch-no" title="branch not covered" >Colors.backgrounds.secondary </span>
-                    : Colors.backgrounds.standard)
+                    ? Colors.backgrounds.secondary 
+                    : <span class="branch-1 cbranch-no" title="branch not covered" >Colors.backgrounds.standard)</span>
             }}&gt;
                 &lt;View style={styles.detailsContainer}&gt;
                     { header() }
@@ -2242,8 +2242,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) =&gt; {
                     { detailsSection() }
                 &lt;/View&gt;
                 { showCloseOpenReqButton
-                    ? <span class="branch-0 cbranch-no" title="branch not covered" >toggleRequestButton()</span>
-                    : null 
+                    ? toggleRequestButton()
+                    : <span class="branch-1 cbranch-no" title="branch not covered" >null </span>
                 }
             &lt;/WrappedScrollView&gt;
             &lt;View style={{ 
@@ -2668,8 +2668,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) =&gt; {
         }
     );
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (userIsOnRequest || userHasPermissionToSeeChat) {
-<span class="cstat-no" title="statement not covered" >        tabs.push(</span>
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (userIsOnRequest || userHasPermissionToSeeChat) {
+        tabs.push(
             {
                 label: RequestDetailsTabs.Channel,
                 view: channel
@@ -2827,7 +2827,7 @@ const styles = StyleSheet.create({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-08T22:17:15.583Z
+                at 2023-02-23T15:15:24.938Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
