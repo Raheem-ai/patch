@@ -57,6 +57,8 @@ WORKDIR ..
 # copy in build scripts + config
 COPY ci ./ci
 
+COPY .git /app/.git
+
 # /app/backend
 WORKDIR backend
 
