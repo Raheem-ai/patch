@@ -1,7 +1,7 @@
 import { observable, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Platform, View } from "react-native";
 import { Button } from "react-native-paper";
 import { PatchPermissions } from "../../../../../common/models";
 import STRINGS from "../../../../../common/strings";
@@ -288,7 +288,7 @@ export default class EditUser extends React.Component {
                 placeholderLabel: () => STRINGS.INTERFACE.phone,
                 type: 'TextInput',
                 props: {
-                    inputType: 'phone-pad',
+                    inputType: Platform.OS === "ios" ? 'number-pad' : 'phone-pad',
                 },
                 icon: ICONS.callerContactInfo,
                 required: true

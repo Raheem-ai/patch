@@ -107,7 +107,7 @@ const STRINGS = {
         name: 'Name',
         bio: 'Bio',
         pronouns: 'Pronouns',
-        phone: 'Phone (numbers only)',
+        phone: `Phone · numbers only`,
         email: 'Email',
         invitationCode: 'Invitation code',
         successfullyUpdatedElement: (el?: string) => `Successfully updated ${el}`,

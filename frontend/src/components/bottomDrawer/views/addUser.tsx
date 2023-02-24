@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Platform, View } from "react-native";
 import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
@@ -114,7 +114,7 @@ export default class AddUser extends React.Component {
                     placeholderLabel: () => STRINGS.INTERFACE.phone,
                     type: 'TextInput',
                     props: {
-                        inputType: 'phone-pad',
+                        inputType: Platform.OS === "ios" ? 'number-pad' : 'phone-pad',
                     },
                     required: true
                 },
