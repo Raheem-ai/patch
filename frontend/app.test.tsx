@@ -757,4 +757,84 @@ describe('Signed in Scenarios', () => {
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.invitationSuccessful(validEmail, validPhone));
         await act(async() => fireEvent(toastTextComponent, 'press'));
     })
+
+    test('Notify people of request', async () => {
+        console.log('Notify people run...');
+        const {
+            getByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+        // Each request in our mock data should have a request card
+        await waitFor(() => MockRequests().forEach(r => getByTestId(TestIds.requestCard(r.id))));
+
+        // Navigate to Request Details screen for first request
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(MockRequests()[0].id)));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Click on the Team tab
+        const teamTab = await waitFor(() => getByTestId(TestIds.tabbedScreen.tabN(TestIds.requestDetails.screen, 2)));
+        await act(async () => fireEvent(teamTab, 'press'));
+        await waitFor(() => getByTestId(TestIds.requestDetails.team));
+
+        // Press button to notify people
+        const notifyDrawerButton = await waitFor(() => getByTestId(TestIds.requestDetails.notifyPeople));
+        await act(async () => fireEvent(notifyDrawerButton, 'press'));
+
+        // "Notify _ people" button on bottom drawer store view
+        const notifyNPeopleButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.assignResponders.view)));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(0, 0));
+
+        // Ensure that both users in the mock organization are represented with an unselected responder row
+        const assignableUsers = MockUsers().slice(0,2);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, i))));
+
+        // Click on a responder row to make sure the "notify" button text updates as expected
+        const responderRow = await waitFor(() => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, 1)));
+        await act(async () => fireEvent(responderRow, 'press'));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(1, 0));
+
+        // Input and associated text for the toggle "select all" button
+        const toggleSelectAllBtn = await waitFor(() => getByTestId(TestIds.assignResponders.toggleSelectAllBtn));
+        const toggleSelectAllText = await waitFor(() => getByTestId(TestIds.assignResponders.toggleSelectAllText));
+
+        // Since all users are currently not selected, the text should say select all
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.selectAll);
+
+        // After pressing toggle button, text should switch and all responder rows should be selected
+        await act(async () => fireEvent(toggleSelectAllBtn, 'press'));
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.unselectAll);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.selectedRowN(TestIds.assignResponders.view, i))));
+
+        // After pressing again, text should again switch, all responder rows should be unselected, and notify button should be disabled
+        await act(async () => fireEvent(toggleSelectAllBtn, 'press'));
+        expect(notifyNPeopleButton).toBeDisabled();
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.selectAll);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, i))));
+
+        // Press responder row again, expect button text to update for one selection.
+        await act(async () => fireEvent(responderRow, 'press'));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(1, 0));
+
+        // Press notify button to begin submission flow. Expect toast success alert.
+        await act(async () => fireEvent(notifyNPeopleButton, 'press'));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.nPeopleNotified(1));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
 })
