@@ -28,6 +28,27 @@ export function MockRequests(): HelpRequest[] {
             updatedAt: '',
             location: null,
             priority: null
+        },
+        {
+            id: 'xxx-req2-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 2',
+            displayId: '2',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Unassigned,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: null,
+            priority: null
         }
     ]
 }
