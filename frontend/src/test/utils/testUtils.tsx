@@ -147,7 +147,7 @@ export async function mockSignIn() {
         getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata()),
         getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
         getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
-        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),
+        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests()),
 
         // mocked data
         mockedUser,
@@ -219,7 +219,7 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
     const getTeamMembersMock = jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata());
     const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
     const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
-    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]);
+    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests());
 
     // Submit the form
     await act(async () => {
