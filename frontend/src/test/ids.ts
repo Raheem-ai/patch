@@ -204,9 +204,17 @@ const TestIds = {
         notifyPeople: 'requestDetails::notifyPeople',
         closeRequest: 'requestDetails::closeRequest',
         reopenRequest: 'requestDetails::reopenRequest',
+        overview: 'requestDetails::overview',
+        channel: 'requestDetails::channel',
+        team: 'requestDetails::team',
+        screen: 'requestDetails::screen',
+    },
+    tabbedScreen: {
+        tabN: (testID: string, idx: number) => `${testID}::tab[${idx}]`
     },
     team: {
-        screen: 'teamScreen'
+        screen: 'teamScreen',
+        rowN: (testID: string, idx: number) => `${testID}::row[${idx}]`
     },
     channels: {
         screen: 'channelScreen'
@@ -317,7 +325,11 @@ const TestIds = {
         }
     },
     assignResponders: {
-        view: 'assignResponders'
+        view: 'assignResponders',
+        toggleSelectAllBtn: 'assignResponders::toggleSelectAll',
+        toggleSelectAllText: 'assignResponders::toggleSelectAllText',
+        selectedRowN: (testID: string, idx: number) => `${testID}::selectedRow[${idx}]`,
+        unselectedRowN: (testID: string, idx: number) => `${testID}::unselectedRow[${idx}]`
     },
 
     // Alert views

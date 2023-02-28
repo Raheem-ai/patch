@@ -8,6 +8,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import { ActiveRequestTabHeight, HeaderAnnouncementHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, connectionStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
+import TestIds from "../test/ids";
 import { ScreenProps, routerNames, ICONS } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
@@ -175,7 +176,8 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                         requestStore().filteredSortedRequestsWithLocation.map(r => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
-                                    <HelpRequestCard 
+                                    <HelpRequestCard
+                                        testID={TestIds.requestCard(r.id)}
                                         onPress={onCardPressed}
                                         requestId={r.id} 
                                         onMapView

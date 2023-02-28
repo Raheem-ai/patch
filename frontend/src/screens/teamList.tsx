@@ -85,13 +85,13 @@ const TeamList = observer(({ navigation, route }: Props) => {
             <ListHeader { ...headerProps } />
             <ScrollView style={styles.scrollView} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
-                    teamStore().sortedUsers.map(r => {
+                    teamStore().sortedUsers.map((r, i) => {
                         const goToDetails = goToResponder(r);
 
                         return (
                             <>
                                 <Pressable onPress={goToDetails} style={styles.listItemContainer}>
-                                    <ResponderRow onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
+                                    <ResponderRow testID={TestIds.team.rowN(TestIds.team.screen, i)} onPress={goToDetails} style={styles.responderRow} key={r.id} responder={r} orgId={userStore().currentOrgId} />
                                     <IconButton
                                         style={styles.goToResponderIcon}
                                         icon={ICONS.openListItem} 

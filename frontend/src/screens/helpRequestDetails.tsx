@@ -326,6 +326,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return (
         <>
             <WrappedScrollView 
+                testID={TestIds.requestDetails.overview}
                 showsVerticalScrollIndicator={false} 
                 style={{backgroundColor: (showCloseOpenReqButton 
                     ? Colors.backgrounds.secondary 
@@ -367,7 +368,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const channel = () => {
         return (
-            <View>
+            <View testID={TestIds.requestDetails.channel}>
                 <RequestChatChannel inTabbedScreen={true}/>
             </View>
         )
@@ -730,9 +731,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             )
         }
 
-
         return (
-            <WrappedScrollView style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
+            <WrappedScrollView testID={TestIds.requestDetails.team} style={{ backgroundColor: '#FFFFFF'}} showsVerticalScrollIndicator={false}>
                 <View style={{ backgroundColor: Colors.backgrounds.secondary, borderBottomColor: Colors.borders.filter, borderBottomWidth: 1 }}>
                     { notifyAction() }
                     { teamEventDetails() }
@@ -782,7 +782,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     );
 
     return (
-        <TabbedScreen 
+        <TabbedScreen
+            testID={TestIds.requestDetails.screen}
             bodyStyle={{ backgroundColor: Colors.backgrounds.standard }}
             defaultTab={initialTab} 
             tabs={tabs}/>

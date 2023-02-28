@@ -14,6 +14,7 @@ import TestIds from "../../test/ids";
 import { positionStats } from "../../../../common/utils/requestUtils";
 
 type Props = {
+    testID: string,
     requestId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,

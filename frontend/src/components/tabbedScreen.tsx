@@ -6,6 +6,7 @@ import { Colors } from "../types";
 import { TabbedScreenHeaderHeight } from "../constants";
 import { navigationStore } from "../stores/interfaces";
 import { runInAction } from "mobx";
+import TestIds from "../test/ids";
 
 type TabConfig = {
     label : string,
@@ -13,6 +14,7 @@ type TabConfig = {
 }
 
 type Props = {
+    testID: string
     tabs: TabConfig[]
     defaultTab?: string,
     scrollableHeader?: boolean // default to evenly spaced headers but alow for scrolling when necessary
@@ -43,6 +45,7 @@ type Props = {
  */
 
 const TabbedScreen: React.FC<Props> = ({
+    testID,
     tabs,
     defaultTab,
     scrollableHeader,
@@ -77,7 +80,7 @@ const TabbedScreen: React.FC<Props> = ({
                     : i == 0;
 
             return (
-                <Pressable key={t.label} onPress={() => selectTab(t)} style={[
+                <Pressable testID={TestIds.tabbedScreen.tabN(testID, i)} key={t.label} onPress={() => selectTab(t)} style={[
                     styles.headerSection,
                     i == 0 ? styles.firstSection : null,
                     i == tabs.length - 1 ? styles.lastSection : null,

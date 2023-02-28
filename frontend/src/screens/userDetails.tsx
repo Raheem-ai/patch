@@ -8,6 +8,7 @@ import Tags from "../components/tags";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ICONS, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
+import TestIds from "../test/ids";
 
 
 type Props = ScreenProps<'UserDetails'>;
@@ -123,7 +124,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             {
                 requestStore().currentUserActiveRequests.map(r => {
                     return (
-                        <HelpRequestCard style={styles.activeRequestCard} requestId={r.id}/>
+                        <HelpRequestCard testID={TestIds.requestCard(r.id)} style={styles.activeRequestCard} requestId={r.id}/>
                     )
                 })
             }
