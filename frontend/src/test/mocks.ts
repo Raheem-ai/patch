@@ -26,7 +26,11 @@ export function MockRequests(): HelpRequest[] {
             statusEvents: [],
             createdAt: '',
             updatedAt: '',
-            location: null,
+            location: {
+                latitude: 40.69776419999999,
+                longitude: -73.9303333,
+                address: "960 Willoughby Avenue, Brooklyn, NY, USA"
+            },
             priority: null
         },
         {
@@ -47,7 +51,86 @@ export function MockRequests(): HelpRequest[] {
             statusEvents: [],
             createdAt: '',
             updatedAt: '',
-            location: null,
+            location: {
+                latitude: 40.70107496314848,
+                longitude: -73.90470642596483,
+                address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
+            },
+            priority: null
+        },
+        {
+            id: 'xxx-req3-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 3',
+            displayId: '3',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Unassigned,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: {
+                latitude: 40.69776419999999,
+                longitude: -73.9303333,
+                address: "960 Willoughby Avenue, Brooklyn, NY, USA"
+            },
+            priority: null
+        },
+        {
+            id: 'xxx-req4-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 4',
+            displayId: '4',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Unassigned,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: {
+                latitude: 40.70107496314848,
+                longitude: -73.90470642596483,
+                address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
+            },
+            priority: null
+        },
+        {
+            id: 'xxx-req5-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 5',
+            displayId: '5',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Unassigned,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: {
+                latitude: 40.69776419999999,
+                longitude: -73.9303333,
+                address: "960 Willoughby Avenue, Brooklyn, NY, USA"
+            },
             priority: null
         }
     ]
