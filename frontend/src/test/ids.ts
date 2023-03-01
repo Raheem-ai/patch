@@ -48,7 +48,9 @@ const TestIds = {
         actions: {
             createRequest: 'headerActionsCreateRequest',
             editProfile: 'headerActionsEditProfile',
-            addTeamMember: 'headerActionsAddTeamMember'
+            addTeamMember: 'headerActionsAddTeamMember',
+            goToHelpRequestList: 'headerActionsGoToHelpRequestList',
+            goToHelpRequestMap: 'headerActionsGoToHelpRequestMap'
         },
         availabilityPrompt: {
             cancel: 'header::availabilityPrompt::cancel',
@@ -84,6 +86,12 @@ const TestIds = {
     // param on this function and pass a testID to the RequestCard
     // so it can pass that as the 'context' param
     requestCard: (reqId: string) => `requestCard-${reqId}`,
+    requestListCard: (reqId: string) => `requestListCard-${reqId}`,
+    helpRequestMap: {
+        requestCardTrack: 'helpRequestMap::requestCardTrack',
+        mapRequestCard: (reqId: string) => `helpRequestMap::mapRequestCard-${reqId}`,
+        mapVisibleRequestCard: (reqId: string) => `helpRequestMap::mapVisibleRequestCard-${reqId}`,
+    },
     // can return the field syntax as this isn't using a form internally
     // so we don't have to worry about nesting
     editCategorizedItemForm: {
