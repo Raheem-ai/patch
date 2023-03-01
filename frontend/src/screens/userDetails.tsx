@@ -124,7 +124,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             {
                 requestStore().currentUserActiveRequests.map(r => {
                     return (
-                        <HelpRequestCard testID={TestIds.requestCard(r.id)} style={styles.activeRequestCard} requestId={r.id}/>
+                        <HelpRequestCard style={styles.activeRequestCard} requestId={r.id}/>
                     )
                 })
             }

@@ -54,8 +54,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
         }
 
         return (
-            <HelpRequestCard 
-                testID={requestStore().activeRequest?.id ? TestIds.requestCard(requestStore().activeRequest.id) : null}
+            <HelpRequestCard
                 key='activeRequestTab' 
                 onPress={onPress}
                 requestId={requestStore().activeRequest.id} 

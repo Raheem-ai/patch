@@ -26,7 +26,6 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     const mapInstance = useRef<MapView>();
 
-    
     useEffect(() => {
         locationStore().askForPermission().then(() => locationStore().getCurrentLocation())
     }, [])
@@ -167,17 +166,18 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     </View>
                     : null
                 }
-                <Pressable 
+                <Pressable
+                    testID={TestIds.helpRequestMap.requestCardTrack}
                     style={[styles.cardTrack, swipeStyle]} 
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}>
                     {
-                        requestStore().filteredSortedRequestsWithLocation.map(r => {
+                        requestStore().filteredSortedRequestsWithLocation.map((r, i) => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
                                     <HelpRequestCard
-                                        testID={TestIds.requestCard(r.id)}
+                                        testID={idx - 1 == i ? TestIds.helpRequestMap.mapVisibleRequestCard(r.id) : TestIds.helpRequestMap.mapRequestCard(r.id)}
                                         onPress={onCardPressed}
                                         requestId={r.id} 
                                         onMapView

@@ -14,7 +14,7 @@ import TestIds from "../../test/ids";
 import { positionStats } from "../../../../common/utils/requestUtils";
 
 type Props = {
-    testID: string,
+    testID?: string,
     requestId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
@@ -23,7 +23,8 @@ type Props = {
     onPress?: (event: GestureResponderEvent, request: HelpRequest) => void
 };
 
-const HelpRequestCard = observer(({ 
+const HelpRequestCard = observer(({
+    testID,
     requestId, 
     style,
     dark,
@@ -258,8 +259,8 @@ const HelpRequestCard = observer(({
 
     return (
         <Pressable 
-            onPress={onCardPress} 
-            testID={TestIds.requestCard(request.id)}
+            onPress={onCardPress}
+            testID={testID ? testID : TestIds.requestCard(request.id)}
             style={[
                 styles.container, 
                 dark 
