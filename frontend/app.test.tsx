@@ -505,7 +505,7 @@ describe('Signed in Scenarios', () => {
             positions: []
         })
 
-        const newReqCard = await waitFor(() => getByTestId(TestIds.requestCard(mockRequest.id)));
+        const newReqCard = await waitFor(() => getByTestId(TestIds.requestListCard(mockRequest.id)));
 
         await act(async() => {
             fireEvent(newReqCard, 'press')
@@ -779,10 +779,10 @@ describe('Signed in Scenarios', () => {
         await waitFor(() => getByTestId(TestIds.requestList.screen));
 
         // Each request in our mock data should have a request card
-        await waitFor(() => MockRequests().forEach(r => getByTestId(TestIds.requestCard(r.id))));
+        await waitFor(() => MockRequests().forEach(r => getByTestId(TestIds.requestListCard(r.id))));
 
         // Navigate to Request Details screen for first request
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(MockRequests()[0].id)));
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestListCard(MockRequests()[0].id)));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -836,5 +836,60 @@ describe('Signed in Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.nPeopleNotified(1));
         await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
+
+    test('View requests on map', async () => {
+        console.log('View requests on map run');
+        const {
+            getByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Navigate to the Request List screen
+        const requestsButton = await waitFor(() => getByTestId(TestIds.userHome.goToRequests));
+        await act(async () => fireEvent(requestsButton, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
+
+        // TODO: REQUEST LIST FILTER 
+
+        // Click the option to open the Request Map from the header
+        const helpRequestMapBtn = await waitFor(() => getByTestId(TestIds.header.actions.goToHelpRequestMap));
+        await act(async () => fireEvent(helpRequestMapBtn, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestMap));
+
+        // Interact with the request cards on the map
+        const requests = MockRequests().slice();
+
+        // Swipe to the end of the request card track (and on last card),
+        // making sure the request card we expect to be in viewport actually is.
+        for (let iReqCard = 0; iReqCard < requests.length; iReqCard++) {
+            // Swipe the card track
+            await testUtils.swipeRequestCardTrack(true, getByTestId);
+
+            // After the swipe, the next card (index + 1) is visible,
+            // unless we swiped on the last card in the track.
+            // In which case the visible card remains the current index.
+            let visibleIdx = iReqCard == requests.length - 1 ? iReqCard : iReqCard + 1;
+
+            // Check the TestID of each request card to ensure that
+            // the proper card is visible and the rest are off screen.
+            await testUtils.validateRequestCardMapVisibility(visibleIdx, getByTestId);
+        }
+
+        // Same behavior as the loop above, but reverse order (from last to first request card)
+        for (let iReqCard = requests.length - 1; iReqCard >= 0; iReqCard--) {
+            // Swipe, update visible index (swiping on first card is special case), check all request cards.
+            await testUtils.swipeRequestCardTrack(false, getByTestId);
+            let visibleIdx = iReqCard == 0 ? iReqCard : iReqCard - 1;
+            await testUtils.validateRequestCardMapVisibility(visibleIdx, getByTestId);
+        }
+
+        // Navigate back to Request List
+        const helpRequestListBtn = await waitFor(() => getByTestId(TestIds.header.actions.goToHelpRequestList));
+        await act(async () => fireEvent(helpRequestListBtn, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
     })
 })

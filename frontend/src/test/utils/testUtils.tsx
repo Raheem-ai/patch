@@ -2,7 +2,7 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 import App from '../../../App';
 import {APIClient} from '../../../src/api'
-import { AppState } from 'react-native';
+import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
@@ -631,4 +631,39 @@ export async function editMyPhoneNumber(getByTestId: GetByQuery<TextMatch, Commo
 
     // After entering valid value, the save button should be enabled
     expect(saveUserButton).not.toBeDisabled();
+}
+
+export async function swipeRequestCardTrack(left: boolean, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const requestCardTrack = await waitFor(() => getByTestId(TestIds.helpRequestMap.requestCardTrack));
+    const windowDimensions = Dimensions.get("screen");
+    const direction = left ? -1 : 1;
+    const touchEventDelta = direction * (windowDimensions.width / 3);
+
+    await act(async () => fireEvent(requestCardTrack, 'touchStart', {
+        nativeEvent: {
+            pageX: 0
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchMove', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchEnd', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+}
+
+export async function validateRequestCardMapVisibility(visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    for (const [index, req] of MockRequests().entries()) {
+        if (index == visibleIdx) {
+            await waitFor(() => getByTestId(TestIds.helpRequestMap.mapVisibleRequestCard(req.id)));
+        } else {
+            await waitFor(() => getByTestId(TestIds.helpRequestMap.mapRequestCard(req.id)));
+        }
+    }
 }
