@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { HelpRequestFilter, HelpRequestSortBy } from "../../../common/models";
+import { HelpRequestFilter, HelpRequestFilterToLabelMap, HelpRequestSortBy, HelpRequestSortByToLabelMap } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
@@ -10,19 +10,6 @@ import { ScreenProps } from "../types";
 import TestIds from "../test/ids";
 
 type Props = ScreenProps<'HelpRequestList'>;
-
-const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
-    [HelpRequestFilter.Active]: 'Active',
-    [HelpRequestFilter.Closed]: 'Archived',
-    [HelpRequestFilter.All]: 'All'
-}
-
-const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
-    [HelpRequestSortBy.ByTime]: 'By time',
-    [HelpRequestSortBy.ByStatus]: 'By status',
-    [HelpRequestSortBy.BySeverity]: 'By priority'
-    // [HelpRequestSortBy.ByDistance]: 'By distance'
-}
 
 const HelpRequestList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<HelpRequestFilter>(HelpRequestFilter);

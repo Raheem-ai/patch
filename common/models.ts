@@ -414,6 +414,19 @@ export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((stats
     [RequestStatus.Closed]: 'Archived'
 }
 
+export const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
+    [HelpRequestFilter.Active]: 'Active',
+    [HelpRequestFilter.Closed]: 'Archived',
+    [HelpRequestFilter.All]: 'All'
+}
+
+export const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
+    [HelpRequestSortBy.ByTime]: 'By time',
+    [HelpRequestSortBy.ByStatus]: 'By status',
+    [HelpRequestSortBy.BySeverity]: 'By priority'
+    // [HelpRequestSortBy.ByDistance]: 'By distance'
+}
+
 export type ResponderRequestStatuses = 
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
