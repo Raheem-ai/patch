@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">24.74% </span>
+                <span class="strong">35.05% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>24/97</span>
+                <span class='fraction'>34/97</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">42.85% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>8/28</span>
+                <span class='fraction'>12/28</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.98% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>20/87</span>
+                <span class='fraction'>29/87</span>
             </div>
         
             
@@ -333,7 +333,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">17x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -369,8 +369,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -381,9 +381,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -407,15 +407,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -594,9 +594,9 @@ export default class LocationStore implements ILocationStore {
 <span class="cstat-no" title="statement not covered" >        return this.hasBackgroundPermission &amp;&amp; this.hasForegroundPermission</span>
     }
 &nbsp;
-<span class="fstat-no" title="function not covered" >    as</span>ync askForPermission(): Promise&lt;boolean&gt; {
-<span class="cstat-no" title="statement not covered" >        try {</span>
-            let { status } = <span class="cstat-no" title="statement not covered" >await ExpoLocation.requestForegroundPermissionsAsync();</span>
+    async askForPermission(): Promise&lt;boolean&gt; {
+        try {
+            let { status } = await ExpoLocation.requestForegroundPermissionsAsync();
             
 <span class="cstat-no" title="statement not covered" >            if (status !== ExpoLocation.PermissionStatus.GRANTED) {</span>
 <span class="cstat-no" title="statement not covered" >                console.log('Permission to access foreground location was denied');</span>
@@ -607,9 +607,9 @@ export default class LocationStore implements ILocationStore {
 <span class="cstat-no" title="statement not covered" >                runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >this.hasForegroundPermission = true)</span></span>
             }
         } catch (e) {
-<span class="cstat-no" title="statement not covered" >            console.log('Error requesting foreground location permission: ', e);</span>
-<span class="cstat-no" title="statement not covered" >            runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >this.hasForegroundPermission = false)</span></span>
-<span class="cstat-no" title="statement not covered" >            return false;</span>
+            console.log('Error requesting foreground location permission: ', e);
+            runInAction(() =&gt; this.hasForegroundPermission = false)
+            return false;
         }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        try {</span>
@@ -632,16 +632,16 @@ export default class LocationStore implements ILocationStore {
         }
     }
 &nbsp;
-<span class="fstat-no" title="function not covered" >    as</span>ync getCurrentLocation(): Promise&lt;LocationObject&gt; {
-        let location = <span class="cstat-no" title="statement not covered" >await ExpoLocation.getCurrentPositionAsync({</span>
+    async getCurrentLocation(): Promise&lt;LocationObject&gt; {
+        let location = await ExpoLocation.getCurrentPositionAsync({
             // should we have any defaults here?
         });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        runInAction(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >            this.lastKnownLocation = location</span>
+        runInAction(() =&gt; {
+            this.lastKnownLocation = location
         })
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        return location;</span>
+        return location;
     }
 &nbsp;
 <span class="fstat-no" title="function not covered" >    as</span>ync startWatchingLocation(): Promise&lt;void&gt; {
@@ -748,7 +748,7 @@ AppState.addEventListener('change', <span class="fstat-no" title="function not c
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-23T20:55:35.213Z
+                at 2023-03-02T18:17:52.225Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
