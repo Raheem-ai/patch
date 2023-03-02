@@ -8,7 +8,6 @@ import Tags from "../components/tags";
 import { linkingStore, requestStore, userStore, manageAttributesStore, organizationStore, } from "../stores/interfaces";
 import { Colors, ICONS, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
-import TestIds from "../test/ids";
 
 
 type Props = ScreenProps<'UserDetails'>;
