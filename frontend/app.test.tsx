@@ -25,7 +25,7 @@ import App from './App';
 import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
+import { MockActiveRequests, MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
 import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -35,7 +35,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, DefaultRoles, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -762,6 +762,7 @@ describe('Signed in Scenarios', () => {
         console.log('Notify people run...');
         const {
             getByTestId,
+            queryByTestId
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -778,11 +779,12 @@ describe('Signed in Scenarios', () => {
         await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
         await waitFor(() => getByTestId(TestIds.requestList.screen));
 
-        // Each request in our mock data should have a request card
-        await waitFor(() => MockRequests().forEach(r => getByTestId(TestIds.requestListCard(r.id))));
+        // By default, each active request in our mock data should have a request card displayed.
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status != RequestStatus.Closed, getByTestId, queryByTestId);
 
-        // Navigate to Request Details screen for first request
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestListCard(MockRequests()[0].id)));
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestListCard(requests[0].id)));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -842,6 +844,7 @@ describe('Signed in Scenarios', () => {
         console.log('View requests on map run');
         const {
             getByTestId,
+            queryByTestId
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -853,7 +856,35 @@ describe('Signed in Scenarios', () => {
         await act(async () => fireEvent(requestsButton, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
 
-        // TODO: REQUEST LIST FILTER 
+        // Open list header to filter
+        const toggleListHeaderBtn = await waitFor(() => getByTestId(TestIds.listHeader.toggleHeader));
+        await act(async () => fireEvent(toggleListHeaderBtn, 'press'));
+
+        // Active, Closed, All
+        const filterOptions = commonUtils.allEnumValues<HelpRequestFilter>(HelpRequestFilter);
+
+        // By Default "Active" is the chosen filter
+        // Ensure that only active requests have their request card displayed.
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[0]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status != RequestStatus.Closed, getByTestId, queryByTestId);
+
+        // Select the closed requests filter. It should now be the chosen option.
+        // Expect closed requests to have cards, and other requests to be null.
+        const closedRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[1]])));
+        await act(async () => fireEvent(closedRequestsFilter, 'press'));
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[1]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status == RequestStatus.Closed, getByTestId, queryByTestId);
+
+        // Select the all requests filter. It should now be the chosen option.
+        // Expect all request cards to be displayed.
+        const allRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[2]])));
+        await act(async () => fireEvent(allRequestsFilter, 'press'));
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[2]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => true, getByTestId, queryByTestId);
+
+        // Filter back to active requests for map view
+        const activeRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[0]])));
+        await act(async () => fireEvent(activeRequestsFilter, 'press'));
 
         // Click the option to open the Request Map from the header
         const helpRequestMapBtn = await waitFor(() => getByTestId(TestIds.header.actions.goToHelpRequestMap));
@@ -861,30 +892,30 @@ describe('Signed in Scenarios', () => {
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestMap));
 
         // Interact with the request cards on the map
-        const requests = MockRequests().slice();
+        const activeRequests = MockActiveRequests();
 
         // Swipe to the end of the request card track (and on last card),
         // making sure the request card we expect to be in viewport actually is.
-        for (let iReqCard = 0; iReqCard < requests.length; iReqCard++) {
+        for (let iReqCard = 0; iReqCard < activeRequests.length; iReqCard++) {
             // Swipe the card track
             await testUtils.swipeRequestCardTrack(true, getByTestId);
 
             // After the swipe, the next card (index + 1) is visible,
             // unless we swiped on the last card in the track.
             // In which case the visible card remains the current index.
-            let visibleIdx = iReqCard == requests.length - 1 ? iReqCard : iReqCard + 1;
+            let visibleIdx = iReqCard == activeRequests.length - 1 ? iReqCard : iReqCard + 1;
 
             // Check the TestID of each request card to ensure that
             // the proper card is visible and the rest are off screen.
-            await testUtils.validateRequestCardMapVisibility(visibleIdx, getByTestId);
+            await testUtils.validateRequestMapCards(activeRequests, visibleIdx, getByTestId);
         }
 
         // Same behavior as the loop above, but reverse order (from last to first request card)
-        for (let iReqCard = requests.length - 1; iReqCard >= 0; iReqCard--) {
+        for (let iReqCard = activeRequests.length - 1; iReqCard >= 0; iReqCard--) {
             // Swipe, update visible index (swiping on first card is special case), check all request cards.
             await testUtils.swipeRequestCardTrack(false, getByTestId);
             let visibleIdx = iReqCard == 0 ? iReqCard : iReqCard - 1;
-            await testUtils.validateRequestCardMapVisibility(visibleIdx, getByTestId);
+            await testUtils.validateRequestMapCards(activeRequests, visibleIdx, getByTestId);
         }
 
         // Navigate back to Request List

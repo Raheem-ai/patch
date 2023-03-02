@@ -1,9 +1,13 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
         googleMapsApiKey: 'xxx-googlemaps-xxx'
     }
+}
+
+export function MockActiveRequests(): HelpRequest[] {
+    return JSON.parse(JSON.stringify(MockRequests().filter(r => r.status != RequestStatus.Closed)));
 }
 
 export function MockRequests(): HelpRequest[] {
@@ -132,7 +136,57 @@ export function MockRequests(): HelpRequest[] {
                 address: "960 Willoughby Avenue, Brooklyn, NY, USA"
             },
             priority: null
-        }
+        },
+        {
+            id: 'xxx-req6-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 6',
+            displayId: '6',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Closed,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: {
+                latitude: 40.70107496314848,
+                longitude: -73.90470642596483,
+                address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
+            },
+            priority: null
+        },
+        {
+            id: 'xxx-req7-xxx',
+            orgId: MockOrgMetadata().id,
+            notes: 'mock description 7',
+            displayId: '7',
+            callerName: '',
+            callerContactInfo: '',
+            callStartedAt: '',
+            callEndedAt: '',
+            dispatcherId: MockUsers()[0].id, 
+            type: [],
+            positions: [],
+            tagHandles: [],
+            status: RequestStatus.Closed,
+            teamEvents: [],
+            statusEvents: [],
+            createdAt: '',
+            updatedAt: '',
+            location: {
+                latitude: 40.69776419999999,
+                longitude: -73.9303333,
+                address: "960 Willoughby Avenue, Brooklyn, NY, USA"
+            },
+            priority: null
+        },
     ]
 }
 

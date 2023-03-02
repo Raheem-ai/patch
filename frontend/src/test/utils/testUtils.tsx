@@ -6,7 +6,7 @@ import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, HelpRequest, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
@@ -658,12 +658,26 @@ export async function swipeRequestCardTrack(left: boolean, getByTestId: GetByQue
     }));
 }
 
-export async function validateRequestCardMapVisibility(visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
-    for (const [index, req] of MockRequests().entries()) {
+export async function validateRequestMapCards(requests: HelpRequest[], visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    for (const [index, req] of requests.entries()) {
         if (index == visibleIdx) {
             await waitFor(() => getByTestId(TestIds.helpRequestMap.mapVisibleRequestCard(req.id)));
         } else {
             await waitFor(() => getByTestId(TestIds.helpRequestMap.mapRequestCard(req.id)));
+        }
+    }
+}
+
+export async function validateRequestListCards(filterFunc: (req: HelpRequest) => boolean,
+                                               getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>,
+                                               queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Expect requests that satisfy the filter conditions to have
+    // their request cards displayed.
+    for (const req of MockRequests()) {
+        if (filterFunc(req)) {
+            await waitFor(() => getByTestId(TestIds.requestListCard(req.id)));
+        } else {
+            expect(queryByTestId(TestIds.requestListCard(req.id))).toBeNull();
         }
     }
 }
