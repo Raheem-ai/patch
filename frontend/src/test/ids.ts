@@ -57,6 +57,11 @@ const TestIds = {
             confirm: 'header::availabilityPrompt::confirm'
         }
     },
+    listHeader: {
+        toggleHeader: 'listHeader::toggleHeader',
+        option: (idx: number, label: string) => `listHeader::option[${idx}]::[${label}]`,
+        chosenOption: (idx: number, label: string) => `listHeader::chosenOption[${idx}]::[${label}]`
+    },
 
     // reuasable component internals
     positionDetailsCard: {
