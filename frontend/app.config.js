@@ -29,7 +29,7 @@ let apiHost = ''
  */
 const VERSION = `1.0.0`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
-let ANDROID_VERSION_CODE = 10
+let ANDROID_VERSION_CODE = 11
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
@@ -188,10 +188,10 @@ function branchConfig() {
 		// as it is used in a config plugin which apparently does it's validation 
 		// before being on the build server -_-...real value gets set in the build
 		"apiKey": BRANCH_KEY || 'FAKE',
-		"iosAppDomain": env == 'prod'
+		"appDomain": env == 'prod'
 			? "hla1z.app.link"
 			: "hla1z.test-app.link",
-		"iosUniversalLinkDomains": env == 'prod'
+		"exhaustiveAppDomains": env == 'prod'
 			? ["hla1z.app.link", "hla1z-alternate.app.link"]
 			: ["hla1z.test-app.link", "hla1z-alternate.test-app.link"]
 	}
@@ -292,7 +292,20 @@ const config = {
 		  "googleMaps": { 
 			"apiKey": GOOGLE_MAPS_KEY
 		  }
-		}
+		},
+		"intentFilters": [
+			{
+			  "action": "VIEW",
+			  "autoVerify": true,
+			  "data": branchConfig().exhaustiveAppDomains.map(domain => {
+				return {
+					"scheme": "https",
+					"host": domain,
+				}
+			}),
+			  "category": ["DEFAULT", "BROWSABLE"]
+			}
+		]
 	  },
 	  "androidStatusBar": {
 		"barStyle": "light-content",
@@ -309,7 +322,7 @@ const config = {
 		"sentryDSN": SENTRY_DSN,
 		"appEnv": appEnv(),
 		"backendEnv": backendEnv(),
-		"linkBaseUrl": branchConfig().iosAppDomain,
+		"linkBaseUrl": branchConfig().appDomain,
 		"termsOfServiceVersion": termsOfServiceVersion(),
 		"termsOfServiceLink": termsOfServiceLink()
 	  },
