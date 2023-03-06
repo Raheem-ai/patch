@@ -1,6 +1,8 @@
 import jwt, { decode, Jwt, verify } from 'jsonwebtoken';
 import config from './config';
 import { DBManager } from './services/dbManager';
+import { readFileSync } from "fs";
+import jose from 'node-jose'
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
@@ -17,21 +19,47 @@ export type JWTMetadata = {
 }
 
 export async function createAccessToken(userId: string, etag: string): Promise<string> {
-    // get latest because it might have been rotated
-    const secret = accessTokenSecrets[0]; 
-     
     const expiresInSec = accessTokenExpirationInSecs;
 
-    return createAuthToken(userId, etag, secret, expiresInSec);
+    return createAuthToken(userId, etag, await getPrivateKeySecret(), expiresInSec);
+}
+
+export async function getPrivateKeySecret() {
+    const keyStore = await jose.JWK.asKeyStore(readFileSync('./sessionKeys', 'utf8'));
+    
+    const keys = keyStore.all();
+    // adding a new key adds it to the end
+    const key = keys[keys.length - 1]
+    
+    const privateKey = key.toPEM(true)
+    
+    return {
+        kid: key.kid,
+        value: privateKey
+    }
+}
+
+export async function getPubKeySecret(kid: string) {
+    const keyStore = await jose.JWK.asKeyStore(readFileSync('./sessionKeys', 'utf8'));
+    
+    const key = keyStore.get(kid);
+
+    if (!key) {
+        throw `key not found: ${kid}`
+    }
+    
+    const pubKey = key.toPEM()
+    
+    return {
+        kid: key.kid,
+        value: pubKey
+    }
 }
 
 export async function createRefreshToken(userId: string, etag: string): Promise<string> {
-    // get latest because it might have been rotated
-    const secret = refreshTokenSecrets[0]; 
-    
     const expiresInSec = refreshTokenExpirationInSecs;
 
-    return createAuthToken(userId, etag, secret, expiresInSec);
+    return createAuthToken(userId, etag, await getPrivateKeySecret(), expiresInSec);
 }
 
 export async function createAuthToken(userId: string, etag: string, secret: { kid: string, value: string }, expInSecs: number): Promise<string> {
@@ -42,15 +70,19 @@ export async function createAuthToken(userId: string, etag: string, secret: { ki
 
     const opts: jwt.SignOptions = { 
         //expires in one hour
+        algorithm: 'RS256',
         expiresIn: expInSecs,
-        keyid: secret.kid
-    }; 
+        keyid: secret.kid,
+        audience: 'patch-mljxq',
+        subject: userId
+    };
 
     const token = await new Promise<string>((resolve, reject) => {
         jwt.sign(metadata, secret.value, opts, function(err, token) {
             if (err) {
                 reject(err)
             } else {
+                console.log(token)
                 resolve(token)
             }
         });
@@ -66,11 +98,7 @@ export async function verifyRefreshToken(refreshToken: string, dbManager: DBMana
             throw `malformed refresh token: ${refreshToken}`
         }
 
-        const secret = refreshTokenSecrets.find(s => s.kid == decodedRefreshToken.header.kid);
-
-        if (!secret) {
-            throw `key not found: ${decodedRefreshToken.header.kid}`
-        }
+        const secret = await getPubKeySecret(decodedRefreshToken.header.kid)
 
         let refreshTokenPayload;
 

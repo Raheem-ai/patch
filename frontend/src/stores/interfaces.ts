@@ -18,6 +18,7 @@ export interface IBaseStore {
 
 export interface IUserStore extends IBaseStore {
     user: ClientSideFormat<Me>;
+    realmUser: Realm.User;
     signedIn: boolean;
     passwordResetLoginCode: string;
     authToken: string;

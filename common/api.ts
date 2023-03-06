@@ -145,6 +145,9 @@ export interface IApiClient {
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     // getResources: () => string
+
+    // TODO: add real return type
+    getJWKS: () => Promise<void>
 }
 
 type ApiRoutes = {
@@ -160,7 +163,8 @@ type ApiRoutes = {
         dispatch: `/dispatch`,
         responder: '/responder',
         organization: '/organization',
-        request: '/request'
+        request: '/request',
+        webhooks: '/webhooks'
     }
 
     orgIdHeader = 'X-Raheem-Org'
@@ -317,6 +321,9 @@ type ApiRoutes = {
         signInWithCode: () => {
             return `/signInWithCode`
         },
+        getJWKS: () => {
+            return '/getJWKS'
+        }
     }
 
     client: ApiRoutes = {
@@ -482,6 +489,11 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
+        },
+
+        // webhooks
+        getJWKS: () => {
+            return `${this.base}${this.namespaces.webhooks}${this.server.getJWKS()}`
         }
     }
 }

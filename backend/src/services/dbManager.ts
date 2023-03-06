@@ -2,7 +2,7 @@ import { Inject, Service } from "@tsed/di";
 import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda } from "@tsed/agenda";
+import { Agenda, Every } from "@tsed/agenda";
 import { MongooseService } from "@tsed/mongoose";
 import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
@@ -402,7 +402,7 @@ export class DBManager {
         // remove the entry in the organization map under the org key
         if (user.organizations && user.organizations[org.id]) {
             //effectively deleting
-            await this.updateOrRemoveUsersOrgConfig(user, org.id, (_) => null)
+            await this.updateOrRemoveUsersOrgConfig(user, org.id, (_) => undefined)
         } 
 
         // remove the userId from the members array

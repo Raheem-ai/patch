@@ -1,3 +1,4 @@
+import { bindDBs, initDBs } from "./dbs";
 import { bindServices, initServices } from "./services";
 import { bindStores, initStores } from "./stores";
 import { notificationStore } from "./stores/interfaces";
@@ -5,6 +6,7 @@ import { notificationStore } from "./stores/interfaces";
 export default function (doneLoading: () => void) {
     bindStores();
     bindServices();
+    bindDBs();
 
     // setup notifications for both foreground/background scenarios
     notificationStore().setup();
@@ -13,7 +15,8 @@ export default function (doneLoading: () => void) {
         try {
             await Promise.all([
                 initStores(),
-                initServices()
+                initServices(),
+                initDBs()
             ]);
 
             console.log('Successfuly initialized stores')
