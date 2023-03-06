@@ -8,6 +8,7 @@ import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import { ActiveRequestTabHeight, HeaderAnnouncementHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";
 import { BottomDrawerHandleHeight, bottomDrawerStore, connectionStore, IBottomDrawerStore, ILocationStore, IRequestStore, locationStore, requestStore } from "../stores/interfaces";
+import TestIds from "../test/ids";
 import { ScreenProps, routerNames, ICONS } from "../types";
 
 type Props = ScreenProps<'HelpRequestMap'>;
@@ -25,7 +26,6 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
 
     const mapInstance = useRef<MapView>();
 
-    
     useEffect(() => {
         locationStore().askForPermission().then(() => locationStore().getCurrentLocation())
     }, [])
@@ -166,16 +166,18 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                     </View>
                     : null
                 }
-                <Pressable 
+                <Pressable
+                    testID={TestIds.helpRequestMap.requestCardTrack}
                     style={[styles.cardTrack, swipeStyle]} 
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}>
                     {
-                        requestStore().filteredSortedRequestsWithLocation.map(r => {
+                        requestStore().filteredSortedRequestsWithLocation.map((r, i) => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
-                                    <HelpRequestCard 
+                                    <HelpRequestCard
+                                        testID={idx - 1 == i ? TestIds.helpRequestMap.mapVisibleRequestCard : TestIds.helpRequestMap.mapRequestCard}
                                         onPress={onCardPressed}
                                         requestId={r.id} 
                                         onMapView

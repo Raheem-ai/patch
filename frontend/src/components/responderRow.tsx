@@ -8,6 +8,7 @@ import UserIcon from "./userIcon";
 import { Colors } from "../types";
 
 type Props = {
+    testID: string,
     responder: ClientSideFormat<ProtectedUser>,
     orgId: string,
     style?: StyleProp<ViewStyle>,
@@ -16,13 +17,13 @@ type Props = {
     onPress?: (event: GestureResponderEvent) => void
 }
 
-const ResponderRow = ({ responder, orgId, style, request, isSelected, onPress }: Props) => {
+const ResponderRow = ({ testID, responder, orgId, style, request, isSelected, onPress }: Props) => {
     const attributes = (responder.organizations[userStore().currentOrgId]?.attributes || [])
             .map(attr => manageAttributesStore().getAttribute(attr.categoryId, attr.itemId))
             .filter(a => !!a);
 
     return (
-        <Pressable onPress={onPress} style={[styles.responderRow, style ]}>
+        <Pressable testID={testID} onPress={onPress} style={[styles.responderRow, style ]}>
             <View style={styles.userIconContainer}>
                 <UserIcon userId={responder.id} large/>
             </View>

@@ -2,24 +2,35 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 import App from '../../../App';
 import {APIClient} from '../../../src/api'
-import { AppState } from 'react-native';
+import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, HelpRequest, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
-import { linkingStore, navigationStore } from '../../stores/interfaces';
+import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
 import { routerNames } from '../../types';
 import STRINGS from '../../../../common/strings';
-import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
+import { GetByQuery, QueryByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
 import { TokenContext } from '../../../api';
 
 const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
-const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null)
+const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null);
+
+// Default Role text
+const adminText = DefaultRoles[1].name;
+const dispatcherText = DefaultRoles[2].name;
+const responderText = DefaultRoles[3].name;
+
+// Attributes text
+const haitianCreoleLanguageText = DefaultAttributeCategories[0].attributes[4].name;
+const frenchLanguageText = DefaultAttributeCategories[0].attributes[7].name;
+const firstAidSkillText = DefaultAttributeCategories[1].attributes[2].name;
+const cprTrainingText = DefaultAttributeCategories[2].attributes[0].name;
 
 // App boot helper functions
 export async function mockBoot() {
@@ -136,7 +147,7 @@ export async function mockSignIn() {
         getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata()),
         getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
         getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
-        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),
+        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests()),
 
         // mocked data
         mockedUser,
@@ -208,7 +219,7 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
     const getTeamMembersMock = jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata());
     const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
     const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
-    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]);
+    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests());
 
     // Submit the form
     await act(async () => {
@@ -429,4 +440,244 @@ export async function completeUpdatePasswordForm(redirectRoute: string, getByTes
     await waitFor(() => {
         expect(navigationStore().currentRoute).toEqual(redirectRoute);
     })
+}
+
+// Signed In helpers
+export async function checkOnDutyText(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const onDutyTextComponent = await waitFor(() => getByTestId(TestIds.header.open.onDutyText));
+    expect(onDutyTextComponent).toHaveTextContent(userStore().isOnDuty ? 'Available' : 'Unavailable');
+}
+
+export async function assignNewUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>, queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Test IDs relevant to retrieving controls to edit roles assigned to a user
+    const editRolesTestID = TestIds.addUser.inputs.role;
+    const rolesWrappedTestID = TestIds.inputs.roleList.labelWrapper(editRolesTestID);
+
+    // Input label for Roles that shows up on the form for editing a user
+    const rolesInputLabel = await waitFor(() => getByTestId(rolesWrappedTestID));
+
+    // There should be no roles present
+    expect(queryByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0))).toBeNull();
+
+    // Press roles input label to navigate to the actual roles input form
+    await act(async () => {
+        fireEvent(rolesInputLabel, 'click');
+    })
+
+    // Expect Admin, Dispatcher, and Responder inputs to exist in the Roles list
+    const adminRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 0)));
+    const dispatcherRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 1)));
+    const responderRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 2)));
+
+    // Add Dispatcher and Responder roles to user
+    await act(async () => fireEvent(dispatcherRoleLabel, 'press'))
+    await act(async () => fireEvent(responderRoleLabel, 'press'))
+
+    // After saving roles, expect tags for Responder and Dispatcher to be present on the roles input label now.
+    const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(editRolesTestID)));
+    await act(async () => fireEvent(saveRolesButton, 'press'))
+
+    const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
+    expect(dispatcherRoleTag).toHaveTextContent(dispatcherText)
+
+    const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
+    expect(responderRoleTag).toHaveTextContent(responderText)
+}
+
+export async function editUserRoles(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Test IDs relevant to retrieving controls to edit roles assigned to a user
+    const editRolesTestID = TestIds.editMe.inputs.roles;
+    const rolesWrappedTestID = TestIds.inputs.roleList.labelWrapper(editRolesTestID);
+
+    // Input label for Roles that shows up on the form for editing a user
+    const rolesInputLabel = await waitFor(() => getByTestId(rolesWrappedTestID));
+
+    // Expect Admin and Dispatcher tags to be present on roles input label
+    let adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
+    expect(adminRoleTag).toHaveTextContent(adminText)
+    const dispatcherRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
+    expect(dispatcherRoleTag).toHaveTextContent(dispatcherText)
+
+    // Press roles input label to navigate to the actual roles input form
+    await act(async () => {
+        fireEvent(rolesInputLabel, 'press');
+    })
+
+    // Expect Admin, Dispatcher, and Responder inputs to exist in the Roles list
+    const adminRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 0)));
+    const dispatcherRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 1)));
+    const responderRoleLabel = await waitFor(() => getByTestId(TestIds.editRolesForm.navInputs.roleOptionN(editRolesTestID, 2)));
+
+    // Add Responder role to my user
+    await act(async () => {
+        fireEvent(responderRoleLabel, 'press');
+    })
+
+    // Remove Dispatcher role from my user
+    await act(async () => {
+        fireEvent(dispatcherRoleLabel, 'press');
+    })
+
+    // Save roles assigned to me
+    const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(editRolesTestID)));
+    await act(async () => {
+        fireEvent(saveRolesButton, 'press');
+    })
+
+    // Expect Admin and Responder tags to now be present on roles input label
+    adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 0)));
+    expect(adminRoleTag).toHaveTextContent(adminText)
+    const responderRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(rolesWrappedTestID, 1)));
+    expect(responderRoleTag).toHaveTextContent(responderText)
+}
+
+export async function editUserAttributes(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Test IDs relevant to retrieving controls to edit attributes assigned to a user
+    const editAttributesTestID = TestIds.editMe.inputs.attributes;
+    const wrappedEditAttrsTestID = TestIds.inputs.categorizedItemList.labelWrapper(editAttributesTestID);
+
+    // Input label for Attributes that shows up on the form for editing a user
+    const attributesInput = await waitFor(() => getByTestId(wrappedEditAttrsTestID));
+
+    // Expect to see Attribute Tags for Hatian Creole, French, and CPR.
+    const languageAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Languages);
+    let creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
+    expect(creoleAttributeTag).toHaveTextContent(haitianCreoleLanguageText)
+
+    const frenchAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 1)));
+    expect(frenchAttributeTag).toHaveTextContent(frenchLanguageText)
+
+    const trainingsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Trainings);
+    let cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
+    expect(cprAttributeTag).toHaveTextContent(cprTrainingText)
+
+    // Click the attribute input label so we can edit the assigned attributes on the actual form
+    await act(async () => {
+        fireEvent(attributesInput, 'click');
+    })
+
+    // Compose the Test IDs that retrieve the pill components that appear at the top of the Attributes form
+    const categorizedItemListID = TestIds.inputs.categorizedItemList.wrapper(editAttributesTestID);
+    const pillsWrappedTestID = TestIds.inputs.categorizedItemList.pills(categorizedItemListID);
+
+    // Expect delete-able pills for Hatian Creole, French, and CPR
+    const creolePill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 0)));
+    expect(creolePill).toHaveTextContent(haitianCreoleLanguageText)
+
+    const frenchPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
+    expect(frenchPill).toHaveTextContent(frenchLanguageText)
+
+    let cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
+    expect(cprPill).toHaveTextContent(cprTrainingText)
+
+    // Delete the French Attribute
+    const frenchDeleteIconButton = await waitFor(() => getByTestId(TestIds.tags.deleteN(pillsWrappedTestID, 1)));
+    await act(async () => {
+        fireEvent(frenchDeleteIconButton, 'click');
+    })
+
+    // CPR should now be the second pill
+    cprPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 1)));
+    expect(cprPill).toHaveTextContent(cprTrainingText)
+
+    // Add a new attribute (first aid)
+    // `first aid` is the third option in the Trainings category
+    const trainingsAttrID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(categorizedItemListID, 1));
+    const firstAidRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(trainingsAttrID, 2)));
+    expect(firstAidRow).toHaveTextContent(firstAidSkillText)
+    await act(async () => {
+        fireEvent(firstAidRow, 'click');
+    })
+
+    // First aid pill should now be presen
+    const firstAidPill = await waitFor(() => getByTestId(TestIds.tags.itemN(pillsWrappedTestID, 2)));
+    expect(firstAidPill).toHaveTextContent(firstAidSkillText);
+
+    // Save changes
+    const saveAttrsButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(categorizedItemListID)));
+    await act(async () => {
+        fireEvent(saveAttrsButton, 'click');
+    })
+
+    // Validate the Attributes label now has tags for Creole, CPR, and first aid
+    // in their respective categories.
+    creoleAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttrsTestId, 0)));
+    expect(creoleAttributeTag).toHaveTextContent(haitianCreoleLanguageText);
+
+    cprAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(trainingsAttrsTestId, 0)));
+    expect(cprAttributeTag).toHaveTextContent(cprTrainingText)
+
+    const skillsAttrsTestId = TestIds.inputs.categorizedItemList.tagWrapper(editAttributesTestID, DefaultAttributeCategoryIds.Skills);
+    const firstAidAttributeTag = await waitFor(() => getByTestId(TestIds.tags.itemN(skillsAttrsTestId, 0)));
+    expect(firstAidAttributeTag).toHaveTextContent(firstAidSkillText)
+}
+
+export async function editMyPhoneNumber(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const phoneInput = await waitFor(() => getByTestId(TestIds.editMe.inputs.phone));
+
+    // Change the phone number to an invalid entry
+    await act(async () => {
+        fireEvent.changeText(phoneInput, '555-5555')
+    });
+
+    // Save button should be disabled
+    const saveUserButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.editMe.form)));
+    expect(saveUserButton).toBeDisabled();
+
+    // Change the phone number to a valid 10 digit number
+    await act(async () => {
+        fireEvent.changeText(phoneInput, '7575555555')
+    });
+
+    // After entering valid value, the save button should be enabled
+    expect(saveUserButton).not.toBeDisabled();
+}
+
+export async function swipeRequestCardTrack(left: boolean, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const requestCardTrack = await waitFor(() => getByTestId(TestIds.helpRequestMap.requestCardTrack));
+    const windowDimensions = Dimensions.get("screen");
+    const direction = left ? -1 : 1;
+    const touchEventDelta = direction * (windowDimensions.width / 3);
+
+    await act(async () => fireEvent(requestCardTrack, 'touchStart', {
+        nativeEvent: {
+            pageX: 0
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchMove', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchEnd', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+}
+
+export async function validateRequestMapCards(requests: HelpRequest[], visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    for (const [index, req] of requests.entries()) {
+        if (index == visibleIdx) {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapVisibleRequestCard, req.id)));
+        } else {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapRequestCard, req.id)));
+        }
+    }
+}
+
+export async function validateRequestListCards(filterFunc: (req: HelpRequest) => boolean,
+                                               getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>,
+                                               queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Expect requests that satisfy the filter conditions to have
+    // their request cards displayed.
+    for (const req of MockRequests()) {
+        if (filterFunc(req)) {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id)));
+        } else {
+            expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id))).toBeNull();
+        }
+    }
 }

@@ -8,6 +8,7 @@ import HelpRequestCard from "../requestCard/helpRequestCard";
 import Loader from "../loader";
 import { BottomDrawerViewVisualArea } from "../helpers/visualArea";
 import { SCREEN_WIDTH } from "../../utils/dimensions";
+import TestIds from "../../test/ids";
 
 const dimensions = Dimensions.get('screen')
 
@@ -54,6 +55,7 @@ export default class GlobalBottomDrawer extends React.Component<BottomDrawerProp
 
         return (
             <HelpRequestCard 
+                testID={TestIds.globalBottomDrawer}
                 key='activeRequestTab' 
                 onPress={onPress}
                 requestId={requestStore().activeRequest.id} 

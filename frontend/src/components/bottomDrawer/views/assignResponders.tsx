@@ -57,8 +57,9 @@ export default class AssignResponders extends React.Component {
                 },
                 label: () => {
                     const count = dispatchStore().selectedResponderIds.size;
-                    
-                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count);
+                    const notShown = dispatchStore().selectedResponders.filter(u => !dispatchStore().assignableResponders.includes(u));
+
+                    return STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(count, notShown.length);
                 },
                 validator: () => {
                     return !!dispatchStore().selectedResponderIds.size
@@ -123,11 +124,12 @@ export default class AssignResponders extends React.Component {
                     <Text style={styles.responderCountText}>{STRINGS.nPeople(dispatchStore().assignableResponders.length)}</Text>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
+                            testID={TestIds.assignResponders.toggleSelectAllBtn}
                             style={styles.selectAllIcon}
                             icon={dispatchStore().selectAll ? ICONS.selectedSmall : ICONS.unselectedSmall}
                             color={dispatchStore().selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
-                        <Text style={styles.selectAllText}>{selectAllText}</Text>
+                        <Text testID={TestIds.assignResponders.toggleSelectAllText} style={styles.selectAllText}>{selectAllText}</Text>
                     </Pressable>
                 </View>
                 {/* <View style={styles.includeOffDutyRow}>
@@ -146,16 +148,17 @@ export default class AssignResponders extends React.Component {
         return (
             <ScrollView style={{ flex: 1 }} contentContainerStyle={{paddingBottom: 24}} onScroll={this.handleScroll} scrollEventThrottle={120}>
                 { 
-                    dispatchStore().assignableResponders.map((r) => {
+                    dispatchStore().assignableResponders.map((r, i) => {
                         const maxWidth = dimensions.width - (styles.responderRow.paddingHorizontal * 2) - styles.selectResponderIconContainer.width - styles.selectResponderIconContainer.marginLeft;
                         const isSelected = dispatchStore().selectedResponderIds.has(r.id);
-
+                        const testIdFunc = isSelected ? TestIds.assignResponders.selectedRowN : TestIds.assignResponders.unselectedRowN
                         const chooseResponder = () => this.toggleResponder(r.id)
 
                         return (
                             <>
                                 <Pressable key={r.id} style={styles.responderRow} onPress={chooseResponder}>
-                                    <ResponderRow 
+                                    <ResponderRow
+                                        testID={testIdFunc(TestIds.assignResponders.view, i)}
                                         onPress={chooseResponder}
                                         style={[styles.responderRowOverride, { maxWidth }]} 
                                         responder={r} 

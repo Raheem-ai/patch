@@ -80,6 +80,7 @@ const HeaderConfig: {
     [routerNames.helpRequestList]: {
         title: STRINGS.PAGE_TITLES.helpRequestList,
         rightActions: [{
+            testId: TestIds.header.actions.goToHelpRequestMap,
             icon: ICONS.map,
             callback: () => navigateTo(routerNames.helpRequestMap)
         }, {
@@ -93,6 +94,7 @@ const HeaderConfig: {
     [routerNames.helpRequestMap]: {
         title: STRINGS.PAGE_TITLES.helpRequestMap,
         rightActions: [{
+            testId: TestIds.header.actions.goToHelpRequestList,
             icon: ICONS.cardList,
             callback: () => navigateTo(routerNames.helpRequestList)
         }, {
@@ -166,6 +168,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.InviteToOrg])
             ? [
                 {
+                    testId: TestIds.header.actions.addTeamMember,
                     icon: ICONS.add,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.inviteUserToOrg, true);
@@ -187,6 +190,7 @@ const HeaderConfig: {
         const rightActions = canEditProfile && !userStore().loadingCurrentUser
             ? [
                 {
+                    testId: TestIds.header.actions.editProfile,
                     icon: ICONS.edit,
                     callback: async () => {
                         if (onMyProfile) {

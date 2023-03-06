@@ -414,6 +414,19 @@ export const RequestStatusToLabelMap: { [key in RequestStatus]: string | ((stats
     [RequestStatus.Closed]: 'Archived'
 }
 
+export const HelpRequestFilterToLabelMap: { [key in HelpRequestFilter] : string } = {
+    [HelpRequestFilter.Active]: 'Active',
+    [HelpRequestFilter.Closed]: 'Archived',
+    [HelpRequestFilter.All]: 'All'
+}
+
+export const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string } = {
+    [HelpRequestSortBy.ByTime]: 'By time',
+    [HelpRequestSortBy.ByStatus]: 'By status',
+    [HelpRequestSortBy.BySeverity]: 'By priority'
+    // [HelpRequestSortBy.ByDistance]: 'By distance'
+}
+
 export type ResponderRequestStatuses = 
     RequestStatus.OnTheWay
     | RequestStatus.OnSite
@@ -1437,7 +1450,7 @@ export enum PatchPermissions {
     RequestAdmin = 'reqa',
     // Edit data for requests (user is on)
     EditRequestData = 'erd',
-    // Close requests (user is on)
+    // Archive requests (user is on)
     CloseRequests = 'cr'
 }
 
@@ -1552,8 +1565,8 @@ export const PermissionGroupMetadata: { [key in PatchPermissionGroups]: PatchPer
         ]
     },
     [PatchPermissionGroups.CloseRequests]: {
-        name: 'Close requests',
-        description: `When on a request, archive it.`,
+        name: 'Archive requests',
+        description: `Make requests inactive.`,
         permissions: [
             PatchPermissions.CloseRequests
         ]

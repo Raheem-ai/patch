@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
 import { unwrap } from "../../../../../../common/utils"
 import { organizationStore } from "../../../../stores/interfaces"
+import TestIds from "../../../../test/ids"
 import Tags from "../../../tags"
 import { SectionLabelViewProps } from "../../types"
 
@@ -17,9 +18,11 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
         expand?.()
     }
 
+    const wrappedTestID = TestIds.inputs.roleList.labelWrapper(config.testID);
+
     if (!config.val() || !config.val().length) {
         return (
-            <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
+            <Pressable testID={wrappedTestID} onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
                 <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
             </Pressable>
         )
@@ -36,7 +39,7 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
     }
 
     return (
-        <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
+        <Pressable testID={wrappedTestID} onPress={onPress} style={[{ minHeight: 60 }]}>
             {
                 <View style={{ paddingVertical: 6 }}>
                     <Tags 
@@ -45,6 +48,7 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
                         horizontalTagMargin={6}
                         tags={selectedRoles}
                         dark={true}
+                        testID={wrappedTestID}
                         // only pass callback if we got one so the "x" isn't shown if you can't delete
                         onTagDeleted={config.props?.onItemDeleted ? onRoleRemoved : null}/>
                 </View>

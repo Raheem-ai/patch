@@ -4,6 +4,7 @@ import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { Text } from "react-native-paper"
 import { unwrap } from "../../../../../../common/utils"
+import TestIds from "../../../../test/ids"
 import Tags from "../../../tags"
 import { SectionLabelViewProps } from "../../types"
 
@@ -17,9 +18,11 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
         expand?.()
     }
 
+    const wrappedTestID = TestIds.inputs.categorizedItemList.labelWrapper(config.testID);
+
     if (!config.val() || !config.val().length) {
         return (
-            <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
+            <Pressable testID={wrappedTestID} onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
                 <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
             </Pressable>
         )
@@ -36,7 +39,7 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
     })
 
     return (
-        <Pressable onPress={onPress} style={[{ minHeight: 60 }]}>
+        <Pressable testID={wrappedTestID} onPress={onPress} style={[{ minHeight: 60 }]}>
             {
                 Array.from(tagMap.entries()).map(([categoryId, itemIds], idx, arr) => {
                     const category = config.props.definedCategories().get(categoryId)
@@ -52,10 +55,13 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
                         return category.items.find(item => item.id == selectedItemId)?.name || null
                     }).filter(x => !!x)
 
+                    const tagTestID = TestIds.inputs.categorizedItemList.tagWrapper(config.testID, categoryId);
+
                     return (
                         <View style={{ paddingTop: 20, paddingBottom: isLast ? (20 - 6) : 0 }}>
                             <Text style={{ color: '#999' }}>{categoryName}</Text>
                             <Tags 
+                                testID={tagTestID}
                                 disabled={config.disabled}
                                 dark={config.props.dark}
                                 verticalMargin={6} 

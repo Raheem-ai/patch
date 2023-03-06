@@ -55,7 +55,7 @@ export default class HeaderStore implements IHeaderStore {
     }
 
     clear() {
-        
+        this.isOpen = false;
     }
    
 }

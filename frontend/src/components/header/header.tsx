@@ -78,10 +78,12 @@ const Header = observer((props: Props) => {
                 message: STRINGS.INTERFACE.availabilityAlertMessage(userStore().isOnDuty),
                 actions: [
                     {
+                        testID: TestIds.header.availabilityPrompt.cancel,
                         label: `${STRINGS.INTERFACE.cancel}`,
-                        onPress: () => {}
+                        onPress: () => {},
                     },
-                    {   
+                    {
+                        testID: TestIds.header.availabilityPrompt.confirm,
                         label: `${STRINGS.INTERFACE.toggleAvailability(userStore().isOnDuty)}`,
                         onPress: () => userStore().toggleOnDuty(),
                         confirming: true
@@ -159,7 +161,8 @@ const Header = observer((props: Props) => {
                         }
                         { 
                             <View style={[styles.onDutyStatusContainer, {marginRight: 12 }]}>
-                                <IconButton 
+                                <IconButton
+                                    testID={TestIds.header.closed.status} 
                                     key={'status-icon'} 
                                     style={{ width: statusIconSize, height: statusIconSize }} 
                                     icon={statusIcon} 
@@ -242,11 +245,12 @@ const Header = observer((props: Props) => {
         <View sentry-label='Header (open)' style={{ ...styles.fullScreenContainer, ...{ height: dimensions.height - (isAndroid ? Constants.statusBarHeight - 1 : 0 )}}}>
             <View style={styles.fullScreenHeaderContainer}>
                 <View style={styles.leftIconContainer}>
-                    <IconButton icon={ICONS.navCancel} size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
+                    <IconButton testID={TestIds.header.open.close} icon={ICONS.navCancel} size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
-                    <Text style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
+                    <Text testID={TestIds.header.open.onDutyText} style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
                     <Switch
+                        testID={TestIds.header.open.toggleDuty}
                         value={userStore().isOnDuty} 
                         onValueChange={() => userStore().toggleOnDuty()} 
                         color={Colors.good}

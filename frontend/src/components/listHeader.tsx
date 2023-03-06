@@ -3,6 +3,7 @@ import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 import { IconButton, Text } from "react-native-paper";
 import { Colors, ICONS, globalStyles } from "../types";
 import STRINGS from "../../../common/strings";
+import TestIds from "../test/ids";
 
 export type ListHeaderOptionConfig<T = any> = {
     chosenOption: T,
@@ -35,7 +36,7 @@ const ListHeader = (props: ListHeaderProps) => {
             : (props.optionConfigs || []).map(conf => conf.toHeaderLabel(conf.chosenOption)).filter(val => !!val).join(` ${STRINGS.visualDelim} `)
 
         return (
-            <Pressable onPress={toggleHeader}>
+            <Pressable testID={TestIds.listHeader.toggleHeader} onPress={toggleHeader}>
                 <View style={[styles.headerContainer, isOpen ? props.openHeaderStyles : props.closedHeaderStyles]}>
                     <Text style={[styles.headerLabel, isOpen ? styles.openHeaderLabel : null ]}>{label}</Text>
                     <IconButton 
@@ -61,9 +62,9 @@ const ListHeader = (props: ListHeaderProps) => {
 
                     return isChosen 
                         ? <View style={[styles.optionContainer, styles.chosenOptionContainer]}>
-                            <Text style={[styles.option, styles.chosenOption]}>{label}</Text>
+                            <Text testID={TestIds.listHeader.chosenOption(i, label)} style={[styles.option, styles.chosenOption]}>{label}</Text>
                         </View>
-                        : <Text onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
+                        : <Text testID={TestIds.listHeader.option(i, label)} onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
                 })
             }
         </View>

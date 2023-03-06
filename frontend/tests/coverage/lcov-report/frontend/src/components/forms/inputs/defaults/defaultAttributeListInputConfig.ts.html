@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.69% </span>
+                <span class="strong">92.3% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/13</span>
+                <span class='fraction'>12/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -141,40 +141,40 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -199,28 +199,28 @@ type DefaultConfig = Pick&lt;ScreenFormInputConfig&lt;'CategorizedItemList'&gt;,
 &nbsp;
 export type AttributesListInputConfig = AtLeast&lt;ScreenFormInputConfig&lt;'CategorizedItemList'&gt;, RequiredFields&gt;
 &nbsp;
-export const AttributesListInput = <span class="fstat-no" title="function not covered" >(c</span>onfig: AttributesListInputConfig) =&gt; {
+export const AttributesListInput = (config: AttributesListInputConfig) =&gt; {
     // not overrideable
-    const defaultConfig: DefaultConfig = <span class="cstat-no" title="statement not covered" >{</span>
+    const defaultConfig: DefaultConfig = {
         type: 'CategorizedItemList',
     }
 &nbsp;
     // default but overrideable
-    const overrideableConfig: OverrideableConfig = <span class="cstat-no" title="statement not covered" >{</span>
+    const overrideableConfig: OverrideableConfig = {
         // icon: ICONS.tag,
         placeholderLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.ELEMENTS.attribute({cap: true, plural: true}),</span>
-        headerLabel: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >STRINGS.ELEMENTS.attribute({cap: true, plural: true}),</span>
+        headerLabel: () =&gt; STRINGS.ELEMENTS.attribute({cap: true, plural: true}),
     }
 &nbsp;
     // default but overrideable props
-    const overrideableProps: OverrideableProps = <span class="cstat-no" title="statement not covered" >{</span>
-        definedCategories: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >manageAttributesStore().attributeCategories</span>
+    const overrideableProps: OverrideableProps = {
+        definedCategories: () =&gt; manageAttributesStore().attributeCategories
     }
 &nbsp;
     // default but overrideable edit config
-    const overrideableEditConfig: OverrideableEditConfig = <span class="cstat-no" title="statement not covered" >{</span>
-        filterRemovedItems: <span class="fstat-no" title="function not covered" >(i</span>tems) =&gt; {
-<span class="cstat-no" title="statement not covered" >            return items.filter(<span class="fstat-no" title="function not covered" >it</span>em =&gt; <span class="cstat-no" title="statement not covered" >!!manageAttributesStore().getAttribute(item.categoryId, item.itemId))</span>;</span>
+    const overrideableEditConfig: OverrideableEditConfig = {
+        filterRemovedItems: (items) =&gt; {
+            return items.filter(item =&gt; !!manageAttributesStore().getAttribute(item.categoryId, item.itemId));
         },
         editStore: manageAttributesStore().editStore,
         editHeaderLabel: STRINGS.ACCOUNT.editAttributes,
@@ -230,11 +230,11 @@ export const AttributesListInput = <span class="fstat-no" title="function not co
         onSaveToastLabel: STRINGS.INTERFACE.successfullyUpdatedElement(STRINGS.ELEMENTS.attribute({cap: false, plural: true}))
     }
 &nbsp;
-    const resolvedEditConfig = <span class="cstat-no" title="statement not covered" >Object.assign({}, overrideableEditConfig, config.props?.editConfig || {})</span>
+    const resolvedEditConfig = Object.assign({}, overrideableEditConfig, config.props?.editConfig || {})
 &nbsp;
-    const resolvedProps = <span class="cstat-no" title="statement not covered" >Object.assign({}, overrideableProps, config.props || {}, { editConfig: resolvedEditConfig });</span>
+    const resolvedProps = Object.assign({}, overrideableProps, config.props || {}, { editConfig: resolvedEditConfig });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return Object.assign(</span>
+    return Object.assign(
         {},
         overrideableConfig,
         config,
@@ -250,7 +250,7 @@ export const AttributesListInput = <span class="fstat-no" title="function not co
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-02-08T22:17:15.583Z
+                at 2023-03-06T15:57:02.984Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>
