@@ -505,7 +505,7 @@ describe('Signed in Scenarios', () => {
             positions: []
         })
 
-        const newReqCard = await waitFor(() => getByTestId(TestIds.requestListCard(mockRequest.id)));
+        const newReqCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, mockRequest.id)));
 
         await act(async() => {
             fireEvent(newReqCard, 'press')
@@ -784,7 +784,7 @@ describe('Signed in Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestListCard(requests[0].id)));
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));

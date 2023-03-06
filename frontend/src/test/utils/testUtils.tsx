@@ -661,9 +661,9 @@ export async function swipeRequestCardTrack(left: boolean, getByTestId: GetByQue
 export async function validateRequestMapCards(requests: HelpRequest[], visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     for (const [index, req] of requests.entries()) {
         if (index == visibleIdx) {
-            await waitFor(() => getByTestId(TestIds.helpRequestMap.mapVisibleRequestCard(req.id)));
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapVisibleRequestCard, req.id)));
         } else {
-            await waitFor(() => getByTestId(TestIds.helpRequestMap.mapRequestCard(req.id)));
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapRequestCard, req.id)));
         }
     }
 }
@@ -675,9 +675,9 @@ export async function validateRequestListCards(filterFunc: (req: HelpRequest) =>
     // their request cards displayed.
     for (const req of MockRequests()) {
         if (filterFunc(req)) {
-            await waitFor(() => getByTestId(TestIds.requestListCard(req.id)));
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id)));
         } else {
-            expect(queryByTestId(TestIds.requestListCard(req.id))).toBeNull();
+            expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id))).toBeNull();
         }
     }
 }
