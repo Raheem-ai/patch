@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1677781072522" clover="3.2.0">
-  <project timestamp="1677781072522" name="All files">
-    <metrics statements="5244" coveredstatements="2644" conditionals="2400" coveredconditionals="877" methods="2041" coveredmethods="962" elements="9685" coveredelements="4483" complexity="0" loc="5244" ncloc="5244" packages="31" files="142" classes="142"/>
+<coverage generated="1678118223347" clover="3.2.0">
+  <project timestamp="1678118223347" name="All files">
+    <metrics statements="5241" coveredstatements="2642" conditionals="2398" coveredconditionals="876" methods="2038" coveredmethods="960" elements="9677" coveredelements="4478" complexity="0" loc="5241" ncloc="5241" packages="31" files="142" classes="142"/>
     <package name="frontend">
       <metrics statements="34" coveredstatements="33" conditionals="14" coveredconditionals="11" methods="12" coveredmethods="12"/>
       <file name="App.tsx" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/App.tsx">
@@ -612,10 +612,10 @@
         <line num="51" count="0" type="stmt"/>
         <line num="52" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
-        <line num="73" count="57" type="cond" truecount="4" falsecount="0"/>
-        <line num="74" count="24" type="stmt"/>
-        <line num="77" count="33" type="stmt"/>
-        <line num="94" count="1" type="stmt"/>
+        <line num="74" count="57" type="cond" truecount="4" falsecount="0"/>
+        <line num="75" count="24" type="stmt"/>
+        <line num="78" count="33" type="stmt"/>
+        <line num="95" count="1" type="stmt"/>
       </file>
     </package>
     <package name="frontend.src.components.bottomDrawer.views">
@@ -2568,18 +2568,18 @@
         <line num="149" count="0" type="stmt"/>
         <line num="154" count="0" type="stmt"/>
         <line num="164" count="0" type="stmt"/>
-        <line num="168" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="168" count="2" type="cond" truecount="1" falsecount="1"/>
         <line num="174" count="1" type="stmt"/>
-        <line num="180" count="3" type="stmt"/>
-        <line num="186" count="3" type="stmt"/>
-        <line num="187" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="190" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="180" count="2" type="stmt"/>
+        <line num="186" count="4" type="stmt"/>
+        <line num="187" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="190" count="4" type="cond" truecount="3" falsecount="1"/>
         <line num="196" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="197" count="1" type="stmt"/>
         <line num="198" count="1" type="stmt"/>
         <line num="200" count="0" type="stmt"/>
         <line num="201" count="0" type="stmt"/>
-        <line num="208" count="3" type="stmt"/>
+        <line num="208" count="4" type="stmt"/>
         <line num="215" count="0" type="stmt"/>
       </file>
     </package>
@@ -2612,9 +2612,9 @@
       </file>
     </package>
     <package name="frontend.src.components.requestCard">
-      <metrics statements="83" coveredstatements="47" conditionals="80" coveredconditionals="27" methods="17" coveredmethods="5"/>
+      <metrics statements="83" coveredstatements="47" conditionals="78" coveredconditionals="26" methods="17" coveredmethods="5"/>
       <file name="helpRequestCard.tsx" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/src/components/requestCard/helpRequestCard.tsx">
-        <metrics statements="83" coveredstatements="47" conditionals="80" coveredconditionals="27" methods="17" coveredmethods="5"/>
+        <metrics statements="83" coveredstatements="47" conditionals="78" coveredconditionals="26" methods="17" coveredmethods="5"/>
         <line num="26" count="1" type="stmt"/>
         <line num="35" count="170" type="stmt"/>
         <line num="37" count="170" type="stmt"/>
@@ -3323,7 +3323,7 @@
         <line num="35" count="0" type="stmt"/>
         <line num="38" count="9" type="stmt"/>
         <line num="40" count="9" type="stmt"/>
-        <line num="41" count="9" type="stmt"/>
+        <line num="41" count="8" type="stmt"/>
         <line num="52" count="32" type="stmt"/>
         <line num="66" count="32" type="stmt"/>
         <line num="67" count="10" type="stmt"/>
@@ -4261,14 +4261,14 @@
         <line num="587" count="2" type="stmt"/>
         <line num="606" count="2" type="stmt"/>
         <line num="614" count="2" type="stmt"/>
-        <line num="626" count="1133" type="stmt"/>
+        <line num="626" count="1135" type="stmt"/>
         <line num="627" count="66" type="stmt"/>
         <line num="628" count="37" type="stmt"/>
         <line num="629" count="166" type="stmt"/>
         <line num="630" count="53" type="stmt"/>
         <line num="631" count="2" type="stmt"/>
         <line num="632" count="1013" type="stmt"/>
-        <line num="633" count="469" type="stmt"/>
+        <line num="633" count="467" type="stmt"/>
         <line num="634" count="11" type="stmt"/>
         <line num="635" count="2" type="stmt"/>
         <line num="636" count="368" type="stmt"/>
@@ -5356,9 +5356,9 @@
       </file>
     </package>
     <package name="frontend.src.test">
-      <metrics statements="74" coveredstatements="38" conditionals="0" coveredconditionals="0" methods="74" coveredmethods="38"/>
+      <metrics statements="71" coveredstatements="36" conditionals="0" coveredconditionals="0" methods="71" coveredmethods="36"/>
       <file name="ids.ts" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/src/test/ids.ts">
-        <metrics statements="67" coveredstatements="31" conditionals="0" coveredconditionals="0" methods="66" coveredmethods="30"/>
+        <metrics statements="64" coveredstatements="29" conditionals="0" coveredconditionals="0" methods="63" coveredmethods="28"/>
         <line num="14" count="2" type="stmt"/>
         <line num="15" count="5" type="stmt"/>
         <line num="19" count="139" type="stmt"/>
@@ -5376,56 +5376,53 @@
         <line num="83" count="136" type="stmt"/>
         <line num="86" count="55" type="stmt"/>
         <line num="87" count="29" type="stmt"/>
-        <line num="93" count="0" type="stmt"/>
-        <line num="94" count="78" type="stmt"/>
-        <line num="97" count="168" type="stmt"/>
-        <line num="98" count="42" type="stmt"/>
-        <line num="103" count="0" type="stmt"/>
-        <line num="104" count="0" type="stmt"/>
+        <line num="96" count="250" type="stmt"/>
         <line num="105" count="0" type="stmt"/>
         <line num="106" count="0" type="stmt"/>
         <line num="107" count="0" type="stmt"/>
-        <line num="110" count="0" type="stmt"/>
+        <line num="108" count="0" type="stmt"/>
+        <line num="109" count="0" type="stmt"/>
         <line num="112" count="0" type="stmt"/>
-        <line num="113" count="6" type="stmt"/>
         <line num="114" count="0" type="stmt"/>
-        <line num="118" count="0" type="stmt"/>
+        <line num="115" count="6" type="stmt"/>
+        <line num="116" count="0" type="stmt"/>
         <line num="120" count="0" type="stmt"/>
-        <line num="121" count="0" type="stmt"/>
-        <line num="129" count="0" type="stmt"/>
-        <line num="132" count="0" type="stmt"/>
-        <line num="133" count="0" type="stmt"/>
+        <line num="122" count="0" type="stmt"/>
+        <line num="123" count="0" type="stmt"/>
+        <line num="131" count="0" type="stmt"/>
         <line num="134" count="0" type="stmt"/>
         <line num="135" count="0" type="stmt"/>
         <line num="136" count="0" type="stmt"/>
         <line num="137" count="0" type="stmt"/>
         <line num="138" count="0" type="stmt"/>
         <line num="139" count="0" type="stmt"/>
-        <line num="142" count="60" type="stmt"/>
-        <line num="145" count="8" type="stmt"/>
-        <line num="146" count="0" type="stmt"/>
-        <line num="149" count="0" type="stmt"/>
-        <line num="150" count="0" type="stmt"/>
+        <line num="140" count="0" type="stmt"/>
+        <line num="141" count="0" type="stmt"/>
+        <line num="144" count="60" type="stmt"/>
+        <line num="147" count="8" type="stmt"/>
+        <line num="148" count="0" type="stmt"/>
+        <line num="151" count="0" type="stmt"/>
         <line num="152" count="0" type="stmt"/>
-        <line num="153" count="0" type="stmt"/>
         <line num="154" count="0" type="stmt"/>
-        <line num="158" count="3" type="stmt"/>
-        <line num="159" count="10" type="stmt"/>
-        <line num="160" count="11" type="stmt"/>
-        <line num="161" count="0" type="stmt"/>
-        <line num="162" count="5" type="stmt"/>
+        <line num="155" count="0" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="160" count="3" type="stmt"/>
+        <line num="161" count="10" type="stmt"/>
+        <line num="162" count="11" type="stmt"/>
         <line num="163" count="0" type="stmt"/>
-        <line num="165" count="16" type="stmt"/>
-        <line num="166" count="6" type="stmt"/>
-        <line num="169" count="0" type="stmt"/>
-        <line num="170" count="0" type="stmt"/>
-        <line num="173" count="0" type="stmt"/>
-        <line num="174" count="0" type="stmt"/>
-        <line num="226" count="10" type="stmt"/>
-        <line num="230" count="4" type="stmt"/>
-        <line num="240" count="58" type="stmt"/>
-        <line num="344" count="7" type="stmt"/>
-        <line num="345" count="12" type="stmt"/>
+        <line num="164" count="5" type="stmt"/>
+        <line num="165" count="0" type="stmt"/>
+        <line num="167" count="16" type="stmt"/>
+        <line num="168" count="6" type="stmt"/>
+        <line num="171" count="0" type="stmt"/>
+        <line num="172" count="0" type="stmt"/>
+        <line num="175" count="0" type="stmt"/>
+        <line num="176" count="0" type="stmt"/>
+        <line num="228" count="10" type="stmt"/>
+        <line num="232" count="4" type="stmt"/>
+        <line num="243" count="58" type="stmt"/>
+        <line num="348" count="7" type="stmt"/>
+        <line num="349" count="12" type="stmt"/>
       </file>
       <file name="mocks.ts" path="/Users/tevnpowers/Projects/consulting/RAHEEM/patch/frontend/src/test/mocks.ts">
         <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="8" coveredmethods="8"/>
@@ -5701,10 +5698,10 @@
         <line num="663" count="50" type="cond" truecount="2" falsecount="0"/>
         <line num="664" count="10" type="stmt"/>
         <line num="666" count="40" type="stmt"/>
-        <line num="674" count="4" type="stmt"/>
-        <line num="675" count="28" type="cond" truecount="2" falsecount="0"/>
-        <line num="676" count="19" type="stmt"/>
-        <line num="678" count="9" type="stmt"/>
+        <line num="676" count="4" type="stmt"/>
+        <line num="677" count="28" type="cond" truecount="2" falsecount="0"/>
+        <line num="678" count="19" type="stmt"/>
+        <line num="680" count="9" type="stmt"/>
       </file>
     </package>
     <package name="frontend.src.utils">
@@ -5751,16 +5748,16 @@
         <line num="5" count="2" type="stmt"/>
         <line num="6" count="2" type="stmt"/>
         <line num="7" count="2" type="stmt"/>
-        <line num="11" count="52" type="cond" truecount="1" falsecount="1"/>
-        <line num="12" count="52" type="stmt"/>
-        <line num="14" count="52" type="stmt"/>
+        <line num="11" count="51" type="cond" truecount="1" falsecount="1"/>
+        <line num="12" count="51" type="stmt"/>
+        <line num="14" count="51" type="stmt"/>
         <line num="16" count="0" type="stmt"/>
         <line num="21" count="10" type="cond" truecount="1" falsecount="1"/>
         <line num="22" count="10" type="stmt"/>
         <line num="24" count="10" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="31" count="32" type="stmt"/>
-        <line num="32" count="32" type="stmt"/>
+        <line num="31" count="31" type="stmt"/>
+        <line num="32" count="31" type="stmt"/>
         <line num="36" count="10" type="stmt"/>
         <line num="37" count="10" type="stmt"/>
       </file>

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.26% </span>
+                <span class="strong">45.31% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>31/67</span>
+                <span class='fraction'>29/64</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.45% </span>
+                <span class="strong">44.44% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>30/66</span>
+                <span class='fraction'>28/63</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.26% </span>
+                <span class="strong">45.31% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>31/67</span>
+                <span class='fraction'>29/64</span>
             </div>
         
             
@@ -420,7 +420,11 @@
 <a name='L355'></a><a href='#L355'>355</a>
 <a name='L356'></a><a href='#L356'>356</a>
 <a name='L357'></a><a href='#L357'>357</a>
-<a name='L358'></a><a href='#L358'>358</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -512,12 +516,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">78x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">168x</span>
-<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">250x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -659,7 +665,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">58x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -869,12 +877,14 @@ const TestIds = {
     // these on different screens we can add a 'context'
     // param on this function and pass a testID to the RequestCard
     // so it can pass that as the 'context' param
-    requestCard: <span class="fstat-no" title="function not covered" >(r</span>eqId: string) =&gt; <span class="cstat-no" title="statement not covered" >`requestCard-${reqId}`,</span>
-    requestListCard: (reqId: string) =&gt; `requestListCard-${reqId}`,
+    userDetails: {
+        screen: `userDetails`
+    },
+    requestCard: (context: string, reqId: string) =&gt; `requestCard::${context}::${reqId}`,
     helpRequestMap: {
         requestCardTrack: 'helpRequestMap::requestCardTrack',
-        mapRequestCard: (reqId: string) =&gt; `helpRequestMap::mapRequestCard-${reqId}`,
-        mapVisibleRequestCard: (reqId: string) =&gt; `helpRequestMap::mapVisibleRequestCard-${reqId}`,
+        mapRequestCard: `helpRequestMap::mapRequestCard`,
+        mapVisibleRequestCard: `helpRequestMap::mapVisibleRequestCard`,
     },
     // can return the field syntax as this isn't using a form internally
     // so we don't have to worry about nesting
@@ -1012,6 +1022,7 @@ const TestIds = {
         screen: 'channelScreen'
     },
     userHome: {
+        screen: 'userHomePage',
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
@@ -1050,6 +1061,7 @@ const TestIds = {
     },
 &nbsp;
     // BottomDrawer views
+    globalBottomDrawer: 'globalBottomDrawer',
     createRequest: {
         form: 'createRequestForm',
         inputs: {
@@ -1141,7 +1153,7 @@ export default TestIds;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-02T18:17:52.225Z
+                at 2023-03-06T15:57:02.984Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
