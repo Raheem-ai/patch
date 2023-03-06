@@ -57,7 +57,7 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
                 {
                     requestStore().filteredSortedRequests.map(r => {
                         return (
-                            <HelpRequestCard testID={TestIds.requestListCard(r.id)} style={styles.card} key={r.id} requestId={r.id} />
+                            <HelpRequestCard testID={TestIds.requestList.screen} style={styles.card} key={r.id} requestId={r.id} />
                         )
                     })
                 }

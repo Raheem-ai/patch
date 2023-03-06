@@ -14,7 +14,7 @@ import TestIds from "../../test/ids";
 import { positionStats } from "../../../../common/utils/requestUtils";
 
 type Props = {
-    testID?: string,
+    testID: string,
     requestId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
@@ -260,7 +260,7 @@ const HelpRequestCard = observer(({
     return (
         <Pressable 
             onPress={onCardPress}
-            testID={testID ? testID : TestIds.requestCard(request.id)}
+            testID={TestIds.requestCard(testID, request.id)}
             style={[
                 styles.container, 
                 dark 

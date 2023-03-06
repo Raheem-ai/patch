@@ -177,7 +177,7 @@ export const HelpRequestMap = observer(({ navigation, route }: Props) => {
                             return (
                                 <View key={r.id} style={styles.cardContainer}>
                                     <HelpRequestCard
-                                        testID={idx - 1 == i ? TestIds.helpRequestMap.mapVisibleRequestCard(r.id) : TestIds.helpRequestMap.mapRequestCard(r.id)}
+                                        testID={idx - 1 == i ? TestIds.helpRequestMap.mapVisibleRequestCard : TestIds.helpRequestMap.mapRequestCard}
                                         onPress={onCardPressed}
                                         requestId={r.id} 
                                         onMapView

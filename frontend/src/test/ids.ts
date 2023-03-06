@@ -90,12 +90,14 @@ const TestIds = {
     // these on different screens we can add a 'context'
     // param on this function and pass a testID to the RequestCard
     // so it can pass that as the 'context' param
-    requestCard: (reqId: string) => `requestCard-${reqId}`,
-    requestListCard: (reqId: string) => `requestListCard-${reqId}`,
+    userDetails: {
+        screen: `userDetails`
+    },
+    requestCard: (context: string, reqId: string) => `requestCard::${context}::${reqId}`,
     helpRequestMap: {
         requestCardTrack: 'helpRequestMap::requestCardTrack',
-        mapRequestCard: (reqId: string) => `helpRequestMap::mapRequestCard-${reqId}`,
-        mapVisibleRequestCard: (reqId: string) => `helpRequestMap::mapVisibleRequestCard-${reqId}`,
+        mapRequestCard: `helpRequestMap::mapRequestCard`,
+        mapVisibleRequestCard: `helpRequestMap::mapVisibleRequestCard`,
     },
     // can return the field syntax as this isn't using a form internally
     // so we don't have to worry about nesting
@@ -233,6 +235,7 @@ const TestIds = {
         screen: 'channelScreen'
     },
     userHome: {
+        screen: 'userHomePage',
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
@@ -271,6 +274,7 @@ const TestIds = {
     },
 
     // BottomDrawer views
+    globalBottomDrawer: 'globalBottomDrawer',
     createRequest: {
         form: 'createRequestForm',
         inputs: {
