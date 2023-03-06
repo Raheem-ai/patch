@@ -48,12 +48,19 @@ const TestIds = {
         actions: {
             createRequest: 'headerActionsCreateRequest',
             editProfile: 'headerActionsEditProfile',
-            addTeamMember: 'headerActionsAddTeamMember'
+            addTeamMember: 'headerActionsAddTeamMember',
+            goToHelpRequestList: 'headerActionsGoToHelpRequestList',
+            goToHelpRequestMap: 'headerActionsGoToHelpRequestMap'
         },
         availabilityPrompt: {
             cancel: 'header::availabilityPrompt::cancel',
             confirm: 'header::availabilityPrompt::confirm'
         }
+    },
+    listHeader: {
+        toggleHeader: 'listHeader::toggleHeader',
+        option: (idx: number, label: string) => `listHeader::option[${idx}]::[${label}]`,
+        chosenOption: (idx: number, label: string) => `listHeader::chosenOption[${idx}]::[${label}]`
     },
 
     // reuasable component internals
@@ -83,7 +90,15 @@ const TestIds = {
     // these on different screens we can add a 'context'
     // param on this function and pass a testID to the RequestCard
     // so it can pass that as the 'context' param
-    requestCard: (reqId: string) => `requestCard-${reqId}`,
+    userDetails: {
+        screen: `userDetails`
+    },
+    requestCard: (context: string, reqId: string) => `requestCard::${context}::${reqId}`,
+    helpRequestMap: {
+        requestCardTrack: 'helpRequestMap::requestCardTrack',
+        mapRequestCard: `helpRequestMap::mapRequestCard`,
+        mapVisibleRequestCard: `helpRequestMap::mapVisibleRequestCard`,
+    },
     // can return the field syntax as this isn't using a form internally
     // so we don't have to worry about nesting
     editCategorizedItemForm: {
@@ -204,14 +219,23 @@ const TestIds = {
         notifyPeople: 'requestDetails::notifyPeople',
         closeRequest: 'requestDetails::closeRequest',
         reopenRequest: 'requestDetails::reopenRequest',
+        overview: 'requestDetails::overview',
+        channel: 'requestDetails::channel',
+        team: 'requestDetails::team',
+        screen: 'requestDetails::screen',
+    },
+    tabbedScreen: {
+        tabN: (testID: string, idx: number) => `${testID}::tab[${idx}]`
     },
     team: {
-        screen: 'teamScreen'
+        screen: 'teamScreen',
+        rowN: (testID: string, idx: number) => `${testID}::row[${idx}]`
     },
     channels: {
         screen: 'channelScreen'
     },
     userHome: {
+        screen: 'userHomePage',
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
@@ -250,6 +274,7 @@ const TestIds = {
     },
 
     // BottomDrawer views
+    globalBottomDrawer: 'globalBottomDrawer',
     createRequest: {
         form: 'createRequestForm',
         inputs: {
@@ -317,7 +342,11 @@ const TestIds = {
         }
     },
     assignResponders: {
-        view: 'assignResponders'
+        view: 'assignResponders',
+        toggleSelectAllBtn: 'assignResponders::toggleSelectAll',
+        toggleSelectAllText: 'assignResponders::toggleSelectAllText',
+        selectedRowN: (testID: string, idx: number) => `${testID}::selectedRow[${idx}]`,
+        unselectedRowN: (testID: string, idx: number) => `${testID}::unselectedRow[${idx}]`
     },
 
     // Alert views

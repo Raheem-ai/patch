@@ -25,7 +25,7 @@ import App from './App';
 import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
+import { MockActiveRequests, MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
 import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -35,7 +35,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, DefaultRoles, LinkExperience, LinkParams, Me, PendingUser } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -505,7 +505,7 @@ describe('Signed in Scenarios', () => {
             positions: []
         })
 
-        const newReqCard = await waitFor(() => getByTestId(TestIds.requestCard(mockRequest.id)));
+        const newReqCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, mockRequest.id)));
 
         await act(async() => {
             fireEvent(newReqCard, 'press')
@@ -756,5 +756,171 @@ describe('Signed in Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.ACCOUNT.invitationSuccessful(validEmail, validPhone));
         await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
+
+    test('Notify people of request', async () => {
+        console.log('Notify people run...');
+        const {
+            getByTestId,
+            queryByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+        // By default, each active request in our mock data should have a request card displayed.
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status != RequestStatus.Closed, getByTestId, queryByTestId);
+
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Click on the Team tab
+        const teamTab = await waitFor(() => getByTestId(TestIds.tabbedScreen.tabN(TestIds.requestDetails.screen, 2)));
+        await act(async () => fireEvent(teamTab, 'press'));
+        await waitFor(() => getByTestId(TestIds.requestDetails.team));
+
+        // Press button to notify people
+        const notifyDrawerButton = await waitFor(() => getByTestId(TestIds.requestDetails.notifyPeople));
+        await act(async () => fireEvent(notifyDrawerButton, 'press'));
+
+        // "Notify _ people" button on bottom drawer store view
+        const notifyNPeopleButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.assignResponders.view)));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(0, 0));
+
+        // Ensure that both users in the mock organization are represented with an unselected responder row
+        const assignableUsers = MockUsers().slice(0,2);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, i))));
+
+        // Click on a responder row to make sure the "notify" button text updates as expected
+        const responderRow = await waitFor(() => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, 1)));
+        await act(async () => fireEvent(responderRow, 'press'));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(1, 0));
+
+        // Input and associated text for the toggle "select all" button
+        const toggleSelectAllBtn = await waitFor(() => getByTestId(TestIds.assignResponders.toggleSelectAllBtn));
+        const toggleSelectAllText = await waitFor(() => getByTestId(TestIds.assignResponders.toggleSelectAllText));
+
+        // Since all users are currently not selected, the text should say select all
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.selectAll);
+
+        // After pressing toggle button, text should switch and all responder rows should be selected
+        await act(async () => fireEvent(toggleSelectAllBtn, 'press'));
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.unselectAll);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.selectedRowN(TestIds.assignResponders.view, i))));
+
+        // After pressing again, text should again switch, all responder rows should be unselected, and notify button should be disabled
+        await act(async () => fireEvent(toggleSelectAllBtn, 'press'));
+        expect(notifyNPeopleButton).toBeDisabled();
+        expect(toggleSelectAllText).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.selectAll);
+        await waitFor(() => assignableUsers.forEach((u, i) => getByTestId(TestIds.assignResponders.unselectedRowN(TestIds.assignResponders.view, i))));
+
+        // Press responder row again, expect button text to update for one selection.
+        await act(async () => fireEvent(responderRow, 'press'));
+        expect(notifyNPeopleButton).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.notifyNPeople(1, 0));
+
+        // Press notify button to begin submission flow. Expect toast success alert.
+        await act(async () => fireEvent(notifyNPeopleButton, 'press'));
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.NOTIFICATIONS.nPeopleNotified(1));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+    })
+
+    test('View requests on map', async () => {
+        console.log('View requests on map run');
+        const {
+            getByTestId,
+            queryByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Navigate to the Request List screen
+        const requestsButton = await waitFor(() => getByTestId(TestIds.userHome.goToRequests));
+        await act(async () => fireEvent(requestsButton, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
+
+        // Open list header to filter
+        const toggleListHeaderBtn = await waitFor(() => getByTestId(TestIds.listHeader.toggleHeader));
+        await act(async () => fireEvent(toggleListHeaderBtn, 'press'));
+
+        // Active, Closed, All
+        const filterOptions = commonUtils.allEnumValues<HelpRequestFilter>(HelpRequestFilter);
+
+        // By Default "Active" is the chosen filter
+        // Ensure that only active requests have their request card displayed.
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[0]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status != RequestStatus.Closed, getByTestId, queryByTestId);
+
+        // Select the closed requests filter. It should now be the chosen option.
+        // Expect closed requests to have cards, and other requests to be null.
+        const closedRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[1]])));
+        await act(async () => fireEvent(closedRequestsFilter, 'press'));
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[1]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => req.status == RequestStatus.Closed, getByTestId, queryByTestId);
+
+        // Select the all requests filter. It should now be the chosen option.
+        // Expect all request cards to be displayed.
+        const allRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[2]])));
+        await act(async () => fireEvent(allRequestsFilter, 'press'));
+        await waitFor(() => getByTestId(TestIds.listHeader.chosenOption(0, HelpRequestFilterToLabelMap[filterOptions[2]])));
+        await testUtils.validateRequestListCards((req: HelpRequest) => true, getByTestId, queryByTestId);
+
+        // Filter back to active requests for map view
+        const activeRequestsFilter = await waitFor(() => getByTestId(TestIds.listHeader.option(0, HelpRequestFilterToLabelMap[filterOptions[0]])));
+        await act(async () => fireEvent(activeRequestsFilter, 'press'));
+
+        // Click the option to open the Request Map from the header
+        const helpRequestMapBtn = await waitFor(() => getByTestId(TestIds.header.actions.goToHelpRequestMap));
+        await act(async () => fireEvent(helpRequestMapBtn, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestMap));
+
+        // Interact with the request cards on the map
+        const activeRequests = MockActiveRequests();
+
+        // Swipe to the end of the request card track (and on last card),
+        // making sure the request card we expect to be in viewport actually is.
+        for (let iReqCard = 0; iReqCard < activeRequests.length; iReqCard++) {
+            // Swipe the card track
+            await testUtils.swipeRequestCardTrack(true, getByTestId);
+
+            // After the swipe, the next card (index + 1) is visible,
+            // unless we swiped on the last card in the track.
+            // In which case the visible card remains the current index.
+            let visibleIdx = iReqCard == activeRequests.length - 1 ? iReqCard : iReqCard + 1;
+
+            // Check the TestID of each request card to ensure that
+            // the proper card is visible and the rest are off screen.
+            await testUtils.validateRequestMapCards(activeRequests, visibleIdx, getByTestId);
+        }
+
+        // Same behavior as the loop above, but reverse order (from last to first request card)
+        for (let iReqCard = activeRequests.length - 1; iReqCard >= 0; iReqCard--) {
+            // Swipe, update visible index (swiping on first card is special case), check all request cards.
+            await testUtils.swipeRequestCardTrack(false, getByTestId);
+            let visibleIdx = iReqCard == 0 ? iReqCard : iReqCard - 1;
+            await testUtils.validateRequestMapCards(activeRequests, visibleIdx, getByTestId);
+        }
+
+        // Navigate back to Request List
+        const helpRequestListBtn = await waitFor(() => getByTestId(TestIds.header.actions.goToHelpRequestList));
+        await act(async () => fireEvent(helpRequestListBtn, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
     })
 })

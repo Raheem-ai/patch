@@ -131,7 +131,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 {
                     requestStore().myActiveRequests.map(r => {
                         return (
-                            <HelpRequestCard style={styles.activeRequestCard} requestId={r.id}/>
+                            <HelpRequestCard testID={TestIds.userHome.screen} style={styles.activeRequestCard} requestId={r.id}/>
                         )
                     })
                 }
@@ -154,7 +154,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                     label='Requests'
                     onPress={() => { navigateTo(routerNames.helpRequestList) }}/>
                 <PatchButton 
-                    testID={TestIds.userHome.goToRequests}
+                    testID={TestIds.userHome.goToChannels}
                     mode='text'
                     label='Channels'
                     onPress={() => { navigateTo(routerNames.chats) }}/>

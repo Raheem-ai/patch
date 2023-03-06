@@ -2,11 +2,11 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 import App from '../../../App';
 import {APIClient} from '../../../src/api'
-import { AppState } from 'react-native';
+import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, HelpRequest, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
@@ -147,7 +147,7 @@ export async function mockSignIn() {
         getTeamMembersMock: jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata()),
         getOrgMetadataMock: jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata()),
         getOrgSecretsMock: jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets()),
-        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]),
+        getRequestsMock: jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests()),
 
         // mocked data
         mockedUser,
@@ -219,7 +219,7 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
     const getTeamMembersMock = jest.spyOn(APIClient.prototype, 'getTeamMembers').mockResolvedValue(MockTeamMemberMetadata());
     const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
     const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
-    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue([]);
+    const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests());
 
     // Submit the form
     await act(async () => {
@@ -631,4 +631,53 @@ export async function editMyPhoneNumber(getByTestId: GetByQuery<TextMatch, Commo
 
     // After entering valid value, the save button should be enabled
     expect(saveUserButton).not.toBeDisabled();
+}
+
+export async function swipeRequestCardTrack(left: boolean, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const requestCardTrack = await waitFor(() => getByTestId(TestIds.helpRequestMap.requestCardTrack));
+    const windowDimensions = Dimensions.get("screen");
+    const direction = left ? -1 : 1;
+    const touchEventDelta = direction * (windowDimensions.width / 3);
+
+    await act(async () => fireEvent(requestCardTrack, 'touchStart', {
+        nativeEvent: {
+            pageX: 0
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchMove', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+
+    await act(async () => fireEvent(requestCardTrack, 'touchEnd', {
+        nativeEvent: {
+            pageX: touchEventDelta
+        }
+    }));
+}
+
+export async function validateRequestMapCards(requests: HelpRequest[], visibleIdx: number, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    for (const [index, req] of requests.entries()) {
+        if (index == visibleIdx) {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapVisibleRequestCard, req.id)));
+        } else {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.helpRequestMap.mapRequestCard, req.id)));
+        }
+    }
+}
+
+export async function validateRequestListCards(filterFunc: (req: HelpRequest) => boolean,
+                                               getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>,
+                                               queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Expect requests that satisfy the filter conditions to have
+    // their request cards displayed.
+    for (const req of MockRequests()) {
+        if (filterFunc(req)) {
+            await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id)));
+        } else {
+            expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id))).toBeNull();
+        }
+    }
 }
