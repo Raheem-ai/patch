@@ -7,7 +7,7 @@ export function MockSecrets(): AppSecrets {
 }
 
 export function MockActiveRequests(): HelpRequest[] {
-    return JSON.parse(JSON.stringify(MockRequests().filter(r => r.status != RequestStatus.Closed)));
+    return MockRequests().filter(r => r.status != RequestStatus.Closed);
 }
 
 export function MockRequests(): HelpRequest[] {
