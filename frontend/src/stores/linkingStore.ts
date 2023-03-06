@@ -49,7 +49,6 @@ export default class LinkingStore implements ILinkingStore {
                 && event.params 
                 && !event.error 
                 && event.params['+clicked_branch_link'] 
-                && event.uri
             ) {
                 this.handleBranchLink(event)
             }
