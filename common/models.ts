@@ -1733,6 +1733,7 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
         attributes: [
             { name: 'Amharic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan01' },
             { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
+            { name: 'American Sign Language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan19' },
             { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
             { name: 'Cantonese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan04' },
             { name: 'Haitian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
@@ -1761,7 +1762,6 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
             { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
             { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
             { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
-            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
         ]
     },
     {
