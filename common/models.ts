@@ -1731,9 +1731,9 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
         id: DefaultAttributeCategoryIds.Languages,
         name: 'Languages',
         attributes: [
+            { name: 'American Sign Language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan19' },
             { name: 'Amharic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan01' },
             { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
-            { name: 'American Sign Language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan19' },
             { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
             { name: 'Cantonese', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan04' },
             { name: 'Haitian Creole', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan05' },
