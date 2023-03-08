@@ -984,8 +984,8 @@ describe('Signed in Scenarios', () => {
         // Edit Request Type
         await testUtils.editRequestType(getByTestId, queryByTestId);
 
-        // TODO: Edit Location
-        // await testUtils.editRequestLocation(getByTestId);
+        // Edit Location
+        await testUtils.editRequestLocation(getByTestId);
 
         // Edit End Time
         await testUtils.editRequestTime(getByTestId);

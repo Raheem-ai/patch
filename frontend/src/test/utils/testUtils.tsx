@@ -17,6 +17,7 @@ import { GetByQuery, QueryByQuery } from '@testing-library/react-native/build/qu
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
 import { TokenContext } from '../../../api';
+import { Client, PlaceAutocompleteResponse, PlaceAutocompleteResult, PlaceDetailsResponse, Status } from '@googlemaps/google-maps-services-js';
 
 const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
@@ -767,11 +768,97 @@ export async function editRequestType(getByTestId: GetByQuery<TextMatch, CommonQ
     expect(encampentRaidTag).toHaveTextContent(RequestTypeToLabelMap[RequestType.EncampmentRaid])
 }
 
+function mockGoogleMapsServices(description: string) {
+    // Mock responses from the Google Maps Services that are hit
+    // while trying to select a location for a request.
+    const autocompletePredictions: PlaceAutocompleteResult[] = [ {
+        description: description,
+        place_id: 'mock-id',
+        terms: [],
+        types: [],
+        matched_substrings: [],
+        structured_formatting: {
+            main_text: 'Oakland',
+            secondary_text: 'CA, USA',
+            main_text_matched_substrings: []
+        }
+    }];
+
+    const autocompleteResults: PlaceAutocompleteResponse = {
+        data: {
+            predictions: autocompletePredictions,
+            status: Status.OK,
+            error_message: ''
+        },
+        status: 200,
+        statusText: '',
+        headers: null,
+        config: null
+    }
+
+    // Mock Google services placeAutocomplete response
+    jest.spyOn(Client.prototype, 'placeAutocomplete').mockResolvedValue(autocompleteResults);
+
+    const placeDetailsResponse: PlaceDetailsResponse = {
+        data: {
+            result: {
+                geometry: {
+                    location: {
+                        lat: 37.804363,
+                        lng: -122.271111
+                    },
+                    location_type: null,
+                    viewport: null,
+                    bounds: null
+                }
+            },
+            html_attributions: [],
+            status: Status.OK,
+            error_message: ''
+        },
+        status: 200,
+        statusText: '',
+        headers: null,
+        config: null
+    }
+
+    // Mock Google services placeDetails response
+    jest.spyOn(Client.prototype, 'placeDetails').mockResolvedValue(placeDetailsResponse);
+}
+
+// TODO: As written, this test does not test the MapView instance that exists on the mapInput component.
+// There is a bug getting the map instance to load/render properly in the test environment. The test below
+// is a workaround that searches for a location and selects a result from the autocomplete suggestions.
 export async function editRequestLocation(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
-    const mapInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.location));
+    const mockedSuggestionDescription = 'Oakland, CA, USA';
+    mockGoogleMapsServices(mockedSuggestionDescription);
+
+    // Click the map label to take us to the map input
+    let mapInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.location));
     await act(async() => fireEvent(mapInputLabel, 'click'));
+
     const wrappedTestID = TestIds.inputs.mapInput.wrapper(TestIds.createRequest.inputs.location);
-    // const mapInput = await waitFor(() => getByTestId(TestIds.inputs.mapInput.map(wrappedTestID)));
+
+    // Update the map search text
+    const mapSearchInput = await waitFor(() => getByTestId(TestIds.inputs.mapInput.searchText(wrappedTestID)));
+    const searchTerm = 'Oakland';
+    await act(async () => fireEvent(mapSearchInput, 'focus'));
+    await act(async() => fireEvent.changeText(mapSearchInput, searchTerm));
+
+    // Sleep for half a second for autocomplete suggestions to be returned
+    await new Promise(r => setTimeout(r, 500));
+
+    // Select the autocomplete suggestion
+    const autocompleteSuggestion = await waitFor(() => getByTestId(TestIds.inputs.mapInput.suggestionN(wrappedTestID, 0)));
+    await act(async() => fireEvent(autocompleteSuggestion, 'press'));
+
+    // Save the selected location
+    const saveLocationButton = await waitFor(() => getByTestId(TestIds.inputs.mapInput.save(wrappedTestID)));
+    await act(async() => fireEvent(saveLocationButton, 'press'));
+
+    // Expect the label for the map input on the form to contain the selected address
+    mapInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.location));
+    expect(mapInputLabel).toHaveTextContent(mockedSuggestionDescription);
 }
 
 export async function editRequestTime(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
