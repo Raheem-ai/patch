@@ -27,9 +27,9 @@ let apiHost = ''
  * a new build because of native code changes or build time native 
  * config changes
  */
-const VERSION = `1.0.0`
+const VERSION = `1.0.1`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
-let ANDROID_VERSION_CODE = 11
+let ANDROID_VERSION_CODE = 12
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
