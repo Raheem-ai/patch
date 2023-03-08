@@ -878,8 +878,6 @@ export async function editRequestPriority(getByTestId: GetByQuery<TextMatch, Com
 export async function editRequestTags(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     // Click on the Tags label to view the categorized list of options
     const requestTagsLabel = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.labelWrapper(TestIds.createRequest.inputs.tags)));
-
-    console.log('press Request Tags Label!')
     await act(async() => fireEvent(requestTagsLabel, 'click'));
 
     const requestTagsWrappedID = TestIds.inputs.categorizedItemList.wrapper(TestIds.createRequest.inputs.tags);
