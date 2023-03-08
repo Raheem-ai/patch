@@ -1583,7 +1583,7 @@ export enum DefaultRoleIds {
 }
 
 export enum RequestDetailsTabs {
-    Overview = 'Overview', 
+    Overview = 'Request', 
     Channel = 'Channel',
     Team = 'Team'
 }
