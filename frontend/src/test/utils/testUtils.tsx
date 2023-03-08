@@ -846,7 +846,7 @@ export async function editRequestLocation(getByTestId: GetByQuery<TextMatch, Com
     await act(async() => fireEvent.changeText(mapSearchInput, searchTerm));
 
     // Sleep for half a second for autocomplete suggestions to be returned
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 1000));
 
     // Select the autocomplete suggestion
     const autocompleteSuggestion = await waitFor(() => getByTestId(TestIds.inputs.mapInput.suggestionN(wrappedTestID, 0)));
