@@ -787,73 +787,73 @@ export async function editRequestTime(getByTestId: GetByQuery<TextMatch, CommonQ
 }
 
 export async function editRequestPositions(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
-        let respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
-        await act(async() => fireEvent(respondersInputLabel, 'click'));
+    let respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
+    await act(async() => fireEvent(respondersInputLabel, 'click'));
 
-        // TODO: Edit number of responders needed
+    // TODO: Edit number of responders needed
 
-        // Edit Responder roles
-        const wrappedRespondersTestID = TestIds.inputs.positions.wrapper(TestIds.createRequest.inputs.positions);
-        const positionsRolesID = TestIds.inputs.positions.inputs.roles(wrappedRespondersTestID);
-        const roleListLabelID = TestIds.inputs.roleList.labelWrapper(positionsRolesID);
-        const respondersRolesInputLabel = await waitFor(() => getByTestId(roleListLabelID));
+    // Edit Responder roles
+    const wrappedRespondersTestID = TestIds.inputs.positions.wrapper(TestIds.createRequest.inputs.positions);
+    const positionsRolesID = TestIds.inputs.positions.inputs.roles(wrappedRespondersTestID);
+    const roleListLabelID = TestIds.inputs.roleList.labelWrapper(positionsRolesID);
+    const respondersRolesInputLabel = await waitFor(() => getByTestId(roleListLabelID));
 
-        // Press roles input label to navigate to the actual roles input form
-        await act(async () => fireEvent(respondersRolesInputLabel, 'click'));
+    // Press roles input label to navigate to the actual roles input form
+    await act(async () => fireEvent(respondersRolesInputLabel, 'click'));
 
-        // Add Admin role to position
-        const adminRoleListOption = await waitFor(() => getByTestId(TestIds.inputs.list.optionN(positionsRolesID, 1)));
-        await act(async () => fireEvent(adminRoleListOption, 'press'));
+    // Add Admin role to position
+    const adminRoleListOption = await waitFor(() => getByTestId(TestIds.inputs.list.optionN(positionsRolesID, 1)));
+    await act(async () => fireEvent(adminRoleListOption, 'press'));
 
-        // Save role
-        const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionsRolesID)));
-        await act(async () => fireEvent(saveRolesButton, 'press'));
+    // Save role
+    const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionsRolesID)));
+    await act(async () => fireEvent(saveRolesButton, 'press'));
 
-        // Confirm admin tag exists on position
-        const adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(roleListLabelID, 0)));
-        expect(adminRoleTag).toHaveTextContent(adminText);
+    // Confirm admin tag exists on position
+    const adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(roleListLabelID, 0)));
+    expect(adminRoleTag).toHaveTextContent(adminText);
 
-        // Edit Responder Attributes
-        const positionAttributesID = TestIds.inputs.positions.inputs.attributes(wrappedRespondersTestID);
-        const categorizedItemListLabelID = TestIds.inputs.categorizedItemList.labelWrapper(positionAttributesID);
-        const respondersAttributesInputLabel = await waitFor(() => getByTestId(categorizedItemListLabelID));
-        await act(async () => fireEvent(respondersAttributesInputLabel, 'click'));
+    // Edit Responder Attributes
+    const positionAttributesID = TestIds.inputs.positions.inputs.attributes(wrappedRespondersTestID);
+    const categorizedItemListLabelID = TestIds.inputs.categorizedItemList.labelWrapper(positionAttributesID);
+    const respondersAttributesInputLabel = await waitFor(() => getByTestId(categorizedItemListLabelID));
+    await act(async () => fireEvent(respondersAttributesInputLabel, 'click'));
 
-        const positionAttributesWrappedID = TestIds.inputs.categorizedItemList.wrapper(positionAttributesID);
+    const positionAttributesWrappedID = TestIds.inputs.categorizedItemList.wrapper(positionAttributesID);
 
-        const languagesRowID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(positionAttributesWrappedID, 2));
-        const haitianCreoleRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(languagesRowID, 4)));
-        expect(haitianCreoleRow).toHaveTextContent(haitianCreoleLanguageText);
-        await act(async () => fireEvent(haitianCreoleRow, 'click'));
+    const languagesRowID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(positionAttributesWrappedID, 2));
+    const haitianCreoleRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(languagesRowID, 4)));
+    expect(haitianCreoleRow).toHaveTextContent(haitianCreoleLanguageText);
+    await act(async () => fireEvent(haitianCreoleRow, 'click'));
 
-        // Save Attributes selection
-        const saveAttributesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionAttributesWrappedID)));
-        await act(async () => fireEvent(saveAttributesButton, 'click'));
+    // Save Attributes selection
+    const saveAttributesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionAttributesWrappedID)));
+    await act(async () => fireEvent(saveAttributesButton, 'click'));
 
-        // Ensure that the expected pill shows up on the Attributes label after saving
-        const languageAttributesId = TestIds.inputs.categorizedItemList.tagWrapper(positionAttributesID, DefaultAttributeCategoryIds.Languages);
-        const haitianCreoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttributesId, 0)));
-        expect(haitianCreoleTag).toHaveTextContent(haitianCreoleLanguageText);
+    // Ensure that the expected pill shows up on the Attributes label after saving
+    const languageAttributesId = TestIds.inputs.categorizedItemList.tagWrapper(positionAttributesID, DefaultAttributeCategoryIds.Languages);
+    const haitianCreoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttributesId, 0)));
+    expect(haitianCreoleTag).toHaveTextContent(haitianCreoleLanguageText);
 
-        // Save positions
-        const saveRespondersButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(wrappedRespondersTestID)));
-        await act(async () => fireEvent(saveRespondersButton, 'click'));
+    // Save positions
+    const saveRespondersButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(wrappedRespondersTestID)));
+    await act(async () => fireEvent(saveRespondersButton, 'click'));
 
-        // Ensure that the position card displays with values we expect
-        const positionCardTestID = TestIds.positionCard.wrapper(TestIds.createRequest.inputs.positions);
-        await waitFor(() => getByTestId(positionCardTestID));
+    // Ensure that the position card displays with values we expect
+    const positionCardTestID = TestIds.positionCard.wrapper(TestIds.createRequest.inputs.positions);
+    await waitFor(() => getByTestId(positionCardTestID));
 
-        // Admin Role
-        const positionCardRoleText = await waitFor(() => getByTestId(TestIds.positionCard.roleText(positionCardTestID)));
-        expect(positionCardRoleText).toHaveTextContent(adminText);
+    // Admin Role
+    const positionCardRoleText = await waitFor(() => getByTestId(TestIds.positionCard.roleText(positionCardTestID)));
+    expect(positionCardRoleText).toHaveTextContent(adminText);
 
-        // Language attribute
-        const positionCardAttrText =  await waitFor(() => getByTestId(TestIds.positionCard.attrText(positionCardTestID, 0)));
-        expect(positionCardAttrText).toHaveTextContent(haitianCreoleLanguageText);
+    // Language attribute
+    const positionCardAttrText =  await waitFor(() => getByTestId(TestIds.positionCard.attrText(positionCardTestID, 0)));
+    expect(positionCardAttrText).toHaveTextContent(haitianCreoleLanguageText);
 
-        // Link text to add another position
-        respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
-        expect(respondersInputLabel).toHaveTextContent(STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position));
+    // Link text to add another position
+    respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
+    expect(respondersInputLabel).toHaveTextContent(STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position));
 }
 
 export async function editRequestPriority(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
