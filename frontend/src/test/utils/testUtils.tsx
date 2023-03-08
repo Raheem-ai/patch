@@ -6,12 +6,13 @@ import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, HelpRequest, LinkExperience, LinkParams, MinUser } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
 import { routerNames } from '../../types';
 import STRINGS from '../../../../common/strings';
+import * as commonUtils from '../../../../common/utils';
 import { GetByQuery, QueryByQuery } from '@testing-library/react-native/build/queries/makeQueries';
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
@@ -680,4 +681,177 @@ export async function validateRequestListCards(filterFunc: (req: HelpRequest) =>
             expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, req.id))).toBeNull();
         }
     }
+}
+
+export async function editRequestDescription(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const descriptionInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.description));
+    await act(async() => fireEvent(descriptionInputLabel, 'press'));
+
+    const descriptionInput = await waitFor(() => getByTestId(TestIds.expandedFormInput(TestIds.createRequest.inputs.description)));
+
+    const mockRequest = MockRequests()[0];
+    await act(async() => fireEvent.changeText(descriptionInput, mockRequest.notes));
+    const saveDescriptionButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.inputs.description)));
+
+    await act(async() => fireEvent(saveDescriptionButton, 'press'));
+}
+
+export async function editRequestType(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>,
+                                      queryByTestId: QueryByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const requestTypeLabel = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.labelWrapper(TestIds.createRequest.inputs.type)));
+    await act(async() => fireEvent(requestTypeLabel, 'click'));
+
+    const requestTypeWrappedID = TestIds.inputs.categorizedItemList.wrapper(TestIds.createRequest.inputs.type);
+
+    const requestTypeSearchBox = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.search(requestTypeWrappedID)));
+    const searchTerm = 'abuse';
+    await act(async() => fireEvent.changeText(requestTypeSearchBox, searchTerm));
+
+    const expectedSearchResults = [
+        RequestType.VerbalEmotionalFinancialAbuse,
+        RequestType.ProcessingChildhoodAbuse,
+        RequestType.VerbalAbuseHarrassmentByPoliceOfficer,
+        RequestType.ChildAbuseByParentGuardian,
+        RequestType.ChildAbuseEndangeredGeneral
+    ]
+
+    const caseInsensitiveRegex = new RegExp(searchTerm, 'i');
+    const requestTypePillsID = TestIds.inputs.categorizedItemList.pills(requestTypeWrappedID);
+
+    for (const [idx, result] of expectedSearchResults.entries()) {
+        // Assert result has the expected text
+        const searchResult = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.searchResultN(requestTypeWrappedID, idx)));
+        expect(searchResult).toHaveTextContent(RequestTypeToLabelMap[result]);
+
+        // Assert that the search term appears as a match with bolded text
+        const searchMatchText = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.searchResultMatchTextN(requestTypeWrappedID, idx)));
+        expect(searchMatchText).toHaveTextContent(caseInsensitiveRegex);
+
+        // Click on last result
+        if (idx == expectedSearchResults.length - 1) {
+            await act(async() => fireEvent(searchResult, 'click'));
+
+            // Expect delete-able pill for the result we clicked on
+            const searchResultPill = await waitFor(() => getByTestId(TestIds.tags.itemN(requestTypePillsID, 0)));
+            expect(searchResultPill).toHaveTextContent(RequestTypeToLabelMap[result])
+
+            // Delete the previously selected result
+            const deletePillIcon = await waitFor(() => getByTestId(TestIds.tags.deleteN(requestTypePillsID, 0)));
+            await act(async () => fireEvent(deletePillIcon, 'click'));
+            expect(queryByTestId(TestIds.tags.itemN(requestTypePillsID, 0))).toBeNull();
+        }
+    }
+
+    // Add request type from list
+    // Expand the Cop Watch category
+    const copWatchRowID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(requestTypeWrappedID, 5));
+    const copWatchRow = await waitFor(() => getByTestId(TestIds.categoryRow.toggleOpen(copWatchRowID)));
+    await act(async () => fireEvent(copWatchRow, 'click'));
+
+    // `Encampment Raid` is the fourth option in the Cop Watch category
+    const encampentRaidRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(copWatchRowID, 3)));
+    expect(encampentRaidRow).toHaveTextContent(RequestTypeToLabelMap[RequestType.EncampmentRaid]);
+    await act(async () => fireEvent(encampentRaidRow, 'click'));
+
+    // Encampent Raid pill should now be present
+    const encampentRaidPill = await waitFor(() => getByTestId(TestIds.tags.itemN(requestTypePillsID, 0)));
+    expect(encampentRaidPill).toHaveTextContent(RequestTypeToLabelMap[RequestType.EncampmentRaid]);
+
+    // Save Request Type changes
+    const saveTypesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(requestTypeWrappedID)));
+    await act(async () => fireEvent(saveTypesButton, 'click'));
+
+    // Ensure that the expected pill shows up on the Request Type label after saving
+    const copWathRequestTypesId = TestIds.inputs.categorizedItemList.tagWrapper(TestIds.createRequest.inputs.type, RequestTypeCategory.Copwatch);
+    const encampentRaidTag = await waitFor(() => getByTestId(TestIds.tags.itemN(copWathRequestTypesId, 0)));
+    expect(encampentRaidTag).toHaveTextContent(RequestTypeToLabelMap[RequestType.EncampmentRaid])
+}
+
+export async function editRequestLocation(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const mapInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.location));
+    await act(async() => fireEvent(mapInputLabel, 'click'));
+    const wrappedTestID = TestIds.inputs.mapInput.wrapper(TestIds.createRequest.inputs.location);
+    // const mapInput = await waitFor(() => getByTestId(TestIds.inputs.mapInput.map(wrappedTestID)));
+}
+
+export async function editRequestTime(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Validate that the start time input automatically shows the time when the request form was opened
+    const startTimeInput = await waitFor(() => getByTestId(TestIds.createRequest.inputs.callStart));
+    expect(startTimeInput.props.value).toBe(commonUtils.rightNow());
+
+    // Ensure that after clicking the inline clock icon, the end time shows the (mocked) time right now as well.
+    const endTimeInput = await waitFor(() => getByTestId(TestIds.createRequest.inputs.callEnd));
+    const endTimeInputIcon = await waitFor(() => getByTestId(TestIds.inputs.textInput.inlineActionIcon(TestIds.createRequest.inputs.callEnd)));
+    await act(async() => fireEvent(endTimeInputIcon, 'click'));
+    expect(endTimeInput.props.value).toBe(commonUtils.rightNow());
+}
+
+export async function editRequestPositions(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+        let respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
+        await act(async() => fireEvent(respondersInputLabel, 'click'));
+
+        // TODO: Edit number of responders needed
+
+        // Edit Responder roles
+        const wrappedRespondersTestID = TestIds.inputs.positions.wrapper(TestIds.createRequest.inputs.positions);
+        const positionsRolesID = TestIds.inputs.positions.inputs.roles(wrappedRespondersTestID);
+        const roleListLabelID = TestIds.inputs.roleList.labelWrapper(positionsRolesID);
+        const respondersRolesInputLabel = await waitFor(() => getByTestId(roleListLabelID));
+
+        // Press roles input label to navigate to the actual roles input form
+        await act(async () => fireEvent(respondersRolesInputLabel, 'click'));
+
+        // Add Admin role to position
+        const adminRoleListOption = await waitFor(() => getByTestId(TestIds.inputs.list.optionN(positionsRolesID, 1)));
+        await act(async () => fireEvent(adminRoleListOption, 'press'));
+
+        // Save role
+        const saveRolesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionsRolesID)));
+        await act(async () => fireEvent(saveRolesButton, 'press'));
+
+        // Confirm admin tag exists on position
+        const adminRoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(roleListLabelID, 0)));
+        expect(adminRoleTag).toHaveTextContent(adminText);
+
+        // Edit Responder Attributes
+        const positionAttributesID = TestIds.inputs.positions.inputs.attributes(wrappedRespondersTestID);
+        const categorizedItemListLabelID = TestIds.inputs.categorizedItemList.labelWrapper(positionAttributesID);
+        const respondersAttributesInputLabel = await waitFor(() => getByTestId(categorizedItemListLabelID));
+        await act(async () => fireEvent(respondersAttributesInputLabel, 'click'));
+
+        const positionAttributesWrappedID = TestIds.inputs.categorizedItemList.wrapper(positionAttributesID);
+
+        const languagesRowID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(positionAttributesWrappedID, 2));
+        const haitianCreoleRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(languagesRowID, 4)));
+        expect(haitianCreoleRow).toHaveTextContent(haitianCreoleLanguageText);
+        await act(async () => fireEvent(haitianCreoleRow, 'click'));
+
+        // Save Attributes selection
+        const saveAttributesButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(positionAttributesWrappedID)));
+        await act(async () => fireEvent(saveAttributesButton, 'click'));
+
+        // Ensure that the expected pill shows up on the Attributes label after saving
+        const languageAttributesId = TestIds.inputs.categorizedItemList.tagWrapper(positionAttributesID, DefaultAttributeCategoryIds.Languages);
+        const haitianCreoleTag = await waitFor(() => getByTestId(TestIds.tags.itemN(languageAttributesId, 0)));
+        expect(haitianCreoleTag).toHaveTextContent(haitianCreoleLanguageText);
+
+        // Save positions
+        const saveRespondersButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(wrappedRespondersTestID)));
+        await act(async () => fireEvent(saveRespondersButton, 'click'));
+
+        // Ensure that the position card displays with values we expect
+        const positionCardTestID = TestIds.positionCard.wrapper(TestIds.createRequest.inputs.positions);
+        await waitFor(() => getByTestId(positionCardTestID));
+
+        // Admin Role
+        const positionCardRoleText = await waitFor(() => getByTestId(TestIds.positionCard.roleText(positionCardTestID)));
+        expect(positionCardRoleText).toHaveTextContent(adminText);
+
+        // Language attribute
+        const positionCardAttrText =  await waitFor(() => getByTestId(TestIds.positionCard.attrText(positionCardTestID, 0)));
+        expect(positionCardAttrText).toHaveTextContent(haitianCreoleLanguageText);
+
+        // Link text to add another position
+        respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
+        expect(respondersInputLabel).toHaveTextContent(STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position));
 }
