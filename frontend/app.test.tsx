@@ -998,5 +998,19 @@ describe('Signed in Scenarios', () => {
 
         // Edit Tags
         await testUtils.editRequestTags(getByTestId);
+
+        // Save Request
+        const mockRequest = MockRequests()[0];
+        const createNewRequestMock = jest.spyOn(APIClient.prototype, 'createNewRequest').mockResolvedValue(mockRequest);
+        await act(async() => fireEvent(createRequestSubmitButton, 'click'));
+
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            MockOrgMetadata().requestPrefix, 
+            mockRequest.displayId
+        )
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.createdRequestSuccess(reqName));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
     })
 })
