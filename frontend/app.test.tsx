@@ -992,5 +992,11 @@ describe('Signed in Scenarios', () => {
 
         // Edit Responders Needed
         await testUtils.editRequestPositions(getByTestId);
+
+        // Edit Priority
+        await testUtils.editRequestPriority(getByTestId);
+
+        // Edit Tags
+        await testUtils.editRequestTags(getByTestId);
     })
 })

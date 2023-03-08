@@ -6,7 +6,7 @@ import { AppState, Dimensions } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategories, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestPriority, RequestPriorityToLabelMap, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/models';
 import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
@@ -854,4 +854,49 @@ export async function editRequestPositions(getByTestId: GetByQuery<TextMatch, Co
         // Link text to add another position
         respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
         expect(respondersInputLabel).toHaveTextContent(STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position));
+}
+
+export async function editRequestPriority(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Click on the priority label to view the list of options
+    const requestPriorityTestID = TestIds.createRequest.inputs.priority;
+    let priorityInputLabel = await waitFor(() => getByTestId(requestPriorityTestID));
+    await act(async() => fireEvent(priorityInputLabel, 'click'));
+
+    // Set priority to "critical"
+    const criticalPriorityListOption = await waitFor(() => getByTestId(TestIds.inputs.list.optionN(requestPriorityTestID, 2)));
+    await act(async() => fireEvent(criticalPriorityListOption, 'click'));
+
+    // Save priority
+    const savePriorityButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(requestPriorityTestID)));
+    await act(async () => fireEvent(savePriorityButton, 'click'));
+
+    // Expect label to have matching "Critical" text
+    priorityInputLabel = await waitFor(() => getByTestId(requestPriorityTestID));
+    expect(priorityInputLabel).toHaveTextContent(RequestPriorityToLabelMap[RequestPriority.High]);
+}
+
+export async function editRequestTags(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    // Click on the Tags label to view the categorized list of options
+    const requestTagsLabel = await waitFor(() => getByTestId(TestIds.inputs.categorizedItemList.labelWrapper(TestIds.createRequest.inputs.tags)));
+
+    console.log('press Request Tags Label!')
+    await act(async() => fireEvent(requestTagsLabel, 'click'));
+
+    const requestTagsWrappedID = TestIds.inputs.categorizedItemList.wrapper(TestIds.createRequest.inputs.tags);
+
+    // Add tag from the list
+    // `Vehicle` is the third option in the Equipment Needed category
+    const equipmentNeededRowID = TestIds.categoryRow.wrapper(TestIds.inputs.categorizedItemList.categoryRowN(requestTagsWrappedID, 2));
+    const vehicleNeededRow = await waitFor(() => getByTestId(TestIds.categoryRow.itemRowN(equipmentNeededRowID, 2)));
+    expect(vehicleNeededRow).toHaveTextContent(DefaultTagCategories[3].tags[2].name);
+    await act(async () => fireEvent(vehicleNeededRow, 'click'));
+
+    // Save Request Type changes
+    const saveTagsButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(requestTagsWrappedID)));
+    await act(async () => fireEvent(saveTagsButton, 'click'));
+
+    // Ensure that the expected pill shows up on the Tags label after saving
+    const equipmentNeededID = TestIds.inputs.categorizedItemList.tagWrapper(TestIds.createRequest.inputs.tags, DefaultTagCategoryIds.Equipment);
+    const vehicleNeededTag = await waitFor(() => getByTestId(TestIds.tags.itemN(equipmentNeededID, 0)));
+    expect(vehicleNeededTag).toHaveTextContent((DefaultTagCategories[3].tags[2].name));
 }
