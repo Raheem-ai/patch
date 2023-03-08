@@ -23,7 +23,7 @@ export default class AppUpdateStore implements IAppUpdateStore {
 
         if (updateRes.isAvailable) {
             runInAction(() => this.waitingForReload = true)
-            await Updates.fetchUpdateAsync()
+            // await Updates.fetchUpdateAsync()
             await Updates.reloadAsync()
         } else {
             // this doesn't seem to be working for some reason
