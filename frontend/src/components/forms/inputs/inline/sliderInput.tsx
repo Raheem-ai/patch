@@ -5,6 +5,7 @@ import { View, StyleSheet, LayoutChangeEvent, Animated } from "react-native";
 import { PanGestureHandler, PanGestureHandlerProps } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import STRINGS from "../../../../../../common/strings";
+import TestIds from "../../../../test/ids";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
 
@@ -300,7 +301,6 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
     }
 
     exactKnobs = () => {
-
         const onTouchMove = (delta: number) => {
             runInAction(() => {
                 if (delta > 0) {
@@ -392,6 +392,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
             <>
                 <Knob 
                     key={'min'}
+                    testID={TestIds.inputs.slider.minKnob(this.props.config.testID)}
                     label={config.min.label}
                     onTop={this.minIsOnTop}
                     left={this.minKnobLeft.get()}
@@ -402,6 +403,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
                 />
                 <Knob 
                     key={'max'}
+                    testID={TestIds.inputs.slider.maxKnob(this.props.config.testID)}
                     label={config.max.label}
                     onTop={this.maxIsOnTop}
                     left={this.maxKnobLeft.get()}
@@ -416,7 +418,6 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
 
     onLayout = (e: LayoutChangeEvent) => {
         const calculatedWidth = e.nativeEvent.layout.width;
-
         if (calculatedWidth != this.width.get()) {
             runInAction(() => {
                 this.width.set(calculatedWidth)
@@ -457,9 +458,9 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         return (
             <View style={{ marginRight: 20 }}>    
                 <View style={{ paddingTop: 20 }}>
-                    <Text style={[styles.label]}>{label}</Text>
+                    <Text testID={TestIds.inputs.slider.previewLabel(this.props.config.testID)} style={[styles.label]}>{label}</Text>
                 </View>
-                <View onLayout={this.onLayout} style={{ marginHorizontal: shim }}>
+                <View testID={this.props.config.testID} onLayout={this.onLayout} style={{ marginHorizontal: shim }}>
                     {
                         this.width.get() 
                             ? <View style={{position: 'relative', flexDirection: 'row', paddingVertical: sliderVerticalPadding, marginVertical: 20 }}>
@@ -515,6 +516,7 @@ const styles = StyleSheet.create({
 
 
 function Knob({
+    testID,
     onTop,
     label,
     left,
@@ -524,6 +526,7 @@ function Knob({
     onMove,
     onEnd
 }: {
+    testID: string,
     onTop: boolean,
     label: string,
     left: number,
@@ -555,7 +558,7 @@ function Knob({
     }
 
     return (
-        <PanGestureHandler key={key} {...panProps} >
+        <PanGestureHandler testID={testID} key={key} {...panProps} >
             <Animated.View
                 style={[styles.knob, positionStyles]}
                 >

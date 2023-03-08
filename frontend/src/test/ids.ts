@@ -184,6 +184,11 @@ const TestIds = {
         },
         textInput: {
             inlineActionIcon: (testID: string) => `textInput::inlineActionIcon(${testID})`
+        },
+        slider: {
+            previewLabel: (testID: string) => `${testID}::slider::previewLabel`,
+            minKnob: (testID: string) => `${testID}::slider::minKnob`,
+            maxKnob: (testID: string) => `${testID}::slider::maxKnob`
         }
     },
     
