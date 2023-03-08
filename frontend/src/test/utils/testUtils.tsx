@@ -786,14 +786,53 @@ export async function editRequestTime(getByTestId: GetByQuery<TextMatch, CommonQ
     expect(endTimeInput.props.value).toBe(commonUtils.rightNow());
 }
 
+async function editNumberOfRespondersNeeded(wrappedRespondersTestID: string, getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
+    const sliderTestID = TestIds.inputs.positions.inputs.minMax(wrappedRespondersTestID);
+    const sliderInput = await waitFor(() => getByTestId(sliderTestID));
+    const windowDimensions = Dimensions.get("screen");
+    await act(async () => fireEvent(sliderInput, 'layout', {
+        nativeEvent: { layout: { width: windowDimensions.width } },
+    }));
+
+    const previewLabel = await waitFor(() => getByTestId(TestIds.inputs.slider.previewLabel(sliderTestID)));
+    let minKnobValue = 2;
+    let maxKnobValue = 11;
+    expect(previewLabel).toHaveTextContent(`${minKnobValue} ${maxKnobValue == 11 ? STRINGS.INTERFACE.orMore : STRINGS.INTERFACE.toValue(maxKnobValue)}`);
+
+    // TODO: How to compute this instead of hardcoding?
+    // Value from sliderInput: const calculatedWidth = e.nativeEvent.layout.width;
+    const calculatedWidth = 750;
+
+    // TODO: Is there a place to get this value as well (or more accurately maybe 10 + 1)?
+    const steps = 11;
+    const stepWidth = calculatedWidth / steps;
+
+    // Move the min knob left one step (from 2 to 1)
+    const minRespondersKnob = await waitFor(() => getByTestId(TestIds.inputs.slider.minKnob(sliderTestID)));
+    await act(async () => fireEvent(minRespondersKnob, 'start'));
+    await act(async () => fireEvent(minRespondersKnob, 'move', -1 * stepWidth));
+    await act(async () => fireEvent(minRespondersKnob, 'end'));
+    minKnobValue -= 1;
+
+    // Moe the max knob left five steps (from 11/"or more" to 6)
+    const maxRespondersKnob = await waitFor(() => getByTestId(TestIds.inputs.slider.maxKnob(sliderTestID)));
+    await act(async () => fireEvent(maxRespondersKnob, 'start'));
+    await act(async () => fireEvent(maxRespondersKnob, 'move', -5 * stepWidth));
+    await act(async () => fireEvent(maxRespondersKnob, 'end'));
+    maxKnobValue -= 5;
+    expect(previewLabel).toHaveTextContent(`${minKnobValue} ${maxKnobValue == 11 ? STRINGS.INTERFACE.orMore : STRINGS.INTERFACE.toValue(maxKnobValue)}`);
+}
+
 export async function editRequestPositions(getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>) {
     let respondersInputLabel = await waitFor(() => getByTestId(TestIds.createRequest.inputs.positions));
     await act(async() => fireEvent(respondersInputLabel, 'click'));
 
-    // TODO: Edit number of responders needed
+    const wrappedRespondersTestID = TestIds.inputs.positions.wrapper(TestIds.createRequest.inputs.positions);
+
+    // Edit number of responders needed
+    await editNumberOfRespondersNeeded(wrappedRespondersTestID, getByTestId);
 
     // Edit Responder roles
-    const wrappedRespondersTestID = TestIds.inputs.positions.wrapper(TestIds.createRequest.inputs.positions);
     const positionsRolesID = TestIds.inputs.positions.inputs.roles(wrappedRespondersTestID);
     const roleListLabelID = TestIds.inputs.roleList.labelWrapper(positionsRolesID);
     const respondersRolesInputLabel = await waitFor(() => getByTestId(roleListLabelID));
