@@ -1,6 +1,9 @@
 import { render, fireEvent, waitFor, act, cleanup, waitForElementToBeRemoved } from '@testing-library/react-native';
 import '@testing-library/jest-native/extend-expect';
+import * as ExpoLocation from 'expo-location';
 
+jest.mock('expo-font');
+jest.mock('expo-asset');
 jest.mock('expo-constants', () => {
     const originalModule = jest.requireActual('expo-constants');
 
@@ -20,6 +23,30 @@ jest.mock('expo-constants', () => {
       ...originalModule,
     };
 });
+
+jest.spyOn(ExpoLocation, 'getForegroundPermissionsAsync').mockImplementation(async () => {
+    return {
+        status: ExpoLocation.PermissionStatus.GRANTED
+    }
+})
+
+jest.spyOn(ExpoLocation, 'getBackgroundPermissionsAsync').mockImplementation(async () => {
+    return {
+        status: ExpoLocation.PermissionStatus.GRANTED
+    }
+})
+
+jest.spyOn(ExpoLocation, 'requestForegroundPermissionsAsync').mockImplementation(async () => {
+    return {
+        status: ExpoLocation.PermissionStatus.GRANTED
+    }
+})
+
+jest.spyOn(ExpoLocation, 'requestBackgroundPermissionsAsync').mockImplementation(async () => {
+    return {
+        status: ExpoLocation.PermissionStatus.GRANTED
+    }
+})
 
 import App from './App';
 import {hideAsync} from 'expo-splash-screen';
