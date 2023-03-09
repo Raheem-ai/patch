@@ -44,12 +44,14 @@ COPY frontend/package.json .
 COPY frontend/yarn.lock .
 
 COPY frontend/eas_build/ /app/frontend/eas_build/
-# TODO: get this to only install the locked expo-cli
+
 RUN yarn install
 
 COPY frontend .
 
 RUN yarn run test
+# install deps that can't live in the frontend's package.json but the ci needs
+RUN $(node ./install_ci_deps.js)
 
 # /app
 WORKDIR ..
