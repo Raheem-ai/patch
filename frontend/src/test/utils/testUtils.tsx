@@ -2,7 +2,7 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
 import App from '../../../App';
 import {APIClient} from '../../../src/api'
-import { AppState, Dimensions } from 'react-native';
+import { AppState, Dimensions, Linking } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
@@ -16,10 +16,41 @@ import { GetByQuery, QueryByQuery } from '@testing-library/react-native/build/qu
 import { TextMatch } from '@testing-library/react-native/build/matches';
 import { CommonQueryOptions, TextMatchOptions } from '@testing-library/react-native/build/queries/options';
 import { TokenContext } from '../../../api';
+import * as ExpoLocation from 'expo-location';
 
 const originalBoot = jest.requireActual('../../../src/boot').default;
 const { hideAsync: originalHideAsync } = jest.requireActual('expo-splash-screen');
 const appStateMock = jest.spyOn(AppState, 'addEventListener').mockImplementation(() => null);
+
+
+jest.spyOn(Linking, 'addEventListener').mockImplementation((...args) => {
+    return {
+        remove: () => {}
+    } as any
+})
+
+jest.mock('@react-native-community/netinfo', () => {
+    const originalModule = jest.requireActual('@react-native-community/netinfo');
+    const NetInfo = originalModule.default;
+  
+    //Mock the default export and named export 'foo'
+    return {
+      __esModule: true,
+      ...originalModule,
+      default: {
+        ...NetInfo,
+        addEventListener: (cb) => {
+            return cb({
+                isConnected: true,
+                isInternetReachable: true,
+                type: originalModule.NetInfoStateType.wifi,
+                details: {} as any
+            })
+        }
+      },
+    };
+})
+
 
 // Default Role text
 const adminText = DefaultRoles[1].name;
