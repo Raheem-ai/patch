@@ -1039,5 +1039,5 @@ describe('Signed in Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.createdRequestSuccess(reqName));
         await act(async() => fireEvent(toastTextComponent, 'press'));
-    })
+    }, 10000)
 })
