@@ -951,12 +951,12 @@ describe('Signed in Scenarios', () => {
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
     })
 
+    // Additional 10s timeout needed for this test because the Google Cloud test execution often exeeds Jest's default 5s
     test('Create new request', async () => {
         console.log('Create new request run...');
         const {
             getByTestId,
             queryByTestId,
-            toJSON
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
