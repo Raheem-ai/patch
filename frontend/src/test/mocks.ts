@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -204,7 +204,7 @@ export function MockOrgMetadata(): OrganizationMetadata {
         requestPrefix: 'MOCK',
         roleDefinitions: JSON.parse(JSON.stringify(DefaultRoles)),
         attributeCategories: JSON.parse(JSON.stringify(DefaultAttributeCategories)),
-        tagCategories: []
+        tagCategories: JSON.parse(JSON.stringify(DefaultTagCategories))
     }
 }
 

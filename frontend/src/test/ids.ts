@@ -64,7 +64,13 @@ const TestIds = {
     },
 
     // reuasable component internals
+    positionCard: {
+        wrapper: (testID: string) => `positionsCard(${testID})`,
+        roleText: (testID: string) => `${testID}::roleText`,
+        attrText: (testID: string, idx: number) => `${testID}::attrText[${idx}]`
+    },
     positionDetailsCard: {
+        card: 'positionDetailsCard',
         join: 'positionDetailsCard::join',
         leave: 'positionDetailsCard::leave',
         requestToJoin: 'positionDetailsCard::requestToJoin'
@@ -163,6 +169,7 @@ const TestIds = {
             edit: (testID: string) => `${testID}::edit`,
             search: (testID: string) => `${testID}::search`,
             searchResultN: (testID: string, idx: number) => `${testID}::searchResult[${idx}]`,
+            searchResultMatchTextN: (testID: string, idx: number) => `${testID}::searchResultMatchText[${idx}]`,
             
             categoryRowN: (testID: string, idx: number) => `${testID}::categoryRowN[${idx}]`,
             pills: (testID: string) => `${testID}::pills`,
@@ -174,6 +181,14 @@ const TestIds = {
         nestedListInput: {
             wrapper: (testID: string) => `nestedListInput(${testID})`,
             optionN: (testID: string, categoryIdx: number, itemIdx: number) => `${testID}::option[${categoryIdx}][${itemIdx}]`,
+        },
+        textInput: {
+            inlineActionIcon: (testID: string) => `textInput::inlineActionIcon(${testID})`
+        },
+        slider: {
+            previewLabel: (testID: string) => `${testID}::slider::previewLabel`,
+            minKnob: (testID: string) => `${testID}::slider::minKnob`,
+            maxKnob: (testID: string) => `${testID}::slider::maxKnob`
         }
     },
     

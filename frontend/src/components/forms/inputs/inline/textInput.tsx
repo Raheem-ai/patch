@@ -5,6 +5,7 @@ import { IconButton } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
 import { Colors, ICONS } from "../../../../types";
+import TestIds from "../../../../test/ids";
 
 type Props = SectionInlineViewProps<'TextInput'> & {
     style?: TextStyle,
@@ -75,6 +76,7 @@ const TextInput = observer(({
                     : null }
                 { inlineAction
                     ? <IconButton
+                        testID={TestIds.inputs.textInput.inlineActionIcon(config.testID)}
                         icon={inlineAction.icon}
                         onPress={inlineAction.action}
                         color={Colors.primary.alpha}

@@ -194,6 +194,7 @@ const PositionDetailsCard = observer(({
             <View style={{ flexDirection: 'row' }}>
                 <View style={{ flex: 1 }}>
                     <PositionCard 
+                        testID={TestIds.positionDetailsCard.card}
                         onlyMissingUsers 
                         containerStyle={{ borderBottomWidth: 0 }} 
                         pos={pos} 

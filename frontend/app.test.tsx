@@ -950,4 +950,94 @@ describe('Signed in Scenarios', () => {
         await act(async () => fireEvent(helpRequestListBtn, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList));
     })
+
+    // Additional 10s timeout needed for this test because the Google Cloud test execution often exeeds Jest's default 5s
+    test('Create new request', async () => {
+        console.log('Create new request run...');
+        const {
+            getByTestId,
+            queryByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+        // Mock a valid time for the "rightNow" function so we can reliably test our inputs
+        const mockRightNow = () => { return '3:30 PM' };
+        jest.spyOn(commonUtils, 'rightNow').mockImplementation(mockRightNow);
+
+        // Open create request form
+        const createRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.createRequest));
+        await act(async() => fireEvent(createRequestButton, 'click'));
+        await waitFor(() => getByTestId(TestIds.createRequest.form));
+
+        // The bottom drawer is exanded initially, so the minimize test ID should be available,
+        // while the expand test ID should not.
+        const minimizeTestId = TestIds.backButtonHeader.minimize(TestIds.createRequest.form);
+        const expandTestId = TestIds.backButtonHeader.expand(TestIds.createRequest.form);
+        const minimizeBottomDrawerButton = await waitFor(() => getByTestId(minimizeTestId));
+        expect(queryByTestId(expandTestId)).toBeNull();
+
+        // After minimizing the form, the expand test ID should be available,
+        // while the minimize test ID is not.
+        await act(async() => fireEvent(minimizeBottomDrawerButton, 'click'));
+        const expandBottomDrawerButton = await waitFor(() => getByTestId(expandTestId));
+        expect(queryByTestId(minimizeTestId)).toBeNull();
+
+        // Expand the drawer one more time to complete the form
+        await act(async() => fireEvent(expandBottomDrawerButton, 'click'));
+
+        // Form submit button should be disabled until values are provided
+        const createRequestSubmitButton = await waitFor(() => getByTestId(TestIds.backButtonHeader.save(TestIds.createRequest.form)));
+        expect(createRequestSubmitButton).toBeDisabled();
+
+        // Edit Description
+        await testUtils.editRequestDescription(getByTestId);
+
+        // Submit button should be enabled once a description is provided
+        expect(createRequestSubmitButton).not.toBeDisabled();
+
+        // Edit Request Type
+        await testUtils.editRequestType(getByTestId, queryByTestId);
+
+        // Edit Location
+        await testUtils.editRequestLocation(getByTestId);
+
+        // Edit End Time
+        await testUtils.editRequestTime(getByTestId);
+
+        // Edit Responders Needed
+        await testUtils.editRequestPositions(getByTestId);
+
+        // Edit Priority
+        await testUtils.editRequestPriority(getByTestId);
+
+        // Edit Tags
+        await testUtils.editRequestTags(getByTestId);
+
+        // Save Request
+        const mockRequest = MockRequests()[0];
+        const createNewRequestMock = jest.spyOn(APIClient.prototype, 'createNewRequest').mockResolvedValue(mockRequest);
+        await act(async() => fireEvent(createRequestSubmitButton, 'click'));
+
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            MockOrgMetadata().requestPrefix, 
+            mockRequest.displayId
+        )
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.createdRequestSuccess(reqName));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+    }, 10000)
 })

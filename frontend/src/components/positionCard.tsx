@@ -8,8 +8,10 @@ import { manageAttributesStore, organizationStore, userStore } from "../stores/i
 import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";
 import { Colors, ICONS } from "../types";
+import TestIds from "../test/ids";
 
 type PositionCardProps = { 
+    testID: string,
     pos: Position,
     edit?: {
         permissions: PatchPermissions[],
@@ -19,7 +21,8 @@ type PositionCardProps = {
     onlyMissingUsers?: boolean
 }
 
-const PositionCard = observer(({ 
+const PositionCard = observer(({
+    testID,
     pos,
     edit,
     containerStyle,
@@ -60,15 +63,16 @@ const PositionCard = observer(({
     }
 
     const hasPermissions = iHaveAllPermissions(edit?.permissions || []);
+    const wrappedTestID = TestIds.positionCard.wrapper(testID);
 
     return (
-        <Pressable onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
+        <Pressable testID={wrappedTestID} onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
             <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
+                <Text testID={TestIds.positionCard.roleText(wrappedTestID)} style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
                 <View style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}>
                     { 
-                        attrNames.map(attr => {
-                            return <Text key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</Text>
+                        attrNames.map((attr, idx) => {
+                            return <Text testID={TestIds.positionCard.attrText(wrappedTestID, idx)} key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</Text>
                         }) 
                     }
                 </View>
