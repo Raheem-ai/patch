@@ -917,13 +917,9 @@ async function editNumberOfRespondersNeeded(wrappedRespondersTestID: string, get
     let maxKnobValue = 11;
     expect(previewLabel).toHaveTextContent(`${minKnobValue} ${maxKnobValue == 11 ? STRINGS.INTERFACE.orMore : STRINGS.INTERFACE.toValue(maxKnobValue)}`);
 
-    // TODO: How to compute this instead of hardcoding?
-    // Value from sliderInput: const calculatedWidth = e.nativeEvent.layout.width;
-    const calculatedWidth = 750;
-
-    // TODO: Is there a place to get this value as well (or more accurately maybe 10 + 1)?
+    // 0-9 and one more step for "or more"
     const steps = 11;
-    const stepWidth = calculatedWidth / steps;
+    const stepWidth = windowDimensions.width / steps;
 
     // Move the min knob left one step (from 2 to 1)
     const minRespondersKnob = await waitFor(() => getByTestId(TestIds.inputs.slider.minKnob(sliderTestID)));
@@ -932,7 +928,7 @@ async function editNumberOfRespondersNeeded(wrappedRespondersTestID: string, get
     await act(async () => fireEvent(minRespondersKnob, 'end'));
     minKnobValue -= 1;
 
-    // Moe the max knob left five steps (from 11/"or more" to 6)
+    // Move the max knob left five steps (from 11/"or more" to 6)
     const maxRespondersKnob = await waitFor(() => getByTestId(TestIds.inputs.slider.maxKnob(sliderTestID)));
     await act(async () => fireEvent(maxRespondersKnob, 'start'));
     await act(async () => fireEvent(maxRespondersKnob, 'move', -5 * stepWidth));
