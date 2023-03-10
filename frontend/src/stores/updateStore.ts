@@ -1,8 +1,8 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchEventPacket, IndividualRequestEventType, UserEventType, OrgEventType, BulkRequestEventType } from '../../../common/models';
-import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket } from '../../../common/utils/eventUtils';
+import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType } from '../../../common/models';
+import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
 @Store(IUpdateStore)
@@ -41,7 +41,6 @@ export default class UpdateStore implements IUpdateStore {
         console.log('UI onEvent(): ', packet.event, packet.params)
         try {
             if (isIndividualRequestEventPacket(packet)) {
-                // TODO: make the params for these types an array and update the places the event emits
                 await this.updateRequests([packet.params.requestId], packet.event)
             }
 
@@ -60,7 +59,19 @@ export default class UpdateStore implements IUpdateStore {
             // TODO(Shifts): will need their own events/updates similar to requests
 
             if (isUserEventPacket(packet)) {
-                await this.updateUsers(packet.params.userId, packet.event)
+                await this.updateUsers([packet.params.userId], packet.event)
+            }
+
+            if (isBulkUserEventPacket(packet)) {
+                const userIds = packet.params.updatedUserIds;
+
+                if (userIds.length) {
+                    await this.updateUsers(userIds, packet.event)
+                } else if (this.userState.specificIds.size) {
+                    // this event isn't updating any users but there are pending updates so we should wait to update the org 
+                    // in case one of them is for the delete of a different role/attribute 
+                    await when(() => !this.userState.specificIds.size)
+                }
             }
 
             // wait to update the org metadata last so deleting a user defined type (role/attribute/tag) that a request/user
@@ -113,8 +124,8 @@ export default class UpdateStore implements IUpdateStore {
     })
 
     updateUsers = stateFullMemoDebounce(async (
-        userId: string,
-        event: UserEventType
+        userIds: string[],
+        event: IndividualUserEventType | BulkUserEventType
     ) => {
         const ids = Array.from(this.userState.specificIds.values());
         await userStore().updateOrgUsers(ids)
@@ -123,14 +134,14 @@ export default class UpdateStore implements IUpdateStore {
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_USER,
         initialState: () => this.userState,
-        beforeCall: (state, userId, event) => {
+        beforeCall: (state, userIds, event) => {
             if (event == PatchEventType.UserDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state().specificIds.add(userId)
+                userIds.forEach(id => state().specificIds.add(id))
             }
         },
         afterCall: (state, userId, event) => {

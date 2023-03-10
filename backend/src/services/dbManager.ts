@@ -501,12 +501,15 @@ export class DBManager {
 
     async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<{ 
         updatedOrg: OrganizationDoc,
-        updatedRequests: HelpRequestDoc[]
+        updatedRequests: HelpRequestDoc[],
+        updatedUsers: UserDoc[]
     }> {
         const org = await this.resolveOrganization(orgId);
 
         return this.transaction(async (session) => {
             // Remove the role ID from users currently assigned this role.
+            const updatedUsers: UserDoc[] = []
+
             for (const member of org.members as UserModel[]) {
                 let userModified = false;
                 for (const id of roleIds) {
@@ -524,7 +527,7 @@ export class DBManager {
                     const user = await this.getUserById(member.id);
                     user.organizations[orgId].roleIds = member.organizations[orgId].roleIds;
                     user.markModified('organizations');
-                    await user.save({ session });
+                    updatedUsers.push(await user.save({ session }));
                 }
             }
 
@@ -537,7 +540,8 @@ export class DBManager {
 
             return {
                 updatedOrg: await org.save({ session }),
-                updatedRequests
+                updatedRequests,
+                updatedUsers
             }
         })
     }
@@ -884,7 +888,8 @@ export class DBManager {
     // has, it will be saved for each attribute removal
     async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<{
         updatedOrg: OrganizationDoc,
-        updatedRequests: HelpRequestDoc[]
+        updatedRequests: HelpRequestDoc[],
+        updatedUsers: UserDoc[]
     }> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -911,10 +916,12 @@ export class DBManager {
                 // Retrieve the users from the DB by ID, and update their attributeIds list.
                 const userIds = Array.from(usersToSave.keys());
 
+                const updatedUsers: UserDoc[] = []
+
                 for (const [user, attrIndex] of usersToSave) {
                     user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                     user.markModified('organizations');
-                    await user.save({ session });
+                    updatedUsers.push(await user.save({ session }));
                 }
 
                 // remove deleted attributes from positions that have them on them
@@ -922,7 +929,8 @@ export class DBManager {
 
                 return {
                     updatedOrg: org,
-                    updatedRequests
+                    updatedRequests,
+                    updatedUsers
                 }
             }
 

@@ -1,4 +1,4 @@
-import { OrgEventType, PatchEventPacket, PatchEventType, IndividualRequestEventType, UserEventType, BulkRequestEventType } from '../models'
+import { OrgEventType, PatchEventPacket, PatchEventType, IndividualRequestEventType, BulkRequestEventType, BulkUserEventType, IndividualUserEventType } from '../models'
 
 export function isIndividualRequestEventPacket(packet: PatchEventPacket): packet is PatchEventPacket<IndividualRequestEventType> {
     return packet.event == PatchEventType.RequestChatNewMessage
@@ -16,7 +16,7 @@ export function isIndividualRequestEventPacket(packet: PatchEventPacket): packet
         || packet.event == PatchEventType.RequestRespondersRequestToJoinAck
 }
 
-export function isUserEventPacket(packet: PatchEventPacket): packet is PatchEventPacket<UserEventType> {
+export function isUserEventPacket(packet: PatchEventPacket): packet is PatchEventPacket<IndividualUserEventType> {
     return packet.event == PatchEventType.UserCreated
     || packet.event == PatchEventType.UserEdited
     || packet.event == PatchEventType.UserDeleted
@@ -31,6 +31,11 @@ export function isBulkRequestEventPacket(packet: PatchEventPacket): packet is Pa
     return packet.event == PatchEventType.OrganizationRoleDeleted
     || packet.event == PatchEventType.OrganizationAttributesUpdated
     || packet.event == PatchEventType.OrganizationTagsUpdated
+}
+
+export function isBulkUserEventPacket(packet: PatchEventPacket): packet is PatchEventPacket<BulkUserEventType> {
+    return packet.event == PatchEventType.OrganizationRoleDeleted
+    || packet.event == PatchEventType.OrganizationAttributesUpdated
 }
 
 export function isOrgEventPacket(packet: PatchEventPacket): packet is PatchEventPacket<OrgEventType> {

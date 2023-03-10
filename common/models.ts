@@ -1194,7 +1194,7 @@ export type BulkRequestEventType =
     | PatchEventType.OrganizationTagsUpdated
 
 // PatchEventType Convenience Type
-export type UserEventType = PatchEventType.UserCreated
+export type IndividualUserEventType = PatchEventType.UserCreated
     | PatchEventType.UserEdited
     | PatchEventType.UserDeleted
     | PatchEventType.UserAddedToOrg
@@ -1202,6 +1202,13 @@ export type UserEventType = PatchEventType.UserCreated
     | PatchEventType.UserChangedRolesInOrg
     | PatchEventType.UserOnDuty
     | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+// these deletes/updates might affect multiple 
+// users that need to be refreshed
+export type BulkUserEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
 
 // PatchEventType Convenience Type
 export type OrgEventType = PatchEventType.OrganizationEdited
@@ -1369,17 +1376,19 @@ export type PatchEventParams = {
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
         roleId: string,
-        updatedRequestIds: string[]
+        updatedRequestIds: string[],
+        updatedUserIds: string[]
     },
     // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
     // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
         orgId: string,
-        updatedRequestIds: string[]
+        updatedRequestIds: string[],
+        updatedUserIds: string[]
     },
     [PatchEventType.OrganizationTagsUpdated]: {
         orgId: string,
-        updatedRequestIds: string[]
+        updatedRequestIds: string[],
     }
 }
 
