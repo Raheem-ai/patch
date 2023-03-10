@@ -1162,6 +1162,8 @@ export enum PatchEventType {
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
+
+    // TODO(Shift): will need their own events
 }
 
 // PatchEventType Convenience Type
@@ -1177,11 +1179,19 @@ export type RequestTeamEventTypes =
     | PatchEventType.RequestRespondersDeclined;
 
 // PatchEventType Convenience Type
-export type RequestEventType = RequestTeamEventTypes
+export type IndividualRequestEventType = RequestTeamEventTypes
     | PatchEventType.RequestChatNewMessage
     | PatchEventType.RequestCreated
     | PatchEventType.RequestDeleted
     | PatchEventType.RequestEdited;
+
+// PatchEventType Convenience Type
+// these deletes/updates might affect multiple 
+// requests that need to be refreshed
+export type BulkRequestEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
 
 // PatchEventType Convenience Type
 export type UserEventType = PatchEventType.UserCreated
@@ -1358,15 +1368,18 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
-        roleId: string
+        roleId: string,
+        updatedRequestIds: string[]
     },
     // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
     // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[]
     },
     [PatchEventType.OrganizationTagsUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[]
     }
 }
 

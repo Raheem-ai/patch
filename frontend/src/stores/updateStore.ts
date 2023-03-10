@@ -1,8 +1,8 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchEventPacket, RequestEventType, UserEventType, OrgEventType } from '../../../common/models';
-import { isOrgEventPacket, isRequestEventPacket, isUserEventPacket } from '../../../common/utils/eventUtils';
+import { PatchEventType, PatchEventPacket, IndividualRequestEventType, UserEventType, OrgEventType, BulkRequestEventType } from '../../../common/models';
+import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
 @Store(IUpdateStore)
@@ -40,14 +40,32 @@ export default class UpdateStore implements IUpdateStore {
     onEvent = async <T extends PatchEventType>(packet: PatchEventPacket<T>) => {
         console.log('UI onEvent(): ', packet.event, packet.params)
         try {
-            if (isRequestEventPacket(packet)) {
-                await this.updateRequests(packet.params.requestId, packet.event)
+            if (isIndividualRequestEventPacket(packet)) {
+                // TODO: make the params for these types an array and update the places the event emits
+                await this.updateRequests([packet.params.requestId], packet.event)
             }
+
+            if (isBulkRequestEventPacket(packet)) {
+                const requestIds = packet.params.updatedRequestIds;
+
+                if (requestIds.length) {
+                    await this.updateRequests(requestIds, packet.event)
+                } else if (this.reqState.specificIds.size) {
+                    // this event isn't updating any requests but there are pending updates so we should wait to update the org 
+                    // in case one of them is for the delete of a different role/attribute/tag 
+                    await when(() => !this.reqState.specificIds.size)
+                }
+            }
+
+            // TODO(Shifts): will need their own events/updates similar to requests
 
             if (isUserEventPacket(packet)) {
                 await this.updateUsers(packet.params.userId, packet.event)
             }
 
+            // wait to update the org metadata last so deleting a user defined type (role/attribute/tag) that a request/user
+            // references will not show up in the ui as deleted until the affected user/requests have been updated in the ui first
+            // ie. we don't try to display the name of a role that doesn't exist in the org and blow up the ui
             if (isOrgEventPacket(packet)) {
                 await this.updateOrg(packet.params.orgId, packet.event)
             }
@@ -56,12 +74,12 @@ export default class UpdateStore implements IUpdateStore {
         }
     }
 
-    pendingRequestUpdate = async (packet: PatchEventPacket<RequestEventType>): Promise<void> => {
+    pendingRequestUpdate = async (packet: PatchEventPacket<IndividualRequestEventType>): Promise<void> => {
         const reqId = packet.params.requestId;
 
         if (!this.reqState.specificIds.has(reqId)) {
             console.log('No pending request for: ', reqId)
-            await this.updateRequests(reqId, packet.event)
+            await this.updateRequests([reqId], packet.event)
         }
 
         console.log('waiting for pending request update')
@@ -69,8 +87,8 @@ export default class UpdateStore implements IUpdateStore {
     }
 
     updateRequests = stateFullMemoDebounce(async (
-        requestId: string,
-        event: RequestEventType
+        requestIds: string[],
+        event: IndividualRequestEventType | BulkRequestEventType
     ) => {
         const ids = Array.from(this.reqState.specificIds.values());
         await requestStore().getRequests(ids)
@@ -79,14 +97,14 @@ export default class UpdateStore implements IUpdateStore {
         maxWait: this.maxWait,
         paramsToMemoCacheKey: () => this.UPDATE_REQ,
         initialState: () => this.reqState,
-        beforeCall: (state, requestId, event) => {
+        beforeCall: (state, requestIds, event) => {
             if (event == PatchEventType.RequestDeleted) {
                 // deleted
                 // TODO: we don't have a design for this yet...update when we do
                 // can add state here for ui purposes
             } else {
                 // added or edited
-                state().specificIds.add(requestId)
+                requestIds.forEach(id =>  state().specificIds.add(id))
             }
         },
         afterCall: (state, requestId, event) => {

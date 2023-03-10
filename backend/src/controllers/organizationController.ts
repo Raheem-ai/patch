@@ -303,12 +303,13 @@ export class OrganizationController implements APIController<
             throw new BadRequest(STRINGS.SETTINGS.cannotDeleteRole(adminRoleName));
         }
 
-        const updatedOrg = await this.db.removeRolesFromOrganization(org.id, roleIds);
+        const { updatedOrg, updatedRequests } = await this.db.removeRolesFromOrganization(org.id, roleIds);
 
         for (const roleId of roleIds) {
             await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
                 orgId: updatedOrg.id, 
-                roleId: roleId
+                roleId: roleId,
+                updatedRequestIds: updatedRequests.map(req => req.id)
             });
         }
 
@@ -362,6 +363,8 @@ export class OrganizationController implements APIController<
             }))
 
             // Delete Items (Attributes)
+            const updatedRequestIdSet = new Set<string>()
+
             for (const categoryId in updates.deletedItems) {
                 // deleting a category deletes its items
                 if (updates.deletedCategories.includes(categoryId)) {
@@ -371,7 +374,9 @@ export class OrganizationController implements APIController<
                 const itemsToDelete = updates.deletedItems[categoryId];
 
                 for (const itemId of itemsToDelete) {
-                    org = await this.db.removeAttributeWithSession(org, categoryId, itemId, session)
+                    const { updatedOrg, updatedRequests } = await this.db.removeAttributeWithSession(org, categoryId, itemId, session)
+                    org = updatedOrg;
+                    updatedRequests.forEach(req => updatedRequestIdSet.add(req.id))
                     deletedItems.push({ categoryId, itemId })
                 }
             }
@@ -407,7 +412,8 @@ export class OrganizationController implements APIController<
             const updatedOrg = await org.save({ session });
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributesUpdated, { 
-                orgId: updatedOrg.id
+                orgId: updatedOrg.id,
+                updatedRequestIds: Array.from(updatedRequestIdSet.values())
             });
 
             return updatedOrg;
@@ -444,6 +450,8 @@ export class OrganizationController implements APIController<
             }))
 
             // Delete Items (Tags)
+            const updatedRequestIdSet = new Set<string>()
+
             for (const categoryId in updates.deletedItems) {
                 // deleting a category deletes its items
                 if (updates.deletedCategories.includes(categoryId)) {
@@ -453,7 +461,9 @@ export class OrganizationController implements APIController<
                 const itemsToDelete = updates.deletedItems[categoryId];
 
                 for (const itemId of itemsToDelete) {
-                    org = await this.db.removeTagWithSession(org, categoryId, itemId, session)
+                    const { updatedOrg, updatedRequests } = await this.db.removeTagWithSession(org, categoryId, itemId, session)
+                    org = updatedOrg
+                    updatedRequests.forEach(req => updatedRequestIdSet.add(req.id))
                     deletedItems.push({ categoryId, itemId })
                 }
             }
@@ -489,7 +499,8 @@ export class OrganizationController implements APIController<
             const updatedOrg = await org.save({ session });
 
             await this.pubSub.sys(PatchEventType.OrganizationTagsUpdated, { 
-                orgId: updatedOrg.id
+                orgId: updatedOrg.id,
+                updatedRequestIds: Array.from(updatedRequestIdSet.values())
             });
 
             return updatedOrg;

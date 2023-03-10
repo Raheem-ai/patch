@@ -499,7 +499,10 @@ export class DBManager {
         ];
     }
 
-    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<OrganizationDoc> {
+    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<{ 
+        updatedOrg: OrganizationDoc,
+        updatedRequests: HelpRequestDoc[]
+    }> {
         const org = await this.resolveOrganization(orgId);
 
         return this.transaction(async (session) => {
@@ -525,11 +528,53 @@ export class DBManager {
                 }
             }
 
+            // replace the role in all position definitions with Anyone
+            const updatedRequests = await this.removeRolesFromPositions(org, roleIds, session)
+
             // Now remove the roles from the org definition.
             org.roleDefinitions = org.roleDefinitions.filter(role => !roleIds.includes(role.id));
             org.markModified('roleDefinitions');
-            return await org.save({ session });
+
+            return {
+                updatedOrg: await org.save({ session }),
+                updatedRequests
+            }
         })
+    }
+
+    async removeRolesFromPositions(org: OrganizationDoc, roleIds: string[], session: ClientSession): Promise<HelpRequestDoc[]> {
+        const allOrgRequests = await this.requests.find({
+            orgId: org.id
+        })
+
+        const requestsToUpdate = allOrgRequests.map(req => {
+            let updatedPositions = false;
+
+            for (const idx in req.positions) {
+                const pos = req.positions[idx];
+
+                if (roleIds.includes(pos.role)) {
+                    pos.role = DefaultRoleIds.Anyone
+                    updatedPositions = true
+                }
+            }
+
+            if (updatedPositions) {
+                return req
+            } else {
+                return null
+            }
+        }).filter(r => !!r)
+
+        const updatedRequests: HelpRequestDoc[] = []
+
+        for (const req of requestsToUpdate) {
+            req.markModified('positions');
+            updatedRequests.push(await req.save({ session }));
+        }
+
+        return updatedRequests
+        // TODO(Shifts): Do the same thing for shift positions when we have them
     }
 
     async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
@@ -837,7 +882,10 @@ export class DBManager {
 
     // TODO: this can be sped up by returning the users to be saved by the caller...ie if more than one attribute is removed that a user 
     // has, it will be saved for each attribute removal
-    async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<OrganizationDoc> {
+    async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedRequests: HelpRequestDoc[]
+    }> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
@@ -870,43 +918,56 @@ export class DBManager {
                 }
 
                 // remove deleted attributes from positions that have them on them
-                const allOrgRequests = await this.requests.find({
-                    orgId: org.id
-                })
+                const updatedRequests = await this.removeAttributesFromPositions(org, categoryId, attributeId, session)
 
-                const requestsToUpdate = allOrgRequests.map(req => {
-                    let updatedPositions = false;
-
-                    for (const idx in req.positions) {
-                        const pos = req.positions[idx];
-
-                        const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
-                        
-                        if (pos.attributes.length > cleansedAttributes.length) {
-                            pos.attributes = cleansedAttributes;
-                            updatedPositions = true;
-                        }
-                    }
-
-                    if (updatedPositions) {
-                        return req
-                    } else {
-                        return null
-                    }
-                }).filter(r => !!r)
-
-                for (const req of requestsToUpdate) {
-                    req.markModified('positions');
-                    await req.save({ session });
+                return {
+                    updatedOrg: org,
+                    updatedRequests
                 }
-
-                return org;
             }
 
             throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(attributeId, categoryId, org.id));
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
+    }
+
+    async removeAttributesFromPositions(org: OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<HelpRequestDoc[]> {
+        const allOrgRequests = await this.requests.find({
+            orgId: org.id
+        })
+
+        const requestsToUpdate = allOrgRequests.map(req => {
+            let updatedPositions = false;
+
+            for (const idx in req.positions) {
+                const pos = req.positions[idx];
+
+                const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
+                
+                if (pos.attributes.length > cleansedAttributes.length) {
+                    pos.attributes = cleansedAttributes;
+                    updatedPositions = true;
+                }
+            }
+
+            if (updatedPositions) {
+                return req
+            } else {
+                return null
+            }
+        }).filter(r => !!r)
+
+        const updatedRequests: HelpRequestDoc[] = []
+
+        for (const req of requestsToUpdate) {
+            req.markModified('positions');
+            updatedRequests.push(await req.save({ session }));
+        }
+
+        return updatedRequests
+
+        // TODO(Shifts): Do the same thing for shift positions when we have them
     }
 
     // TODO: remove?...or maybe move validation to updateUser()?
@@ -1280,7 +1341,10 @@ export class DBManager {
 
     // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
     // has, it will be saved for each attribute removal
-    async removeTagWithSession(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session: ClientSession): Promise<OrganizationDoc> {
+    async removeTagWithSession(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session: ClientSession): Promise<{
+        updatedOrg: OrganizationDoc
+        updatedRequests: HelpRequestDoc[]   
+    }> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
@@ -1310,11 +1374,16 @@ export class DBManager {
                     }
                 }
 
+                const updatedRequests: HelpRequestDoc[] = []
+
                 for (const request of requests) {
-                    await request.save({ session });
+                    updatedRequests.push(await request.save({ session }));
                 }
 
-                return org;
+                return {
+                    updatedOrg: org,
+                    updatedRequests
+                }
             }
 
             throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
