@@ -235,6 +235,18 @@ class EditHelpRequest extends React.Component<Props> {
                         editRequestStore().positions = data
                     },
                     val: () => {
+                        // TODO: this is causing the break when a role is delelted underneath a position
+                        // even though the request/position is updated in the requestStore(), this is pulling from the
+                        // current COPY of the request you are editing so it still has the old role ID
+                        // Need to treat this store as a projection of the actual values from the requestStore + the diff of what
+                        // you've changed...but...
+                        // 1) will that look janky if updates come in that change these values while you are editing?
+                        // 2) are there some changes we can't reason about?...and how do we handle letting you know that?
+                        // ie. positions are by ID so we can reason about a roleID changing while the min/max stay the same but
+                        // if you edit the description while someone else is editing, how do we resolve that?...etags and only honor the first change made?
+
+                        // TODO: as a sanity check, see if deleting a role on one phone updates the other on the RequestDetails > team tab
+                        // without breaking as it won't have an open PositionsInput that has a stale copy
                         return editRequestStore().positions;
                     },
                     isValid: () => true,

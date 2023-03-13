@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx"
 import { OrgContext } from "../../../common/api"
 import { Role } from "../../../common/models"
 import { api } from "../services/interfaces"
-import { IUpsertRoleStore, organizationStore, userStore } from "./interfaces"
+import { IUpsertRoleStore, organizationStore, requestStore, userStore } from "./interfaces"
 import { Store } from "./meta"
 
 @Store(IUpsertRoleStore)
@@ -43,7 +43,21 @@ export default class UpsertRoleStore implements IUpsertRoleStore  {
 
     delete = async () => {
         if (this.id) {
-            await api().deleteRoles(this.orgContext(), [this.id])
+            const { updatedUserIds, updatedRequestIds } = await api().deleteRoles(this.orgContext(), [this.id])
+            console.log('deleted roles')
+
+            if (updatedRequestIds.length) {
+                console.log('updating requests', updatedRequestIds)
+                await requestStore().getRequests(updatedRequestIds)
+            }
+
+
+            if (updatedUserIds.length) {
+                console.log('updating users', updatedUserIds)
+                await userStore().updateOrgUsers(updatedUserIds)
+            }
+
+            console.log('getting org data')
             await organizationStore().getOrgData();
         }
     }

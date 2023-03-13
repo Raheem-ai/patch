@@ -305,16 +305,22 @@ export class OrganizationController implements APIController<
 
         const { updatedOrg, updatedRequests, updatedUsers } = await this.db.removeRolesFromOrganization(org.id, roleIds);
 
+        const updatedRequestIds = updatedRequests.map(req => req.id)
+        const updatedUserIds = updatedUsers.map(user => user.id)
+
         for (const roleId of roleIds) {
             await this.pubSub.sys(PatchEventType.OrganizationRoleDeleted, { 
                 orgId: updatedOrg.id, 
                 roleId: roleId,
-                updatedRequestIds: updatedRequests.map(req => req.id),
-                updatedUserIds: updatedUsers.map(user => user.id)
+                updatedRequestIds,
+                updatedUserIds
             });
         }
 
-        return updatedOrg;
+        return { 
+            updatedUserIds, 
+            updatedRequestIds 
+        }
     }
 
     @Post(API.server.createNewRole())

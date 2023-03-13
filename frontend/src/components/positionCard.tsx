@@ -12,7 +12,9 @@ import TestIds from "../test/ids";
 
 type PositionCardProps = { 
     testID: string,
-    pos: Position,
+    // getting position like this because it could be coming from a store that is getting updated 
+    // or it could be from the position input label
+    positionHandle: () => Position
     edit?: {
         permissions: PatchPermissions[],
         handler: () => void
@@ -23,11 +25,13 @@ type PositionCardProps = {
 
 const PositionCard = observer(({
     testID,
-    pos,
+    positionHandle,
     edit,
     containerStyle,
     onlyMissingUsers
 }: PositionCardProps) => {
+    const pos = positionHandle()
+    console.log(pos)
     const roleName = organizationStore().roles.get(pos.role).name
     
     const attrNames = pos.attributes.map(attr => {

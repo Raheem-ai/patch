@@ -46,7 +46,7 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
                         permissions: config.props.editPermissions
                     }
 
-                    return <PositionCard testID={config.testID} pos={pos} edit={editConfig}/>
+                    return <PositionCard testID={config.testID} positionHandle={() => pos} edit={editConfig}/>
                 })
             }
             <Pressable testID={config.testID} onPress={onPlaceholderPress} style={{ paddingVertical: 20 }}>
