@@ -37,7 +37,8 @@ const TestIds = {
             requests: 'headerNavigationRequests',
             channels: 'headerNavigationChannels',
             team: 'headerNavigationTeam',
-            componentLib: 'headerNavigationComponentLib'
+            componentLib: 'headerNavigationComponentLib',
+            calendar: 'headerNavigationCalendar',
         },
         submenu: {
             profile: 'header::profile',
@@ -46,6 +47,7 @@ const TestIds = {
             signOut: 'header::signOut'
         },
         actions: {
+            createShift: 'headerActionsCreateShift',
             createRequest: 'headerActionsCreateRequest',
             editProfile: 'headerActionsEditProfile',
             addTeamMember: 'headerActionsAddTeamMember',

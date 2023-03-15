@@ -61,6 +61,11 @@ export const MainMenuOptions: MainMenuOption[] = (() => {
           routeTo: 'teamList',
           testId: TestIds.header.navigation.team
         },
+        {
+            name: 'Calendar',
+            routeTo: 'calendar',
+            testId: TestIds.header.navigation.calendar
+        },
     ]
 
     if (!inProdApp) {

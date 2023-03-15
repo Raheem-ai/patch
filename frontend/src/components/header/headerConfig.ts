@@ -218,6 +218,18 @@ const HeaderConfig: {
             rightActions 
         }
     },
+    [routerNames.calendar]: {
+        title: STRINGS.PAGE_TITLES.calendar,
+        rightActions: [
+            {
+                testId: TestIds.header.actions.createShift,
+                icon: ICONS.add,
+                callback: () => {
+                    bottomDrawerStore().show(BottomDrawerView.createRequest, true);
+                }
+            }
+        ]
+    },
     [routerNames.componentLib]: {
         title: STRINGS.PAGE_TITLES.componentLibrary
     }, 

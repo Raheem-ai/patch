@@ -151,6 +151,7 @@ const STRINGS = {
         channels: 'Channels',
         componentLibrary: 'Component Library',
         createRequest: 'Create Request',
+        calendar: 'Calendar',
     },
     EMAILS: {
         forgotPasswordSubject: `Reset Patch password`,

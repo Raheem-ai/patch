@@ -165,6 +165,13 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                     onPress={() => {
                         navigateTo(routerNames.teamList);
                     }}/>
+                <PatchButton 
+                    testID={TestIds.userHome.goToTeam}
+                    mode='text'
+                    label='Calendar'
+                    onPress={() => {
+                        navigateTo(routerNames.calendar);
+                    }}/>
             </View> 
             <View style={{paddingTop: 12, paddingBottom: 120, marginTop: 12, marginLeft: 24, borderTopWidth: 1, borderColor: Colors.borders.formFields}}>
                 <OpenURLButton url={URLS.helpCenter} label={STRINGS.LINKS.helpCenter} />

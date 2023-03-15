@@ -374,6 +374,21 @@ export enum TeamSortBy {
     ByFirstName = 'bfn'
 };
 
+export enum CalendarDaysFilter {
+    All = 'al',
+    WithShifts = 'sh',
+    WithoutShifts = 'ns'
+};
+
+export enum CalendarShiftsFilter {
+    All = 'al',
+    Unfilled = 'un'
+};
+
+export enum CalendarRolesFilter {
+    All = 'al'
+};
+
 export type Chat = {
     id: string,
     messages: ChatMessage[],
@@ -425,6 +440,21 @@ export const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string 
     [HelpRequestSortBy.ByStatus]: 'By status',
     [HelpRequestSortBy.BySeverity]: 'By priority'
     // [HelpRequestSortBy.ByDistance]: 'By distance'
+}
+
+export const CalendarDaysFilterToLabelMap: { [key in CalendarDaysFilter] : string } = {
+    [CalendarDaysFilter.WithShifts]: 'Days with shifts',
+    [CalendarDaysFilter.WithoutShifts]: 'Days without shifts',
+    [CalendarDaysFilter.All]: 'All days'
+}
+
+export const CalendarShiftsFilterToLabelMap: { [key in CalendarShiftsFilter] : string } = {
+    [CalendarShiftsFilter.Unfilled]: 'Unfilled shifts',
+    [CalendarShiftsFilter.All]: 'All shifts'
+}
+
+export const CalendarRolesFilterToLabelMap: { [key in CalendarRolesFilter] : string } = {
+    [CalendarRolesFilter.All]: 'All roles'
 }
 
 export type ResponderRequestStatuses = 
