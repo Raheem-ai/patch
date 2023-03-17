@@ -1379,16 +1379,18 @@ export type PatchEventParams = {
         updatedRequestIds: string[],
         updatedUserIds: string[]
     },
-    // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
-    // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
         orgId: string,
         updatedRequestIds: string[],
-        updatedUserIds: string[]
+        updatedUserIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     },
     [PatchEventType.OrganizationTagsUpdated]: {
         orgId: string,
         updatedRequestIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     }
 }
 

@@ -31,7 +31,6 @@ const PositionCard = observer(({
     onlyMissingUsers
 }: PositionCardProps) => {
     const pos = positionHandle()
-    console.log(pos)
     const roleName = organizationStore().roles.get(pos.role).name
     
     const attrNames = pos.attributes.map(attr => {

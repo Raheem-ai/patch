@@ -1,7 +1,7 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { IUpdateStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType } from '../../../common/models';
+import { createRequestStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
+import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/models';
 import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
@@ -37,9 +37,21 @@ export default class UpdateStore implements IUpdateStore {
         await requestStore().init()
     }
 
+    // TODO: put this in comment
+    // convenience function for typing
+    isEvent<P extends PatchEventType>(packet: PatchEventPacket, target: P): packet is PatchEventPacket<P> {
+        return packet.event == target
+    }
+
     onEvent = async <T extends PatchEventType>(packet: PatchEventPacket<T>) => {
         console.log('UI onEvent(): ', packet.event, packet.params)
         try {
+            // check to see if the update will cause cached stores to be out of sync with single source of truth stores
+            // if it does, update all the stores that keep local caches of affected data
+            // (ie. edit stores) before updating SSOT stores that we use to validate 
+            // logic + pull display data from (ie. organizationStore)
+            this.updateCachedStores(packet)
+
             if (isIndividualRequestEventPacket(packet)) {
                 await this.updateRequests([packet.params.requestId], packet.event)
             }
@@ -83,6 +95,44 @@ export default class UpdateStore implements IUpdateStore {
         } catch (e) {
             console.error(`Error in onEvent: ${e}`)
         }
+    }
+
+    updateCachedStores(packet: PatchEventPacket) {
+        // NOTE: each one of these cases should also get called by the store that initiates the event
+        // so the initiator has their ui update as if it came from an update
+
+        if (this.isEvent(packet, PatchEventType.OrganizationRoleDeleted)) {
+            this.onRoleDeleted(packet.params.roleId)
+        }
+
+        if (this.isEvent(packet, PatchEventType.OrganizationTagsUpdated)) {
+            this.onTagsDeleted(packet.params.deletedCategoryIds, packet.params.deletedItems)
+        }
+
+        if (this.isEvent(packet, PatchEventType.OrganizationAttributesUpdated)) {
+            this.onAttributesDeleted(packet.params.deletedCategoryIds, packet.params.deletedItems)
+        }
+    }
+
+    onRoleDeleted(roleId: string) {
+        editRequestStore().onRoleDeletedUpdate(roleId)
+        createRequestStore().onRoleDeletedUpdate(roleId)
+
+        editUserStore().onRoleDeletedUpdate(roleId)
+        newUserStore().onRoleDeletedUpdate(roleId)
+    }
+
+    onTagsDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']) {
+        // editRequestStore().onTagsDeletedUpdate(categoryIds, tags)
+        // createRequestStore().onTagsDeletedUpdate(categoryIds, tags)
+    }
+
+    onAttributesDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
+        // editRequestStore().onAttributesDeletedUpdate(categoryIds, attributes)
+        // createRequestStore().onAttributesDeletedUpdate(categoryIds, attributes)
+
+        // editUserStore().onAttributesDeletedUpdate(categoryIds, attributes)
+        // newUserStore().onAttributesDeletedUpdate(categoryIds, attributes)
     }
 
     pendingRequestUpdate = async (packet: PatchEventPacket<IndividualRequestEventType>): Promise<void> => {

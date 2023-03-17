@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -144,6 +144,10 @@ export type CreateReqData = Pick<HelpRequest,
 >
 
 export interface ITempRequestStore extends CreateReqData {
+    // react to deletions that might affect the locally cached data this store is using
+    onRoleDeletedUpdate(roleId: string): void
+    // onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']): void
+    // onTagsDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']): void
     clear(prop?: keyof CreateReqData): void
 }
 
@@ -330,8 +334,8 @@ export interface IBottomDrawerStore extends IBaseStore {
     viewId: BottomDrawerView
     view: BottomDrawerComponentClass
 
-    drawerContentHeight: Animated.AnimatedInterpolation
-    contentHeight: Animated.AnimatedInterpolation
+    drawerContentHeight: Animated.AnimatedInterpolation<number>
+    contentHeight: Animated.AnimatedInterpolation<number>
     
     contentHeightChange(): Promise<void>
     show(view: BottomDrawerView, expanded?: boolean): void;
@@ -418,7 +422,11 @@ export namespace ILinkingStore {
 
 export type EditUserData = Omit<User, 'organizations' | 'id'>
 
-export interface ITempUserStore extends EditUserData, IBaseStore { }
+export interface ITempUserStore extends EditUserData, IBaseStore { 
+    // react to deletions that might affect the locally cached data this store is using
+    onRoleDeletedUpdate(roleId: string): void
+    // onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']): void
+}
 
 export namespace INewUserStore {
     export const id = Symbol('INewUserStore');
@@ -491,7 +499,7 @@ export type ToastConfig = {
 export interface IAlertStore extends IBaseStore {
     toast?: ToastConfig
     prompt?: PromptConfig
-    alertTop: Animated.AnimatedInterpolation;
+    alertTop: Animated.AnimatedInterpolation<number>;
     alertWidth: number;
     alertLeft: number;
     
@@ -519,6 +527,14 @@ export namespace IUpdateStore {
 export interface IUpdateStore extends IBaseStore {
     pendingRequestUpdate(packet: PatchEventPacket<IndividualRequestEventType>): Promise<void>
     onEvent(packet: PatchEventPacket): Promise<void>
+
+    // NOTE: these methods are only called by the store that does the delete or internally when responding to an update
+    // then the update store notifies the other affected stores 
+    onRoleDeleted(roleId: string): void
+
+    // TODO: remove this code as we don't need them because tags/attributes are purely optional and get filtered out anyway
+    onTagsDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems'])
+    onAttributesDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems'])   
 }
 
 export namespace IUpsertRoleStore {

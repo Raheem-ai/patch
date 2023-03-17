@@ -1,4 +1,4 @@
-import { BodyParams, Controller, Get, Inject, Post } from "@tsed/common";
+import { BodyParams, Controller, Get, Inject, Post, renderView } from "@tsed/common";
 import { BadRequest, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
 import { Format, Pattern, Required } from "@tsed/schema";
@@ -366,30 +366,9 @@ export class OrganizationController implements APIController<
                 }
             }))
 
-            // Delete Items (Attributes)
-            const updatedRequestIdSet = new Set<string>()
-            const updatedUserIdSet = new Set<string>()
-
-            for (const categoryId in updates.deletedItems) {
-                // deleting a category deletes its items
-                if (updates.deletedCategories.includes(categoryId)) {
-                    continue;
-                }
-
-                const itemsToDelete = updates.deletedItems[categoryId];
-
-                for (const itemId of itemsToDelete) {
-                    const { updatedOrg, updatedRequests, updatedUsers } = await this.db.removeAttributeWithSession(org, categoryId, itemId, session)
-                    org = updatedOrg;
-                    updatedRequests.forEach(req => updatedRequestIdSet.add(req.id))
-                    updatedUsers.forEach(user => updatedUserIdSet.add(user.id))
-                }
-            }
-
-            // Delete Categories
-            for (const categoryToDelete of updates.deletedCategories) {
-                org = await this.db.removeAttributeCategoryWithSession(org, categoryToDelete, session)
-            }
+            // Delete items/whole categories
+            const { updatedOrg, updatedUsers, updatedRequests } = await this.db.deleteAttributes(org, updates.deletedCategories, updates.deletedItems)
+            org = updatedOrg
 
             // add items
             for (const categoryId in updates.newItems) {
@@ -413,15 +392,29 @@ export class OrganizationController implements APIController<
 
             [org, newAttributeCategories] = await this.db.addAttributeCategoriesToOrganization(org, minNewCategories)
 
-            const updatedOrg = await org.save({ session });
+            const savedOrg = await org.save({ session });
+
+            const savedUserIds: string[] = [];
+            for (const user of updatedUsers) {
+                await user.save({ session })
+                savedUserIds.push(user.id)
+            }
+
+            const savedRequestIds: string[] = [];
+            for (const request of updatedRequests) {
+                await request.save({ session })
+                savedRequestIds.push(request.id)
+            }
 
             await this.pubSub.sys(PatchEventType.OrganizationAttributesUpdated, { 
-                orgId: updatedOrg.id,
-                updatedRequestIds: Array.from(updatedRequestIdSet.values()),
-                updatedUserIds: Array.from(updatedUserIdSet.values())
+                orgId: savedOrg.id,
+                updatedRequestIds: savedRequestIds,
+                updatedUserIds: savedUserIds,
+                deletedCategoryIds: updates.deletedCategories,
+                deletedItems: updates.deletedItems
             });
 
-            return updatedOrg;
+            return savedOrg;
         })
     }
 
@@ -451,28 +444,9 @@ export class OrganizationController implements APIController<
                 }
             }))
 
-            // Delete Items (Tags)
-            const updatedRequestIdSet = new Set<string>()
-
-            for (const categoryId in updates.deletedItems) {
-                // deleting a category deletes its items
-                if (updates.deletedCategories.includes(categoryId)) {
-                    continue;
-                }
-
-                const itemsToDelete = updates.deletedItems[categoryId];
-
-                for (const itemId of itemsToDelete) {
-                    const { updatedOrg, updatedRequests } = await this.db.removeTagWithSession(org, categoryId, itemId, session)
-                    org = updatedOrg
-                    updatedRequests.forEach(req => updatedRequestIdSet.add(req.id))
-                }
-            }
-
-            // Delete Categories
-            for (const categoryToDelete of updates.deletedCategories) {
-                org = await this.db.removeTagCategoryWithSession(org, categoryToDelete, session)
-            }
+            // delete tags
+            const { updatedOrg, updatedRequests } = await this.db.deleteTags(org, updates.deletedCategories, updates.deletedItems)
+            org = updatedOrg
 
             // add items
             for (const categoryId in updates.newItems) {
@@ -480,6 +454,7 @@ export class OrganizationController implements APIController<
                     return { name }
                 });
 
+                // TODO: check why this works on it's own but fails if you also add a new category
                 [org, newTags] = await this.db.addTagsToOrganization(org, categoryId, items)
             }
 
@@ -496,14 +471,22 @@ export class OrganizationController implements APIController<
 
             [org, newTagCategories] = await this.db.addTagCategoriesToOrganization(org, minNewCategories)
 
-            const updatedOrg = await org.save({ session });
+            const savedOrg = await org.save({ session });
+
+            const savedRequestIds: string[] = [];
+            for (const request of updatedRequests) {
+                await request.save({ session })
+                savedRequestIds.push(request.id)
+            }
 
             await this.pubSub.sys(PatchEventType.OrganizationTagsUpdated, { 
-                orgId: updatedOrg.id,
-                updatedRequestIds: Array.from(updatedRequestIdSet.values())
+                orgId: savedOrg.id,
+                updatedRequestIds: savedRequestIds,
+                deletedCategoryIds: updates.deletedCategories,
+                deletedItems: updates.deletedItems
             });
 
-            return updatedOrg;
+            return savedOrg;
         })
     }
 }

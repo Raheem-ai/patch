@@ -1,8 +1,8 @@
 import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda } from "@tsed/agenda";
+import { Agenda, Every } from "@tsed/agenda";
 import { MongooseService } from "@tsed/mongoose";
 import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
@@ -720,21 +720,35 @@ export class DBManager {
         throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, orgId);
     }
 
-    async removeAttributeCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
+    async removeAttributeCategoryFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedUsers: UserDoc[],
+    }> {
+        let org = await this.resolveOrganization(orgId);
+        const usersToSave = new Set<UserDoc>()
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
             for (let i = org.attributeCategories[categoryIndex].attributes.length - 1; i >= 0; i--) {
                 // Removing the attribute from the attribute category itself.
                 // Removing the attribute from users.
-                await this.removeAttributeWithSession(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id, session);
+                const { updatedOrg, updatedUsers } = await this.removeAttributeFromOrg(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id);
+                
+                org = updatedOrg
+                updatedUsers.forEach(user => usersToSave.add(user))
             }
 
             // Remove the attribute category from the organization.
             org.attributeCategories.splice(categoryIndex, 1);
             org.markModified('attributeCategories');
-            return org
+
+            return {
+                updatedOrg: org,
+                updatedUsers: Array.from(usersToSave.values())
+            }
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
@@ -886,10 +900,13 @@ export class DBManager {
 
     // TODO: this can be sped up by returning the users to be saved by the caller...ie if more than one attribute is removed that a user 
     // has, it will be saved for each attribute removal
-    async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<{
+    async removeAttributeFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string, 
+        attributeId: string,
+    ): Promise<{
         updatedOrg: OrganizationDoc,
-        updatedRequests: HelpRequestDoc[],
-        updatedUsers: UserDoc[]
+        updatedUsers: UserDoc[],
     }> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
@@ -921,15 +938,15 @@ export class DBManager {
                 for (const [user, attrIndex] of usersToSave) {
                     user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                     user.markModified('organizations');
-                    updatedUsers.push(await user.save({ session }));
+                    updatedUsers.push(user);
                 }
 
                 // remove deleted attributes from positions that have them on them
-                const updatedRequests = await this.removeAttributesFromPositions(org, categoryId, attributeId, session)
+                // const updatedRequests = await this.removeAttributesFromPositions(org, categoryId, attributeId, updatedRequestMap)
 
                 return {
                     updatedOrg: org,
-                    updatedRequests,
+                    // updatedRequests,
                     updatedUsers
                 }
             }
@@ -940,10 +957,62 @@ export class DBManager {
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
     }
 
-    async removeAttributesFromPositions(org: OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<HelpRequestDoc[]> {
+    async deleteAttributes(
+        org: OrganizationDoc,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        attributesToDelete: CategorizedItemUpdates['deletedItems']
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedUsers: UserDoc[],
+        updatedRequests: HelpRequestDoc[]
+    }> {
+        const usersToSave = new Set<UserDoc>()
+
         const allOrgRequests = await this.requests.find({
             orgId: org.id
         })
+            
+        // Delete Items (Attributes) from org/users
+        for (const categoryId in attributesToDelete) {
+            // deleting a category deletes its items
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
+
+            const itemsToDelete = attributesToDelete[categoryId];
+
+            for (const itemId of itemsToDelete) {
+                const { updatedOrg, updatedUsers } = await this.removeAttributeFromOrg(org, categoryId, itemId)
+
+                org = updatedOrg;
+                updatedUsers.forEach(user => usersToSave.add(user))
+            }
+        }
+
+        // Delete Categories from org/users
+        for (const categoryToDelete of categoriesToDelete) {
+            const { updatedOrg, updatedUsers } = await this.removeAttributeCategoryFromOrg(org, categoryToDelete)
+
+            org = updatedOrg;
+            updatedUsers.forEach(user => usersToSave.add(user))
+        }
+
+        // Delete Items (Attributes) and Categories from positions
+        const requestsToSave = await this.removeAttributesFromPositions(allOrgRequests, categoriesToDelete, attributesToDelete)
+
+        return {
+            updatedOrg: org,
+            updatedRequests: requestsToSave,
+            updatedUsers: Array.from(usersToSave.values())
+        }
+    }
+
+    // TODO(Shifts): Do the same thing for shift positions when we have them
+    async removeAttributesFromPositions(
+        allOrgRequests: HelpRequestDoc[],
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        attributesToDelete: CategorizedItemUpdates['deletedItems'],
+    ): Promise<HelpRequestDoc[]> {
 
         const requestsToUpdate = allOrgRequests.map(req => {
             let updatedPositions = false;
@@ -951,7 +1020,9 @@ export class DBManager {
             for (const idx in req.positions) {
                 const pos = req.positions[idx];
 
-                const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
+                const cleansedAttributes = pos.attributes.filter(a => {
+                    return !categoriesToDelete.includes(a.categoryId) && (!attributesToDelete[a.categoryId] || !attributesToDelete[a.categoryId].includes[a.itemId])
+                })
                 
                 if (pos.attributes.length > cleansedAttributes.length) {
                     pos.attributes = cleansedAttributes;
@@ -970,12 +1041,10 @@ export class DBManager {
 
         for (const req of requestsToUpdate) {
             req.markModified('positions');
-            updatedRequests.push(await req.save({ session }));
+            updatedRequests.push(req);
         }
 
         return updatedRequests
-
-        // TODO(Shifts): Do the same thing for shift positions when we have them
     }
 
     // TODO: remove?...or maybe move validation to updateUser()?
@@ -1162,18 +1231,12 @@ export class DBManager {
         throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
-    async removeTagCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
+    async removeTagCategoryFromOrg(orgId: string | OrganizationDoc, categoryId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
-            for (let i = org.tagCategories[categoryIndex].tags.length - 1; i >= 0; i--) {
-                // Removing the tag from the tag category itself.
-                // Removing the tag from help requests.
-                await this.removeTag(org, categoryId, org.tagCategories[categoryIndex].tags[i].id, session);
-            }
-
-            // Remove the attribute category from the organization.
+            // Remove the tag category from the organization.
             org.tagCategories.splice(categoryIndex, 1);
             org.markModified('tagCategories');
             return org;
@@ -1297,6 +1360,41 @@ export class DBManager {
         return [org, editedTags]
     }
 
+    async deleteTags(
+        org: OrganizationDoc,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        tagsToDelete: CategorizedItemUpdates['deletedItems']
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedRequests: HelpRequestDoc[]
+    }> {
+        // const requestsToSave = new Set<HelpRequestDoc>()
+
+        for (const categoryId in tagsToDelete) {
+            // deleting a category deletes its items
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
+
+            // delete individual tags in a category from the org
+            const itemsToDelete = tagsToDelete[categoryId];
+
+            org = await this.removeTagsFromOrg(org, categoryId, itemsToDelete)
+        }
+
+        // Delete whole tag categories from org
+        for (const categoryToDelete of categoriesToDelete) {
+            org = await this.removeTagCategoryFromOrg(org, categoryToDelete)
+        }
+
+        const requestsToSave = await this.removeTagsFromRequests(org.id, categoriesToDelete, tagsToDelete)
+
+        return {
+            updatedOrg: org,
+            updatedRequests: requestsToSave
+        }
+    }
+
     // TODO: delete
     async removeTag(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session?: ClientSession): Promise<OrganizationDoc> {
         // const org = await this.resolveOrganization(orgId);
@@ -1349,56 +1447,148 @@ export class DBManager {
 
     // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
     // has, it will be saved for each attribute removal
-    async removeTagWithSession(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session: ClientSession): Promise<{
-        updatedOrg: OrganizationDoc
-        updatedRequests: HelpRequestDoc[]   
-    }> {
+    async removeTagsFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string, 
+        tagIds: string[]
+    ): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
-            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+            for (const tagId of tagIds) {
+                const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
 
-            // Remove the Tag from the Tag Category list.
-            if (tagIndex >= 0) {
-                const [tag] = org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
-                org.markModified('tagCategories');
-
-                // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: test mongo query handles nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const item: CategorizedItem = {
-                    categoryId: categoryId,
-                    itemId: tag.id
-                }
-
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagHandles: item });
-                
-                for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tagHandles.findIndex(handle => handle.itemId == tagId && handle.categoryId == categoryId);
-                    
-                    if (tagIndex >= 0) {
-                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tagHandles.splice(tagIndex, 1);
-                        requests[i].markModified('tagHandles');
-                    }
-                }
-
-                const updatedRequests: HelpRequestDoc[] = []
-
-                for (const request of requests) {
-                    updatedRequests.push(await request.save({ session }));
-                }
-
-                return {
-                    updatedOrg: org,
-                    updatedRequests
+                // Remove the Tag from the Tag Category list.
+                if (tagIndex >= 0) {
+                    org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+                    org.markModified('tagCategories');
+                } else {
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
                 }
             }
 
-            throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
+            return org
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
     }
+
+    async removeTagsFromRequests(
+        orgId: string,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        tagsToDelete: CategorizedItemUpdates['deletedItems'],
+    ): Promise<HelpRequestDoc[]> {
+
+        const updatedRequests = new Map<string, HelpRequestDoc>()
+
+        // Process requests affected by whole category deletes
+        const requestsFromCategoryDeletes = await this.getRequests({ orgId })
+            .where({ 
+                tagHandles: { 
+                    $elemMatch: {
+                        categoryId: { 
+                            $in: categoriesToDelete 
+                        }
+                    }
+                }
+            })
+
+        for (const req of requestsFromCategoryDeletes) {
+            // remove any tag with the matching categoryId
+            let tagIndex = req.tagHandles.findIndex(handle => categoriesToDelete.includes[handle.categoryId]);
+            
+            if (tagIndex >= 0) {
+                // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+               req.tagHandles.splice(tagIndex, 1);
+               req.markModified('tagHandles');
+
+               updatedRequests.set(req.id, req)
+            }
+        }
+
+        // Process requests affected by individual tag deletes
+        const tagsToDeleteSet = new Set<string>()
+
+        for (const categoryId in tagsToDelete) {
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
+
+            tagsToDelete[categoryId].forEach(tag => tagsToDeleteSet.add(tag))
+        }
+
+        const requestsFromItemDeletes = (await this.getRequests({ orgId })
+            .where({ 
+                tagHandles: { 
+                    $elemMatch: {
+                        itemId: { 
+                            // itemId's are pseudo unique...enough to scope a query by
+                            $in: Array.from(tagsToDeleteSet.values())
+                        }
+                    }
+                }
+                // reuse edited requests that overlap
+            })).map(req => updatedRequests.has(req.id) ? updatedRequests.get(req.id) : req)
+
+        for (const req of requestsFromItemDeletes) {
+            let tagIndex = req.tagHandles.findIndex(handle => tagsToDelete[handle.categoryId] && tagsToDelete[handle.categoryId].includes[handle.itemId]);
+            
+            if (tagIndex >= 0) {
+                // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+               req.tagHandles.splice(tagIndex, 1);
+               req.markModified('tagHandles');
+
+               updatedRequests.set(req.id, req)
+            }
+        }
+
+        return Array.from(updatedRequests.values())
+    }
+
+    // @Every('30 seconds')
+    // async queryTest() {
+    //     console.log('running test...')
+    //     const categoriesToDelete = ['000ac920-09b9-11ed-a81d-3b3daff45a5e' , '1f7e1b50-0c3d-11ed-a18a-774d5aefe451']
+    //     const itemsToDelete = [
+    //         "004b7ba0-09b9-11ed-a81d-3b3daff45a5e",
+    //         "temp-Bar-17c3f510-0c3d-11ed-8750-1d3524dda53d",
+    //     ]
+
+    //     console.log('From Categories:')
+    //     const requestsFromCategoryDeletes = await this.getRequests({ orgId: '62da9695bfd645465b542368' })
+    //         .where({ 
+    //             tagHandles: { 
+    //                 $elemMatch: {
+    //                     categoryId: { 
+    //                         $in: categoriesToDelete 
+    //                     }
+    //                 }
+    //             }
+    //         })
+
+    //     for (const req of requestsFromCategoryDeletes) {
+    //         console.log(req.displayId, ': ', req.id)
+    //     }
+
+    //     console.log('From Items:')
+    //     const requestsFromItemDeletes = await this.getRequests({ orgId: '62da9695bfd645465b542368' })
+    //         .where({ 
+    //             tagHandles: { 
+    //                 $elemMatch: {
+    //                     itemId: { 
+    //                         $in: itemsToDelete 
+    //                     }
+    //                 }
+    //             }
+    //         })
+
+    //     for (const req of requestsFromItemDeletes) {
+    //         console.log(req.displayId, ': ', req.id)
+    //     }
+
+    //     console.log('done')
+
+    // }
 
     checkForDupes(name: string, collection: AtLeast<any, 'name'>[]) {
         return collection.some(item => this.namesAreEqual(name, item.name));

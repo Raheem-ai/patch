@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { IManageTagsStore, organizationStore, userStore } from './interfaces';
+import { IManageTagsStore, organizationStore, updateStore, userStore } from './interfaces';
 import { CategorizedItemUpdates, Category, PatchPermissions, Tag } from '../../../common/models';
 import EditCategorizedItemStore from './editCategorizedItemStore';
 import { api } from '../services/interfaces';
@@ -47,7 +47,10 @@ export default class ManageTagsStore implements IManageTagsStore {
     }
 
     onSave = async (updates: CategorizedItemUpdates) => {
+        console.log('tag updates: ', updates)
         const updatedOrg = await api().updateTags(this.orgContext(), updates);
+        
+        updateStore().onTagsDeleted(updates.deletedCategories, updates.deletedItems)
         organizationStore().updateOrgData(updatedOrg);
     }
 

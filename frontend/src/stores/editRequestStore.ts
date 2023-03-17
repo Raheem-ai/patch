@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore } from './interfaces';
-import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
+import { AddressableLocation, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { api } from '../services/interfaces';
 
@@ -51,6 +51,22 @@ export default class EditRequestStore implements IEditRequestStore  {
         } 
     }
 
+    onRoleDeletedUpdate(roleId: string) {
+        this.positions.forEach(pos => {
+            if (pos.role == roleId) {
+                pos.role = DefaultRoleIds.Anyone
+            }
+        })
+    }
+
+    onTagsDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']) {
+        console.log('editRequestStore - onTagsDeletedUpdate', categoryIds, tags)
+    }
+
+    onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
+        console.log('editRequestStore - onAttributesDeletedUpdate', categoryIds, attributes)
+    }
+
     async editRequest(reqId: string) {
         const req = {
             id: reqId,
@@ -81,6 +97,9 @@ export default class EditRequestStore implements IEditRequestStore  {
         this.priority = req.priority
         this.tagHandles = req.tagHandles
         this.positions = req.positions
+
+        console.log(req.id)
+        console.log(this.tagHandles)
     }
 
     clear() {
