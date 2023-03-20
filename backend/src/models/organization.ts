@@ -1,6 +1,6 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
-import { CollectionOf, getJsonSchema, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem, Tag, Attribute } from "common/models";
+import { CollectionOf, Enum, getJsonSchema, Property, Required } from "@tsed/schema";
+import { Organization, PendingUser, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem, Tag, Attribute, PatchPermissionGroups } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
@@ -35,9 +35,12 @@ class AttributeCategorySchema implements AttributeCategory {
 }
 
 @Schema()
-export class TagSchema implements CategorizedItem {
-    @Required() categoryId: string
-    @Required() itemId: string
+class RoleSchema implements Role {
+    @Required() id: string
+    @Required() name: string
+    
+    @Enum(PatchPermissionGroups)
+    permissionGroups: PatchPermissionGroups[]
 }
 
 @Model({ collection: 'organizations' })
@@ -51,7 +54,7 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
     @Property() 
     name: string;
 
-    @Property()
+    @CollectionOf(RoleSchema)
     roleDefinitions: Role[];
 
     @CollectionOf(AttributeCategorySchema)
@@ -77,4 +80,4 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
 }
 
 export type OrganizationDoc = OrganizationModel & Document;
-console.log(utils.inspect(getJsonSchema(OrganizationModel), null, 6))
+// console.log(utils.inspect(getJsonSchema(OrganizationModel), null, 6))

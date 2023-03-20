@@ -240,6 +240,7 @@ export class OrganizationController implements APIController<
     async editOrgMetadata(
         @OrgId() orgId: string,
         @User() user: UserDoc,
+        // TODO: enforce this type with a schema
         @BodyParams('orgUpdates') orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>,
     ) {
         const org = await this.db.editOrgMetadata(orgId, orgUpdates)
