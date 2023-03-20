@@ -90,10 +90,7 @@ export type AttributeCategory = {
 export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
 export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
 
-export type Attribute = {
-    id: string,
-    name: string
-}
+export type Attribute = CategorizedItemDefinition
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -108,6 +105,11 @@ export type Category = {
 export type CategorizedItem = {
     categoryId: string,
     itemId: string
+}
+
+export type CategorizedItemDefinition = {
+    id: string,
+    name: string
 }
 
 export type CategorizedItemUpdates = {
@@ -133,10 +135,7 @@ export type TagCategory = {
 export type MinTagCategory = AtLeast<TagCategory, 'name'>
 export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
 
-export type Tag = {
-    id: string,
-    name: string
-}
+export type Tag = CategorizedItemDefinition
 
 // export type TagsMap = { [key: string]: string[] }
 export type AttributesMap = { [key: string]: string[] }

@@ -2,10 +2,7 @@ import { Model, ObjectID, Schema } from "@tsed/mongoose";
 import { CollectionOf, Enum, Property, Required } from "@tsed/schema";
 import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, Position, RequestPriority, RequestStatus, RequestTeamEvent, RequestType, RequestStatusEvent } from "common/models";
 import { Document } from "mongoose";
-// import { inspect } from "util";
-// import { WithRefs } from ".";
-// import { UserModel } from './user';
-// import utils from 'util'
+import { CategorizedItemSchema } from "./common";
 
 @Schema()
 class ChatMessageSchema  implements ChatMessage {
@@ -15,13 +12,6 @@ class ChatMessageSchema  implements ChatMessage {
     @Required() timestamp: number
 }
 
-// TODO: this should probably be in a common schema file
-@Schema()
-class CategorizedItemSchema implements CategorizedItem {
-    @Required() categoryId: string
-    @Required() itemId: string
-}
-
 @Schema()
 class PositionSchema implements Position {
     @Required() id: string
@@ -29,7 +19,7 @@ class PositionSchema implements Position {
     @Required() min: number
     @Required() max: number
 
-    @Required() attributes: CategorizedItem[]
+    @CollectionOf(CategorizedItemSchema) attributes: CategorizedItem[]
     @Required() joinedUsers: string[]
 }
 

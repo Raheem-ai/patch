@@ -687,7 +687,7 @@ export class DBManager {
                 for (const prop in categoryUpdate) {
                     org.attributeCategories[categoryIndex][prop] = categoryUpdate[prop];
                 }
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
                 editedAttributeCategories.push(org.attributeCategories[categoryIndex])
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryUpdate.id, org.id));
@@ -743,7 +743,7 @@ export class DBManager {
 
             // Remove the attribute category from the organization.
             org.attributeCategories.splice(categoryIndex, 1);
-            org.markModified('attributeCategories');
+            // org.markModified('attributeCategories');
 
             return {
                 updatedOrg: org,
@@ -798,7 +798,7 @@ export class DBManager {
                 }
 
                 org.attributeCategories[categoryIndex].attributes.push(newAttribute);
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
                 newAttributes.push(newAttribute)
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
@@ -830,7 +830,7 @@ export class DBManager {
                         categoryId,
                         ...org.attributeCategories[categoryIndex].attributes[attributeIndex]
                     })
-                    org.markModified('attributeCategories');
+                    // org.markModified('attributeCategories');
                 } else {
                     throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(update.id, categoryId, org.id));
                 }
@@ -916,7 +916,7 @@ export class DBManager {
             if (attributeIndex >= 0) {
                 // Remove the Attribute from the Attribute Category list.
                 org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
 
                 // Create a map from user ID => attribute index (in the list of a user's attributes)
                 // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
@@ -1040,7 +1040,7 @@ export class DBManager {
         const updatedRequests: HelpRequestDoc[] = []
 
         for (const req of requestsToUpdate) {
-            req.markModified('positions');
+            // req.markModified('positions');
             updatedRequests.push(req);
         }
 
@@ -1197,7 +1197,7 @@ export class DBManager {
                 for (const prop in categoryUpdate) {
                     org.tagCategories[categoryIndex][prop] = categoryUpdate[prop];
                 }
-                org.markModified('tagCategories');
+                // org.markModified('tagCategories');
                 editedTagCategories.push(org.tagCategories[categoryIndex])
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryUpdate.id, org.id));
@@ -1288,7 +1288,7 @@ export class DBManager {
                 }
 
                 org.tagCategories[categoryIndex].tags.push(newTag);
-                org.markModified('tagCategories');
+                // org.markModified(`tagCategories.${categoryIndex}.tags`);
                 newTags.push(newTag)
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
@@ -1344,7 +1344,7 @@ export class DBManager {
                     for (const prop in update) {
                         org.tagCategories[categoryIndex].tags[tagIndex][prop] = update[prop];
                     }
-                    org.markModified('tagCategories');
+                    // org.markModified('tagCategories');
                     editedTags.push({
                         categoryId,
                         ...org.tagCategories[categoryIndex].tags[tagIndex]

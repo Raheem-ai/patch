@@ -1,9 +1,11 @@
 import { Model, ObjectID, Ref, Schema } from "@tsed/mongoose";
-import { CollectionOf, Property, Required } from "@tsed/schema";
-import { Organization, PendingUser, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem } from "common/models";
+import { CollectionOf, getJsonSchema, Property, Required } from "@tsed/schema";
+import { Organization, PendingUser, UserRole, Role, AttributeCategory, TagCategory, CategorizedItem, Tag, Attribute } from "common/models";
 import { Document } from "mongoose";
 import { WithRefs } from ".";
 import { UserModel } from './user';
+import utils from 'util'
+import { CategorizedItemDefinitionSchema } from "./common";
 
 @Schema()
 class PendingUserSchema  implements PendingUser {
@@ -12,6 +14,30 @@ class PendingUserSchema  implements PendingUser {
     @Required() roleIds: string[]
     @Required() attributes: CategorizedItem[]
     @Required() pendingId: string
+}
+
+@Schema()
+class TagCategorySchema implements TagCategory {
+    @Required() id: string
+    @Required() name: string
+    
+    @CollectionOf(CategorizedItemDefinitionSchema)
+    tags: Tag[]
+}
+
+@Schema()
+class AttributeCategorySchema implements AttributeCategory {
+    @Required() id: string
+    @Required() name: string
+    
+    @CollectionOf(CategorizedItemDefinitionSchema)
+    attributes: Attribute[]
+}
+
+@Schema()
+export class TagSchema implements CategorizedItem {
+    @Required() categoryId: string
+    @Required() itemId: string
 }
 
 @Model({ collection: 'organizations' })
@@ -28,10 +54,10 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
     @Property()
     roleDefinitions: Role[];
 
-    @Property()
+    @CollectionOf(AttributeCategorySchema)
     attributeCategories: AttributeCategory[];
 
-    @Property()
+    @CollectionOf(TagCategorySchema)
     tagCategories: TagCategory[];
 
     @Property()
@@ -51,3 +77,4 @@ export class OrganizationModel implements WithRefs<Organization, 'members' | 're
 }
 
 export type OrganizationDoc = OrganizationModel & Document;
+console.log(utils.inspect(getJsonSchema(OrganizationModel), null, 6))
