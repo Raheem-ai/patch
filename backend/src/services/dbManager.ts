@@ -791,12 +791,8 @@ export class DBManager {
                     updatedUsers.push(user);
                 }
 
-                // remove deleted attributes from positions that have them on them
-                // const updatedRequests = await this.removeAttributesFromPositions(org, categoryId, attributeId, updatedRequestMap)
-
                 return {
                     updatedOrg: org,
-                    // updatedRequests,
                     updatedUsers
                 }
             }
@@ -1055,8 +1051,6 @@ export class DBManager {
         updatedOrg: OrganizationDoc,
         updatedRequests: HelpRequestDoc[]
     }> {
-        // const requestsToSave = new Set<HelpRequestDoc>()
-
         for (const categoryId in tagsToDelete) {
             // deleting a category deletes its items
             if (categoriesToDelete.includes(categoryId)) {

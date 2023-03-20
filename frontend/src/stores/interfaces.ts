@@ -146,8 +146,6 @@ export type CreateReqData = Pick<HelpRequest,
 export interface ITempRequestStore extends CreateReqData {
     // react to deletions that might affect the locally cached data this store is using
     onRoleDeletedUpdate(roleId: string): void
-    // onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']): void
-    // onTagsDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']): void
     clear(prop?: keyof CreateReqData): void
 }
 
@@ -425,7 +423,6 @@ export type EditUserData = Omit<User, 'organizations' | 'id'>
 export interface ITempUserStore extends EditUserData, IBaseStore { 
     // react to deletions that might affect the locally cached data this store is using
     onRoleDeletedUpdate(roleId: string): void
-    // onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']): void
 }
 
 export namespace INewUserStore {
@@ -528,13 +525,10 @@ export interface IUpdateStore extends IBaseStore {
     pendingRequestUpdate(packet: PatchEventPacket<IndividualRequestEventType>): Promise<void>
     onEvent(packet: PatchEventPacket): Promise<void>
 
-    // NOTE: these methods are only called by the store that does the delete or internally when responding to an update
-    // then the update store notifies the other affected stores 
-    onRoleDeleted(roleId: string): void
-
-    // TODO: remove this code as we don't need them because tags/attributes are purely optional and get filtered out anyway
-    onTagsDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems'])
-    onAttributesDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems'])   
+    // NOTE: this method is only called by the store that does the delete or internally when responding to an update
+    // then the update store notifies the other affected stores...don't need it for tags/attributes because they are 
+    // are purely optional and get filtered out anyway
+    onRoleDeleted(roleId: string): void   
 }
 
 export namespace IUpsertRoleStore {

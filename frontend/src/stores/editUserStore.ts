@@ -248,10 +248,4 @@ export default class EditUserStore implements IEditUserStore {
             this.roles.splice(idx, 1)
         }
     }
-
-    onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
-        this.attributes = this.attributes.filter(item => {
-            return !categoryIds.includes(item.categoryId) && !attributes[item.categoryId].includes(item.itemId)
-        })
-    }
 }

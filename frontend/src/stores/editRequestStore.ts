@@ -59,14 +59,6 @@ export default class EditRequestStore implements IEditRequestStore  {
         })
     }
 
-    onTagsDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']) {
-        console.log('editRequestStore - onTagsDeletedUpdate', categoryIds, tags)
-    }
-
-    onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
-        console.log('editRequestStore - onAttributesDeletedUpdate', categoryIds, attributes)
-    }
-
     async editRequest(reqId: string) {
         const req = {
             id: reqId,
@@ -97,9 +89,6 @@ export default class EditRequestStore implements IEditRequestStore  {
         this.priority = req.priority
         this.tagHandles = req.tagHandles
         this.positions = req.positions
-
-        console.log(req.id)
-        console.log(this.tagHandles)
     }
 
     clear() {

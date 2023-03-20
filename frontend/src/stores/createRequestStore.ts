@@ -39,14 +39,6 @@ export default class CreateRequestStore implements ICreateRequestStore  {
         })
     }
 
-    onTagsDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']) {
-        console.log('createRequestStore - onTagsDeletedUpdate', categoryIds, tags)
-    }
-
-    onAttributesDeletedUpdate(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
-        
-    }
-
     get locationValid() {
         return !this.location || !!this.location.address
     }
