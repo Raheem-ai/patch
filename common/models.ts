@@ -90,10 +90,7 @@ export type AttributeCategory = {
 export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
 export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
 
-export type Attribute = {
-    id: string,
-    name: string
-}
+export type Attribute = CategorizedItemDefinition
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -108,6 +105,11 @@ export type Category = {
 export type CategorizedItem = {
     categoryId: string,
     itemId: string
+}
+
+export type CategorizedItemDefinition = {
+    id: string,
+    name: string
 }
 
 export type CategorizedItemUpdates = {
@@ -133,10 +135,7 @@ export type TagCategory = {
 export type MinTagCategory = AtLeast<TagCategory, 'name'>
 export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
 
-export type Tag = {
-    id: string,
-    name: string
-}
+export type Tag = CategorizedItemDefinition
 
 // export type TagsMap = { [key: string]: string[] }
 export type AttributesMap = { [key: string]: string[] }
@@ -1162,6 +1161,8 @@ export enum PatchEventType {
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
+
+    // TODO(Shift): will need their own events
 }
 
 // PatchEventType Convenience Type
@@ -1177,14 +1178,22 @@ export type RequestTeamEventTypes =
     | PatchEventType.RequestRespondersDeclined;
 
 // PatchEventType Convenience Type
-export type RequestEventType = RequestTeamEventTypes
+export type IndividualRequestEventType = RequestTeamEventTypes
     | PatchEventType.RequestChatNewMessage
     | PatchEventType.RequestCreated
     | PatchEventType.RequestDeleted
     | PatchEventType.RequestEdited;
 
 // PatchEventType Convenience Type
-export type UserEventType = PatchEventType.UserCreated
+// these deletes/updates might affect multiple 
+// requests that need to be refreshed
+export type BulkRequestEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
+
+// PatchEventType Convenience Type
+export type IndividualUserEventType = PatchEventType.UserCreated
     | PatchEventType.UserEdited
     | PatchEventType.UserDeleted
     | PatchEventType.UserAddedToOrg
@@ -1192,6 +1201,13 @@ export type UserEventType = PatchEventType.UserCreated
     | PatchEventType.UserChangedRolesInOrg
     | PatchEventType.UserOnDuty
     | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+// these deletes/updates might affect multiple 
+// users that need to be refreshed
+export type BulkUserEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
 
 // PatchEventType Convenience Type
 export type OrgEventType = PatchEventType.OrganizationEdited
@@ -1358,15 +1374,22 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
-        roleId: string
+        roleId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[]
     },
-    // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
-    // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     },
     [PatchEventType.OrganizationTagsUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     }
 }
 

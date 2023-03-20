@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore } from './interfaces';
-import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
+import { AddressableLocation, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { api } from '../services/interfaces';
 
@@ -49,6 +49,14 @@ export default class EditRequestStore implements IEditRequestStore  {
             requestId,
             ...this.orgContext()
         } 
+    }
+
+    onRoleDeletedUpdate(roleId: string) {
+        this.positions.forEach(pos => {
+            if (pos.role == roleId) {
+                pos.role = DefaultRoleIds.Anyone
+            }
+        })
     }
 
     async editRequest(reqId: string) {

@@ -312,10 +312,10 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<OrganizationMetadata> {
+    async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<{ updatedUserIds: string[], updatedRequestIds: string[] }> {
         const url = `${apiHost}${API.client.deleteRoles()}`;
 
-        return (await this.tryPost<OrganizationMetadata>(url, { roleIds } ,{
+        return (await this.tryPost<{ updatedUserIds: string[], updatedRequestIds: string[] }>(url, { roleIds } ,{
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }

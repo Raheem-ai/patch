@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { ICreateRequestStore, requestStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
-import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
+import { AddressableLocation, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
 import { api } from '../services/interfaces';
 
 
@@ -29,6 +29,14 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
         }
+    }
+
+    onRoleDeletedUpdate(roleId: string) {
+        this.positions.forEach(pos => {
+            if (pos.role == roleId) {
+                pos.role = DefaultRoleIds.Anyone
+            }
+        })
     }
 
     get locationValid() {

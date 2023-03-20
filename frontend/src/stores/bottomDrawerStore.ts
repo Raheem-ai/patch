@@ -263,9 +263,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         const currentIsMinimizeable = this.minimizable;
         const newIsMinimizeable = this.isMinimizable(Config[view]);
 
-        console.log('show - currentIsMinimizeable: ', currentIsMinimizeable)
-        console.log('show - newIsMinimizeable: ', newIsMinimizeable)
-
         if (currentIsMinimizeable && newIsMinimizeable){
             if (this.viewId == view) {
                 runInAction(() => {
@@ -308,8 +305,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             })
         }
 
-        console.log(this.viewId, this.showing, this.expanded)
-
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: !!expanded 
                 ? 0 + (newIsMinimizeable
@@ -328,14 +323,12 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     hide = async () => {
         await nativeEventStore().hideKeyboard()
 
-        console.log(`hide - viewIdStack: ${this.viewIdStack}`)
         if (this.viewIdStack.length > 1) {
             runInAction(() => {
                 const oldView = this.viewIdStack.pop();
 
                 this._minimize(() => {
                     runInAction(() => {
-                        console.log(`hide - oldView: ${oldView}`)
                         Config[oldView].onHide?.()
                     })
                 })
@@ -353,15 +346,12 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
             runInAction(() => {
                 this.viewId = null
-                console.log(`hide - viewId: ${this.viewId}`)
             })
         })
 
         runInAction(() => {
             this.showing = false
             this.expanded = false
-
-            console.log('hide showing/expanded')
         })
     }
 

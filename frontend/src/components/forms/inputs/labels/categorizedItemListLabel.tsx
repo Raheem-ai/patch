@@ -55,6 +55,10 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
                         return category.items.find(item => item.id == selectedItemId)?.name || null
                     }).filter(x => !!x)
 
+                    if (!itemNames.length) {
+                        return null
+                    }
+
                     const tagTestID = TestIds.inputs.categorizedItemList.tagWrapper(config.testID, categoryId);
 
                     return (
