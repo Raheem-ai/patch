@@ -256,6 +256,7 @@ const TestIds = {
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
+        goToCalendar: 'userHomePage::goToCalendar',
         welcomeLabel: 'userHomePage::welcomeLabel',
         linkTo: (link: string) => `userHomePage::linkTo(${link})`,
     },

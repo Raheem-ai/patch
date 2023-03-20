@@ -166,7 +166,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                         navigateTo(routerNames.teamList);
                     }}/>
                 <PatchButton 
-                    testID={TestIds.userHome.goToTeam}
+                    testID={TestIds.userHome.goToCalendar}
                     mode='text'
                     label='Calendar'
                     onPress={() => {
