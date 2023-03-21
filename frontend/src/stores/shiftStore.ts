@@ -2,7 +2,7 @@ import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, ru
 import { Store } from './meta';
 import { IRequestStore, IShiftStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftsFulfilledFilter, CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role, Shift, RecurringDateTimeRange, RecurringPeriod } from '../../../common/models';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftInstancesFilter, CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftInstance } from '../../../common/models';
 import { api } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
@@ -27,11 +27,11 @@ export default class ShiftStore implements IShiftStore {
         }
     }) shifts: ObservableMap<string, Shift> = new ObservableMap();
 
-    @persistent() fulfilledFilter = ShiftsFulfilledFilter.All;
-    @persistent() rolesFilter = ShiftsRolesFilter.All;
+    @persistent() shiftInstancesFilter = ShiftInstancesFilter.All;
+    @persistent() shiftsFilter = ShiftsRolesFilter.All;
     @persistent() filter = {
-        fulfilledFilter: this.fulfilledFilter,
-        rolesFilter: this.rolesFilter,
+        instancesFilter: this.shiftInstancesFilter,
+        shiftsFilter: this.shiftsFilter,
     };
 
     constructor() {
@@ -52,20 +52,14 @@ export default class ShiftStore implements IShiftStore {
         return Array.from(this.shifts.values());
     }
 
-    shiftIsFull(shift: Shift): boolean {
+    shiftIsFull(shiftInstance: ShiftInstance): boolean {
         // If any positions on a shift have fewer than the minimum
         // number of users joined, then the position is not full.
-        shift.positions.forEach(position => {
-            if (position.joinedUsers.length < position.min) {
-                return false;
-            }
-        })
-
-        return true;
+        return !shiftInstance.positions.some(position => position.joinedUsers.length < position.min);
     }
 
     shiftHasRoles(shift: Shift) {
-        if (this.rolesFilter == ShiftsRolesFilter.All) {
+        if (this.shiftsFilter == ShiftsRolesFilter.All) {
             return true;
         } else {
             // TODO
@@ -74,17 +68,27 @@ export default class ShiftStore implements IShiftStore {
     }
 
     get filteredShifts(): Shift[] {
-        return this.shiftsArray.filter((s) => {
-            // Either show all shifts regardless of joined users,
-            // or only show those that need more users to join.
-            const fulfilledFilterStatus = 
-                    this.fulfilledFilter == ShiftsFulfilledFilter.All
-                    || !this.shiftIsFull(s);
+        return this.shiftsArray.filter(s => this.shiftHasRoles(s));
+    }
 
-            // Filter out shifts that do not satisfy the Roles filter
-            const roleFilterStatus = this.shiftHasRoles(s);
-            return fulfilledFilterStatus && roleFilterStatus;
-        })
+    get filteredShiftInstances(): ShiftInstance[] {
+        const filteredInstances = [];
+        // Access filteredShifts to only get Shifts based on the
+        // role filters that exist. Then we filter that list even
+        // further to satisfy the fulfillment criteria.
+        this.filteredShifts.forEach(shift => {
+            // Return all instances regardless of joined users,
+            if (this.shiftInstancesFilter == ShiftInstancesFilter.All) {
+                filteredInstances.push(...shift.instances);
+            } else {
+                // Only return instances that are unfilfilled (need users to join)
+                filteredInstances.push(...shift.instances.filter(instance => {
+                    return !this.shiftIsFull(instance);
+                }));
+            }
+        });
+
+        return filteredInstances;
     }
 
 
@@ -99,13 +103,13 @@ export default class ShiftStore implements IShiftStore {
         await this.getShifts();
     }
 
-    setFulfillmentFilter = async (filter: ShiftsFulfilledFilter): Promise<void> => {
-        this.filter.fulfilledFilter = filter;
+    setInstancesFilter = async (filter: ShiftInstancesFilter): Promise<void> => {
+        this.filter.instancesFilter = filter;
         await this.getShifts();
     }
 
-    setRolesFilter = async (filter: ShiftsRolesFilter): Promise<void> => {
-        this.filter.rolesFilter = filter;
+    setShiftsFilter = async (filter: ShiftsRolesFilter): Promise<void> => {
+        this.filter.shiftsFilter = filter;
         await this.getShifts();
     }
 
@@ -120,6 +124,15 @@ export default class ShiftStore implements IShiftStore {
             endDate: moment().hour(22).minutes(5).add(2, 'hours').toDate(), // Tomorrow @ 12:05am 
         };
 
+        const mockInstance: ShiftInstance = {
+            description: 'This is a mock shift!',
+            dateTimeRange: {
+                startDate: recurrence.startDate,
+                endDate: recurrence.endDate
+            },
+            positions: []
+        }
+
         const mockShift: Shift = {
             createdAt: '',
             updatedAt: '',
@@ -128,8 +141,7 @@ export default class ShiftStore implements IShiftStore {
             orgId: 'mock-org-id',
             description: 'This is a mock shift!',
             recurrence: recurrence,
-            positions: [],
-            instances: []
+            instances: [ mockInstance ]
         }
 
         runInAction(() => {
@@ -148,7 +160,6 @@ export default class ShiftStore implements IShiftStore {
             orgId: 'mock-org-id',
             description: 'This is a mock shift!',
             recurrence: null,
-            positions: [],
             instances: []
         }
 
