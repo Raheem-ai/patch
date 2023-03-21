@@ -1,20 +1,22 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, CalendarRolesFilter, CalendarRolesFilterToLabelMap, CalendarShiftsFilter, CalendarShiftsFilterToLabelMap, HelpRequestFilter, HelpRequestFilterToLabelMap, HelpRequestSortBy, HelpRequestSortByToLabelMap } from "../../../common/models";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftsFulfilledFilter, CalendarShiftsFilterToLabelMap } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ScreenProps } from "../types";
 import TestIds from "../test/ids";
+import { shiftStore } from "../stores/interfaces";
+import { Text } from "react-native-paper";
 
 type Props = ScreenProps<'Calendar'>;
 
 const Calendar = observer(({ navigation, route }: Props) => {
     const daysFilters = allEnumValues<CalendarDaysFilter>(CalendarDaysFilter);
-    const shiftsFilters = allEnumValues<CalendarShiftsFilter>(CalendarShiftsFilter);
+    const fulfilledFilters = allEnumValues<ShiftsFulfilledFilter>(ShiftsFulfilledFilter);
 
     // TODO: Dynamically add to enum
-    const rolesFilters = allEnumValues<CalendarRolesFilter>(CalendarRolesFilter);
+    const rolesFilters = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
 
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -30,32 +32,33 @@ const Calendar = observer(({ navigation, route }: Props) => {
                     return `${CalendarDaysFilterToLabelMap[filter]}`
                 },
                 toOptionLabel: (filter: CalendarDaysFilter) => CalendarDaysFilterToLabelMap[filter],
-                onUpdate: () => {} // requestStore().setFilter,
+                onUpdate: () => {} // TODO: Remove empty days,
             },
             {
-                chosenOption: CalendarShiftsFilter.All,
-                options: shiftsFilters,
-                toHeaderLabel: (filter: CalendarShiftsFilter) => {
+                chosenOption: shiftStore().fulfilledFilter,
+                options: fulfilledFilters,
+                toHeaderLabel: (filter: ShiftsFulfilledFilter) => {
                     return `${CalendarShiftsFilterToLabelMap[filter]}`
                 },
-                toOptionLabel: (filter: CalendarShiftsFilter) => CalendarShiftsFilterToLabelMap[filter],
-                onUpdate: () => {} // requestStore().setFilter,
+                toOptionLabel: (filter: ShiftsFulfilledFilter) => CalendarShiftsFilterToLabelMap[filter],
+                onUpdate: shiftStore().setFulfillmentFilter
             },
             {
-                chosenOption: CalendarRolesFilter.All,
+                chosenOption: shiftStore().rolesFilter,
                 options: rolesFilters,
-                toHeaderLabel: (filter: CalendarRolesFilter) => {
+                toHeaderLabel: (filter: ShiftsRolesFilter) => {
                     return `${CalendarRolesFilterToLabelMap[filter]}`
                 },
-                toOptionLabel: (filter: CalendarRolesFilter) => CalendarRolesFilterToLabelMap[filter],
-                onUpdate: () => {} // requestStore().setFilter,
+                toOptionLabel: (filter: ShiftsRolesFilter) => CalendarRolesFilterToLabelMap[filter],
+                onUpdate: shiftStore().setRolesFilter
             },
         ] as [
             ListHeaderOptionConfig<CalendarDaysFilter>, 
-            ListHeaderOptionConfig<CalendarShiftsFilter>, 
-            ListHeaderOptionConfig<CalendarRolesFilter>, 
+            ListHeaderOptionConfig<ShiftsFulfilledFilter>, 
+            ListHeaderOptionConfig<ShiftsRolesFilter>, 
         ]
     }
+
     const handleScroll = (e) => {
         setIsScrolled(e.nativeEvent.contentOffset.y <= 4
             ? false
@@ -65,7 +68,14 @@ const Calendar = observer(({ navigation, route }: Props) => {
         <View style={styles.container} testID={TestIds.requestList.screen}>
             <ListHeader { ...filterHeaderProps } />
             <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
-
+                {
+                    shiftStore().filteredShifts.map(s => {
+                        console.log('Shift: ', s);
+                        return (
+                            <Text>{s.description}</Text>
+                        )
+                    })
+                }
             </ScrollView>
         </View>
     )

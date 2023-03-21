@@ -363,6 +363,27 @@ export enum HelpRequestSortBy {
 
 export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
+export type ShiftInstance = {
+    dateTimeRange: DateTimeRange,
+    positions: Position[]
+}
+
+export type Shift = {
+    // virtual fields proviced by db
+    createdAt: string
+    updatedAt: string
+    id: string
+
+    // PATCH defined fields
+    displayId: string
+    orgId: string
+    // TODO: change to descriptiom
+    description: string
+    recurrence: RecurringDateTimeRange
+    positions: Position[]
+    instances: ShiftInstance[]
+}
+
 export enum TeamFilter {
     Everyone = 'ev',
     OnDuty = 'on',
@@ -374,18 +395,23 @@ export enum TeamSortBy {
     ByFirstName = 'bfn'
 };
 
+export type ShiftsFilter = {
+    fulfilledFilter: ShiftsFulfilledFilter,
+    rolesFilter: ShiftsRolesFilter
+}
+
 export enum CalendarDaysFilter {
     All = 'al',
     WithShifts = 'sh',
     WithoutShifts = 'ns'
 };
 
-export enum CalendarShiftsFilter {
+export enum ShiftsFulfilledFilter {
     All = 'al',
     Unfilled = 'un'
 };
 
-export enum CalendarRolesFilter {
+export enum ShiftsRolesFilter {
     All = 'al'
 };
 
@@ -448,13 +474,13 @@ export const CalendarDaysFilterToLabelMap: { [key in CalendarDaysFilter] : strin
     [CalendarDaysFilter.All]: 'All days'
 }
 
-export const CalendarShiftsFilterToLabelMap: { [key in CalendarShiftsFilter] : string } = {
-    [CalendarShiftsFilter.Unfilled]: 'Unfilled shifts',
-    [CalendarShiftsFilter.All]: 'All shifts'
+export const CalendarShiftsFilterToLabelMap: { [key in ShiftsFulfilledFilter] : string } = {
+    [ShiftsFulfilledFilter.Unfilled]: 'Unfilled shifts',
+    [ShiftsFulfilledFilter.All]: 'All shifts'
 }
 
-export const CalendarRolesFilterToLabelMap: { [key in CalendarRolesFilter] : string } = {
-    [CalendarRolesFilter.All]: 'All roles'
+export const CalendarRolesFilterToLabelMap: { [key in ShiftsRolesFilter] : string } = {
+    [ShiftsRolesFilter.All]: 'All roles'
 }
 
 export type ResponderRequestStatuses = 

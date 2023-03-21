@@ -29,6 +29,7 @@ import {
     INativeEventStore,
     INotificationStore,
     IRequestStore,
+    IShiftStore,
     ISecretStore,
     IEditRequestStore,
     IUserStore,
@@ -58,6 +59,7 @@ import OrganizationSettingsStore from './organizationSettingStore';
 import AppUpdateStore from './appUpdateStore';
 import FormStore from './formStore';
 import ConnectionStore from './connectionStore';
+import ShiftStore from './shiftStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -66,6 +68,7 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IDispatchStore, DispatchStore ],
     [ ICreateRequestStore, CreateRequestStore ],
     [ IRequestStore, RequestStore ],
+    [ IShiftStore, ShiftStore ],
     [ ISecretStore, SecretStore ],
     [ IEditRequestStore, EditRequestStore ],
     [ IBottomDrawerStore, BottomDrawerStore ],
