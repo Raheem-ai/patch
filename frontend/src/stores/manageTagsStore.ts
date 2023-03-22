@@ -50,7 +50,6 @@ export default class ManageTagsStore implements IManageTagsStore {
         console.log('tag updates: ', updates)
         const updatedOrg = await api().updateTags(this.orgContext(), updates);
         
-        updateStore().onTagsDeleted(updates.deletedCategories, updates.deletedItems)
         organizationStore().updateOrgData(updatedOrg);
     }
 

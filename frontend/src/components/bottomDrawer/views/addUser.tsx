@@ -78,7 +78,7 @@ export default class AddUser extends React.Component {
 
     formProps = (): FormProps => {
         return {
-            headerLabel: STRINGS.ACCOUNT.inviteTitle, 
+            headerLabel: () => STRINGS.ACCOUNT.inviteTitle, 
             homeScreen: this.formHomeScreen,
             testID: TestIds.addUser.form,
             inputs: [
