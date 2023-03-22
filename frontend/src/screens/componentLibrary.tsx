@@ -215,7 +215,7 @@ const ComponentLibrary = (props: Props) => {
             label: label,
             icon: item.icon,
             screen: ({ back }) => {
-                return <Form testID={fauxTestId} headerLabel={item.name} inputs={inputs} submit={{ label: 'Done', handler: async () => back() }}/>
+                return <Form testID={fauxTestId} headerLabel={() => item.name} inputs={inputs} submit={{ label: 'Done', handler: async () => back() }}/>
             }
         }
 
@@ -224,7 +224,7 @@ const ComponentLibrary = (props: Props) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
-            <Form testID={fauxTestId} inputs={nestedForms} headerLabel={'Demos'}/>
+            <Form testID={fauxTestId} inputs={nestedForms} headerLabel={() => 'Demos'}/>
         </View>
     )
     

@@ -104,14 +104,6 @@ export default class UpdateStore implements IUpdateStore {
         if (this.isEvent(packet, PatchEventType.OrganizationRoleDeleted)) {
             this.onRoleDeleted(packet.params.roleId)
         }
-
-        if (this.isEvent(packet, PatchEventType.OrganizationTagsUpdated)) {
-            this.onTagsDeleted(packet.params.deletedCategoryIds, packet.params.deletedItems)
-        }
-
-        if (this.isEvent(packet, PatchEventType.OrganizationAttributesUpdated)) {
-            this.onAttributesDeleted(packet.params.deletedCategoryIds, packet.params.deletedItems)
-        }
     }
 
     onRoleDeleted(roleId: string) {
@@ -120,19 +112,6 @@ export default class UpdateStore implements IUpdateStore {
 
         editUserStore().onRoleDeletedUpdate(roleId)
         newUserStore().onRoleDeletedUpdate(roleId)
-    }
-
-    onTagsDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], tags: CategorizedItemUpdates['deletedItems']) {
-        // editRequestStore().onTagsDeletedUpdate(categoryIds, tags)
-        // createRequestStore().onTagsDeletedUpdate(categoryIds, tags)
-    }
-
-    onAttributesDeleted(categoryIds: CategorizedItemUpdates['deletedCategories'], attributes: CategorizedItemUpdates['deletedItems']) {
-        // editRequestStore().onAttributesDeletedUpdate(categoryIds, attributes)
-        // createRequestStore().onAttributesDeletedUpdate(categoryIds, attributes)
-
-        // editUserStore().onAttributesDeletedUpdate(categoryIds, attributes)
-        // newUserStore().onAttributesDeletedUpdate(categoryIds, attributes)
     }
 
     pendingRequestUpdate = async (packet: PatchEventPacket<IndividualRequestEventType>): Promise<void> => {

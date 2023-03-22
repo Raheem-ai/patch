@@ -48,8 +48,6 @@ export default class ManageAttributesStore implements IManageAttributesStore {
 
     onSave = async (updates: CategorizedItemUpdates) => {
         const updatedOrg = await api().updateAttributes(this.orgContext(), updates);
-
-        updateStore().onAttributesDeleted(updates.deletedCategories, updates.deletedItems)
         organizationStore().updateOrgData(updatedOrg);
     }
 

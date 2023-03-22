@@ -94,7 +94,7 @@ class EditHelpRequest extends React.Component<Props> {
     
     formProps = (): FormProps => {
         return {
-            headerLabel: this.headerLabel(), 
+            headerLabel: this.headerLabel, 
             homeScreen: this.formHomeScreen,
             testID: TestIds.editRequest.form,
             inputs: [
