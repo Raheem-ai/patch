@@ -1802,3 +1802,22 @@ export type AggregatePositionStats = {
     totalMinToFill: number,
     totalFilled: number
 }
+
+export type ArrayUpdates<A, R=A> = {
+    addedItems: A[],
+    removedItems: R[]
+}
+
+export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
+
+export type PositionUpdates = ArrayUpdates<Position> & { updatedPositions: PositionUpdate[] }
+
+export type PositionUpdate = {
+    id: string,
+    replacedProperties: {
+        [key in keyof ReplaceablePositionProps]?: Position[key]
+    }
+    attributeUpdates: ArrayUpdates<CategorizedItem>
+}
+
+export type ReplaceableRequestProps = Pick<HelpRequest, 'location' | 'notes' | 'callerName' | 'callerContactInfo' | 'callStartedAt' | 'callEndedAt' | 'priority'>

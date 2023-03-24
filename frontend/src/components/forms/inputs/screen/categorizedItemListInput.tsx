@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
-import { CategorizedItem } from "../../../../../../common/models"
+import { ArrayUpdates, CategorizedItem } from "../../../../../../common/models"
 import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { AdHocScreenConfig, InlineFormInputConfig, SectionScreenViewProps } from "../../types"
@@ -54,6 +54,7 @@ const CategorizedItemListInput = ({
         navigateToScreen
     }: CustomFormHomeScreenProps) => {
 
+        const [ originalValues ] = useState(config.val().slice())
         const [ selectedItems, setSelectedItems ] = useState(config.val())
         const [ searchText, setSearchText ] = useState('');
 
@@ -68,7 +69,36 @@ const CategorizedItemListInput = ({
                         ? config.props.editConfig.filterRemovedItems(selectedItems)
                         : selectedItems;
 
-                    config.onSave(items);
+                    const diff: ArrayUpdates<CategorizedItem> = {
+                        addedItems: [],
+                        removedItems: []
+                    }
+
+                    items.forEach(item => {
+                        const origIdx = originalValues.findIndex((i) => i.categoryId == item.categoryId && i.itemId == item.itemId)
+
+                        if (origIdx == -1) {
+                            // not in original set so it's an add
+                            diff.addedItems.push({
+                                itemId: item.itemId,
+                                categoryId: item.categoryId
+                            })
+                        }
+                    })
+
+                    originalValues.forEach(val => {
+                        const selectedIdx = items.findIndex((i) => i.categoryId == val.categoryId && i.itemId == val.itemId)
+
+                        if (selectedIdx == -1) {
+                            // in original but not in selected so it's been removed
+                            diff.removedItems.push({
+                                itemId: val.itemId,
+                                categoryId: val.categoryId
+                            })
+                        }
+                    })
+
+                    config.onSave(items, diff);
                     back();
                 },
                 outline: true
