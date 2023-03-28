@@ -7,7 +7,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
 import { mergeArrayUpdates, unwrap } from "../../../../../../common/utils"
-import { DefaultRoleIds, Position, PositionUpdate, PositionUpdates } from "../../../../../../common/models"
+import { DefaultRoleIds, Position, PositionUpdate, PositionSetUpdates } from "../../../../../../common/models"
 import { manageAttributesStore, organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
@@ -90,7 +90,16 @@ const PositionsInput = observer(({
             }
         },
         {
-            val: () => [position.get().role],
+            val: () => {
+                const roleId = position.get().role
+                
+                // default to any if role has been deleted (locally or remotely)
+                return [
+                    organizationStore().roles.get(roleId)
+                        ? roleId
+                        : DefaultRoleIds.Anyone
+                ]
+            },
             onSave: (val) => { 
                 const curr = position.get();
                 const currUpdate = updates.get()
@@ -165,7 +174,7 @@ const PositionsInput = observer(({
 
                         const pos = Object.assign({}, position.get()) as Position;
 
-                        const diff: PositionUpdates = {
+                        const diff: PositionSetUpdates = {
                             addedItems: [],
                             updatedPositions: [],
                             removedItems: []
@@ -209,7 +218,7 @@ const PositionsInput = observer(({
                 
                 updatedPositions.splice(idx, 1)
 
-                const diff: PositionUpdates = {
+                const diff: PositionSetUpdates = {
                     addedItems: [],
                     updatedPositions: [],
                     removedItems: [removed]

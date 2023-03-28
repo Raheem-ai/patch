@@ -1,7 +1,6 @@
-import { ArrayUpdates, CategorizedItem, Position, PositionUpdate } from '../models'
+import { ArrayUpdates, CategorizedItem, HelpRequest, Position, PositionUpdate, PositionSetUpdate, RequestUpdates } from '../models'
 
-// TODO: these are doing similar things v differently...is one pattern better?
-export function applyArrayUpdates<A, R=A>(
+export function projectArrayUpdates<A, R=A>(
     base: A[],
     diff: ArrayUpdates<A, R>,
     toId: (item: A | R) => string,
@@ -59,13 +58,44 @@ export function categorizedItemToString(handle: CategorizedItem) {
     return `${handle.categoryId}${handle.itemId}`
 }
 
-// TODO: should these be pure vs updating in place?
-export function applyPositionUpdate(toUpdate: Position, diff: PositionUpdate) {
+export function applyUpdateToPosition(toUpdate: Position, diff: PositionUpdate) {
     for (const prop in diff.replacedProperties) {
         toUpdate[prop] = diff.replacedProperties[prop]
     }
 
-    toUpdate.attributes = applyArrayUpdates(toUpdate.attributes, diff.attributeUpdates, categorizedItemToString) 
+    toUpdate.attributes = projectArrayUpdates(toUpdate.attributes, diff.attributeUpdates, categorizedItemToString) 
+}
+
+export function projectPositionUpdates(toProject: Position[], updates: PositionSetUpdate) {
+    // map existing positions
+    const positionsProjection = toProject.map(basePos => {
+        const removedIdx = updates.removedItems.findIndex(removed => removed.id == basePos.id)
+        
+        // if positions is in the deleted...return null
+        if (removedIdx != -1) {
+            return null
+        }
+
+        // if position has edits
+        const editedIdx = updates.updatedPositions.findIndex(updated => updated.id == basePos.id)
+        
+        if (editedIdx != -1) {
+            // return existing position with updates applied
+            const update = updates.updatedPositions[editedIdx];
+            applyUpdateToPosition(basePos, update)
+            
+            return basePos
+        }
+
+        return basePos
+    })
+    // filter out locally or remotely removed requests
+    .filter(p => !!p);
+
+    // add all new positions to the end        
+    positionsProjection.push(...updates.addedItems)
+
+    return positionsProjection as Position[]
 }
 
 export function mergePositionUpdates(toUpdate: PositionUpdate, diff: PositionUpdate) {
@@ -74,4 +104,79 @@ export function mergePositionUpdates(toUpdate: PositionUpdate, diff: PositionUpd
     }
 
     mergeArrayUpdates(toUpdate.attributeUpdates, diff.attributeUpdates, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
+}
+
+export function applyUpdateToRequest(toUpdate: Omit<HelpRequest, 'createdAt' | 'updatedAt'>, updates: RequestUpdates) {
+    for (const prop in updates.replacedProperties) {
+        // field specific work if we need it in the future
+        toUpdate[prop] = updates.replacedProperties[prop]
+    }
+
+    toUpdate.positions = projectPositionUpdates(toUpdate.positions, updates.positionUpdates)
+
+    toUpdate.tagHandles = projectArrayUpdates(toUpdate.tagHandles, updates.tagUpdates, categorizedItemToString)
+
+    toUpdate.type = projectArrayUpdates(toUpdate.type, updates.typeUpdates, (typ) => typ as unknown as string)
+}
+
+export function mergePositionSetUpdates(toUpdate: PositionSetUpdate, diff: PositionSetUpdate, newPositionIds: Set<string>) {
+    
+    // add any removes from the most recent edit to the diff with the server
+    diff.removedItems.forEach(removed => {
+        const idx = toUpdate.removedItems.findIndex(pos => pos.id == removed.id)
+
+        if (idx == -1) {
+            // discard edits since the last sync with the server
+            const editedIdx = toUpdate.updatedPositions.findIndex(pos => pos.id == removed.id)
+            if (editedIdx != -1) {
+                toUpdate.updatedPositions.splice(editedIdx, 1)
+            }
+
+            // discard new positions that have never been to the server
+            if (newPositionIds.has(removed.id)) {
+                const newIdx = toUpdate.addedItems.findIndex(pos => pos.id == removed.id)
+
+                toUpdate.addedItems.splice(newIdx, 1)
+                newPositionIds.delete(removed.id)
+            } else {
+                // add remove to the updates to sync with the server
+                toUpdate.removedItems.push(removed)
+            }
+        }
+
+    })
+
+    // apply updates from the most recent edit to the diff with the server
+    diff.updatedPositions.forEach(update => {
+
+        // apply edits to position that exists locally but is new to the server
+        const updatedIdx = toUpdate.updatedPositions.findIndex(upd => upd.id == update.id)
+        if (updatedIdx != -1) {
+            console.log('editing existing item: ', update.id)
+
+            mergePositionUpdates(toUpdate.updatedPositions[updatedIdx], update)
+
+            console.log('after: ', JSON.stringify(toUpdate.updatedPositions[updatedIdx], null, 4))
+            return;
+        }
+
+        // apply edits to position that exists locally but is new to the server
+        const addedIdx = toUpdate.addedItems.findIndex(pos => pos.id == update.id)
+
+        if (addedIdx != -1) {
+            applyUpdateToPosition(toUpdate.addedItems[addedIdx], update)
+            return;
+        }
+
+        // first time editing this one so add it to diff with the server
+        toUpdate.updatedPositions.push(update)
+    })
+
+    // add and track new items for processing before we send to the server
+    diff.addedItems.forEach(added => {
+        // save temp local id to be stripped off later
+        newPositionIds.add(added.id);
+
+        toUpdate.addedItems.push(added)
+    })
 }

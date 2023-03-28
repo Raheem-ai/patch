@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -586,6 +586,14 @@ export class APIClient implements IAPIService {
 
         return (await this.tryPost<HelpRequest>(url, { requestUpdates } ,{
             headers: this.requestScopeAuthHeaders({ ...ctx, requestId: requestUpdates.id })
+        })).data
+    }
+
+    async editRequestV2(ctx: RequestContext, requestUpdates: RequestUpdates): Promise<HelpRequest> {
+        const url = `${apiHost}${API.client.editRequestV2()}`;
+
+        return (await this.tryPost<HelpRequest>(url, { requestUpdates } ,{
+            headers: this.requestScopeAuthHeaders(ctx)
         })).data
     }
 

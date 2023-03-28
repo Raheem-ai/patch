@@ -1810,7 +1810,7 @@ export type ArrayUpdates<A, R=A> = {
 
 export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
 
-export type PositionUpdates = ArrayUpdates<Position> & { updatedPositions: PositionUpdate[] }
+export type PositionSetUpdate = ArrayUpdates<Position> & { updatedPositions: PositionUpdate[] }
 
 export type PositionUpdate = {
     id: string,
@@ -1821,3 +1821,12 @@ export type PositionUpdate = {
 }
 
 export type ReplaceableRequestProps = Pick<HelpRequest, 'location' | 'notes' | 'callerName' | 'callerContactInfo' | 'callStartedAt' | 'callEndedAt' | 'priority'>
+
+export type RequestUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableRequestProps]?: HelpRequest[key]
+    },
+    tagUpdates: ArrayUpdates<CategorizedItem>,
+    typeUpdates: ArrayUpdates<RequestType>,
+    positionUpdates: PositionSetUpdate
+}
