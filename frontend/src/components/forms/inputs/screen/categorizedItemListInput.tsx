@@ -3,7 +3,7 @@ import React, { useState } from "react"
 import { Keyboard, Pressable, StyleSheet, TextStyle, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { IconButton, Text } from "react-native-paper"
-import { ArrayUpdates, CategorizedItem } from "../../../../../../common/models"
+import { ArrayCollectionUpdate, CategorizedItem } from "../../../../../../common/models"
 import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { AdHocScreenConfig, InlineFormInputConfig, SectionScreenViewProps } from "../../types"
@@ -69,7 +69,7 @@ const CategorizedItemListInput = ({
                         ? config.props.editConfig.filterRemovedItems(selectedItems)
                         : selectedItems;
 
-                    const diff: ArrayUpdates<CategorizedItem> = {
+                    const diff: ArrayCollectionUpdate<CategorizedItem> = {
                         addedItems: [],
                         removedItems: []
                     }

@@ -1,6 +1,6 @@
 import { ComponentType } from "react"
 import { KeyboardType, StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, ArrayUpdates, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
 export type Grouped<T> = T | T[];
@@ -114,7 +114,7 @@ export type ScreenFormInputOptions = {
             setDefaultClosed?: boolean
         }, 
         type: CategorizedItem[],
-        diffType: ArrayUpdates<CategorizedItem>
+        diffType: ArrayCollectionUpdate<CategorizedItem>
     }, 
     'RoleList': {
         props: {

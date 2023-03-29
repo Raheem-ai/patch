@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayUpdates, RequestType, PositionSetUpdates } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -169,9 +169,9 @@ export interface IEditRequestStore extends ITempRequestStore {
     locationValid: boolean
     typeValid: boolean
 
-    saveTypeUpdates(diff: ArrayUpdates<RequestType>)
-    saveTagUpdates(diff: ArrayUpdates<CategorizedItem>)
-    savePositionUpdates(diff: PositionSetUpdates)
+    saveTypeUpdates(diff: ArrayCollectionUpdate<RequestType>)
+    saveTagUpdates(diff: ArrayCollectionUpdate<CategorizedItem>)
+    savePositionUpdates(diff: PositionSetUpdate)
 }
 
 export namespace IRequestStore {

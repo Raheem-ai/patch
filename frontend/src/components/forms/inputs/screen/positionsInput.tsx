@@ -6,8 +6,8 @@ import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
-import { mergeArrayUpdates, unwrap } from "../../../../../../common/utils"
-import { DefaultRoleIds, Position, PositionUpdate, PositionSetUpdates } from "../../../../../../common/models"
+import { mergeArrayCollectionUpdates, unwrap } from "../../../../../../common/utils"
+import { DefaultRoleIds, Position, PositionSetUpdate, PositionUpdate } from "../../../../../../common/models"
 import { manageAttributesStore, organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
@@ -31,6 +31,7 @@ const PositionsInput = observer(({
         max: -1
     }) as Position))
 
+    // if we're in create mode, don't need to track updates
     const [ updates ] = useState(observable.box(
         !!paramsFromLabel 
             ? { 
@@ -58,6 +59,7 @@ const PositionsInput = observer(({
                 const curr = position.get();
                 const currUpdate = updates.get()
 
+                // if in edit mode, update the diff for min/max if either changed
                 if (currUpdate) {
                     const currDiff = Object.assign({}, currUpdate)
                     let changed = false
@@ -104,6 +106,7 @@ const PositionsInput = observer(({
                 const curr = position.get();
                 const currUpdate = updates.get()
 
+                // if in edit mode, update diff with role change
                 if (currUpdate) {
                     if (val[0] != curr.role) {
                         const currDiff = Object.assign({}, currUpdate)
@@ -135,9 +138,10 @@ const PositionsInput = observer(({
                 const curr = position.get();
                 const currUpdate = updates.get()
 
+                // if in edit morde, update diff with changes to attribute selection
                 if (currUpdate) {
                     const currDiff = Object.assign({}, currUpdate)
-                    mergeArrayUpdates(currDiff.attributeUpdates, diff, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
+                    mergeArrayCollectionUpdates(currDiff.attributeUpdates, diff, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
                     updates.set(currDiff)
                 }
 
@@ -174,12 +178,13 @@ const PositionsInput = observer(({
 
                         const pos = Object.assign({}, position.get()) as Position;
 
-                        const diff: PositionSetUpdates = {
+                        const diff: PositionSetUpdate = {
                             addedItems: [],
-                            updatedPositions: [],
+                            itemUpdates: [],
                             removedItems: []
                         }
 
+                        // one we're saving is new 
                         if (idx == -1) {
                             pos.id = uuid.v1()
 
@@ -187,7 +192,7 @@ const PositionsInput = observer(({
                             diff.addedItems.push(pos)
                         } else {
                             updatedPositions[idx] = pos
-                            diff.updatedPositions.push(Object.assign({}, updates.get()))
+                            diff.itemUpdates.push(Object.assign({}, updates.get()))
                         }
 
                         config.onSave(updatedPositions, diff);
@@ -218,9 +223,9 @@ const PositionsInput = observer(({
                 
                 updatedPositions.splice(idx, 1)
 
-                const diff: PositionSetUpdates = {
+                const diff: PositionSetUpdate = {
                     addedItems: [],
-                    updatedPositions: [],
+                    itemUpdates: [],
                     removedItems: [removed]
                 }
 

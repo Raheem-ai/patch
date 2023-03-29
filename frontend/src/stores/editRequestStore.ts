@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore, organizationStore } from './interfaces';
-import { AddressableLocation, ArrayUpdates, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, HelpRequest, MinHelpRequest, Position, PositionUpdate, PositionSetUpdates, ReplaceableRequestProps, RequestPriority, RequestType, RequestUpdates } from '../../../common/models';
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, HelpRequest, MinHelpRequest, Position, PositionUpdate, PositionSetUpdate, ReplaceableRequestProps, RequestPriority, RequestType, RequestUpdates } from '../../../common/models';
 import { OrgContext, RequestContext } from '../../../common/api';
-import { projectArrayUpdates, projectPositionUpdates, applyUpdateToPosition, categorizedItemToString, mergeArrayUpdates, mergePositionUpdates, mergePositionSetUpdates } from '../../../common/utils';
+import { projectArrayUpdates, projectPositionUpdates, applyUpdateToPosition, categorizedItemToString, mergeArrayCollectionUpdates, mergePositionUpdates, mergePositionSetUpdates } from '../../../common/utils';
 import { api } from '../services/interfaces';
 
 @Store(IEditRequestStore)
@@ -25,7 +25,7 @@ export default class EditRequestStore implements IEditRequestStore  {
         positionUpdates: {
             addedItems: [],
             removedItems: [],
-            updatedPositions: []
+            itemUpdates: []
         }
     }
 
@@ -82,7 +82,7 @@ export default class EditRequestStore implements IEditRequestStore  {
             positionUpdates: {
                 addedItems: [],
                 removedItems: [],
-                updatedPositions: []
+                itemUpdates: []
             }
         }
 
@@ -127,15 +127,15 @@ export default class EditRequestStore implements IEditRequestStore  {
     // These consume the diffs coming back from each input that works off of diffs 
     // and merges it with the store's diff (of the latest db version) we already have 
     // ie. categorizedItems + positionUpdates
-    saveTypeUpdates(inputDiff: ArrayUpdates<RequestType>) {
-        mergeArrayUpdates(this.updates.typeUpdates, inputDiff, (a, b) => a == b)
+    saveTypeUpdates(inputDiff: ArrayCollectionUpdate<RequestType>) {
+        mergeArrayCollectionUpdates(this.updates.typeUpdates, inputDiff, (a, b) => a == b)
     }
 
-    saveTagUpdates(inputDiff: ArrayUpdates<CategorizedItem>) {
-        mergeArrayUpdates(this.updates.tagUpdates, inputDiff, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
+    saveTagUpdates(inputDiff: ArrayCollectionUpdate<CategorizedItem>) {
+        mergeArrayCollectionUpdates(this.updates.tagUpdates, inputDiff, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
     }
 
-    savePositionUpdates(inputDiff: PositionSetUpdates) {
+    savePositionUpdates(inputDiff: PositionSetUpdate) {
         mergePositionSetUpdates(this.updates.positionUpdates, inputDiff, this.newPositionIds)
     }
 

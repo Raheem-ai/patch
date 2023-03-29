@@ -1803,30 +1803,46 @@ export type AggregatePositionStats = {
     totalFilled: number
 }
 
-export type ArrayUpdates<A, R=A> = {
-    addedItems: A[],
-    removedItems: R[]
+/**
+ * The set of changes you can make to an array of items without
+ * editing the actual items themselves
+ */
+export type ArrayCollectionUpdate<Added, Removed=Added> = {
+    addedItems: Added[],
+    removedItems: Removed[]
 }
 
-export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
+/**
+ * The set of changes you can make to an array of items including
+ * editing the actual items themselves (which might require a separate `Update` type
+ * tailored to the items the array is holding)
+ */
+export type ArrayItemUpdate<Added, Update=Added, Removed=Added> = ArrayCollectionUpdate<Added, Removed> & {
+    itemUpdates: Update[]
+}
 
-export type PositionSetUpdate = ArrayUpdates<Position> & { updatedPositions: PositionUpdate[] }
+// Position Diff Types
+export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
 
 export type PositionUpdate = {
     id: string,
     replacedProperties: {
         [key in keyof ReplaceablePositionProps]?: Position[key]
     }
-    attributeUpdates: ArrayUpdates<CategorizedItem>
+    attributeUpdates: ArrayCollectionUpdate<CategorizedItem>
 }
 
+// convenience type tying Position to PositionUpdate 
+export type PositionSetUpdate = ArrayItemUpdate<Position, PositionUpdate>
+
+// Request Diff Types
 export type ReplaceableRequestProps = Pick<HelpRequest, 'location' | 'notes' | 'callerName' | 'callerContactInfo' | 'callStartedAt' | 'callEndedAt' | 'priority'>
 
 export type RequestUpdates = {
     replacedProperties: {
         [key in keyof ReplaceableRequestProps]?: HelpRequest[key]
     },
-    tagUpdates: ArrayUpdates<CategorizedItem>,
-    typeUpdates: ArrayUpdates<RequestType>,
+    tagUpdates: ArrayCollectionUpdate<CategorizedItem>,
+    typeUpdates: ArrayCollectionUpdate<RequestType>,
     positionUpdates: PositionSetUpdate
 }

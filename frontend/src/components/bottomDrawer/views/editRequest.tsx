@@ -123,8 +123,7 @@ class EditHelpRequest extends React.Component<Props> {
                         type: 'CategorizedItemList',
                         headerLabel: () => STRINGS.REQUESTS.requestType,
                         placeholderLabel: () => STRINGS.REQUESTS.requestType,
-                        onSave: (type, diff) => {
-                            // editRequestStore().type = categorizedItemsToRequestType(type)
+                        onSave: (_, diff) => {
                             editRequestStore().saveTypeUpdates({
                                 addedItems: categorizedItemsToRequestType(diff.addedItems),
                                 removedItems: categorizedItemsToRequestType(diff.removedItems)
@@ -238,9 +237,7 @@ class EditHelpRequest extends React.Component<Props> {
                 ],
                 // Positions
                 {
-                    onSave: (data, diff) => {
-                        // editRequestStore().positions = data
-                        console.log('editRequest.tsx Diff: ', JSON.stringify(diff, null, 4))
+                    onSave: (_, diff) => {
                         editRequestStore().savePositionUpdates(diff)
                     },
                     val: () => {
@@ -286,8 +283,7 @@ class EditHelpRequest extends React.Component<Props> {
                 },
                 // Tags
                 TagsListInput({
-                    onSave: (items, diff) => {
-                        // editRequestStore().tagHandles = items
+                    onSave: (_, diff) => {
                         editRequestStore().saveTagUpdates(diff)
                     },
                     val: () => {
