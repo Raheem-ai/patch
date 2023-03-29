@@ -364,9 +364,14 @@ export enum HelpRequestSortBy {
 export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
 export type ShiftInstance = {
-    description: string,
-    dateTimeRange: DateTimeRange,
-    positions: Position[]
+    id: string
+    shiftId: string
+    chat: Chat
+    dateTimeRange?: DateTimeRange
+    title?: string
+    description?: string
+    positionStatus?: PositionStatus
+    positions?: Position[]
 }
 
 export type Shift = {
@@ -378,10 +383,12 @@ export type Shift = {
     // PATCH defined fields
     displayId: string
     orgId: string
-    // TODO: change to descriptiom
+    title: string
     description: string
+    positions: Position[]
     recurrence: RecurringDateTimeRange
-    instances: ShiftInstance[]
+    instanceDiffs: ShiftInstance[]
+    positionStatus: PositionStatus
 }
 
 export enum TeamFilter {
@@ -394,11 +401,6 @@ export enum TeamSortBy {
     ByLastName = 'bln',
     ByFirstName = 'bfn'
 };
-
-export type ShiftsFilter = {
-    instancesFilter: ShiftInstancesFilter,
-    shiftsFilter: ShiftsRolesFilter
-}
 
 export enum CalendarDaysFilter {
     All = 'al',
@@ -414,6 +416,11 @@ export enum ShiftInstancesFilter {
 export enum ShiftsRolesFilter {
     All = 'al'
 };
+
+export type ShiftsFilter = {
+    instancesFilter: ShiftInstancesFilter,
+    shiftsFilter: ShiftsRolesFilter
+}
 
 export type Chat = {
     id: string,
@@ -1463,8 +1470,10 @@ export type RecurringTimeConstraints = {
     every?: RecurringTimePeriod
     until?: {
         date: Date,
+        // TODO: Fix typo spelling
         repititions: null
     } | {
+        // TODO: Fix typo spelling
         date: null,
         repititions: number
     }

@@ -229,6 +229,9 @@ const TestIds = {
     requestList: {
         screen: 'requestListScreen',
     },
+    shiftsList: {
+        screen: 'shiftsListScreen',
+    },
     requestDetails: {
         notes: 'requestDetails::notes',
         tags: 'requestDetails::tags',

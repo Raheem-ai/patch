@@ -1,13 +1,15 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftInstancesFilter, CalendarShiftsFilterToLabelMap } from "../../../common/models";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftInstancesFilter, CalendarShiftsFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ScreenProps } from "../types";
 import TestIds from "../test/ids";
 import { shiftStore } from "../stores/interfaces";
 import { Text } from "react-native-paper";
+import ShiftInstanceCard from "../components/shiftCard/shiftInstanceCard";
+import moment from "moment";
 
 type Props = ScreenProps<'Calendar'>;
 
@@ -63,16 +65,36 @@ const Calendar = observer(({ navigation, route }: Props) => {
         setIsScrolled(e.nativeEvent.contentOffset.y <= 4
             ? false
             : true)}
+    
+    const recurrence: RecurringDateTimeRange = {
+        every: {
+            period: RecurringPeriod.Week,
+            days: [0, 1, 3, 5],
+            numberOf: 2,
+        },
+        until: {
+            date: null,
+            repititions: 4
+        },
+        startDate: moment().hour(12).minutes(30).toDate(), // Today @ 12:30pm 
+        endDate: moment().hour(12).minutes(30).add(2, 'hours').toDate(), // Today @ 2:30pm 
+    };
 
+    console.log('Calendar about to call for projected dates...')
+    const finalDate: Date = moment().hour(14).minutes(30).add(30, 'days').toDate();
+    const projectedDates = shiftStore().projectRecurringDateTimes(recurrence, finalDate);
+    console.log('Projected Dates: ');
+    for (const date of projectedDates) {
+        console.log(date);
+    }
     return (
-        <View style={styles.container} testID={TestIds.requestList.screen}>
+        <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
             <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
-                    shiftStore().filteredShiftInstances.map(shiftInstance => {
-                        console.log('Shift: ', shiftInstance);
+                    shiftStore().filteredShiftInstances.map(s => {
                         return (
-                            <Text>{shiftInstance.description}</Text>
+                            <ShiftInstanceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} instanceId={s.id} />
                         )
                     })
                 }
