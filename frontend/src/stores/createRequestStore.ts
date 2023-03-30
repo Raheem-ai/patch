@@ -31,6 +31,10 @@ export default class CreateRequestStore implements ICreateRequestStore  {
         }
     }
 
+    // need to edit these to make sure we're sending the right params to the server
+    // ie. a role is set, then it is deleted while i'm still in the create flow
+    // now i'm referencing an old role and even though positionsInput handles defaulting to
+    // Anyone visually
     onRoleDeletedUpdate(roleId: string) {
         this.positions.forEach(pos => {
             if (pos.role == roleId) {

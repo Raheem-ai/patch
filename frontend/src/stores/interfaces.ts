@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -164,10 +164,14 @@ export namespace IEditRequestStore {
 }
 
 export interface IEditRequestStore extends ITempRequestStore {
-    loadRequest(req: CreateReqData): void
-    editRequest(reqId: string): Promise<void>
+    loadRequest(reqId: string): void
+    editRequest(): Promise<void>
     locationValid: boolean
     typeValid: boolean
+
+    saveTypeUpdates(diff: ArrayCollectionUpdate<RequestType>)
+    saveTagUpdates(diff: ArrayCollectionUpdate<CategorizedItem>)
+    savePositionUpdates(diff: PositionSetUpdate)
 }
 
 export namespace IRequestStore {

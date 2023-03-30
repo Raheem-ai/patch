@@ -1,5 +1,5 @@
 import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -14,6 +14,7 @@ import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
+import { applyUpdateToRequest } from "common/utils";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -1241,6 +1242,14 @@ export class DBManager {
             // field specific work if we need it in the future
             req[prop] = requestUpdates[prop]
         }
+
+        return await req.save()
+    }
+
+    async editRequestV2(helpRequest: string | HelpRequestDoc, requestUpdates: RequestUpdates) {
+        const req = await this.resolveRequest(helpRequest);
+
+        applyUpdateToRequest(req, requestUpdates)
 
         return await req.save()
     }
