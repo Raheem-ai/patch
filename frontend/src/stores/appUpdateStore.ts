@@ -52,6 +52,10 @@ export default class AppUpdateStore implements IAppUpdateStore {
                     alertStore().showPrompt(updatePrompt)
                 }
             })
+
+            // TODO: Check dynamic config to see if we have an old native version
+            // ifso, prompt the user and mark their response so it doesn't show again until a newer update comes out
+            // make config payload dictate whether the update is blocking the user from using the app until they update
         }
     }
 

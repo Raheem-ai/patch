@@ -1,10 +1,8 @@
-import { Inject, Service } from "@tsed/di";
 import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda, Every } from "@tsed/agenda";
 import { MongooseService } from "@tsed/mongoose";
-import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
+import Mongoose, { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
 import * as uuid from 'uuid';
@@ -15,19 +13,56 @@ import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
 import { applyUpdateToRequest } from "common/utils";
+import { writeFile } from "fs/promises";
+import { getJsonSchema } from "@tsed/schema";
+import { Collections } from "./dbConfig";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
-@Agenda()
-@Service()
-export class DBManager {
-    
-    @Inject(UserModel) users: Model<UserModel>;
-    @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
-    @Inject(HelpRequestModel) requests: Model<HelpRequestModel>;
-    @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>;
+export class DBManager { 
 
-    @Inject(MongooseService) db: MongooseService;
+    static async fromConnectionString(mongoConnString: string, opts?: Mongoose.ConnectionOptions) {
+        const conn = await Mongoose.createConnection(mongoConnString, opts || {
+            // got these defaults from TSed
+            useCreateIndex: true,
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        })
+
+        const users = conn.model<UserModel>(UserModel.name, getJsonSchema(UserModel), Collections.User)
+        const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getJsonSchema(OrganizationModel), Collections.Organization)
+        const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getJsonSchema(HelpRequestModel), Collections.HelpRequest)
+        const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getJsonSchema(AuthCodeModel), Collections.AuthCode)
+
+        return new DBManager(conn, users, orgs, requests, authCodes)
+    }
+
+    constructor(
+        protected connection: Mongoose.Connection,
+        protected users: Model<UserModel>,
+        protected orgs: Model<OrganizationModel>,
+        protected requests: Model<HelpRequestModel>,
+        protected authCodes: Model<AuthCodeModel>,
+    ) { }
+
+    // @Every('5 minutes')
+    async dumpOrg() {
+        const orgId = '62da9695bfd645465b542368'
+
+        console.log('starting org dump')
+
+        const org = await this.fullOrganization(orgId)
+        const requests = await this.getRequests({ orgId })
+        const users = JSON.parse(JSON.stringify(org.members)) as UserModel[];
+
+        org.members = users.map(member => member.id)
+
+        await writeFile('./org.json', JSON.stringify(org, null, 4))
+        await writeFile('./requests.json', JSON.stringify(requests, null, 4))
+        await writeFile('./users.json', JSON.stringify(users, null, 4))
+
+        console.log('finished org dump')
+    }
 
     // the 'me' api handles returning non-system props along with personal
     // ones so the user has access...everywhere else a user is 
@@ -1569,7 +1604,7 @@ export class DBManager {
         
         let retVal;
 
-        await this.db.get().transaction(async (freshSession) => {
+        await this.connection.transaction(async (freshSession) => {
             retVal = await ops(freshSession);
         });
 
@@ -2011,4 +2046,3 @@ export class DBManager {
     //     }
     // }
 }
-

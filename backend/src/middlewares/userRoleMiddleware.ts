@@ -7,12 +7,12 @@ import API from "common/api";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { resolvePermissionsFromRoles } from "common/utils/permissionUtils";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import STRINGS from "common/strings";
 
 @Middleware()
 export class RequirePermissionsMiddleware {
-  @Inject(DBManager) db: DBManager;
+  @Inject(DBManagerService) db: DBManagerService;
 
   async use(
     @Req() req: Req, 

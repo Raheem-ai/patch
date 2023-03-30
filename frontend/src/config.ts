@@ -8,6 +8,8 @@ export const apiHost = extra.apiHost;
 export const sentryDSN = extra.sentryDSN;
 export const appEnv = extra.appEnv;
 export const backendEnv = extra.backendEnv;
+
+// TODO: need a dynamicConfigStore()
 export const linkBaseUrl = extra.linkBaseUrl;
 export const termsOfServiceVersion = extra.termsOfServiceVersion;
 export const termsOfServiceLink = extra.termsOfServiceLink;

@@ -5,7 +5,7 @@ import { notificationLabel } from 'common/utils/notificationUtils'
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc, UserModel } from "../models/user";
-import { DBManager } from "./dbManager";
+import { DBManagerService } from "./dbManagerService";
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { RedisAdapter } from "@socket.io/redis-adapter";
@@ -25,7 +25,7 @@ type SendConfig = {
 @Service()
 export class MySocketService {
 
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     @Nsp nsp: SocketIO.Namespace;
     

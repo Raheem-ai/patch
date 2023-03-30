@@ -6,6 +6,7 @@ import { WithRefs } from ".";
 import { UserModel } from './user';
 import utils from 'util'
 import { CategorizedItemDefinitionSchema } from "./common";
+import { Collections } from "../common/dbConfig";
 
 @Schema()
 class PendingUserSchema  implements PendingUser {
@@ -43,7 +44,7 @@ class RoleSchema implements Role {
     permissionGroups: PatchPermissionGroups[]
 }
 
-@Model({ collection: 'organizations' })
+@Model({ collection: Collections.Organization })
 export class OrganizationModel implements WithRefs<Organization, 'members' | 'removedMembers'> {
 
     id: string; // for types
