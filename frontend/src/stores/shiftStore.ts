@@ -142,10 +142,22 @@ export default class ShiftStore implements IShiftStore {
         while (continueSeries) {
             if (recurringDateTime.every.period == RecurringPeriod.Month) {
                 if (recurringDateTime.every.dayScope) {
+                    // TODO: How does this handle dates that do not occur in every month?
+                    // e.g. months w/o 31 days, Feb. 29-31.
+                    // Add the current shift's datetime to the collection
+                    console.log('adding new date: ', { startDate: shiftStart, endDate: shiftEnd});
+                    instanceDateTimes.push({ startDate: new Date(shiftStart), endDate: new Date(shiftEnd)});
 
-                } else if (recurringDateTime.every.weekScope) {
+                    // TODO: put in helper
+                    // Add the correct "numberOf" months to the current date.
+                    console.log('jumping to next month...');
+                    shiftStart.setMonth(shiftStart.getMonth() + recurringDateTime.every.numberOf);
+                    shiftEnd.setMonth(shiftEnd.getMonth() + recurringDateTime.every.numberOf);
+                } else {
 
                 }
+
+                repititions++;
             } else if (recurringDateTime.every.period == RecurringPeriod.Week) {
                 // If we're on the very first instance of this shift, identify which day
                 // of the week it is and ensure that the weekRecurrenceIndex is correct.
@@ -155,16 +167,9 @@ export default class ShiftStore implements IShiftStore {
                     console.log('First Shift Occurrence (index, day): ', weekRecurrenceIndex, shiftDay);
                 }
 
-                console.log('adding new date: ', {
-                    startDate: shiftStart,
-                    endDate: shiftEnd
-                });
-
                 // Add the current shift's datetime to the collection
-                instanceDateTimes.push({
-                    startDate: new Date(shiftStart),
-                    endDate: new Date(shiftEnd)
-                });
+                instanceDateTimes.push({ startDate: new Date(shiftStart), endDate: new Date(shiftEnd)});
+                console.log('adding new date: ', { startDate: shiftStart, endDate: shiftEnd});
 
                 // Check if we've added all of the shifts for the current week.
                 // If so, reset the weekRecurrenceCount and skip ahead to the first
@@ -221,8 +226,6 @@ export default class ShiftStore implements IShiftStore {
 
             // Stop the series if we've reached the repitition limit
             if (recurringDateTime.until && recurringDateTime.until.repititions) {
-                // TODO: For weeks it'll be the number of weekly repititions, not just the
-                // length of the collection.
                 console.log('Repititions: ', repititions);
                 console.log('Repitition Limit: ', recurringDateTime.until.repititions);
                 continueSeries = repititions < recurringDateTime.until.repititions;
