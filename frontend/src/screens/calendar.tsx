@@ -68,23 +68,24 @@ const Calendar = observer(({ navigation, route }: Props) => {
     
     const recurrence: RecurringDateTimeRange = {
         every: {
-            period: RecurringPeriod.Week,
-            days: [0, 1, 3, 5],
+            period: RecurringPeriod.Month,
+            dayScope: true,
             numberOf: 2,
         },
         until: {
             date: null,
-            repititions: 4
+            repititions: 12
         },
-        startDate: moment().hour(12).minutes(30).toDate(), // Today @ 12:30pm 
-        endDate: moment().hour(12).minutes(30).add(2, 'hours').toDate(), // Today @ 2:30pm 
+        startDate: moment().hour(26).minutes(30).toDate(), // Today @ 12:30pm 
+        endDate: moment().hour(26).minutes(30).add(2, 'hours').toDate(), // Today @ 2:30pm 
     };
 
-    console.log('Calendar about to call for projected dates...')
-    const finalDate: Date = moment().hour(14).minutes(30).add(30, 'days').toDate();
-    const projectedDates = shiftStore().projectRecurringDateTimes(recurrence, finalDate);
-    console.log('Projected Dates: ');
-    for (const date of projectedDates) {
+    const finalDate: Date = moment().hour(14).minutes(30).add(18, 'months').toDate();
+
+    console.log('getting rSchedule...')
+    const scheduleIterator = shiftStore().projectRRuleSchedule(recurrence, finalDate);
+    console.log('rSchedule Dates: ');
+    for (const { date } of scheduleIterator) {
         console.log(date);
     }
     return (

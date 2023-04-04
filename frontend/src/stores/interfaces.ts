@@ -7,6 +7,7 @@ import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStat
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
+import { OccurrenceIterator, Rule, Schedule } from '../utils/rschedule';
 
 export interface IBaseStore {
     // we can have this be optional because the @Store() decorator
@@ -279,7 +280,9 @@ export interface IShiftStore extends IBaseStore {
     getShift(shiftId: string): Promise<void>
     pushShift(shiftId: string): Promise<void>
     tryPopShift(): Promise<void>
-    projectRecurringDateTimes(recurringDateTime: RecurringDateTimeRange, finalProjection: Date): DateTimeRange[]
+
+    // TODO: This won't be exposed after debugging.
+    projectRRuleSchedule(recurringDateTime: RecurringDateTimeRange, finalProjection: Date): OccurrenceIterator
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
