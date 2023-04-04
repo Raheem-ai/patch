@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs, ShiftInstance } from "../../../../common/models";
+import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs, ShiftOccurrence } from "../../../../common/models";
 import { requestStore, userStore, organizationStore, shiftStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors, ICONS } from "../../types";
@@ -21,7 +21,7 @@ type Props = {
     dark?: boolean,
     minimal?: boolean,
     onMapView?: boolean,
-    onPress?: (event: GestureResponderEvent, shiftInstace: ShiftInstance) => void
+    onPress?: (event: GestureResponderEvent, shiftInstace: ShiftOccurrence) => void
 };
 
 const ShiftInstanceCard = observer(({

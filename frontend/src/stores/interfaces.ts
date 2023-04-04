@@ -3,11 +3,11 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType, Shift, CalendarDaysFilter, ShiftInstancesFilter, ShiftsRolesFilter, ShiftsFilter, ShiftInstance, RecurringDateTimeRange, DateTimeRange } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType, Shift, CalendarDaysFilter, ShiftNeedsPeopleFilter, ShiftsRolesFilter, ShiftsFilter, ShiftOccurrence, RecurringDateTimeRange, DateTimeRange } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
-import { OccurrenceIterator, Rule, Schedule } from '../utils/rschedule';
+import { OccurrenceIterator } from '../utils/rschedule';
 
 export interface IBaseStore {
     // we can have this be optional because the @Store() decorator
@@ -263,26 +263,24 @@ export namespace IShiftStore {
 export interface IShiftStore extends IBaseStore {
     shifts: Map<string, Shift>
     shiftsArray: Shift[]
-    filteredShifts: Shift[]
-    filteredShiftInstances: ShiftInstance[]
+    filteredShiftOccurrences: ShiftOccurrence[]
 
     loading: boolean
 
     filter: ShiftsFilter
-    shiftInstancesFilter: ShiftInstancesFilter
-    shiftsFilter: ShiftsRolesFilter
 
     loadUntil(predicate: () => Promise<any>): Promise<void>
     setFilter(filter: ShiftsFilter): Promise<void>
-    setInstancesFilter(filter: ShiftInstancesFilter): Promise<void>
-    setShiftsFilter(filter: ShiftsRolesFilter): Promise<void>
+    setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
+    setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>
     getShift(shiftId: string): Promise<void>
     pushShift(shiftId: string): Promise<void>
     tryPopShift(): Promise<void>
+    getFilteredShiftOccurrences(range: DateTimeRange): ShiftOccurrence[]
 
     // TODO: This won't be exposed after debugging.
-    projectRRuleSchedule(recurringDateTime: RecurringDateTimeRange, finalProjection: Date): OccurrenceIterator
+    projectRRuleSchedule(recurringDateTime: RecurringDateTimeRange, dateRange: DateTimeRange): OccurrenceIterator
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

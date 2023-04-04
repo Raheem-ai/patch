@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftInstancesFilter, CalendarShiftsFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarShiftsFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
 import { allEnumValues } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { ScreenProps } from "../types";
@@ -15,10 +15,10 @@ type Props = ScreenProps<'Calendar'>;
 
 const Calendar = observer(({ navigation, route }: Props) => {
     const daysFilters = allEnumValues<CalendarDaysFilter>(CalendarDaysFilter);
-    const shiftInstanceFilters = allEnumValues<ShiftInstancesFilter>(ShiftInstancesFilter);
+    const shiftNeedsPeopleFilter = allEnumValues<ShiftNeedsPeopleFilter>(ShiftNeedsPeopleFilter);
 
     // TODO: Dynamically add to enum
-    const shiftsFilters = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
+    const shiftRolesFilter = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
 
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -37,26 +37,26 @@ const Calendar = observer(({ navigation, route }: Props) => {
                 onUpdate: () => {} // TODO: Remove empty days,
             },
             {
-                chosenOption: shiftStore().shiftInstancesFilter,
-                options: shiftInstanceFilters,
-                toHeaderLabel: (filter: ShiftInstancesFilter) => {
+                chosenOption: shiftStore().filter.needsPeopleFilter,
+                options: shiftNeedsPeopleFilter,
+                toHeaderLabel: (filter: ShiftNeedsPeopleFilter) => {
                     return `${CalendarShiftsFilterToLabelMap[filter]}`
                 },
-                toOptionLabel: (filter: ShiftInstancesFilter) => CalendarShiftsFilterToLabelMap[filter],
-                onUpdate: shiftStore().setInstancesFilter
+                toOptionLabel: (filter: ShiftNeedsPeopleFilter) => CalendarShiftsFilterToLabelMap[filter],
+                onUpdate: shiftStore().setNeedsPeopleFilter
             },
             {
-                chosenOption: shiftStore().shiftsFilter,
-                options: shiftsFilters,
+                chosenOption: shiftStore().filter.rolesFilter,
+                options: shiftRolesFilter,
                 toHeaderLabel: (filter: ShiftsRolesFilter) => {
                     return `${CalendarRolesFilterToLabelMap[filter]}`
                 },
                 toOptionLabel: (filter: ShiftsRolesFilter) => CalendarRolesFilterToLabelMap[filter],
-                onUpdate: shiftStore().setShiftsFilter
+                onUpdate: shiftStore().setRolesFilter
             },
         ] as [
             ListHeaderOptionConfig<CalendarDaysFilter>, 
-            ListHeaderOptionConfig<ShiftInstancesFilter>, 
+            ListHeaderOptionConfig<ShiftNeedsPeopleFilter>, 
             ListHeaderOptionConfig<ShiftsRolesFilter>, 
         ]
     }
@@ -80,20 +80,17 @@ const Calendar = observer(({ navigation, route }: Props) => {
         endDate: moment().hour(26).minutes(30).add(2, 'hours').toDate(), // Today @ 2:30pm 
     };
 
-    const finalDate: Date = moment().hour(14).minutes(30).add(18, 'months').toDate();
+    // TODO; Generate this window based on user scroll/viewport
+    const startDate: Date = moment().toDate();
+    const endDate: Date = moment().hour(14).minutes(30).add(18, 'months').toDate();
 
-    console.log('getting rSchedule...')
-    const scheduleIterator = shiftStore().projectRRuleSchedule(recurrence, finalDate);
-    console.log('rSchedule Dates: ');
-    for (const { date } of scheduleIterator) {
-        console.log(date);
-    }
     return (
         <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
             <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
-                    shiftStore().filteredShiftInstances.map(s => {
+                    
+                    shiftStore().getFilteredShiftOccurrences({ startDate: startDate, endDate: endDate }).map(s => {
                         return (
                             <ShiftInstanceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} instanceId={s.id} />
                         )

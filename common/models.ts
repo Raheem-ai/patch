@@ -363,7 +363,7 @@ export enum HelpRequestSortBy {
 
 export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
-export type ShiftInstance = {
+export type ShiftOccurrence = {
     id: string
     shiftId: string
     chat: Chat
@@ -387,7 +387,9 @@ export type Shift = {
     description: string
     positions: Position[]
     recurrence: RecurringDateTimeRange
-    instanceDiffs: ShiftInstance[]
+	// TODO: Rename to occurrenceDiffs
+	// TODO: Make type a map from string -> ShiftOccurence
+    instanceDiffs: ShiftOccurrence[]
     positionStatus: PositionStatus
 }
 
@@ -408,7 +410,7 @@ export enum CalendarDaysFilter {
     WithoutShifts = 'ns'
 };
 
-export enum ShiftInstancesFilter {
+export enum ShiftNeedsPeopleFilter {
     All = 'al',
     Unfilled = 'un'
 };
@@ -418,8 +420,8 @@ export enum ShiftsRolesFilter {
 };
 
 export type ShiftsFilter = {
-    instancesFilter: ShiftInstancesFilter,
-    shiftsFilter: ShiftsRolesFilter
+    needsPeopleFilter: ShiftNeedsPeopleFilter,
+    rolesFilter: ShiftsRolesFilter
 }
 
 export type Chat = {
@@ -481,9 +483,9 @@ export const CalendarDaysFilterToLabelMap: { [key in CalendarDaysFilter] : strin
     [CalendarDaysFilter.All]: 'All days'
 }
 
-export const CalendarShiftsFilterToLabelMap: { [key in ShiftInstancesFilter] : string } = {
-    [ShiftInstancesFilter.Unfilled]: 'Unfilled shifts',
-    [ShiftInstancesFilter.All]: 'All shifts'
+export const CalendarShiftsFilterToLabelMap: { [key in ShiftNeedsPeopleFilter] : string } = {
+    [ShiftNeedsPeopleFilter.Unfilled]: 'Unfilled shifts',
+    [ShiftNeedsPeopleFilter.All]: 'All shifts'
 }
 
 export const CalendarRolesFilterToLabelMap: { [key in ShiftsRolesFilter] : string } = {
@@ -1457,6 +1459,7 @@ export enum RecurringPeriod {
 
 export type RecurringTimePeriod = ({
     period: RecurringPeriod.Month,
+    // TODO: Change name to monthScope (e.g. day of month, to match day of week scope)
     dayScope?: boolean,
     weekScope?: boolean
 } | {
