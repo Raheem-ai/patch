@@ -8,7 +8,7 @@ import { Colors, ICONS, ScreenProps } from "../types";
 import TestIds from "../test/ids";
 import { shiftStore } from "../stores/interfaces";
 import { IconButton, Text } from "react-native-paper";
-import ShiftOccurrenceCard from "../components/shiftCard/shiftInstanceCard";
+import ShiftOccurrenceCard from "../components/shiftCard/shiftOccurrenceCard";
 import moment from "moment";
 import { runInAction } from "mobx";
 
@@ -69,7 +69,7 @@ const Calendar = observer(({ navigation, route }: Props) => {
             // TODO: add function to shiftStore for updating date range
             shiftStore().dateRange = {
                 startDate: new Date(moment().toDate()),
-                endDate: new Date(moment().add(2, 'months').toDate()),
+                endDate: new Date(moment().add(1, 'months').toDate()),
             }
         })
     }, [])
