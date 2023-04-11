@@ -388,8 +388,7 @@ export type Shift = {
     positions: Position[]
     recurrence: RecurringDateTimeRange
 	// TODO: Rename to occurrenceDiffs
-	// TODO: Make type a map from string -> ShiftOccurence
-    instanceDiffs: ShiftOccurrence[]
+    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence }
     positionStatus: PositionStatus
 }
 
@@ -483,7 +482,7 @@ export const CalendarDaysFilterToLabelMap: { [key in CalendarDaysFilter] : strin
     [CalendarDaysFilter.All]: 'All days'
 }
 
-export const CalendarShiftsFilterToLabelMap: { [key in ShiftNeedsPeopleFilter] : string } = {
+export const CalendarNeedsPeopleFilterToLabelMap: { [key in ShiftNeedsPeopleFilter] : string } = {
     [ShiftNeedsPeopleFilter.Unfilled]: 'Unfilled shifts',
     [ShiftNeedsPeopleFilter.All]: 'All shifts'
 }

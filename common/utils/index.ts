@@ -92,6 +92,37 @@ export const daysToRecurringDaysLabel = (days: number[]) => {
     return `On ${selectedDayText}`
 }
 
+export const monthNumToMonthNameLabel = (num: number) => {
+    switch (num) {
+        case 0:
+            return STRINGS.monthsOfYear.ja;
+        case 1:
+            return STRINGS.monthsOfYear.fe;
+        case 2:
+            return STRINGS.monthsOfYear.ma;
+        case 3:
+            return STRINGS.monthsOfYear.ap;
+        case 4:
+            return STRINGS.monthsOfYear.my;
+        case 5:
+            return STRINGS.monthsOfYear.ju;
+        case 6:
+            return STRINGS.monthsOfYear.jl;
+        case 7:
+            return STRINGS.monthsOfYear.au;
+        case 8:
+            return STRINGS.monthsOfYear.se;
+        case 9:
+            return STRINGS.monthsOfYear.oc;
+        case 10:
+            return STRINGS.monthsOfYear.no;
+        case 11:
+            return STRINGS.monthsOfYear.de;
+    }
+
+    throw 'bad month value'
+}
+
 // NOTE: this doesn't work well with localization
 export const nthLabel = (n: number) => {
     const suffix = n % 10 == 1

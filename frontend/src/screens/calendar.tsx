@@ -1,15 +1,16 @@
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarShiftsFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
-import { allEnumValues } from "../../../common/utils";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
+import { allEnumValues, dayNumToDayNameLabel, monthNumToMonthNameLabel } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
-import { ScreenProps } from "../types";
+import { Colors, ICONS, ScreenProps } from "../types";
 import TestIds from "../test/ids";
 import { shiftStore } from "../stores/interfaces";
-import { Text } from "react-native-paper";
-import ShiftInstanceCard from "../components/shiftCard/shiftInstanceCard";
+import { IconButton, Text } from "react-native-paper";
+import ShiftOccurrenceCard from "../components/shiftCard/shiftInstanceCard";
 import moment from "moment";
+import { runInAction } from "mobx";
 
 type Props = ScreenProps<'Calendar'>;
 
@@ -40,9 +41,9 @@ const Calendar = observer(({ navigation, route }: Props) => {
                 chosenOption: shiftStore().filter.needsPeopleFilter,
                 options: shiftNeedsPeopleFilter,
                 toHeaderLabel: (filter: ShiftNeedsPeopleFilter) => {
-                    return `${CalendarShiftsFilterToLabelMap[filter]}`
+                    return `${CalendarNeedsPeopleFilterToLabelMap[filter]}`
                 },
-                toOptionLabel: (filter: ShiftNeedsPeopleFilter) => CalendarShiftsFilterToLabelMap[filter],
+                toOptionLabel: (filter: ShiftNeedsPeopleFilter) => CalendarNeedsPeopleFilterToLabelMap[filter],
                 onUpdate: shiftStore().setNeedsPeopleFilter
             },
             {
@@ -60,39 +61,67 @@ const Calendar = observer(({ navigation, route }: Props) => {
             ListHeaderOptionConfig<ShiftsRolesFilter>, 
         ]
     }
+    
+
+    // TODO: Find permanent place for this.
+    useEffect(() => {
+        runInAction(() => {
+            // TODO: add function to shiftStore for updating date range
+            shiftStore().dateRange = {
+                startDate: new Date(moment().toDate()),
+                endDate: new Date(moment().add(2, 'months').toDate()),
+            }
+        })
+    }, [])
+
+    // TODO: Generate this window based on user scroll/viewport and update shiftStore.dateRange
+    let currentDate: Date = new Date(shiftStore().dateRange.startDate);
 
     const handleScroll = (e) => {
         setIsScrolled(e.nativeEvent.contentOffset.y <= 4
             ? false
             : true)}
-    
-    const recurrence: RecurringDateTimeRange = {
-        every: {
-            period: RecurringPeriod.Month,
-            dayScope: true,
-            numberOf: 2,
-        },
-        until: {
-            date: null,
-            repititions: 12
-        },
-        startDate: moment().hour(26).minutes(30).toDate(), // Today @ 12:30pm 
-        endDate: moment().hour(26).minutes(30).add(2, 'hours').toDate(), // Today @ 2:30pm 
-    };
 
-    // TODO; Generate this window based on user scroll/viewport
-    const startDate: Date = moment().toDate();
-    const endDate: Date = moment().hour(14).minutes(30).add(18, 'months').toDate();
+    const getDateHeadings = (shiftDate: Date) => {
+        // console.log(`New Shift: ${shiftDate}`);
+        const headings = [];
+        // console.log(`Is ${shiftDate} after ${currentDate}? ${condition ? 'yes' : 'no'}`);
+        while (moment(shiftDate).isSameOrAfter(moment(currentDate), 'day')) {
+            const day = dayNumToDayNameLabel(currentDate.getDay());
+            const month = monthNumToMonthNameLabel(currentDate.getMonth());
+            const date = currentDate.getDate();
+
+            //console.log('Current Date: ', currentDate);
+            headings.push(
+                <View style={styles.dateHeading}>
+                    <Text style={styles.dateText}>
+                        <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
+                    </Text>
+                    <IconButton 
+                        style={styles.addShiftButton} 
+                        icon={ICONS.add} 
+                        size={24}
+                        color={Colors.icons.light}/>
+                </View>
+            )
+            currentDate.setDate(currentDate.getDate() + 1);
+            //console.log(`Is ${shiftDate} after ${currentDate}? ${condition ? 'yes' : 'no'}`);
+        }
+
+        return headings;
+    }
 
     return (
         <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
             <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
                 {
-                    
-                    shiftStore().getFilteredShiftOccurrences({ startDate: startDate, endDate: endDate }).map(s => {
+                    shiftStore().filteredShiftOccurrences.map(s => {
                         return (
-                            <ShiftInstanceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} instanceId={s.id} />
+                            <>
+                                {getDateHeadings(s.dateTimeRange.startDate)}
+                                <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} instanceId={s.id} />
+                            </>
                         )
                     })
                 }
@@ -123,5 +152,18 @@ const styles = StyleSheet.create({
     },
     closedFilterHeader: {
         // marginBottom: 12
-    }
+    },
+    dateHeading: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    dateText: {
+        margin: 12,
+        fontSize: 14,
+    },
+    addShiftButton: {
+        alignSelf: 'center',
+        margin: 0,
+    },
 })

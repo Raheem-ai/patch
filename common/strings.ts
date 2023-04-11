@@ -74,6 +74,20 @@ const STRINGS = {
         fr: 'F',
         sa: 'S',
     },
+    monthsOfYear: {
+        ja: 'January',
+        fe: 'February',
+        ma: 'March',
+        ap: 'April',
+        my: 'May',
+        ju: 'June',
+        jl: 'July',
+        au: 'August',
+        se: 'September',
+        oc: 'October',
+        no: 'November',
+        de: 'December'
+    },
     LINKS: {
         helpCenter: 'Documentation',
         newTicket: 'Report an issue',
@@ -219,6 +233,13 @@ const STRINGS = {
         },
         errorMessages: {
             positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
+        }
+    },
+    SHIFTS: {
+        shiftOccurrenceDisplayName: (prefix, shiftId) => {
+            return !!(prefix && shiftId)
+                ? prefix + '–' + shiftId
+                : STRINGS.cap(STRINGS.ELEMENTS.shift);
         }
     },
     CHANNELS: {

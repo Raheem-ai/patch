@@ -21,10 +21,10 @@ type Props = {
     dark?: boolean,
     minimal?: boolean,
     onMapView?: boolean,
-    onPress?: (event: GestureResponderEvent, shiftInstace: ShiftOccurrence) => void
+    onPress?: (event: GestureResponderEvent, shiftOccurence: ShiftOccurrence) => void
 };
 
-const ShiftInstanceCard = observer(({
+const ShiftOccurrenceCard = observer(({
     testID,
     shiftId,
     instanceId,
@@ -34,18 +34,142 @@ const ShiftInstanceCard = observer(({
     onMapView,
     onPress
 } : Props) => {
-    // TODO: get shift instance, not shift
+    // TODO: get shift occurrence, not shift
     const shift = shiftStore().shifts.get(shiftId);
-    return <Text>{shift.description}</Text>
+
+    const onCardPress = (event: GestureResponderEvent) => {
+        console.log('shift occurrence card pressed')
+        /*
+        if (onPress) {
+            onPress(event, null);
+        } else {
+            shiftStore().setCurrentShiftInstance(null)
+            navigateTo(routerNames.shiftOccurrenceDetails);
+        }
+        */
+    }
+
+    const getFormattedTime = (date: Date) => {
+        let amPm = 'am';
+        let hours = new Date(date).getHours();
+        const minutes = new Date(date).getMinutes();
+
+        if (hours >= 12) {
+            amPm = 'pm';
+            if (hours != 12) {
+                hours = hours - 12;
+            }
+        } else {
+            amPm = 'am'
+            if (hours == 0) {
+                hours = 12;
+            }
+        }
+
+        const minutesText = minutes == 0
+            ? ''
+            : minutes < 10 
+                ? `:0${minutes}`
+                : `:${minutes}`
+
+        return `${hours}${minutesText}${amPm}`
+    }
+
+    const shiftStatusIndicator = () => {
+        // TODO: Get status from shift occurrence
+        const shiftNeedsPeople = false;
+        return (
+            <View style={styles.indicatorContainer}>
+                { shiftNeedsPeople 
+                    ? <View style={styles.shiftNeedsPeopleIndicator}/>
+                    : <View style={styles.shiftFullIndicator}/>
+                }
+            </View>
+        )
+    }
+
+    const header = () => {
+        // TODO: Get start and end times from shift instance
+        const startTimeStr = getFormattedTime(shift.recurrence.startDate);
+        const endTimeStr = getFormattedTime(shift.recurrence.endDate);
+
+        // TODO: Add recurrence symbol
+        return (
+            <>
+                <View style={{flexDirection: 'row'}}>
+                    {shiftStatusIndicator()}
+                    <View style={styles.headerRow}>
+                        <Text style={[styles.idText, dark ? styles.darkText : null]}>{shift.title}</Text>
+                        <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
+                            <Text>{startTimeStr}</Text>
+                            <Text>{endTimeStr}</Text>
+                        </View>
+                    </View>
+                </View>
+                <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+            </>
+        )
+    }
+
+    return (
+        <Pressable
+            onPress={onCardPress}
+            testID={TestIds.shiftOccurrenceCard(testID, instanceId)}
+            style={[styles.container, styles.minimalContainer, style]}>
+                {header()}
+        </Pressable>
+    )
 })
 
-export default ShiftInstanceCard;
+export default ShiftOccurrenceCard;
 
 const RESPONDER_SPACING_BASIC = 6;
 const RESPONDER_SPACING_LAST = 12;
 const RESPONDER_SPACING_PILED = -8;
 
 const styles = StyleSheet.create({
+    indicatorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        // borderColor: Colors.good,
+        // borderWidth: 1
+    },
+    shiftNeedsPeopleIndicator: {
+        height: 12,
+        width: 12,
+        borderRadius: 12,
+        backgroundColor: Colors.good,
+        marginHorizontal: (56 - 12)/2,
+    },
+    shiftFullIndicator: {
+        height: 12,
+        width: 12,
+        borderRadius: 12,
+        backgroundColor: Colors.icons.superlight,
+        marginHorizontal: (56 - 12)/2
+    },
+    iconContainer: {
+        height: 60,
+        width: 60,
+        position: 'absolute', 
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignSelf: 'flex-start',
+        padding: 20
+    },
+    section: {
+        minHeight: 60,
+        borderStyle: 'solid',
+        borderBottomColor: Colors.borders.formFields,
+        borderBottomWidth: 1,
+        alignItems: 'center',
+        flexDirection: 'row',
+        width: '100%',
+        paddingLeft: 60,
+        //   paddingRight: 20,
+        justifyContent: 'space-between',
+        position: 'relative'
+    }, 
     container: {
         backgroundColor: Colors.backgrounds.standard,
         borderBottomColor: '#e0e0e0',
@@ -56,7 +180,6 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.backgrounds.dark,
     },
     minimalContainer: {
-        height: ActiveRequestTabHeight ,
         paddingBottom: 12,
         paddingHorizontal: 12,
         justifyContent: 'space-evenly',
@@ -68,9 +191,16 @@ const styles = StyleSheet.create({
         color: '#E0DEE0'
     },
     headerRow: {
-        margin: 12,
+        flex: 1,
+        marginVertical: 12,
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        // borderColor: Colors.bad,
+        // borderWidth: 1
+    },
+    headerTime: {
+        flexDirection: 'column',
     },
     locationContainer: {
         flexDirection: 'row'

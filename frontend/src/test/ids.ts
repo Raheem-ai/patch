@@ -131,6 +131,8 @@ const TestIds = {
             name: (testID: string) => `${testID}::name`
         }
     },
+    shiftOccurrenceCard: (context: string, occurenceId: string) => `shiftOccurrenceCard::${context}::${occurenceId}`,
+
 
     // input internals
     inputs: {

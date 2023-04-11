@@ -268,6 +268,7 @@ export interface IShiftStore extends IBaseStore {
     loading: boolean
 
     filter: ShiftsFilter
+    dateRange: DateTimeRange
 
     loadUntil(predicate: () => Promise<any>): Promise<void>
     setFilter(filter: ShiftsFilter): Promise<void>
@@ -277,10 +278,6 @@ export interface IShiftStore extends IBaseStore {
     getShift(shiftId: string): Promise<void>
     pushShift(shiftId: string): Promise<void>
     tryPopShift(): Promise<void>
-    getFilteredShiftOccurrences(range: DateTimeRange): ShiftOccurrence[]
-
-    // TODO: This won't be exposed after debugging.
-    projectRRuleSchedule(recurringDateTime: RecurringDateTimeRange, dateRange: DateTimeRange): OccurrenceIterator
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
