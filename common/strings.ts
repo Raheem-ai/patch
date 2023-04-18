@@ -236,13 +236,6 @@ const STRINGS = {
             positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
         }
     },
-    SHIFTS: {
-        shiftOccurrenceDisplayName: (prefix, shiftId) => {
-            return !!(prefix && shiftId)
-                ? prefix + '–' + shiftId
-                : STRINGS.cap(STRINGS.ELEMENTS.shift);
-        }
-    },
     CHANNELS: {
         noMessages: '...',
     },
