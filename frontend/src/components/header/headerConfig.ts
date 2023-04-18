@@ -225,6 +225,7 @@ const HeaderConfig: {
                 testId: TestIds.header.actions.createShift,
                 icon: ICONS.add,
                 callback: () => {
+                    // TODO: Replace with Create Shift form
                     bottomDrawerStore().show(BottomDrawerView.createRequest, true);
                 }
             }
