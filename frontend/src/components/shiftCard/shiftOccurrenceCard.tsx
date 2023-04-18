@@ -12,11 +12,12 @@ import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
 import TestIds from "../../test/ids";
 import { positionStats } from "../../../../common/utils/requestUtils";
+import { PositionStatus } from "../../../../common/models";
 
 type Props = {
     testID: string,
     shiftId: string,
-    instanceId: string,
+    occurrenceId: string,
     style?: StyleProp<ViewStyle>,
     dark?: boolean,
     minimal?: boolean,
@@ -27,15 +28,15 @@ type Props = {
 const ShiftOccurrenceCard = observer(({
     testID,
     shiftId,
-    instanceId,
+    occurrenceId,
     style,
     dark,
     minimal,
     onMapView,
     onPress
 } : Props) => {
-    // TODO: get shift occurrence, not shift
-    const shift = shiftStore().shifts.get(shiftId);
+    const parentshift = shiftStore().shifts.get(shiftId);
+    const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
 
     const onCardPress = (event: GestureResponderEvent) => {
         console.log('shift occurrence card pressed')
@@ -76,45 +77,99 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const shiftStatusIndicator = () => {
-        // TODO: Get status from shift occurrence
-        const shiftNeedsPeople = false;
+        const shiftSatisfied = shiftStore().getShiftOccurrencePositionStatus(shiftOccurrence) == PositionStatus.MinSatisfied;
         return (
             <View style={styles.indicatorContainer}>
-                { shiftNeedsPeople 
-                    ? <View style={styles.shiftNeedsPeopleIndicator}/>
-                    : <View style={styles.shiftFullIndicator}/>
+                { shiftSatisfied 
+                    ? <View style={styles.shiftSatisfiedIndicator}/>
+                    : <View style={styles.shiftNeedsPeopleIndicator}/>
                 }
             </View>
         )
     }
 
+    const recurrenceIcon = () => {
+        if (!parentshift.recurrence) {
+            return null;
+        }
+
+        return (
+            <IconButton
+                icon={ICONS.refresh} 
+                color='#666'
+                size={20} 
+                style={{ margin: 0, marginLeft: 6, padding: 0, width: 20 }}
+            />
+        )
+    }
+
+    const positionRows = () => {
+        if (shiftOccurrence.positions.length == 0) {
+            return null;
+        }
+
+        const rows = []
+        rows.push(
+            <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+        )
+
+        for (const position of shiftOccurrence.positions) {
+            const joinedUserIcons = position.joinedUsers.map(userId => {
+                return <UserIcon userId={userId}/>
+            })
+
+            const neededUsers = Math.max(0, position.min - position.joinedUsers.length);
+            const unassignedUserIcons = Array(neededUsers).fill(0).map((_, i) => {
+                return (
+                    <UserIcon style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
+                        emptyIconColor={styles.unAssignedResponderIcon.color}/>
+                )
+            });
+            rows.push(
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 60, marginTop: 15}}>
+                    <Text>{organizationStore().roles.get(position.role).name}</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        {joinedUserIcons}
+                        {unassignedUserIcons}
+                    </View>
+                </View>
+            )
+        }
+
+        return rows;
+    }
+
     const header = () => {
         // TODO: Get start and end times from shift instance
-        const startTimeStr = getFormattedTime(shift.recurrence.startDate);
-        const endTimeStr = getFormattedTime(shift.recurrence.endDate);
+        const startTimeStr = getFormattedTime(shiftOccurrence.dateTimeRange.startDate);
+        const endTimeStr = getFormattedTime(shiftOccurrence.dateTimeRange.endDate);
 
-        // TODO: Add recurrence symbol
+        // TODO: Add recurrence symbol, when warranted
         return (
             <>
                 <View style={{flexDirection: 'row'}}>
                     {shiftStatusIndicator()}
                     <View style={styles.headerRow}>
-                        <Text style={[styles.idText, dark ? styles.darkText : null]}>{shift.title}</Text>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <Text style={[styles.idText, dark ? styles.darkText : null]}>{shiftOccurrence.title}</Text>
+                            {recurrenceIcon()}
+                        </View>
                         <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
                             <Text>{startTimeStr}</Text>
-                            <Text>{endTimeStr}</Text>
+                            <Text style={styles.endTimeText}>{endTimeStr}</Text>
                         </View>
                     </View>
                 </View>
-                <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
+                {positionRows()}
             </>
         )
     }
 
+    // TODO: Add Roles needed and positions filled UI
     return (
         <Pressable
             onPress={onCardPress}
-            testID={TestIds.shiftOccurrenceCard(testID, instanceId)}
+            testID={TestIds.shiftOccurrenceCard(testID, occurrenceId)}
             style={[styles.container, styles.minimalContainer, style]}>
                 {header()}
         </Pressable>
@@ -128,6 +183,9 @@ const RESPONDER_SPACING_LAST = 12;
 const RESPONDER_SPACING_PILED = -8;
 
 const styles = StyleSheet.create({
+    endTimeText: {
+        color: Colors.text.tertiary,
+    },
     indicatorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -138,14 +196,15 @@ const styles = StyleSheet.create({
         height: 12,
         width: 12,
         borderRadius: 12,
-        backgroundColor: Colors.good,
+        borderWidth: 4,
+        borderColor: Colors.okay,
         marginHorizontal: (56 - 12)/2,
     },
-    shiftFullIndicator: {
+    shiftSatisfiedIndicator: {
         height: 12,
         width: 12,
         borderRadius: 12,
-        backgroundColor: Colors.icons.superlight,
+        backgroundColor: Colors.good,
         marginHorizontal: (56 - 12)/2
     },
     iconContainer: {

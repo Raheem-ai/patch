@@ -11,11 +11,46 @@ import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUti
 import moment from 'moment';
 import { DateAdapter, DateTime, IRuleOptions, OccurrenceGenerator, OccurrenceIterator, Rule, RuleOption, RuleOptionError, Schedule, StandardDateAdapter } from '../utils/rschedule'
 
+const userIds = [
+    "62da9696bfd645465b54236d",
+    "62da9696bfd645465b54236f",
+    "62da9696bfd645465b542373",
+    "62da9695bfd645465b542366",
+    "63e2f010c9c2a1001fed363d",
+    "62da9696bfd645465b542371"
+]
+
 const mockInstanceDiff: ShiftOccurrence = {
-    shiftId: 'mock-id-1',
-    id: 'mock-id-0',
+    shiftId: 'mock-id-1---2023-04-21',
+    id: 'mock-id-1',
     chat: null,
-    title: 'Different Title',
+    title: 'Special Water Distribution',
+    positions: [
+        {
+            id: 'pos-id-1',
+            attributes: [],
+            role: DefaultRoleIds.Anyone,
+            min: 1,
+            max: 1,
+            joinedUsers: [userIds[0]]
+        },
+        {
+            id: 'pos-id-2',
+            attributes: [],
+            role: DefaultRoleIds.Dispatcher,
+            min: 1,
+            max: 1,
+            joinedUsers: [userIds[4]]
+        },
+        {
+            id: 'pos-id-2',
+            attributes: [],
+            role: DefaultRoleIds.Responder,
+            min: 2,
+            max: 2,
+            joinedUsers: [userIds[5], userIds[2]]
+        }
+    ],
 }
 
 const recurrence: RecurringDateTimeRange = {
@@ -28,8 +63,8 @@ const recurrence: RecurringDateTimeRange = {
         repititions: 20,
         date: null
     },
-    startDate: new Date(moment().hour(22).minutes(5).toDate()), // Today @ 10:05pm 
-    endDate: new Date(moment().hour(22).minutes(5).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
+    startDate: new Date(moment().hour(22).minutes(0).toDate()), // Today @ 10:05pm 
+    endDate: new Date(moment().hour(22).minutes(0).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
 };
 
 const mockShift: Shift = {
@@ -42,11 +77,9 @@ const mockShift: Shift = {
     description: 'This is the first mock shift',
     recurrence: recurrence,
     occurrenceDiffs: {
-        // TODO: Compose diff id
-        [mockInstanceDiff.id]: mockInstanceDiff
+        ['2023-04-21']: mockInstanceDiff
     },
     positions: [],
-    positionStatus: PositionStatus.Empty
 }
 
 const recurrence2: RecurringDateTimeRange = {
@@ -74,7 +107,6 @@ const mockShift2: Shift = {
     recurrence: recurrence2,
     occurrenceDiffs: {},
     positions: [],
-    positionStatus: PositionStatus.Empty
 }
 
 @Store(IShiftStore)
@@ -121,21 +153,6 @@ export default class ShiftStore implements IShiftStore {
         return Array.from(this.shifts.values());
     }
 
-    shiftIsFull(shiftInstance: ShiftOccurrence): boolean {
-        // If any positions on a shift have fewer than the minimum
-        // number of users joined, then the position is not full.
-        return !shiftInstance.positions.some(position => position.joinedUsers.length < position.min);
-    }
-
-    shiftHasRoles(shift: Shift) {
-        if (this.filter.rolesFilter == ShiftsRolesFilter.All) {
-            return true;
-        } else {
-            // TODO
-            return false;
-        }
-    }
-
     get filteredShiftOccurrences(): ShiftOccurrence[] {
         const filteredOccurrences = [];
 
@@ -149,23 +166,16 @@ export default class ShiftStore implements IShiftStore {
             });
 
             shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().map(occurrence => {
-                // TODO: Compose shift occurrence ID, look up in diffs map
-                filteredOccurrences.push({
-                    id: `${shift.id}-${this.getDateString(occurrence.date)}`,
-                    shiftId: shift.id,
-                    chat: {
-                        id: '',
-                        messages: [],
-                        lastMessageId: 0,
-                        userReceipts: {}
-                    },
-                    // TODO: confirm proper use of date/end and duration properties from rSchedule
-                    dateTimeRange: { startDate: occurrence.date, endDate: occurrence.end },
-                    title: shift.title,
-                    description: shift.description,
-                    positionStatus: shift.positionStatus,
-                    positions: JSON.parse(JSON.stringify(shift.positions))
-                })
+                const occurrenceId = this.composeShiftOccurrenceId(shift.id, occurrence.date);
+                const shiftOccurrence: ShiftOccurrence = this.getShiftOccurrence(occurrenceId);
+                const satisfiesRolesFilter = this.filter.rolesFilter == ShiftsRolesFilter.All
+                                                || this.shiftOccurrenceHasUserRoles(userStore().user.id, shiftOccurrence);
+                const satisfiesNeedsPeopleFilter = this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.All
+                                                    || (this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.Unfilled
+                                                        && this.getShiftOccurrencePositionStatus(shiftOccurrence) != PositionStatus.MinSatisfied);
+                if (satisfiesNeedsPeopleFilter && satisfiesRolesFilter) {
+                    filteredOccurrences.push(this.getShiftOccurrence(occurrenceId))
+                }
             })
         });
 
@@ -176,12 +186,14 @@ export default class ShiftStore implements IShiftStore {
         return filteredOccurrences;
     }
 
-    getDateString(date: Date): string {
-        return `${date.getMonth()}-${date.getDate()}-${date.getFullYear()}`
+    shiftOccurrenceHasUserRoles(userId: string, shiftOccurrence: ShiftOccurrence): boolean {
+        // TODO: How to treat a shift with no roles defined?
+        const userRoleIds = organizationStore().userRoles.get(userId).map(role => role.id);
+        const filteredArray = shiftOccurrence.positions.map(p => p.role).filter(roleId => userRoleIds.includes(roleId));
+        return filteredArray.length > 0;
     }
 
     patchRecurrenceToRRule(shiftId: string, recurringDateTime: RecurringDateTimeRange): Rule {
-        console.log('patchRecurrenceToRRule: ', shiftId, recurringDateTime);
         const frequencyMap: { [key in RecurringPeriod]: RuleOption.Frequency } = {
             [RecurringPeriod.Month]: 'MONTHLY',
             [RecurringPeriod.Week]: 'WEEKLY',
@@ -254,6 +266,7 @@ export default class ShiftStore implements IShiftStore {
     }
 
     setNeedsPeopleFilter = async (needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void> => {
+        console.log(`setNeedsPeopleFilter: ${needsPeopleFilter}`);
         this.filter.needsPeopleFilter = needsPeopleFilter;
         await this.getShifts();
     }
@@ -263,15 +276,75 @@ export default class ShiftStore implements IShiftStore {
         await this.getShifts();
     }
 
-    getShiftIdFromOccurrenceId(shiftOccurrenceId: string): string {
-        // TODO: Decompose ID into the parent shift ID and date
-        return 'mock-id-1'
+    setDateRange = async (dateRange: DateTimeRange): Promise<void> => {
+        this.dateRange = {
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate
+        }
+    }
+
+    decomposeShiftOccurrenceId(shiftOccurrenceId: string): string[] {
+        // Split a shift occurrence id into its parent ID and date representation
+        return shiftOccurrenceId.split('---');
+    }
+
+    composeShiftOccurrenceId(shiftId: string, date: Date): string {
+        // Shift Occurrence Id consists of the parent shift ID concatenated
+        // with the ISO date string of the day of the occurrence.
+        // const [dateStr] = date.toISOString().split('T');
+        const dateStr = moment(new Date(date)).format('YYYY-MM-DD');
+        //console.log(`Compose Shift Id: ${date} ***** ${date.toISOString()}`)
+        return `${shiftId}---${dateStr}`;
+    }
+
+    getShiftOccurrenceDateTime(shift: Shift, occurrenceDateStr: string): DateTimeRange {
+        // Given a shift and an ISO string representing the date of an occurrence,
+        // generate the date time range object that defines the duration of this occurrence.
+        const shiftDuration = shift.recurrence.endDate.valueOf() - shift.recurrence.startDate.valueOf();
+        const startDate = moment(occurrenceDateStr).set({'hour': shift.recurrence.startDate.getHours(), 'minute': shift.recurrence.startDate.getMinutes()}).toDate();
+        const endDate = moment(startDate).add(shiftDuration, 'milliseconds').toDate();
+
+        // console.log(`Shift occurrence date: ${startDate} and string: ${occurrenceDateStr}`)
+        return {
+            startDate: startDate,
+            endDate: endDate
+        }
     }
 
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence {
-        const shiftId = this.getShiftIdFromOccurrenceId(shiftOccurrenceId);
-        const parentShift = this.shifts.get(shiftId);
-        return { id: '', shiftId: '', chat: null}
+        const [shiftId, occurrenceDateStr] = this.decomposeShiftOccurrenceId(shiftOccurrenceId);
+        const shift = this.shifts.get(shiftId);
+        const diff = occurrenceDateStr in shift.occurrenceDiffs
+                            ? shift.occurrenceDiffs[occurrenceDateStr]
+                            : null;
+        return {
+            id: shiftOccurrenceId,
+            shiftId: shift.id,
+            // TODO
+            chat: {
+                id: '',
+                messages: [],
+                lastMessageId: 0,
+                userReceipts: {}
+            },
+            // Get values from diff if they exist
+            dateTimeRange: diff?.dateTimeRange
+                            ? diff.dateTimeRange
+                            : this.getShiftOccurrenceDateTime(shift, occurrenceDateStr),
+            title: diff?.title ? diff.title : shift.title,
+            description: diff?.description ? diff.description : shift.description,
+            positions: diff?.positions != null
+                        ? JSON.parse(JSON.stringify(diff.positions))
+                        : JSON.parse(JSON.stringify(shift.positions))
+        };
+    }
+
+    getShiftOccurrencePositionStatus(shiftOccurrence: ShiftOccurrence): PositionStatus {
+        const positionNeedsPeople = (position: Position) => position.joinedUsers.length < position.min;
+        const shiftNeedsPeople = (s: ShiftOccurrence) => s.positions.some(positionNeedsPeople);
+        return shiftNeedsPeople(shiftOccurrence)
+                ? PositionStatus.MinUnSatisfied
+                : PositionStatus.MinSatisfied;
     }
 
     async getShifts(shiftIds?: string[]): Promise<void> {

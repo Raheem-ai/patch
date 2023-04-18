@@ -22,6 +22,7 @@ const Calendar = observer(({ navigation, route }: Props) => {
     const shiftRolesFilter = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
 
     const [isScrolled, setIsScrolled] = useState(false);
+    const [selectedDaysFilter, setDaysFilter] = useState(CalendarDaysFilter.All)
 
     const filterHeaderProps: ListHeaderProps = {
         openHeaderLabel: 'Show:',
@@ -29,13 +30,13 @@ const Calendar = observer(({ navigation, route }: Props) => {
         viewIsScrolled: isScrolled,
         optionConfigs: [
             {
-                chosenOption: CalendarDaysFilter.All,
+                chosenOption: selectedDaysFilter,
                 options: daysFilters,
                 toHeaderLabel: (filter: CalendarDaysFilter) => {
                     return `${CalendarDaysFilterToLabelMap[filter]}`
                 },
                 toOptionLabel: (filter: CalendarDaysFilter) => CalendarDaysFilterToLabelMap[filter],
-                onUpdate: () => {} // TODO: Remove empty days,
+                onUpdate: (opt) => setDaysFilter(opt)
             },
             {
                 chosenOption: shiftStore().filter.needsPeopleFilter,
@@ -62,15 +63,14 @@ const Calendar = observer(({ navigation, route }: Props) => {
         ]
     }
     
-
     // TODO: Find permanent place for this.
     useEffect(() => {
         runInAction(() => {
-            // TODO: add function to shiftStore for updating date range
-            shiftStore().dateRange = {
+            // TODO: call this function to fetch new shifts based on scroll index
+            shiftStore().setDateRange({
                 startDate: new Date(moment().toDate()),
                 endDate: new Date(moment().add(1, 'months').toDate()),
-            }
+            });
         })
     }, [])
 
@@ -82,30 +82,44 @@ const Calendar = observer(({ navigation, route }: Props) => {
             ? false
             : true)}
 
+    // TODO: Iterate through date range and pick up shifts instead of
+    // iterating through shifts and collecting date headings.
     const getDateHeadings = (shiftDate: Date) => {
-        // console.log(`New Shift: ${shiftDate}`);
         const headings = [];
-        // console.log(`Is ${shiftDate} after ${currentDate}? ${condition ? 'yes' : 'no'}`);
         while (moment(shiftDate).isSameOrAfter(moment(currentDate), 'day')) {
             const day = dayNumToDayNameLabel(currentDate.getDay());
             const month = monthNumToMonthNameLabel(currentDate.getMonth());
             const date = currentDate.getDate();
 
-            //console.log('Current Date: ', currentDate);
-            headings.push(
-                <View style={styles.dateHeading}>
-                    <Text style={styles.dateText}>
-                        <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
-                    </Text>
-                    <IconButton 
-                        style={styles.addShiftButton} 
-                        icon={ICONS.add} 
-                        size={24}
-                        color={Colors.icons.light}/>
-                </View>
-            )
+            let addHeading = false;
+            switch (selectedDaysFilter) {
+                case CalendarDaysFilter.All:
+                    addHeading = true;
+                    break;
+                case CalendarDaysFilter.WithShifts:
+                    addHeading = moment(shiftDate).isSame(moment(currentDate), 'day');
+                    break;
+                case CalendarDaysFilter.WithoutShifts:
+                    addHeading = moment(shiftDate).isAfter(moment(currentDate), 'day');
+                    break;
+            }
+
+            if (addHeading) {
+                headings.push(
+                    <View style={styles.dateHeading}>
+                        <Text style={styles.dateText}>
+                            <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
+                        </Text>
+                        <IconButton 
+                            style={styles.addShiftButton} 
+                            icon={ICONS.add} 
+                            size={24}
+                            color={Colors.icons.light}/>
+                    </View>
+                )
+            }
+
             currentDate.setDate(currentDate.getDate() + 1);
-            //console.log(`Is ${shiftDate} after ${currentDate}? ${condition ? 'yes' : 'no'}`);
         }
 
         return headings;
@@ -120,7 +134,9 @@ const Calendar = observer(({ navigation, route }: Props) => {
                         return (
                             <>
                                 {getDateHeadings(s.dateTimeRange.startDate)}
-                                <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} instanceId={s.id} />
+                                {selectedDaysFilter != CalendarDaysFilter.WithoutShifts
+                                    ? <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} occurrenceId={s.id} />
+                                    : null}
                             </>
                         )
                     })

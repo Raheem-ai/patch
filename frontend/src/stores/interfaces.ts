@@ -3,11 +3,10 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType, Shift, CalendarDaysFilter, ShiftNeedsPeopleFilter, ShiftsRolesFilter, ShiftsFilter, ShiftOccurrence, RecurringDateTimeRange, DateTimeRange } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, BasicCredentials, RequestStatus, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, RequestEventType, Shift, ShiftNeedsPeopleFilter, ShiftsRolesFilter, ShiftsFilter, ShiftOccurrence, DateTimeRange, PositionStatus } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
-import { OccurrenceIterator } from '../utils/rschedule';
 
 export interface IBaseStore {
     // we can have this be optional because the @Store() decorator
@@ -274,10 +273,13 @@ export interface IShiftStore extends IBaseStore {
     setFilter(filter: ShiftsFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
     setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
+    setDateRange(dateRange: DateTimeRange): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>
     getShift(shiftId: string): Promise<void>
     pushShift(shiftId: string): Promise<void>
     tryPopShift(): Promise<void>
+    getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
+    getShiftOccurrencePositionStatus(shiftOccurrence: ShiftOccurrence): PositionStatus
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
