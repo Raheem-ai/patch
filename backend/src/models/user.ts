@@ -1,5 +1,5 @@
 import { Model, ObjectID } from "@tsed/mongoose";
-import { getJsonSchema, Property } from "@tsed/schema";
+import { getJsonSchema, MapOf, Property } from "@tsed/schema";
 import { CategorizedItem, User } from "common/models";
 import { Document } from "mongoose";
 import { PrivProps } from ".";
@@ -25,6 +25,9 @@ export class UserModel implements User {
     @ObjectID('id')
     _id: string;
 
+    // TODO: figure out how to model this correctly with a schema
+    // I think we tried to before and abandoned it
+    // @MapOf() maybe?
     @Property()
     organizations: { [key: string]:  {
             roleIds: string[],

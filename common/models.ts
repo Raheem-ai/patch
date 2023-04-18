@@ -90,10 +90,7 @@ export type AttributeCategory = {
 export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
 export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
 
-export type Attribute = {
-    id: string,
-    name: string
-}
+export type Attribute = CategorizedItemDefinition
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -108,6 +105,11 @@ export type Category = {
 export type CategorizedItem = {
     categoryId: string,
     itemId: string
+}
+
+export type CategorizedItemDefinition = {
+    id: string,
+    name: string
 }
 
 export type CategorizedItemUpdates = {
@@ -133,10 +135,7 @@ export type TagCategory = {
 export type MinTagCategory = AtLeast<TagCategory, 'name'>
 export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
 
-export type Tag = {
-    id: string,
-    name: string
-}
+export type Tag = CategorizedItemDefinition
 
 // export type TagsMap = { [key: string]: string[] }
 export type AttributesMap = { [key: string]: string[] }
@@ -1225,6 +1224,8 @@ export enum PatchEventType {
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
+
+    // TODO(Shift): will need their own events
 }
 
 // PatchEventType Convenience Type
@@ -1240,14 +1241,22 @@ export type RequestTeamEventTypes =
     | PatchEventType.RequestRespondersDeclined;
 
 // PatchEventType Convenience Type
-export type RequestEventType = RequestTeamEventTypes
+export type IndividualRequestEventType = RequestTeamEventTypes
     | PatchEventType.RequestChatNewMessage
     | PatchEventType.RequestCreated
     | PatchEventType.RequestDeleted
     | PatchEventType.RequestEdited;
 
 // PatchEventType Convenience Type
-export type UserEventType = PatchEventType.UserCreated
+// these deletes/updates might affect multiple 
+// requests that need to be refreshed
+export type BulkRequestEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
+
+// PatchEventType Convenience Type
+export type IndividualUserEventType = PatchEventType.UserCreated
     | PatchEventType.UserEdited
     | PatchEventType.UserDeleted
     | PatchEventType.UserAddedToOrg
@@ -1255,6 +1264,13 @@ export type UserEventType = PatchEventType.UserCreated
     | PatchEventType.UserChangedRolesInOrg
     | PatchEventType.UserOnDuty
     | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+// these deletes/updates might affect multiple 
+// users that need to be refreshed
+export type BulkUserEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
 
 // PatchEventType Convenience Type
 export type OrgEventType = PatchEventType.OrganizationEdited
@@ -1421,15 +1437,22 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
-        roleId: string
+        roleId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[]
     },
-    // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
-    // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     },
     [PatchEventType.OrganizationTagsUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     }
 }
 
@@ -1844,4 +1867,48 @@ export type AggregatePositionStats = {
     totalMinFilled: number,
     totalMinToFill: number,
     totalFilled: number
+}
+
+/**
+ * The set of changes you can make to an array of items without
+ * editing the actual items themselves
+ */
+export type ArrayCollectionUpdate<Added, Removed=Added> = {
+    addedItems: Added[],
+    removedItems: Removed[]
+}
+
+/**
+ * The set of changes you can make to an array of items including
+ * editing the actual items themselves (which might require a separate `Update` type
+ * tailored to the items the array is holding)
+ */
+export type ArrayItemUpdate<Added, Update=Added, Removed=Added> = ArrayCollectionUpdate<Added, Removed> & {
+    itemUpdates: Update[]
+}
+
+// Position Diff Types
+export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
+
+export type PositionUpdate = {
+    id: string,
+    replacedProperties: {
+        [key in keyof ReplaceablePositionProps]?: Position[key]
+    }
+    attributeUpdates: ArrayCollectionUpdate<CategorizedItem>
+}
+
+// convenience type tying Position to PositionUpdate 
+export type PositionSetUpdate = ArrayItemUpdate<Position, PositionUpdate>
+
+// Request Diff Types
+export type ReplaceableRequestProps = Pick<HelpRequest, 'location' | 'notes' | 'callerName' | 'callerContactInfo' | 'callStartedAt' | 'callEndedAt' | 'priority'>
+
+export type RequestUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableRequestProps]?: HelpRequest[key]
+    },
+    tagUpdates: ArrayCollectionUpdate<CategorizedItem>,
+    typeUpdates: ArrayCollectionUpdate<RequestType>,
+    positionUpdates: PositionSetUpdate
 }

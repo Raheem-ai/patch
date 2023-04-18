@@ -1,6 +1,6 @@
 import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
-import { bottomDrawerStore, BottomDrawerView, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
+import { bottomDrawerStore, BottomDrawerView, editRequestStore, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import TestIds from "../../test/ids"
 import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"

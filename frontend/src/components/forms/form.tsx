@@ -16,7 +16,7 @@ const Stack = createStackNavigator();
 
 export type FormProps = {
     inputs: Grouped<FormInputConfig>[] | (() => Grouped<FormInputConfig>[]),
-    headerLabel?: string,
+    headerLabel?: () => string,
     onExpand?(): void,
     onBack?(): void,
     submit?: {
@@ -327,7 +327,7 @@ export default class Form extends React.Component<FormProps> {
                     <Text style={{
                         fontSize: 24,
                         fontWeight: 'bold',
-                    }}>{this.props.headerLabel}</Text>
+                    }}>{this.props.headerLabel()}</Text>
                 </View>
                 : null
         }

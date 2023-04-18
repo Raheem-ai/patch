@@ -1,6 +1,6 @@
 import { ComponentType } from "react"
 import { KeyboardType, StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
 export type Grouped<T> = T | T[];
@@ -40,11 +40,13 @@ export type ScreenFormInputOptions = {
         props: {
             maxChar?: number
         },
-        type: string
+        type: string,
+        diffType: void
     },
     'Map': {
         props: {},
-        type: AddressableLocation
+        type: AddressableLocation,
+        diffType: void
     },
     'RecurringTimePeriod': {
         props: {
@@ -53,18 +55,21 @@ export type ScreenFormInputOptions = {
             updateStartDatePromptMessage: (from: Date, to: Date) => string
             updateStartDatePromptTitle: (from: Date, to: Date) => string
         },
-        type: RecurringTimeConstraints
+        type: RecurringTimeConstraints,
+        diffType: void
     },
     'List': {
         props: InlineFormInputOptions['InlineList']['props'],
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'TagList': {
         props: ScreenFormInputOptions['List']['props'] & {
             onTagDeleted?: (idx: number, val: any) => void
             dark?: boolean
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'NestedList': {
         props: ScreenFormInputOptions['List']['props'] & {
@@ -72,20 +77,23 @@ export type ScreenFormInputOptions = {
             optionsFromCategory: (cat: any) => any[]
             categoryToLabel: (opt) => string
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'NestedTagList': {
         props: ScreenFormInputOptions['NestedList']['props'] & {
             onTagDeleted?: (idx: number, val: any) => void
             dark?: boolean
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'PermissionGroupList': {
         props: {
             
         },
-        type: PatchPermissionGroups[]
+        type: PatchPermissionGroups[],
+        diffType: void
     },
     'CategorizedItemList': {
         props: {
@@ -105,7 +113,8 @@ export type ScreenFormInputOptions = {
             dark?: boolean
             setDefaultClosed?: boolean
         }, 
-        type: CategorizedItem[]
+        type: CategorizedItem[],
+        diffType: ArrayCollectionUpdate<CategorizedItem>
     }, 
     'RoleList': {
         props: {
@@ -114,13 +123,15 @@ export type ScreenFormInputOptions = {
             hideAnyone?: boolean
             onItemDeleted?: (idx: number, val: any) => void
         },
-        type: string[]
+        type: string[],
+        diffType: void
     },
     'Positions' : {
         props: {
             editPermissions: PatchPermissions[]
         },
-        type: Position[]
+        type: Position[],
+        diffType: PositionSetUpdates
     }
 }
 
@@ -212,11 +223,15 @@ export type InlineFormInputConfig<Type extends InlineFormInputType = InlineFormI
     props?: InlineFormInputOptions[Type]['props']
 } & BaseFormInputConfig;
 
-export type ScreenFormInputConfig<Type extends ScreenFormInputType = ScreenFormInputType, Val extends ScreenFormInputOptions[Type]['type'] = ScreenFormInputOptions[Type]['type']> = {
+export type ScreenFormInputConfig<
+    Type extends ScreenFormInputType = ScreenFormInputType, 
+    Val extends ScreenFormInputOptions[Type]['type'] = ScreenFormInputOptions[Type]['type'],
+    Diff extends ScreenFormInputOptions[Type]['diffType'] = ScreenFormInputOptions[Type]['diffType']
+> = {
     /**
      *  for screen fields that hold their own temp internal state until you save 
      * */
-    onSave(val: Val): void
+    onSave(val: Val, diff: Diff): void
     onCancel?(): void
     val(): Val
 

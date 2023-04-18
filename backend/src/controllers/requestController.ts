@@ -2,7 +2,7 @@ import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { Required } from "@tsed/schema";
 import { AtLeast } from "common";
 import API from 'common/api';
-import { HelpRequest, MinHelpRequest, MinOrg, PatchEventType, PatchPermissions, RequestStatus, ResponderRequestStatuses, UserRole } from "common/models";
+import { HelpRequest, MinHelpRequest, MinOrg, PatchEventType, PatchPermissions, RequestStatus, RequestUpdates, ResponderRequestStatuses, UserRole } from "common/models";
 import { assignedResponderBasedRequestStatus, getPreviousOpenStatus as getPreviousOpenStatus } from "common/utils/requestUtils";
 import { APIController, OrgId, RequestId } from ".";
 import { HelpReq, RequestAdminOrOnRequestWithPermissions, RequestAdminOrWithPermissions } from "../middlewares/requestAccessMiddleware";
@@ -90,6 +90,24 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @BodyParams('requestUpdates') requestUpdates: AtLeast<HelpRequest, 'id'>,
     ) {
         const res = this.db.fullHelpRequest((await this.db.editRequest(helpRequest, requestUpdates)))
+
+        await this.pubSub.sys(PatchEventType.RequestEdited, { 
+            requestId: res.id,
+            orgId 
+        });
+
+        return res;
+    }
+
+    @Post(API.server.editRequestV2())
+    @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
+    async editRequestV2(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @HelpReq() helpRequest: HelpRequestDoc,
+        @BodyParams('requestUpdates') requestUpdates: RequestUpdates,
+    ) {
+        const res = this.db.fullHelpRequest((await this.db.editRequestV2(helpRequest, requestUpdates)))
 
         await this.pubSub.sys(PatchEventType.RequestEdited, { 
             requestId: res.id,

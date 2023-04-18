@@ -1,4 +1,5 @@
 import { minPasswordLength } from '../common/constants';
+import { DefaultRoleIds, DefaultRoles } from './models';
 
 type CaseAndNumber = {
     cap?: boolean,
@@ -317,7 +318,7 @@ const STRINGS = {
         cannotDeleteRole: (roleName: string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',
         removeRoleDialogTitle: (roleName: string) =>`Remove ${roleName} role?`,
-        removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
+        removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members. And all positions with this role will have their associated role changed to ${DefaultRoles.find(role => role.id == DefaultRoleIds.Anyone).name}.`,
         removeRoleDialogOptionNo: () => `${STRINGS.INTERFACE.cancel}`,
         removeRoleDialogOptionYes:  `Remove`, 
         errorMessages: {
