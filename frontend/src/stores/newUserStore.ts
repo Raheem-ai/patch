@@ -4,6 +4,7 @@ import { INewUserStore, userStore } from './interfaces';
 import { persistent } from '../meta';
 import { PhoneNumberRegex } from '../../../common/constants';
 import { linkBaseUrl } from '../config';
+import { CategorizedItem, CategorizedItemUpdates } from '../../models';
 
 @Store(INewUserStore)
 export default class NewUserStore implements INewUserStore {
@@ -15,8 +16,8 @@ export default class NewUserStore implements INewUserStore {
     @persistent() displayColor = ''
     @persistent() race? = ''
     @persistent() bio? = ''
-    @persistent() roleIds = []
-    @persistent() attributes = []
+    @persistent() roleIds: string[] = []
+    @persistent() attributes: CategorizedItem[] = []
     @persistent() pronouns? = ''
 
 
@@ -67,5 +68,13 @@ export default class NewUserStore implements INewUserStore {
             this.attributes,
             linkBaseUrl
         );
+    }
+
+    onRoleDeletedUpdate(roleId: string) {
+        const idx = this.roleIds.indexOf(roleId);
+
+        if (idx != -1) {
+            this.roleIds.splice(idx, 1)
+        }
     }
 }

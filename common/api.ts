@@ -20,7 +20,8 @@ import {
     CategorizedItemUpdates,
     AdminEditableUser,
     CategorizedItem,
-    TeamMemberMetadata
+    TeamMemberMetadata,
+    RequestUpdates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -104,7 +105,7 @@ export interface IApiClient {
     editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>) => Promise<OrganizationMetadata>>
     editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
-    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
+    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<{ updatedUserIds: string[], updatedRequestIds: string[] }>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
     
     updateAttributes: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
@@ -138,6 +139,7 @@ export interface IApiClient {
     removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string, positionId: string) => Promise<HelpRequest>>
     
     editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
+    editRequestV2: AuthenticatedWithRequest<(requestUpdates: RequestUpdates) => Promise<HelpRequest>>
     sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
@@ -250,6 +252,9 @@ type ApiRoutes = {
         },
         editRequest: () => {
             return '/editRequest'
+        },
+        editRequestV2: () => {
+            return '/editRequestV2'
         },
         getTeamMembers: () => {
             return '/getTeamMembers'
@@ -464,6 +469,9 @@ type ApiRoutes = {
         },
         editRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.editRequest()}`
+        },
+        editRequestV2: () => {
+            return `${this.base}${this.namespaces.request}${this.server.editRequestV2()}`
         },
         sendChatMessage: () => {
             return `${this.base}${this.namespaces.request}${this.server.sendChatMessage()}`

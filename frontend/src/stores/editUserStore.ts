@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IEditUserStore, IUserStore, userStore } from './interfaces';
-import { Me, ProtectedUser } from '../../../common/models';
+import { CategorizedItem, CategorizedItemUpdates, Me, ProtectedUser } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
 import { PhoneNumberRegex } from '../../../common/constants';
@@ -88,7 +88,7 @@ export default class EditUserStore implements IEditUserStore {
         this._bio = val
     }
 
-    get roles() { 
+    get roles(): string[] { 
         return this._roles == null ? [] : this._roles;
     }
 
@@ -96,7 +96,7 @@ export default class EditUserStore implements IEditUserStore {
         this._roles = val
     }
 
-    get attributes() { 
+    get attributes(): CategorizedItem[] { 
         return this._attributes == null ? [] : this._attributes;
     }
 
@@ -239,5 +239,13 @@ export default class EditUserStore implements IEditUserStore {
             roleIds: (!canEditRoles || this._roles == null) ? undefined : this.roles,
             attributes: (!canEditAttributes || this._attributes == null) ? undefined : this.attributes
         })
+    }
+
+    onRoleDeletedUpdate(roleId: string) {
+        const idx = this.roles.indexOf(roleId);
+
+        if (idx != -1) {
+            this.roles.splice(idx, 1)
+        }
     }
 }

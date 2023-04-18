@@ -65,7 +65,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     const config: FormProps = {
         testID: TestIds.signUpThroughOrg.screen,
-        headerLabel: 'Add your name and a password to sign up', 
+        headerLabel: () => 'Add your name and a password to sign up', 
         inputs: [
             {
                 testID: TestIds.signUpThroughOrg.email,

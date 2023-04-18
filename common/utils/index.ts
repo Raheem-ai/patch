@@ -1,5 +1,7 @@
 import STRINGS from "../strings";
 
+export * from './diffs'
+
 // This file is only for utils that DONT utilize the types in models
 
 // all enum values should either be an uncapitalized string or number and all enum keys

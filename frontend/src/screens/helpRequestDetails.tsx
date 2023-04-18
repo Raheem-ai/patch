@@ -16,7 +16,7 @@ import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { resolveErrorMessage } from "../errors";
 import RequestChatChannel from "../components/chats/helpRequestChatChannel";
-import MapView, { MapViewProps, Marker, MarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { MapViewProps, Marker, MapMarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
@@ -223,7 +223,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 style: styles.mapView,
             }
 
-            const markerProps: MarkerProps = {
+            const markerProps: MapMarkerProps = {
                 coordinate: { 
                     latitude: locLat,
                     longitude: locLong,
@@ -741,7 +741,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     request().positions.length > 0 
                         ? request().positions.map(pos => {
                             return (
-                                <PositionDetailsCard key={pos.id} requestId={request().id} pos={pos}/>
+                                <PositionDetailsCard key={pos.id} requestId={request().id} positionId={pos.id}/>
                             )
                         })
                         : <View style={{ padding: 20, paddingBottom: 0 }}>

@@ -115,9 +115,11 @@ export default class EditUser extends React.Component {
 
         return {
             testID: this.formIds.form,
-            headerLabel: editingMe
-                ? STRINGS.ACCOUNT.editMyProfile
-                : STRINGS.ACCOUNT.editUserProfile(editUserStore().name),
+            headerLabel: () => {
+                return editingMe
+                    ? STRINGS.ACCOUNT.editMyProfile
+                    : STRINGS.ACCOUNT.editUserProfile(editUserStore().name)
+            },
             inputs: editingMe
                 ? this.editMeInputs()
                 : this.editUserInputs(),

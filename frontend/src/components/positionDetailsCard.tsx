@@ -6,7 +6,7 @@ import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
 import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
 import { resolveErrorMessage } from "../errors";
-import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, manageAttributesStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ICONS } from "../types";
 import { iHaveAllPermissions } from "../utils";
 import PositionCard from "./positionCard";
@@ -16,8 +16,11 @@ import PatchButton from "../components/patchButton";
 import TestIds from "../test/ids";
 
 type PositionDetailsCardProps = { 
+    // TODO(Shifts): right now this allways comes from request but will need to be generalized for 
+    // shifts...ie passing in some interface that handles displaying all of the actions around a 
+    // position for a Requests vs Shifts
     requestId: string,
-    pos: Position,
+    positionId: string,
     edit?: {
         permissions: PatchPermissions[],
         handler: () => void
@@ -27,10 +30,16 @@ type PositionDetailsCardProps = {
 // Note: this is tied to requests right now vs being a general position details card
 const PositionDetailsCard = observer(({ 
     requestId,
-    pos,
+    positionId,
     edit
 }: PositionDetailsCardProps) => {
+    const positionHandle = () => {
+        const request = requestStore().requests.get(requestId);
+        return request.positions.find(p => p.id == positionId)
+    }
+
     const request = requestStore().requests.get(requestId);
+    const pos = positionHandle()
     const requestIsClosed = request.status == RequestStatus.Closed
 
     const positionMetadata = requestStore().getPositionScopedMetadata(userStore().user.id, requestId, pos.id);
@@ -197,7 +206,7 @@ const PositionDetailsCard = observer(({
                         testID={TestIds.positionDetailsCard.card}
                         onlyMissingUsers 
                         containerStyle={{ borderBottomWidth: 0 }} 
-                        pos={pos} 
+                        positionHandle={positionHandle}
                         edit={edit} />
                 </View>
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>

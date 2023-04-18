@@ -22,8 +22,8 @@ type Props = {}
 class EditHelpRequest extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
 
-    componentDidMount() {
-        editRequestStore().loadRequest(requestStore().currentRequest);
+    static onShow() {
+        editRequestStore().loadRequest(requestStore().currentRequest.id);
     }
 
     headerLabel = () => {
@@ -45,6 +45,7 @@ class EditHelpRequest extends React.Component<Props> {
             testID: TestIds.editRequest.form,
             cancel: {
                 handler: async () => {
+                    // TODO: this should probably move to static onHide(){}
                     editRequestStore().clear();
                 },
             },
@@ -52,7 +53,7 @@ class EditHelpRequest extends React.Component<Props> {
                 handler: async () => {
                     try {
                         bottomDrawerStore().startSubmitting()
-                        await editRequestStore().editRequest(requestStore().currentRequest.id)
+                        await editRequestStore().editRequest()
                     } catch (e) {
                         alertStore().toastError(resolveErrorMessage(e))
                         return
@@ -94,7 +95,7 @@ class EditHelpRequest extends React.Component<Props> {
     
     formProps = (): FormProps => {
         return {
-            headerLabel: this.headerLabel(), 
+            headerLabel: this.headerLabel, 
             homeScreen: this.formHomeScreen,
             testID: TestIds.editRequest.form,
             inputs: [
@@ -122,7 +123,12 @@ class EditHelpRequest extends React.Component<Props> {
                         type: 'CategorizedItemList',
                         headerLabel: () => STRINGS.REQUESTS.requestType,
                         placeholderLabel: () => STRINGS.REQUESTS.requestType,
-                        onSave: (type) => editRequestStore().type = categorizedItemsToRequestType(type),
+                        onSave: (_, diff) => {
+                            editRequestStore().saveTypeUpdates({
+                                addedItems: categorizedItemsToRequestType(diff.addedItems),
+                                removedItems: categorizedItemsToRequestType(diff.removedItems)
+                            })
+                        },
                         val: () => {
                             return requestTypesToCategorizedItems(editRequestStore().type)
                         },
@@ -231,8 +237,8 @@ class EditHelpRequest extends React.Component<Props> {
                 ],
                 // Positions
                 {
-                    onSave: (data) => {
-                        editRequestStore().positions = data
+                    onSave: (_, diff) => {
+                        editRequestStore().savePositionUpdates(diff)
                     },
                     val: () => {
                         return editRequestStore().positions;
@@ -277,8 +283,8 @@ class EditHelpRequest extends React.Component<Props> {
                 },
                 // Tags
                 TagsListInput({
-                    onSave: (items) => {
-                        editRequestStore().tagHandles = items
+                    onSave: (_, diff) => {
+                        editRequestStore().saveTagUpdates(diff)
                     },
                     val: () => {
                         return editRequestStore().tagHandles
