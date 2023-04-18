@@ -11,6 +11,10 @@ import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUti
 import moment from 'moment';
 import { DateAdapter, DateTime, IRuleOptions, OccurrenceGenerator, OccurrenceIterator, Rule, RuleOption, RuleOptionError, Schedule, StandardDateAdapter } from '../utils/rschedule'
 
+
+// Mock data for testing and debugging purposes.
+// Will be removed as feature progresses.
+// User Ids in Patch org for test purposes
 const userIds = [
     "62da9696bfd645465b54236d",
     "62da9696bfd645465b54236f",
@@ -20,6 +24,7 @@ const userIds = [
     "62da9696bfd645465b542371"
 ]
 
+// Mock shift occurrence diff
 const mockInstanceDiff: ShiftOccurrence = {
     shiftId: 'mock-id-1---2023-04-21',
     id: 'mock-id-1',
@@ -53,6 +58,7 @@ const mockInstanceDiff: ShiftOccurrence = {
     ],
 }
 
+// Shift recurrence definition
 const recurrence: RecurringDateTimeRange = {
     every: {
         period: RecurringPeriod.Week,
@@ -67,6 +73,7 @@ const recurrence: RecurringDateTimeRange = {
     endDate: new Date(moment().hour(22).minutes(0).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
 };
 
+// Mock shift definition
 const mockShift: Shift = {
     createdAt: '',
     updatedAt: '',
@@ -79,9 +86,35 @@ const mockShift: Shift = {
     occurrenceDiffs: {
         ['2023-04-21']: mockInstanceDiff
     },
-    positions: [],
+    positions: [
+        {
+            id: 'pos-id-1',
+            attributes: [],
+            role: DefaultRoleIds.Anyone,
+            min: 1,
+            max: 1,
+            joinedUsers: []
+        },
+        {
+            id: 'pos-id-2',
+            attributes: [],
+            role: DefaultRoleIds.Dispatcher,
+            min: 1,
+            max: 1,
+            joinedUsers: []
+        },
+        {
+            id: 'pos-id-2',
+            attributes: [],
+            role: DefaultRoleIds.Responder,
+            min: 2,
+            max: 2,
+            joinedUsers: []
+        }
+    ],
 }
 
+// Second shift recurrence definition
 const recurrence2: RecurringDateTimeRange = {
     every: {
         period: RecurringPeriod.Week,
@@ -96,6 +129,7 @@ const recurrence2: RecurringDateTimeRange = {
     endDate: new Date(moment().hour(22).minutes(5).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
 };
 
+// Second mock shift definition
 const mockShift2: Shift = {
     createdAt: '',
     updatedAt: '',
@@ -126,11 +160,13 @@ export default class ShiftStore implements IShiftStore {
         }
     }) shifts: ObservableMap<string, Shift> = new ObservableMap();
 
+    // Filter which shift occurrences to retrieve
     filter: ShiftsFilter = {
         needsPeopleFilter: ShiftNeedsPeopleFilter.All,
         rolesFilter: ShiftsRolesFilter.All
     };
 
+    // Date range window to retrieve shift occurrences
     dateRange: DateTimeRange = {
         startDate: null,
         endDate: null,
@@ -154,20 +190,42 @@ export default class ShiftStore implements IShiftStore {
     }
 
     get filteredShiftOccurrences(): ShiftOccurrence[] {
+        // This getter retrieves the shift occurrences that satisfy the 
+        // current filter criteria and occur within the set date range.
+
+        // This array will be populated and returned
         const filteredOccurrences = [];
 
+        // If we don't have a valid date range, return immediately with an empty list.
         if (this.dateRange.startDate == null || this.dateRange.endDate == null) {
             return filteredOccurrences;
         }
 
+        // For every shift definition, iterate through the shift occurrences in the specified
+        // date range, determine if they match they filter criteria, then add them to the list
+        // to be returned.
         this.shiftsArray.map(shift => {
+            // The shiftSchedule is the projected schedule of a recurrence definition.
+            // First convert a Patch shift recurrence to the rschedule rule format, 
+            // then generate a schedule from the rule.
             const shiftSchedule = new Schedule({
                 rrules: [this.patchRecurrenceToRRule(shift.id, shift.recurrence)]
             });
 
+            // Get the datetime occurrences from the schedule between the specified dates.
+            // For each date that occurs in the series, using the current Shift's ID and
+            // the date of the occurrence compose a Shift Occurrence ID. This ID will be used
+            // to check if any diff information about this occurrence exists. If so, the diff properties
+            // for that occurrence will be picked up, and anything not specified will be inherited from the parent shift.
+            // If the shift satisfies the filter conditions, it will be added to the list of occurrences to return.
             shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().map(occurrence => {
+                // Compose id from parent shift id and occurrence date (works because no shift has multiple occurrences starting on the same day)
                 const occurrenceId = this.composeShiftOccurrenceId(shift.id, occurrence.date);
+
+                // Helper function retrieves and builds up the shift occurrence object for this date.
                 const shiftOccurrence: ShiftOccurrence = this.getShiftOccurrence(occurrenceId);
+
+                // Verify it satisfies the filter conditions before pushing to our array.
                 const satisfiesRolesFilter = this.filter.rolesFilter == ShiftsRolesFilter.All
                                                 || this.shiftOccurrenceHasUserRoles(userStore().user.id, shiftOccurrence);
                 const satisfiesNeedsPeopleFilter = this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.All
@@ -179,6 +237,7 @@ export default class ShiftStore implements IShiftStore {
             })
         });
 
+        // Since we've sequentially added shifts from potentially many different shift definitions, we need to do a final sort by date.
         filteredOccurrences.sort(function(occurrenceA, occurrenceB) {
             return new Date(occurrenceA.dateTimeRange.startDate).valueOf() - new Date(occurrenceB.dateTimeRange.startDate).valueOf();
         });
@@ -187,71 +246,73 @@ export default class ShiftStore implements IShiftStore {
     }
 
     shiftOccurrenceHasUserRoles(userId: string, shiftOccurrence: ShiftOccurrence): boolean {
-        // TODO: How to treat a shift with no roles defined?
+        // TODO: How to treat a shift with no roles defined? 
+        // Get the role Ids assigned to this user
         const userRoleIds = organizationStore().userRoles.get(userId).map(role => role.id);
+
+        // Get the intersection of the user's roles and all of the roles specified by the shift's positions
         const filteredArray = shiftOccurrence.positions.map(p => p.role).filter(roleId => userRoleIds.includes(roleId));
+
+        // If there are any items in the filtered array then there is at least one position on this
+        // shift that the user is qualified to join.
         return filteredArray.length > 0;
     }
 
     patchRecurrenceToRRule(shiftId: string, recurringDateTime: RecurringDateTimeRange): Rule {
+        // Given a PATCH definition of a recurrence, generate an rschedule Rule that can be used
+        // to project the date time schedule for the provided shift (id).
+
+        // Map a RecurringPeriod value to the proper rschedule frequency string
         const frequencyMap: { [key in RecurringPeriod]: RuleOption.Frequency } = {
             [RecurringPeriod.Month]: 'MONTHLY',
             [RecurringPeriod.Week]: 'WEEKLY',
             [RecurringPeriod.Day]: 'DAILY'
         }
 
+        // Specify the options for the rule we're creating
         const ruleOptions: IRuleOptions = {
             start: new Date(recurringDateTime.startDate),
             duration: recurringDateTime.endDate.getTime() - recurringDateTime.startDate.getTime(),
             frequency: frequencyMap[recurringDateTime.every.period],
             interval: recurringDateTime.every.numberOf,
-            // "The WKST rule part specifies the day on which the workweek starts"
+            // From rschedule documentation: "The WKST rule part specifies the day on which the workweek starts"
+            // For PATCH, the calendar/workweek starts on Sunday (0).
             weekStart: DateAdapter.WEEKDAYS[0]
         }
 
         if (recurringDateTime.until) {
             if (recurringDateTime.until.date) {
+                // If the shift has a specified end date, we supply it here.
                 ruleOptions.end = new Date(recurringDateTime.until.date);
             } else if (recurringDateTime.until.repititions) {
-                // TODO: Are repititions for individual occurences or 
-                // for the number of time periods? i.e. for a M/W/F evenet
-                // that reoccurs every 2 weeks, with 12 repititions. Is that
-                // 12 weeks of this series or 12 events?
+                // If the rule instead specifies the number of repitions before
+                // a recurrence ends, we specify it using the count option.
                 ruleOptions.count = recurringDateTime.until.repititions;
             }
         }
 
+        // If the recurrence is monthly, specify which day of the month or which week number and day the repitition exists on.
         if (recurringDateTime.every.period == RecurringPeriod.Month) {
             if (recurringDateTime.every.dayScope) {
                 // TODO: Is there some type of assertion to make here to please TypeScript?
+                // getDate is guaranteed to return a number, but not a number betwen 1-31 or -1 to -31,
+                // which is what the rscheudle type requires. Functions fine, but the type hints are unhappy.
                 ruleOptions.byDayOfMonth = [recurringDateTime.startDate.getDate()];
             } else if (recurringDateTime.every.weekScope) {
-                // TODO: not implemented in input control yet
+                // TODO: not implemented in input control yet. Will return to implementation after fixing.
             }
         }
 
-        // TODO: How to handle scenarios where the start day exists outside of the series?
+        // If the occurrence is weekly, specify which weekdays here.
         if (recurringDateTime.every.period == RecurringPeriod.Week) {
-            // TODO: How to handle no days of week specified in weekly rule? Maybe not possible?
             if (recurringDateTime.every.days.length == 0) {
                 return null;
             }
             ruleOptions.byDayOfWeek = recurringDateTime.every.days.map(x => DateAdapter.WEEKDAYS[x]);
         }
 
+        // Create and return the rule with the options we've just built up.
         return new Rule(ruleOptions, { data: { shiftId: shiftId }});
-    }
-
-    getRRuleSchedule(rules: Rule[]): Schedule {
-        return new Schedule({
-            rrules: rules
-        });
-    }
-
-    projectRRuleSchedule(recurringDateTime: RecurringDateTimeRange, dateRange: DateTimeRange): OccurrenceIterator {
-        const rule = this.patchRecurrenceToRRule('mock-shift-id', recurringDateTime);
-        const schedule = this.getRRuleSchedule([rule]);
-        return schedule.occurrences({ start: dateRange.startDate, end: dateRange.endDate })
     }
 
     async loadUntil(predicate: () => Promise<any>): Promise<void> {
@@ -266,7 +327,6 @@ export default class ShiftStore implements IShiftStore {
     }
 
     setNeedsPeopleFilter = async (needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void> => {
-        console.log(`setNeedsPeopleFilter: ${needsPeopleFilter}`);
         this.filter.needsPeopleFilter = needsPeopleFilter;
         await this.getShifts();
     }
@@ -284,27 +344,24 @@ export default class ShiftStore implements IShiftStore {
     }
 
     decomposeShiftOccurrenceId(shiftOccurrenceId: string): string[] {
-        // Split a shift occurrence id into its parent ID and date representation
+        // Split a shift occurrence id into its parent ID and date components.
         return shiftOccurrenceId.split('---');
     }
 
     composeShiftOccurrenceId(shiftId: string, date: Date): string {
         // Shift Occurrence Id consists of the parent shift ID concatenated
-        // with the ISO date string of the day of the occurrence.
-        // const [dateStr] = date.toISOString().split('T');
+        // with the ISO date formatted string of the day of the occurrence.
         const dateStr = moment(new Date(date)).format('YYYY-MM-DD');
-        //console.log(`Compose Shift Id: ${date} ***** ${date.toISOString()}`)
         return `${shiftId}---${dateStr}`;
     }
 
     getShiftOccurrenceDateTime(shift: Shift, occurrenceDateStr: string): DateTimeRange {
         // Given a shift and an ISO string representing the date of an occurrence,
-        // generate the date time range object that defines the duration of this occurrence.
+        // generate the date time range object that defines this specific occurrence.
         const shiftDuration = shift.recurrence.endDate.valueOf() - shift.recurrence.startDate.valueOf();
         const startDate = moment(occurrenceDateStr).set({'hour': shift.recurrence.startDate.getHours(), 'minute': shift.recurrence.startDate.getMinutes()}).toDate();
         const endDate = moment(startDate).add(shiftDuration, 'milliseconds').toDate();
 
-        // console.log(`Shift occurrence date: ${startDate} and string: ${occurrenceDateStr}`)
         return {
             startDate: startDate,
             endDate: endDate
@@ -312,11 +369,19 @@ export default class ShiftStore implements IShiftStore {
     }
 
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence {
+        // Given a shift occurrence id, return the object containing details of the occurrence.
         const [shiftId, occurrenceDateStr] = this.decomposeShiftOccurrenceId(shiftOccurrenceId);
+
+        // Get the parent shift
         const shift = this.shifts.get(shiftId);
+
+        // Check if a diff of the shift exists for this date's occurrence
         const diff = occurrenceDateStr in shift.occurrenceDiffs
                             ? shift.occurrenceDiffs[occurrenceDateStr]
                             : null;
+
+        // Compose the final shift occurrence object from a mix of the parent
+        // shift details and the diff details if one exists.
         return {
             id: shiftOccurrenceId,
             shiftId: shift.id,
@@ -340,8 +405,13 @@ export default class ShiftStore implements IShiftStore {
     }
 
     getShiftOccurrencePositionStatus(shiftOccurrence: ShiftOccurrence): PositionStatus {
+        // Function that returns true if a single position needs people.
         const positionNeedsPeople = (position: Position) => position.joinedUsers.length < position.min;
+
+        // Function that returns true if any of the positions on the provided shift need people.
         const shiftNeedsPeople = (s: ShiftOccurrence) => s.positions.some(positionNeedsPeople);
+
+        // Return Position.MinUnsatisfied if any position needs more joined users, Position.MinSatisfied otherwise.
         return shiftNeedsPeople(shiftOccurrence)
                 ? PositionStatus.MinUnSatisfied
                 : PositionStatus.MinSatisfied;
