@@ -370,7 +370,6 @@ export type ShiftOccurrence = {
     dateTimeRange?: DateTimeRange
     title?: string
     description?: string
-    positionStatus?: PositionStatus
     positions?: Position[]
 }
 
@@ -387,9 +386,7 @@ export type Shift = {
     description: string
     positions: Position[]
     recurrence: RecurringDateTimeRange
-	// TODO: Rename to occurrenceDiffs
     occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence }
-    positionStatus: PositionStatus
 }
 
 export enum TeamFilter {
@@ -415,7 +412,8 @@ export enum ShiftNeedsPeopleFilter {
 };
 
 export enum ShiftsRolesFilter {
-    All = 'al'
+    All = 'al',
+    My = 'my'
 };
 
 export type ShiftsFilter = {
@@ -488,7 +486,8 @@ export const CalendarNeedsPeopleFilterToLabelMap: { [key in ShiftNeedsPeopleFilt
 }
 
 export const CalendarRolesFilterToLabelMap: { [key in ShiftsRolesFilter] : string } = {
-    [ShiftsRolesFilter.All]: 'All roles'
+    [ShiftsRolesFilter.All]: 'All roles',
+    [ShiftsRolesFilter.My]: 'My roles'
 }
 
 export type ResponderRequestStatuses = 
