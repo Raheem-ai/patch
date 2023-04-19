@@ -51,10 +51,13 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const getFormattedTime = (date: Date) => {
+        // Given a date, we're interested in displaying the time strings
+        // in a user-friendly format.
         let amPm = 'am';
         let hours = new Date(date).getHours();
         const minutes = new Date(date).getMinutes();
 
+        // Convert from 24 hour to am/pm format.
         if (hours >= 12) {
             amPm = 'pm';
             if (hours != 12) {
@@ -67,6 +70,9 @@ const ShiftOccurrenceCard = observer(({
             }
         }
 
+        // If the minutes are ":00" for the specified time,
+        // we don't want to display any minute text. If the minutes
+        // are single digits, we want to prepend the 0 for uniformity.
         const minutesText = minutes == 0
             ? ''
             : minutes < 10 
@@ -77,6 +83,8 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const shiftStatusIndicator = () => {
+        // Determine which style the shift status indicator should render based on the
+        // shift's need for more people to join or not.
         const shiftSatisfied = shiftStore().getShiftOccurrencePositionStatus(shiftOccurrence) == PositionStatus.MinSatisfied;
         return (
             <View style={styles.indicatorContainer}>
@@ -89,6 +97,7 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const recurrenceIcon = () => {
+        // Display a recurrence icon if the shift repeats.
         if (!parentshift.recurrence) {
             return null;
         }
@@ -104,27 +113,35 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const positionRows = () => {
+        // If there are no positions specified, we don't have any visual elements to display.
         if (shiftOccurrence.positions.length == 0) {
             return null;
         }
 
+        // If we have position rows to generate, first we want to add a separator/divider to the card.
         const rows = []
         rows.push(
             <View style={{ borderBottomColor : styles.section.borderBottomColor, borderBottomWidth: styles.section.borderBottomWidth, marginLeft: 60 }}/>
         )
 
+        // Iterate through each position on the shift and generate a row for it that contains the Role name,
+        // icons for the joined users, and generic icons for the number of users needed to satisfy the position.
         for (const position of shiftOccurrence.positions) {
+            // Generate a user icon for each joined user
             const joinedUserIcons = position.joinedUsers.map(userId => {
                 return <UserIcon userId={userId}/>
             })
 
+            // Figure out how many users are still needed to join and generate a generic icon for each.
             const neededUsers = Math.max(0, position.min - position.joinedUsers.length);
             const unassignedUserIcons = Array(neededUsers).fill(0).map((_, i) => {
                 return (
-                    <UserIcon style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
-                        emptyIconColor={styles.unAssignedResponderIcon.color}/>
+                    <UserIcon style={ dark ? styles.userNeededIconDark : styles.userNeededIcon }
+                        emptyIconColor={styles.userNeededIcon.color}/>
                 )
             });
+
+            // Add the row with the role name and the icons we created above.
             rows.push(
                 <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 60, marginTop: 15}}>
                     <Text>{organizationStore().roles.get(position.role).name}</Text>
@@ -140,48 +157,42 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const header = () => {
-        // TODO: Get start and end times from shift instance
+        // For the card's header, get the start and end time strings in the display format.
         const startTimeStr = getFormattedTime(shiftOccurrence.dateTimeRange.startDate);
         const endTimeStr = getFormattedTime(shiftOccurrence.dateTimeRange.endDate);
 
-        // TODO: Add recurrence symbol, when warranted
+        // The header of a shift card includes the status of its positions, the title, recurrence, and time info.
         return (
-            <>
-                <View style={{flexDirection: 'row'}}>
-                    {shiftStatusIndicator()}
-                    <View style={styles.headerRow}>
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <Text style={[styles.idText, dark ? styles.darkText : null]}>{shiftOccurrence.title}</Text>
-                            {recurrenceIcon()}
-                        </View>
-                        <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
-                            <Text>{startTimeStr}</Text>
-                            <Text style={styles.endTimeText}>{endTimeStr}</Text>
-                        </View>
+            <View style={{flexDirection: 'row'}}>
+                {shiftStatusIndicator()}
+                <View style={styles.headerRow}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Text style={[styles.titleText, dark ? styles.darkText : null]}>{shiftOccurrence.title}</Text>
+                        {recurrenceIcon()}
+                    </View>
+                    <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
+                        <Text>{startTimeStr}</Text>
+                        <Text style={styles.endTimeText}>{endTimeStr}</Text>
                     </View>
                 </View>
-                {positionRows()}
-            </>
+            </View>
         )
     }
 
-    // TODO: Add Roles needed and positions filled UI
     return (
         <Pressable
             onPress={onCardPress}
             testID={TestIds.shiftOccurrenceCard(testID, occurrenceId)}
             style={[styles.container, styles.minimalContainer, style]}>
                 {header()}
+                {positionRows()}
         </Pressable>
     )
 })
 
 export default ShiftOccurrenceCard;
 
-const RESPONDER_SPACING_BASIC = 6;
-const RESPONDER_SPACING_LAST = 12;
-const RESPONDER_SPACING_PILED = -8;
-
+const USER_NEEDED_SPACING_BASIC = 6;
 const styles = StyleSheet.create({
     endTimeText: {
         color: Colors.text.tertiary,
@@ -189,8 +200,6 @@ const styles = StyleSheet.create({
     indicatorContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        // borderColor: Colors.good,
-        // borderWidth: 1
     },
     shiftNeedsPeopleIndicator: {
         height: 12,
@@ -261,172 +270,22 @@ const styles = StyleSheet.create({
     headerTime: {
         flexDirection: 'column',
     },
-    locationContainer: {
-        flexDirection: 'row'
-    },
-    locationIcon: { 
-        width: 12,
-        color: Colors.icons.light,
-        alignSelf: 'center',
-        margin: 0
-    },
-    locationText: {
-        fontSize: 12,
-        alignSelf: 'center'
-    },
-    idText: {
+    titleText: {
         fontSize: 16,
         fontWeight: 'bold'
     },
-    detailsRow: {
-        margin: 12,
-        marginTop: 0,
-        flexDirection: 'row'
-    },
-    darkDetailsText: {
-        color: '#E0DEE0'
-    },
-    typeText: {
-        fontWeight: 'bold'
-    },
-    statusRow: {
-        margin: 12,
-        marginTop: 0,
-        height: 28, // keeps row from collapsing when there are no positions and status selector is opened
-        flexDirection: 'row',
-    }, 
-    responderActions: {
-        flexDirection: 'row',
-        flex: 1
-    },
-    messageIcon: {
-        color: Colors.good,
-        backgroundColor: Colors.backgrounds.standard,
-        width: 28,
-        height: 28,
-        margin: 0,
-        marginRight: 4,
-        borderRadius: 0
-    },
-    messageIconDark: {
-        color: Colors.good,
-        backgroundColor: Colors.nocolor
-    },
-    unreadMessageNotifier: {
-        backgroundColor: '#00C95C',
-        height: 10,
-        width: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: Colors.backgrounds.standard,
-        position: 'absolute',
-        top: -2,
-        right: 2,
-        zIndex: 1,
-        display: 'none'
-    },
-    darkUnreadMessageNotifier: {
-        borderColor: '#444144',
-    },
-    unAssignedResponderIcon: {
+    userNeededIcon: {
         color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
         borderColor: Colors.backgrounds.standard,
         borderWidth: 1,
-        marginRight: RESPONDER_SPACING_BASIC,
+        marginRight: USER_NEEDED_SPACING_BASIC,
     }, 
-    unAssignedResponderIconDark: {
+    userNeededIconDark: {
         color: '#444144',
         backgroundColor: '#CCCACC',
         borderColor: Colors.backgrounds.dark,
         borderWidth: 1,
-        marginRight: RESPONDER_SPACING_BASIC,
-    },
-    assignedResponderIcon: {
-        marginRight: RESPONDER_SPACING_PILED,
-        borderWidth: 1,
-        borderColor: Colors.backgrounds.standard,
-    }, 
-    assignedResponderIconDark: {
-        marginRight: RESPONDER_SPACING_PILED,
-        borderColor: Colors.icons.superdark,
-    }, 
-    assignedResponderIconLast: {
-        marginRight: RESPONDER_SPACING_BASIC,
-    }, 
-    responderCount: {
-        alignSelf: 'center',
-        marginRight: RESPONDER_SPACING_LAST,
-        color: Colors.text.tertiary,
-        fontSize: 12
-    },
-    broadcastButtonLabel: {
-        color: '#DB0000',
-        marginVertical: 0,
-        marginLeft: 8,
-        marginRight: 0,
-        alignSelf: 'center'
-    }, 
-    broadcastButton: {
-        marginHorizontal: 0,
-        alignSelf: 'center',
-        // borderRadius: 16
-    }, 
-    broadcastContent: { 
-        // no other way to touch the internal icon margin :/
-        marginLeft: -12,
-        marginRight: 0,
-        padding: 6,
-    },
-    statusContainer: {
-        flexDirection: 'row'
-    },
-    statusText: {
-        alignSelf: 'center',
-        fontSize: 12
-    }, 
-    darkStatusText: {
-        color: '#E0DEE0'
-    },
-    statusSelector: {
-        position: 'absolute',
-        flexDirection: 'row',
-        right: -6,
-        bottom: -6,
-        padding: 6,
-        zIndex: 1,
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        shadowRadius: 3,
-        shadowColor: '#ccc',
-        shadowOpacity: 1,
-        shadowOffset: {
-            height: 2,
-            width: 0
-        },
-        width: 200
-    },
-    darkStatusSelector: {
-        backgroundColor: '#333',
-        shadowColor: '#000',
-        borderColor: '#444',
-        borderWidth: 1,
-        paddingHorizontal: 8
-    },
-    empty: {
-        color: Colors.icons.light,
-        backgroundColor: Colors.icons.light,
-        width: 26,
-        height: 26,
-        alignSelf: 'center',
-        borderRadius: 48,
-        marginVertical: 0,
-        marginRight: RESPONDER_SPACING_BASIC,
-        marginLeft: -30,
-        zIndex: -100,
-    },
-    emptyDark: {
-        color: Colors.icons.darkReversed,
-        backgroundColor: Colors.icons.darkReversed,
+        marginRight: USER_NEEDED_SPACING_BASIC,
     }
 })
