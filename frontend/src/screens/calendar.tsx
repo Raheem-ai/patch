@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod } from "../../../common/models";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence } from "../../../common/models";
 import { allEnumValues, dayNumToDayNameLabel, monthNumToMonthNameLabel } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { Colors, ICONS, ScreenProps } from "../types";
@@ -63,10 +63,8 @@ const Calendar = observer(({ navigation, route }: Props) => {
         ]
     }
 
-    // TODO: Should this exist in a function or some other more intentional-feeling place?
     useEffect(() => {
         runInAction(() => {
-            // TODO: call this function to fetch new shifts based on scroll index
             shiftStore().setDateRange({
                 startDate: new Date(moment().toDate()),
                 endDate: new Date(moment().add(1, 'months').toDate()),
@@ -74,38 +72,76 @@ const Calendar = observer(({ navigation, route }: Props) => {
         })
     }, [])
 
-    // TODO: Generate this window based on user scroll/viewport and update shiftStore.dateRange
-    let currentDate: Date = new Date(shiftStore().dateRange.startDate);
-
     const handleScroll = (e) => {
-        setIsScrolled(e.nativeEvent.contentOffset.y <= 4
-            ? false
-            : true)}
+        // console.log(`handleScroll: ${JSON.stringify(e.nativeEvent, null, 4)}`);
+    }
 
-    // TODO: Iterate through date range and pick up shifts instead of
-    // iterating through shifts and collecting date headings.
-    const getDateHeadings = (shiftDate: Date) => {
-        const headings = [];
-        while (moment(shiftDate).isSameOrAfter(moment(currentDate), 'day')) {
-            const day = dayNumToDayNameLabel(currentDate.getDay());
-            const month = monthNumToMonthNameLabel(currentDate.getMonth());
-            const date = currentDate.getDate();
+    const shiftOccurrenceCards = (shifts: ShiftOccurrence[]) => {
+        // Iterate from the start date to the end date of the calendar's current date range.
+        // Along the way, move through the array of shifts, adding the headings for each day
+        // and the shift cards for each shift in the collection. This elements variable is the
+        // collection of date headings and shift cards to display.
+        let elements = []
 
-            let addHeading = false;
+        // Initialize the first date heading
+        const currentHeadingDate = new Date(shiftStore().dateRange.startDate);
+
+        // The last date to display on the calendar list
+        const endDate = new Date(shiftStore().dateRange.endDate);
+
+        // Index to track our iteration through the shift occurrences
+        let currentShiftIndex = 0;
+
+        // Loop until we've reached the last date in our date range
+        while (currentHeadingDate <= endDate) {
+            // Collect all shift cards to be displayed under the current date heading
+            const shiftCards = [];
+
+            // Ensure that we still have shifts to collect
+            if (currentShiftIndex < shifts.length) {
+                // Get the current shift's date as a moment object to make for easy comparison
+                // to the current heading date. If the shift's date is on the same day as the 
+                // current heading we want to add, then we generate and collect the shift's
+                // card. Do this until we encounter a shift on a date after the current heading's date.
+                let currentShiftDate = moment(shifts[currentShiftIndex].dateTimeRange.startDate);
+                while (moment(currentShiftDate).isSame(moment(currentHeadingDate), 'day')) {
+                    const shift = shifts[currentShiftIndex];
+                    shiftCards.push(
+                        <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={shift.id} shiftId={shift.shiftId} occurrenceId={shift.id} />
+                    )
+
+                    // Move on to the next shift in our collection.
+                    // Update index and date variables, breaking if we've run out of shifts to evaluate.
+                    currentShiftIndex++;
+                    if (currentShiftIndex >= shifts.length) {
+                        break;
+                    }
+                    currentShiftDate = moment(shifts[currentShiftIndex].dateTimeRange.startDate);
+                }
+            }
+
+            // Disiplaying the date headings is conditional on the user's filter.
+            let addDateHeading = false;
             switch (selectedDaysFilter) {
                 case CalendarDaysFilter.All:
-                    addHeading = true;
+                    addDateHeading = true;
                     break;
                 case CalendarDaysFilter.WithShifts:
-                    addHeading = moment(shiftDate).isSame(moment(currentDate), 'day');
+                    addDateHeading = shiftCards.length > 0;
                     break;
                 case CalendarDaysFilter.WithoutShifts:
-                    addHeading = moment(shiftDate).isAfter(moment(currentDate), 'day');
+                    addDateHeading = shiftCards.length == 0;
                     break;
             }
 
-            if (addHeading) {
-                headings.push(
+            if (addDateHeading) {
+                // Extract the info for the date heading display
+                const day = dayNumToDayNameLabel(currentHeadingDate.getDay());
+                const month = monthNumToMonthNameLabel(currentHeadingDate.getMonth());
+                const date = currentHeadingDate.getDate();
+
+                // Add the date heading
+                elements.push(
                     <View style={styles.dateHeading}>
                         <Text style={styles.dateText}>
                             <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
@@ -119,28 +155,24 @@ const Calendar = observer(({ navigation, route }: Props) => {
                 )
             }
 
-            currentDate.setDate(currentDate.getDate() + 1);
+            // Add the corresponding shift cards, directly after the heading,
+            // if the user has not requested they be filtered out.
+            if (selectedDaysFilter != CalendarDaysFilter.WithoutShifts) {
+                elements = elements.concat(shiftCards);
+            }
+
+            // Move the date forward one day
+            currentHeadingDate.setDate(currentHeadingDate.getDate() + 1);
         }
 
-        return headings;
+        return elements;
     }
 
     return (
         <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
             <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
-                {
-                    shiftStore().filteredShiftOccurrences.map(s => {
-                        return (
-                            <>
-                                {getDateHeadings(s.dateTimeRange.startDate)}
-                                {selectedDaysFilter != CalendarDaysFilter.WithoutShifts
-                                    ? <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={s.id} shiftId={s.shiftId} occurrenceId={s.id} />
-                                    : null}
-                            </>
-                        )
-                    })
-                }
+                {shiftOccurrenceCards(shiftStore().filteredShiftOccurrences)}
             </ScrollView>
         </View>
     )
