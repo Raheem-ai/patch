@@ -15,18 +15,18 @@ import { runInAction } from "mobx";
 type Props = ScreenProps<'Calendar'>;
 
 const Calendar = observer(({ navigation, route }: Props) => {
+    // Filter which days to show on the calendar list (filter logic in this component)
     const daysFilters = allEnumValues<CalendarDaysFilter>(CalendarDaysFilter);
-    const shiftNeedsPeopleFilter = allEnumValues<ShiftNeedsPeopleFilter>(ShiftNeedsPeopleFilter);
+    const [selectedDaysFilter, setDaysFilter] = useState(CalendarDaysFilter.All)
 
-    // TODO: Dynamically add to enum
+    // Filter which shifts to display on the calendar list (filter logic in shift store)
+    const shiftNeedsPeopleFilter = allEnumValues<ShiftNeedsPeopleFilter>(ShiftNeedsPeopleFilter);
     const shiftRolesFilter = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
 
     const [isScrolled, setIsScrolled] = useState(false);
-    const [selectedDaysFilter, setDaysFilter] = useState(CalendarDaysFilter.All)
 
     const filterHeaderProps: ListHeaderProps = {
         openHeaderLabel: 'Show:',
-        closedHeaderStyles: styles.closedFilterHeader,
         viewIsScrolled: isScrolled,
         optionConfigs: [
             {
@@ -62,8 +62,8 @@ const Calendar = observer(({ navigation, route }: Props) => {
             ListHeaderOptionConfig<ShiftsRolesFilter>, 
         ]
     }
-    
-    // TODO: Find permanent place for this.
+
+    // TODO: Should this exist in a function or some other more intentional-feeling place?
     useEffect(() => {
         runInAction(() => {
             // TODO: call this function to fetch new shifts based on scroll index
@@ -165,9 +165,6 @@ const styles = StyleSheet.create({
             width: 0,
             height: 1
         }
-    },
-    closedFilterHeader: {
-        // marginBottom: 12
     },
     dateHeading: {
         flexDirection: 'row',
