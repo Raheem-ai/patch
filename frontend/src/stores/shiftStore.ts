@@ -417,14 +417,16 @@ export default class ShiftStore implements IShiftStore {
         return {
             id: shiftOccurrenceId,
             shiftId: shift.id,
-            // TODO
-            chat: {
-                id: '',
-                messages: [],
-                lastMessageId: 0,
-                userReceipts: {}
-            },
             // Get values from diff if they exist
+            chat: diff?.chat 
+                    ? diff.chat
+                    // TODO: How to initialize chat?
+                    : {
+                        id: '',
+                        messages: [],
+                        lastMessageId: 0,
+                        userReceipts: {}
+                    },
             dateTimeRange: diff?.dateTimeRange
                             ? diff.dateTimeRange
                             : this.getShiftOccurrenceDateTime(shift, occurrenceDateStr),
