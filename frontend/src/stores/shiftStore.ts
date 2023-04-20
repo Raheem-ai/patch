@@ -26,7 +26,7 @@ const userIds = [
 
 // Mock shift occurrence diff
 const mockInstanceDiff: ShiftOccurrence = {
-    shiftId: 'mock-id-1---2023-04-21',
+    shiftId: 'mock-id-1---2023-04-26',
     id: 'mock-id-1',
     chat: null,
     title: 'Special Water Distribution',
@@ -84,7 +84,7 @@ const mockShift: Shift = {
     description: 'This is the first mock shift',
     recurrence: recurrence,
     occurrenceDiffs: {
-        ['2023-04-21']: mockInstanceDiff
+        ['2023-04-26']: mockInstanceDiff
     },
     positions: [
         {
@@ -255,6 +255,8 @@ export default class ShiftStore implements IShiftStore {
 
         // If there are any items in the filtered array then there is at least one position on this
         // shift that the user is qualified to join.
+        // TODO: Should we also ensure that the position that the user is qualified for is not
+        // already full? (i.e. has the max number of joined users already)
         return filteredArray.length > 0;
     }
 
@@ -273,11 +275,17 @@ export default class ShiftStore implements IShiftStore {
         const ruleOptions: IRuleOptions = {
             start: new Date(recurringDateTime.startDate),
             duration: recurringDateTime.endDate.getTime() - recurringDateTime.startDate.getTime(),
-            frequency: frequencyMap[recurringDateTime.every.period],
-            interval: recurringDateTime.every.numberOf,
+            frequency: recurringDateTime.every?.period
+                        ? frequencyMap[recurringDateTime.every.period]
+                        : frequencyMap[RecurringPeriod.Day],
             // From rschedule documentation: "The WKST rule part specifies the day on which the workweek starts"
             // For PATCH, the calendar/workweek starts on Sunday (0).
             weekStart: DateAdapter.WEEKDAYS[0]
+        }
+
+        // 
+        if (recurringDateTime.every) {
+            ruleOptions.interval = recurringDateTime.every.numberOf;
         }
 
         if (recurringDateTime.until) {
@@ -291,8 +299,14 @@ export default class ShiftStore implements IShiftStore {
             }
         }
 
+        // If the entire RecurringTimeConstraints portion of the recurrence is null,
+        // this is a shift that occurs only once.
+        if (recurringDateTime.until == null && recurringDateTime.every == null) {
+            ruleOptions.count = 1;
+        }
+
         // If the recurrence is monthly, specify which day of the month or which week number and day the repitition exists on.
-        if (recurringDateTime.every.period == RecurringPeriod.Month) {
+        if (recurringDateTime.every?.period == RecurringPeriod.Month) {
             if (recurringDateTime.every.dayScope) {
                 // TODO: Is there some type of assertion to make here to please TypeScript?
                 // getDate is guaranteed to return a number, but not a number betwen 1-31 or -1 to -31,
@@ -304,7 +318,7 @@ export default class ShiftStore implements IShiftStore {
         }
 
         // If the occurrence is weekly, specify which weekdays here.
-        if (recurringDateTime.every.period == RecurringPeriod.Week) {
+        if (recurringDateTime.every?.period == RecurringPeriod.Week) {
             if (recurringDateTime.every.days.length == 0) {
                 return null;
             }
@@ -334,6 +348,24 @@ export default class ShiftStore implements IShiftStore {
     setRolesFilter = async (rolesFilter: ShiftsRolesFilter): Promise<void> => {
         this.filter.rolesFilter = rolesFilter;
         await this.getShifts();
+    }
+
+    addFutureWeekToDateRange = async (): Promise<void> => {
+        const newEndDate = new Date(this.dateRange.endDate);
+        newEndDate.setDate(newEndDate.getDate() + 7);
+        this.dateRange = {
+            startDate: this.dateRange.startDate,
+            endDate: newEndDate
+        }
+    }
+
+    addPreviousWeekToDateRange = async (): Promise<void> => {
+        const newStartDate = new Date(this.dateRange.startDate);
+        newStartDate.setDate(newStartDate.getDate() - 7);
+        this.dateRange = {
+            startDate: newStartDate,
+            endDate: this.dateRange.endDate
+        }
     }
 
     setDateRange = async (dateRange: DateTimeRange): Promise<void> => {
