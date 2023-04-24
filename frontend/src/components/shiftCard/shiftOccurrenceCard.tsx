@@ -30,9 +30,6 @@ const ShiftOccurrenceCard = observer(({
     shiftId,
     occurrenceId,
     style,
-    dark,
-    minimal,
-    onMapView,
     onPress
 } : Props) => {
     const parentshift = shiftStore().shifts.get(shiftId);
@@ -136,7 +133,7 @@ const ShiftOccurrenceCard = observer(({
             const neededUsers = Math.max(0, position.min - position.joinedUsers.length);
             const unassignedUserIcons = Array(neededUsers).fill(0).map((_, i) => {
                 return (
-                    <UserIcon style={ dark ? styles.userNeededIconDark : styles.userNeededIcon }
+                    <UserIcon style={ styles.userNeededIcon }
                         emptyIconColor={styles.userNeededIcon.color}/>
                 )
             });
@@ -167,7 +164,7 @@ const ShiftOccurrenceCard = observer(({
                 {shiftStatusIndicator()}
                 <View style={styles.headerRow}>
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                        <Text style={[styles.titleText, dark ? styles.darkText : null]}>{shiftOccurrence.title}</Text>
+                        <Text style={styles.titleText}>{shiftOccurrence.title}</Text>
                         {recurrenceIcon()}
                     </View>
                     <View style={{flexDirection: 'column', alignItems: 'flex-end'}}>
@@ -244,9 +241,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderTopWidth: 4
     },
-    darkContainer: {
-        backgroundColor: Colors.backgrounds.dark,
-    },
     minimalContainer: {
         paddingBottom: 12,
         paddingHorizontal: 12,
@@ -254,9 +248,6 @@ const styles = StyleSheet.create({
         borderTopWidth: 0,
         borderBottomWidth: 0,
 
-    },
-    darkText: {
-        color: '#E0DEE0'
     },
     headerRow: {
         flex: 1,
@@ -278,13 +269,6 @@ const styles = StyleSheet.create({
         color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
         borderColor: Colors.backgrounds.standard,
-        borderWidth: 1,
-        marginRight: USER_NEEDED_SPACING_BASIC,
-    }, 
-    userNeededIconDark: {
-        color: '#444144',
-        backgroundColor: '#CCCACC',
-        borderColor: Colors.backgrounds.dark,
         borderWidth: 1,
         marginRight: USER_NEEDED_SPACING_BASIC,
     }
