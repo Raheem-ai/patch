@@ -165,3 +165,35 @@ export const dateToEndRepititionsLabel = (reps?: number) => {
 
     return `Ends after ${aNumberOf} ${reps == 1 ? 'repetition' : 'repetitions'}`
 }
+
+export const dateToDisplayTime = (date: Date) => {
+    // Given a date, we're interested in displaying the time strings
+    // in a user-friendly format.
+    let amPm = 'am';
+    let hours = new Date(date).getHours();
+    const minutes = new Date(date).getMinutes();
+
+    // Convert from 24 hour to am/pm format.
+    if (hours >= 12) {
+        amPm = 'pm';
+        if (hours != 12) {
+            hours = hours - 12;
+        }
+    } else {
+        amPm = 'am'
+        if (hours == 0) {
+            hours = 12;
+        }
+    }
+
+    // If the minutes are ":00" for the specified time,
+    // we don't want to display any minute text. If the minutes
+    // are single digits, we want to prepend the 0 for uniformity.
+    const minutesText = minutes == 0
+        ? ''
+        : minutes < 10 
+            ? `:0${minutes}`
+            : `:${minutes}`
+
+    return `${hours}${minutesText}${amPm}`
+}
