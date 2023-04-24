@@ -73,7 +73,29 @@ const Calendar = observer(({ navigation, route }: Props) => {
     }, [])
 
     const handleScroll = (e) => {
-        // console.log(`handleScroll: ${JSON.stringify(e.nativeEvent, null, 4)}`);
+        // Screen Height
+        const layoutHeight = e.nativeEvent.layoutMeasurement.height;
+
+        // Height of all the calendar list content
+        const contentHeight = e.nativeEvent.contentSize.height;
+
+        // When the scroll reaches the content height minus the screen height
+        // we've scrolled to the end of the list.
+        const contentEnd = contentHeight - layoutHeight;
+
+        // We want to trigger a fetch of new shifts a little before the user
+        // reaches the very end of the list. Currently set to fetch more shifts
+        // when we've scrolled through 80% of the list (by content height, not shift count).
+        const fetchFutureTrigger = .8 * contentEnd;
+
+        // If the y scroll offset reaches this threshold, expand our shift
+        // date range by one week in the future.
+        const yOffset = e.nativeEvent.contentOffset.y;
+        if (yOffset >= fetchFutureTrigger) {
+            runInAction(() => {
+                shiftStore().addFutureWeekToDateRange();
+            })
+        }
     }
 
     const shiftOccurrenceCards = (shifts: ShiftOccurrence[]) => {
@@ -171,7 +193,7 @@ const Calendar = observer(({ navigation, route }: Props) => {
     return (
         <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
-            <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={120}>
+            <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={1000}>
                 {shiftOccurrenceCards(shiftStore().filteredShiftOccurrences)}
             </ScrollView>
         </View>
