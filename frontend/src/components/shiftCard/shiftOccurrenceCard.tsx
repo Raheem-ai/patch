@@ -19,10 +19,7 @@ type Props = {
     testID: string,
     shiftId: string,
     occurrenceId: string,
-    style?: StyleProp<ViewStyle>,
-    dark?: boolean,
-    minimal?: boolean,
-    onMapView?: boolean,
+    style?: StyleProp<ViewStyle>
     onPress?: (event: GestureResponderEvent, shiftOccurence: ShiftOccurrence) => void
 };
 
