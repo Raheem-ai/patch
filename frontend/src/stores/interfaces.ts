@@ -268,7 +268,6 @@ export namespace IShiftStore {
 export interface IShiftStore extends IBaseStore {
     shifts: Map<string, Shift>
     shiftsArray: Shift[]
-    filteredShiftOccurrences: ShiftOccurrence[]
     filteredShiftOccurenceMetadata: ShiftOccurrenceMetadata[]
 
     filter: ShiftsFilter
