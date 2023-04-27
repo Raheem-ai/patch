@@ -444,7 +444,7 @@ export default class ShiftStore implements IShiftStore {
 
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus {
         if (shiftOccurrence.positions?.length > 0) {
-            const stats = positionStats(shiftOccurrence.positions);
+            const stats = positionStats(shiftOccurrence.positions, userStore().usersRemovedFromOrg.map(u => u.id));
             return !stats.totalMinFilled 
                     ? ShiftStatus.Empty
                     : stats.totalMinToFill > stats.totalMinFilled 
