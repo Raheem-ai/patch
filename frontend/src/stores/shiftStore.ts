@@ -243,6 +243,11 @@ export default class ShiftStore implements IShiftStore {
                                 || (this.filter.daysFilter == CalendarDaysFilter.WithoutShifts && dateShifts.length == 0);
 
             if (addMetadata) {
+                // Since we've sequentially added shifts from potentially many different shift definitions, we need to do a final sort by date.
+                dateShifts.sort(function(occurrenceA, occurrenceB) {
+                    return new Date(occurrenceA.dateTimeRange.startDate).valueOf() - new Date(occurrenceB.dateTimeRange.startDate).valueOf();
+                });
+
                 filteredMetadata.push({
                     date: new Date(iterDate),
                     occurrences: dateShifts
