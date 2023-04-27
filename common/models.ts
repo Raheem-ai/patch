@@ -362,6 +362,17 @@ export enum HelpRequestSortBy {
 
 export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
+export enum ShiftStatus {
+    Satisfied,
+    PartiallySatisfied,
+    Empty
+}
+
+export type ShiftOccurrenceMetadata = {
+    date: Date,
+    occurrences: ShiftOccurrence[]
+}
+
 export type ShiftOccurrence = {
     id: string
     shiftId: string
@@ -416,6 +427,7 @@ export enum ShiftsRolesFilter {
 };
 
 export type ShiftsFilter = {
+    daysFilter: CalendarDaysFilter,
     needsPeopleFilter: ShiftNeedsPeopleFilter,
     rolesFilter: ShiftsRolesFilter
 }

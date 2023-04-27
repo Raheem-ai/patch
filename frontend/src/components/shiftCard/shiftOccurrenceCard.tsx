@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs, ShiftOccurrence } from "../../../../common/models";
+import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs, ShiftOccurrence, ShiftStatus } from "../../../../common/models";
 import { requestStore, userStore, organizationStore, shiftStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors, ICONS } from "../../types";
@@ -48,12 +48,14 @@ const ShiftOccurrenceCard = observer(({
     const shiftStatusIndicator = () => {
         // Determine which style the shift status indicator should render based on the
         // shift's need for more people to join or not.
-        const shiftSatisfied = shiftStore().getShiftOccurrencePositionStatus(shiftOccurrence) == PositionStatus.MinSatisfied;
+        const shiftStatus = shiftStore().getShiftStatus(shiftOccurrence);
         return (
             <View style={styles.indicatorContainer}>
-                { shiftSatisfied 
-                    ? <View style={styles.shiftSatisfiedIndicator}/>
-                    : <View style={styles.shiftNeedsPeopleIndicator}/>
+                { shiftStatus == ShiftStatus.Satisfied 
+                    ? <View style={[styles.statusIndicator, styles.statusSatisfied]}/>
+                    : shiftStatus == ShiftStatus.PartiallySatisfied
+                        ? <View style={[styles.statusIndicator, styles.statusPartiallySatisfied]}/>
+                        : <View style={[styles.statusIndicator, styles.statusEmpty]}/>
                 }
             </View>
         )
@@ -91,26 +93,25 @@ const ShiftOccurrenceCard = observer(({
         // icons for the joined users, and generic icons for the number of users needed to satisfy the position.
         for (const position of shiftOccurrence.positions) {
             // Generate a user icon for each joined user
-            const joinedUserIcons = position.joinedUsers.map(userId => {
+            const userIcons = position.joinedUsers.map(userId => {
                 return <UserIcon userId={userId}/>
             })
 
             // Figure out how many users are still needed to join and generate a generic icon for each.
             const neededUsers = Math.max(0, position.min - position.joinedUsers.length);
-            const unassignedUserIcons = Array(neededUsers).fill(0).map((_, i) => {
-                return (
+            for (let i = 0; i < neededUsers; i++) {
+                userIcons.push(
                     <UserIcon style={ styles.userNeededIcon }
                         emptyIconColor={styles.userNeededIcon.color}/>
                 )
-            });
+            }
 
             // Add the row with the role name and the icons we created above.
             rows.push(
                 <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 60, marginTop: 15}}>
                     <Text>{organizationStore().roles.get(position.role).name}</Text>
                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                        {joinedUserIcons}
-                        {unassignedUserIcons}
+                        {userIcons}
                     </View>
                 </View>
             )
@@ -164,20 +165,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    shiftNeedsPeopleIndicator: {
+    statusIndicator: {
         height: 12,
         width: 12,
         borderRadius: 12,
+        marginHorizontal: (56 - 12)/2
+    },
+    statusEmpty: {
+        borderWidth: 4,
+        borderColor: Colors.bad,
+    },
+    statusPartiallySatisfied: {
         borderWidth: 4,
         borderColor: Colors.okay,
-        marginHorizontal: (56 - 12)/2,
     },
-    shiftSatisfiedIndicator: {
-        height: 12,
-        width: 12,
-        borderRadius: 12,
+    statusSatisfied: {
         backgroundColor: Colors.good,
-        marginHorizontal: (56 - 12)/2
     },
     iconContainer: {
         height: 60,

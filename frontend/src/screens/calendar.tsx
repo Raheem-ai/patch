@@ -11,15 +11,15 @@ import { IconButton, Text } from "react-native-paper";
 import ShiftOccurrenceCard from "../components/shiftCard/shiftOccurrenceCard";
 import moment from "moment";
 import { runInAction } from "mobx";
+import { wrapScrollView } from "react-native-scroll-into-view";
+
+const WrappedScrollView = wrapScrollView(ScrollView)
 
 type Props = ScreenProps<'Calendar'>;
 
 const Calendar = observer(({ navigation, route }: Props) => {
-    // Filter which days to show on the calendar list (filter logic in this component)
+    // Filter which shifts to display on the calendar list
     const daysFilters = allEnumValues<CalendarDaysFilter>(CalendarDaysFilter);
-    const [selectedDaysFilter, setDaysFilter] = useState(CalendarDaysFilter.All)
-
-    // Filter which shifts to display on the calendar list (filter logic in shift store)
     const shiftNeedsPeopleFilter = allEnumValues<ShiftNeedsPeopleFilter>(ShiftNeedsPeopleFilter);
     const shiftRolesFilter = allEnumValues<ShiftsRolesFilter>(ShiftsRolesFilter);
 
@@ -30,13 +30,13 @@ const Calendar = observer(({ navigation, route }: Props) => {
         viewIsScrolled: isScrolled,
         optionConfigs: [
             {
-                chosenOption: selectedDaysFilter,
+                chosenOption: shiftStore().filter.daysFilter,
                 options: daysFilters,
                 toHeaderLabel: (filter: CalendarDaysFilter) => {
                     return `${CalendarDaysFilterToLabelMap[filter]}`
                 },
                 toOptionLabel: (filter: CalendarDaysFilter) => CalendarDaysFilterToLabelMap[filter],
-                onUpdate: (opt) => setDaysFilter(opt)
+                onUpdate: shiftStore().setDaysFilter
             },
             {
                 chosenOption: shiftStore().filter.needsPeopleFilter,
@@ -64,12 +64,10 @@ const Calendar = observer(({ navigation, route }: Props) => {
     }
 
     useEffect(() => {
-        runInAction(() => {
-            shiftStore().setDateRange({
-                startDate: new Date(moment().toDate()),
-                endDate: new Date(moment().add(1, 'months').toDate()),
-            });
-        })
+        shiftStore().setDateRange({
+            startDate: new Date(moment().minutes(0).hours(0).seconds(0).toDate()),
+            endDate: new Date(moment().minutes(0).hours(0).seconds(0).add(1, 'months').toDate()),
+        });
     }, [])
 
     const handleScroll = (e) => {
@@ -92,110 +90,48 @@ const Calendar = observer(({ navigation, route }: Props) => {
         // date range by one week in the future.
         const yOffset = e.nativeEvent.contentOffset.y;
         if (yOffset >= fetchFutureTrigger) {
-            runInAction(() => {
-                shiftStore().addFutureWeekToDateRange();
-            })
+            shiftStore().addFutureWeekToDateRange();
         }
     }
 
     const shiftOccurrenceCards = (shifts: ShiftOccurrence[]) => {
-        // Iterate from the start date to the end date of the calendar's current date range.
-        // Along the way, move through the array of shifts, adding the headings for each day
-        // and the shift cards for each shift in the collection. This elements variable is the
-        // collection of date headings and shift cards to display.
-        let elements = []
+        return shifts.map(shift => {
+            return <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={shift.id} shiftId={shift.shiftId} occurrenceId={shift.id} />
+        })
+    }
 
-        // Initialize the first date heading
-        const currentHeadingDate = new Date(shiftStore().dateRange.startDate);
-
-        // The last date to display on the calendar list
-        const endDate = new Date(shiftStore().dateRange.endDate);
-
-        // Index to track our iteration through the shift occurrences
-        let currentShiftIndex = 0;
-
-        // Loop until we've reached the last date in our date range
-        while (currentHeadingDate <= endDate) {
-            // Collect all shift cards to be displayed under the current date heading
-            const shiftCards = [];
-
-            // Ensure that we still have shifts to collect
-            if (currentShiftIndex < shifts.length) {
-                // Get the current shift's date as a moment object to make for easy comparison
-                // to the current heading date. If the shift's date is on the same day as the 
-                // current heading we want to add, then we generate and collect the shift's
-                // card. Do this until we encounter a shift on a date after the current heading's date.
-                let currentShiftDate = moment(shifts[currentShiftIndex].dateTimeRange.startDate);
-                while (moment(currentShiftDate).isSame(moment(currentHeadingDate), 'day')) {
-                    const shift = shifts[currentShiftIndex];
-                    shiftCards.push(
-                        <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={shift.id} shiftId={shift.shiftId} occurrenceId={shift.id} />
-                    )
-
-                    // Move on to the next shift in our collection.
-                    // Update index and date variables, breaking if we've run out of shifts to evaluate.
-                    currentShiftIndex++;
-                    if (currentShiftIndex >= shifts.length) {
-                        break;
-                    }
-                    currentShiftDate = moment(shifts[currentShiftIndex].dateTimeRange.startDate);
-                }
-            }
-
-            // Disiplaying the date headings is conditional on the user's filter.
-            let addDateHeading = false;
-            switch (selectedDaysFilter) {
-                case CalendarDaysFilter.All:
-                    addDateHeading = true;
-                    break;
-                case CalendarDaysFilter.WithShifts:
-                    addDateHeading = shiftCards.length > 0;
-                    break;
-                case CalendarDaysFilter.WithoutShifts:
-                    addDateHeading = shiftCards.length == 0;
-                    break;
-            }
-
-            if (addDateHeading) {
-                // Extract the info for the date heading display
-                const day = dayNumToDayNameLabel(currentHeadingDate.getDay());
-                const month = monthNumToMonthNameLabel(currentHeadingDate.getMonth());
-                const date = currentHeadingDate.getDate();
-
-                // Add the date heading
-                elements.push(
-                    <View style={styles.dateHeading}>
-                        <Text style={styles.dateText}>
-                            <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
-                        </Text>
-                        <IconButton 
-                            style={styles.addShiftButton} 
-                            icon={ICONS.add} 
-                            size={24}
-                            color={Colors.icons.light}/>
-                    </View>
-                )
-            }
-
-            // Add the corresponding shift cards, directly after the heading,
-            // if the user has not requested they be filtered out.
-            if (selectedDaysFilter != CalendarDaysFilter.WithoutShifts) {
-                elements = elements.concat(shiftCards);
-            }
-
-            // Move the date forward one day
-            currentHeadingDate.setDate(currentHeadingDate.getDate() + 1);
-        }
-
-        return elements;
+    const dateHeading = (headingDate: Date) => {
+        // Extract the info for the date heading display
+        const day = dayNumToDayNameLabel(headingDate.getDay());
+        const month = monthNumToMonthNameLabel(headingDate.getMonth());
+        const date = headingDate.getDate();
+        return (
+            <View style={styles.dateHeading}>
+            <Text style={styles.dateText}>
+                <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
+            </Text>
+            <IconButton 
+                style={styles.addShiftButton} 
+                icon={ICONS.add} 
+                size={24}
+                color={Colors.icons.light}/>
+        </View>
+        )
     }
 
     return (
         <View style={styles.container} testID={TestIds.shiftsList.screen}>
             <ListHeader { ...filterHeaderProps } />
-            <ScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={1000}>
-                {shiftOccurrenceCards(shiftStore().filteredShiftOccurrences)}
-            </ScrollView>
+            <WrappedScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={1000}>
+                {shiftStore().filteredShiftOccurenceMetadata.map(metadata => {
+                    return (
+                        <>
+                            {dateHeading(metadata.date)}
+                            {shiftOccurrenceCards(metadata.occurrences)}
+                        </>
+                    )
+                })}
+            </WrappedScrollView>
         </View>
     )
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -269,14 +269,13 @@ export interface IShiftStore extends IBaseStore {
     shifts: Map<string, Shift>
     shiftsArray: Shift[]
     filteredShiftOccurrences: ShiftOccurrence[]
-
-    loading: boolean
+    filteredShiftOccurenceMetadata: ShiftOccurrenceMetadata[]
 
     filter: ShiftsFilter
     dateRange: DateTimeRange
 
-    loadUntil(predicate: () => Promise<any>): Promise<void>
     setFilter(filter: ShiftsFilter): Promise<void>
+    setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
     setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
     setDateRange(dateRange: DateTimeRange): Promise<void>
@@ -284,10 +283,8 @@ export interface IShiftStore extends IBaseStore {
     addPreviousWeekToDateRange(): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>
     getShift(shiftId: string): Promise<void>
-    pushShift(shiftId: string): Promise<void>
-    tryPopShift(): Promise<void>
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
-    getShiftOccurrencePositionStatus(shiftOccurrence: ShiftOccurrence): PositionStatus
+    getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

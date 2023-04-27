@@ -2,15 +2,15 @@ import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, ru
 import { Store } from './meta';
 import { IRequestStore, IShiftStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, PositionStatus, DateTimeRange } from '../../../common/models';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, PositionStatus, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata } from '../../../common/models';
 import { api } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
-import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
+import { positionStats } from '../../../common/utils/requestUtils';
 import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
 import moment from 'moment';
 import { DateAdapter, DateTime, IRuleOptions, OccurrenceGenerator, OccurrenceIterator, Rule, RuleOption, RuleOptionError, Schedule, StandardDateAdapter } from '../utils/rschedule'
-
+import * as uuid from 'uuid';
 
 // Mock data for testing and debugging purposes.
 // Will be removed as feature progresses.
@@ -26,7 +26,7 @@ const userIds = [
 
 // Mock shift occurrence diff
 const mockInstanceDiff: ShiftOccurrence = {
-    shiftId: 'mock-id-1---2023-04-26',
+    shiftId: 'mock-id-1---2023-05-05',
     id: 'mock-id-1',
     chat: null,
     title: 'Special Water Distribution',
@@ -35,7 +35,7 @@ const mockInstanceDiff: ShiftOccurrence = {
             id: 'pos-id-1',
             attributes: [],
             role: DefaultRoleIds.Anyone,
-            min: 1,
+            min: 2,
             max: 1,
             joinedUsers: [userIds[0]]
         },
@@ -66,11 +66,11 @@ const recurrence: RecurringDateTimeRange = {
         days: [1,3,5]
     },
     until: {
-        repititions: 20,
+        repititions: 30,
         date: null
     },
-    startDate: new Date(moment().hour(22).minutes(0).toDate()), // Today @ 10:05pm 
-    endDate: new Date(moment().hour(22).minutes(0).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
+    startDate: new Date(moment().hour(12).minutes(0).subtract(2, 'weeks').toDate()),
+    endDate: new Date(moment().hour(12).minutes(0).subtract(2, 'weeks').add(2, 'hours').toDate()),
 };
 
 // Mock shift definition
@@ -84,7 +84,7 @@ const mockShift: Shift = {
     description: 'This is the first mock shift',
     recurrence: recurrence,
     occurrenceDiffs: {
-        ['2023-04-26']: mockInstanceDiff
+        ['2023-05-05']: mockInstanceDiff
     },
     positions: [
         {
@@ -126,7 +126,7 @@ const recurrence2: RecurringDateTimeRange = {
         date: null
     },
     startDate: new Date(moment().hour(22).minutes(5).toDate()), // Today @ 10:05pm 
-    endDate: new Date(moment().hour(22).minutes(5).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
+    endDate: new Date(moment().hour(22).minutes(0).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
 };
 
 // Second mock shift definition
@@ -145,8 +145,6 @@ const mockShift2: Shift = {
 
 @Store(IShiftStore)
 export default class ShiftStore implements IShiftStore {
-    loading = false;
-
     @securelyPersistent({
         // TODO: create standard decorators to handle this de/serialization
         // Could also allow for serialization into classes from raw json 
@@ -162,6 +160,7 @@ export default class ShiftStore implements IShiftStore {
 
     // Filter which shift occurrences to retrieve
     filter: ShiftsFilter = {
+        daysFilter: CalendarDaysFilter.All,
         needsPeopleFilter: ShiftNeedsPeopleFilter.All,
         rolesFilter: ShiftsRolesFilter.All
     };
@@ -189,36 +188,28 @@ export default class ShiftStore implements IShiftStore {
         return Array.from(this.shifts.values());
     }
 
-    get filteredShiftOccurrences(): ShiftOccurrence[] {
-        // This getter retrieves the shift occurrences that satisfy the 
-        // current filter criteria and occur within the set date range.
+    get filteredShiftOccurenceMetadata(): ShiftOccurrenceMetadata[] {
+        const filteredMetadata: ShiftOccurrenceMetadata[] = [];
 
-        // This array will be populated and returned
-        const filteredOccurrences = [];
+        const shiftsMap: { [date: string]: ShiftOccurrence[]} = {};
 
         // If we don't have a valid date range, return immediately with an empty list.
         if (this.dateRange.startDate == null || this.dateRange.endDate == null) {
-            return filteredOccurrences;
+            return filteredMetadata;
         }
 
-        // For every shift definition, iterate through the shift occurrences in the specified
-        // date range, determine if they match they filter criteria, then add them to the list
-        // to be returned.
-        this.shiftsArray.map(shift => {
-            // The shiftSchedule is the projected schedule of a recurrence definition.
-            // First convert a Patch shift recurrence to the rschedule rule format, 
-            // then generate a schedule from the rule.
+        this.shiftsArray.forEach(shift => {
+            const rule = this.patchRecurrenceToRRule(shift.id, shift.recurrence);
+
+            if (rule == null) {
+                return;
+            }
+
             const shiftSchedule = new Schedule({
-                rrules: [this.patchRecurrenceToRRule(shift.id, shift.recurrence)]
+                rrules: [rule]
             });
 
-            // Get the datetime occurrences from the schedule between the specified dates.
-            // For each date that occurs in the series, using the current Shift's ID and
-            // the date of the occurrence compose a Shift Occurrence ID. This ID will be used
-            // to check if any diff information about this occurrence exists. If so, the diff properties
-            // for that occurrence will be picked up, and anything not specified will be inherited from the parent shift.
-            // If the shift satisfies the filter conditions, it will be added to the list of occurrences to return.
-            shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().map(occurrence => {
+            shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().forEach(occurrence => {
                 // Compose id from parent shift id and occurrence date (works because no shift has multiple occurrences starting on the same day)
                 const occurrenceId = this.composeShiftOccurrenceId(shift.id, occurrence.date);
 
@@ -227,26 +218,50 @@ export default class ShiftStore implements IShiftStore {
 
                 // Verify it satisfies the filter conditions before pushing to our array.
                 const satisfiesRolesFilter = this.filter.rolesFilter == ShiftsRolesFilter.All
-                                                || this.shiftOccurrenceHasUserRoles(userStore().user.id, shiftOccurrence);
+                                                || this.userHasShiftRoles(userStore().user.id, shiftOccurrence);
                 const satisfiesNeedsPeopleFilter = this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.All
                                                     || (this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.Unfilled
-                                                        && this.getShiftOccurrencePositionStatus(shiftOccurrence) != PositionStatus.MinSatisfied);
+                                                        && this.getShiftStatus(shiftOccurrence) != ShiftStatus.Satisfied);
+
                 if (satisfiesNeedsPeopleFilter && satisfiesRolesFilter) {
-                    filteredOccurrences.push(this.getShiftOccurrence(occurrenceId))
+                    const dateStr = moment(new Date(occurrence.date)).format('YYYY-MM-DD');
+                    if (!shiftsMap[dateStr]) {
+                        shiftsMap[dateStr] = []
+                    }
+
+                    shiftsMap[dateStr].push(shiftOccurrence);    
                 }
             })
         });
 
-        // Since we've sequentially added shifts from potentially many different shift definitions, we need to do a final sort by date.
-        filteredOccurrences.sort(function(occurrenceA, occurrenceB) {
-            return new Date(occurrenceA.dateTimeRange.startDate).valueOf() - new Date(occurrenceB.dateTimeRange.startDate).valueOf();
-        });
+        const iterDate = new Date(this.dateRange.startDate);
+        while (iterDate <= this.dateRange.endDate) {
+            const dateStr = moment(new Date(iterDate)).format('YYYY-MM-DD');
+            const dateShifts = shiftsMap[dateStr] ? shiftsMap[dateStr] : [];
+            let addMetadata = this.filter.daysFilter == CalendarDaysFilter.All
+                                || (this.filter.daysFilter == CalendarDaysFilter.WithShifts && dateShifts.length > 0)
+                                || (this.filter.daysFilter == CalendarDaysFilter.WithoutShifts && dateShifts.length == 0);
 
-        return filteredOccurrences;
+            if (addMetadata) {
+                filteredMetadata.push({
+                    date: new Date(iterDate),
+                    occurrences: dateShifts
+                })
+            }
+
+            // Move forward one date
+            iterDate.setDate(iterDate.getDate() + 1);
+        }
+
+        return filteredMetadata;
     }
 
-    shiftOccurrenceHasUserRoles(userId: string, shiftOccurrence: ShiftOccurrence): boolean {
-        // TODO: How to treat a shift with no roles defined? 
+    userHasShiftRoles(userId: string, shiftOccurrence: ShiftOccurrence): boolean {
+        // If a shift has no positions, return true immediately
+        if (shiftOccurrence.positions.length == 0) {
+            return true;
+        }
+
         // Get the role Ids assigned to this user
         const userRoleIds = organizationStore().userRoles.get(userId).map(role => role.id);
 
@@ -308,10 +323,7 @@ export default class ShiftStore implements IShiftStore {
         // If the recurrence is monthly, specify which day of the month or which week number and day the repitition exists on.
         if (recurringDateTime.every?.period == RecurringPeriod.Month) {
             if (recurringDateTime.every.dayScope) {
-                // TODO: Is there some type of assertion to make here to please TypeScript?
-                // getDate is guaranteed to return a number, but not a number betwen 1-31 or -1 to -31,
-                // which is what the rscheudle type requires. Functions fine, but the type hints are unhappy.
-                ruleOptions.byDayOfMonth = [recurringDateTime.startDate.getDate()];
+                ruleOptions.byDayOfMonth = [recurringDateTime.startDate.getDate() as RuleOption.ByDayOfMonth];
             } else if (recurringDateTime.every.weekScope) {
                 // TODO: not implemented in input control yet. Will return to implementation after fixing.
             }
@@ -329,25 +341,20 @@ export default class ShiftStore implements IShiftStore {
         return new Rule(ruleOptions, { data: { shiftId: shiftId }});
     }
 
-    async loadUntil(predicate: () => Promise<any>): Promise<void> {
-        this.loading = true
-        await predicate()
-        runInAction(() => this.loading = false);
-    }
-
     setFilter = async (filter: ShiftsFilter): Promise<void> => {
         this.filter = filter;
-        await this.getShifts();
+    }
+
+    setDaysFilter = async (daysFilter: CalendarDaysFilter): Promise<void> => {
+        this.filter.daysFilter = daysFilter;
     }
 
     setNeedsPeopleFilter = async (needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void> => {
         this.filter.needsPeopleFilter = needsPeopleFilter;
-        await this.getShifts();
     }
 
     setRolesFilter = async (rolesFilter: ShiftsRolesFilter): Promise<void> => {
         this.filter.rolesFilter = rolesFilter;
-        await this.getShifts();
     }
 
     addFutureWeekToDateRange = async (): Promise<void> => {
@@ -408,9 +415,7 @@ export default class ShiftStore implements IShiftStore {
         const shift = this.shifts.get(shiftId);
 
         // Check if a diff of the shift exists for this date's occurrence
-        const diff = occurrenceDateStr in shift.occurrenceDiffs
-                            ? shift.occurrenceDiffs[occurrenceDateStr]
-                            : null;
+        const diff = shift.occurrenceDiffs[occurrenceDateStr];
 
         // Compose the final shift occurrence object from a mix of the parent
         // shift details and the diff details if one exists.
@@ -420,9 +425,8 @@ export default class ShiftStore implements IShiftStore {
             // Get values from diff if they exist
             chat: diff?.chat 
                     ? diff.chat
-                    // TODO: How to initialize chat?
                     : {
-                        id: '',
+                        id: uuid.v1(),
                         messages: [],
                         lastMessageId: 0,
                         userReceipts: {}
@@ -438,17 +442,17 @@ export default class ShiftStore implements IShiftStore {
         };
     }
 
-    getShiftOccurrencePositionStatus(shiftOccurrence: ShiftOccurrence): PositionStatus {
-        // Function that returns true if a single position needs people.
-        const positionNeedsPeople = (position: Position) => position.joinedUsers.length < position.min;
+    getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus {
+        if (shiftOccurrence.positions?.length > 0) {
+            const stats = positionStats(shiftOccurrence.positions);
+            return !stats.totalMinFilled 
+                    ? ShiftStatus.Empty
+                    : stats.totalMinToFill > stats.totalMinFilled 
+                        ? ShiftStatus.PartiallySatisfied
+                        : ShiftStatus.Satisfied;
+        }
 
-        // Function that returns true if any of the positions on the provided shift need people.
-        const shiftNeedsPeople = (s: ShiftOccurrence) => s.positions.some(positionNeedsPeople);
-
-        // Return Position.MinUnsatisfied if any position needs more joined users, Position.MinSatisfied otherwise.
-        return shiftNeedsPeople(shiftOccurrence)
-                ? PositionStatus.MinUnSatisfied
-                : PositionStatus.MinSatisfied;
+        return ShiftStatus.Satisfied;
     }
 
     async getShifts(shiftIds?: string[]): Promise<void> {
@@ -466,13 +470,6 @@ export default class ShiftStore implements IShiftStore {
                 [mockShift.id]: mockShift
             });
         })
-    }
-
-    pushShift(shiftId: string): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-    tryPopShift(): Promise<void> {
-        throw new Error('Method not implemented.');
     }
 
     getShiftsAfterSignin = async () => {
