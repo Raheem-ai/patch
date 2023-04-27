@@ -55,7 +55,11 @@ export const dateToDisplayTime = (date: Date) => {
     const minutes = new Date(date).getMinutes();
 
     // Convert from 24 hour to am/pm format.
-    if (hours >= 12) {
+    if (hours == 12 && minutes == 0) {
+        return 'noon';
+    } else if (hours == 0 && minutes == 0) {
+        return 'midnight';
+    } else if (hours >= 12) {
         amPm = 'pm';
         if (hours != 12) {
             hours = hours - 12;
