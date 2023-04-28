@@ -185,8 +185,14 @@ export default class ShiftStore implements IShiftStore {
     }
 
     get filteredShiftOccurenceMetadata(): ShiftOccurrenceMetadata[] {
+        // The final collection of dates and associated shift data that
+        // is returned for a the calendar component to display.
         const filteredMetadata: ShiftOccurrenceMetadata[] = [];
 
+        // As we iterate through each shift, we store the collections by
+        // date in YYYY-MM-DD format. So when we iterate through the date
+        // range (this.dateRange) to populate the final filteredMetadata,
+        // we can index into this object for each date in our range.
         const shiftsMap: { [date: string]: ShiftOccurrence[]} = {};
 
         // If we don't have a valid date range, return immediately with an empty list.
@@ -194,9 +200,11 @@ export default class ShiftStore implements IShiftStore {
             return filteredMetadata;
         }
 
+        // For each shift that we have a definition for, collect the occurrences within
+        // the specified date range that satisfy the filter criteria.
         this.shiftsArray.forEach(shift => {
+            // Generate an rSchedule rule object, to generate the shifts schedule.
             const rule = this.patchRecurrenceToRRule(shift.id, shift.recurrence);
-
             if (rule == null) {
                 return;
             }
@@ -220,6 +228,7 @@ export default class ShiftStore implements IShiftStore {
                                                         && this.getShiftStatus(shiftOccurrence) != ShiftStatus.Satisfied);
 
                 if (satisfiesNeedsPeopleFilter && satisfiesRolesFilter) {
+                    // Add the occurrence to the collection of occurrences on this date.
                     const dateStr = moment(new Date(occurrence.date)).format('YYYY-MM-DD');
                     if (!shiftsMap[dateStr]) {
                         shiftsMap[dateStr] = []
@@ -230,6 +239,10 @@ export default class ShiftStore implements IShiftStore {
             })
         });
 
+        // Iterate through each day in our specified date range.
+        // For each date, get the occurrences that occur on that date.
+        // Determine if the date and associated shifts should be returned
+        // for display based on the filter.
         const iterDate = new Date(this.dateRange.startDate);
         while (iterDate <= this.dateRange.endDate) {
             const dateStr = moment(new Date(iterDate)).format('YYYY-MM-DD');
