@@ -1,16 +1,12 @@
-import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
+import { makeAutoObservable, ObservableMap, runInAction, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IShiftStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
-import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, PositionStatus, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata } from '../../../common/models';
-import { api } from '../services/interfaces';
-import { persistent, securelyPersistent } from '../meta';
-import { userHasAllPermissions } from '../utils';
+import { IShiftStore, organizationStore, userStore } from './interfaces';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata } from '../../../common/models';
 import { positionStats } from '../../../common/utils/requestUtils';
-import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
 import moment from 'moment';
-import { DateAdapter, DateTime, IRuleOptions, OccurrenceGenerator, OccurrenceIterator, Rule, RuleOption, RuleOptionError, Schedule, StandardDateAdapter } from '../utils/rschedule'
+import { DateAdapter, IRuleOptions, Rule, RuleOption, Schedule } from '../utils/rschedule'
 import * as uuid from 'uuid';
+import { securelyPersistent } from '../meta';
 
 // Mock data for testing and debugging purposes.
 // Will be removed as feature progresses.
@@ -29,7 +25,7 @@ const mockInstanceDiff: ShiftOccurrence = {
     shiftId: 'mock-id-1---2023-05-05',
     id: 'mock-id-1',
     chat: null,
-    title: 'Special Water Distribution',
+    title: 'Special Water Distribution with a really really long title multiple times over',
     positions: [
         {
             id: 'pos-id-1',
@@ -66,7 +62,7 @@ const recurrence: RecurringDateTimeRange = {
         days: [1,3,5]
     },
     until: {
-        repititions: 30,
+        repititions: 33,
         date: null
     },
     startDate: new Date(moment().hour(12).minutes(0).subtract(2, 'weeks').toDate()),

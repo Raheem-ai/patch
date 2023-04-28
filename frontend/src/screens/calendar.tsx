@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence } from "../../../common/models";
+import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, ShiftOccurrence } from "../../../common/models";
 import { allEnumValues, dayNumToDayNameLabel, monthNumToMonthNameLabel } from "../../../common/utils";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { Colors, ICONS, ScreenProps } from "../types";
@@ -10,7 +10,6 @@ import { shiftStore } from "../stores/interfaces";
 import { IconButton, Text } from "react-native-paper";
 import ShiftOccurrenceCard from "../components/shiftCard/shiftOccurrenceCard";
 import moment from "moment";
-import { runInAction } from "mobx";
 import { wrapScrollView } from "react-native-scroll-into-view";
 
 const WrappedScrollView = wrapScrollView(ScrollView)

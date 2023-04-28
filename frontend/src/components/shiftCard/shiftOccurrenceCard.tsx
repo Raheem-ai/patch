@@ -1,18 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs, ShiftOccurrence, ShiftStatus } from "../../../../common/models";
-import { requestStore, userStore, organizationStore, shiftStore } from "../../stores/interfaces";
-import { navigateTo } from "../../navigation";
-import { routerNames, Colors, ICONS } from "../../types";
+import { ShiftOccurrence, ShiftStatus } from "../../../../common/models";
+import { organizationStore, shiftStore } from "../../stores/interfaces";
+import { Colors, ICONS } from "../../types";
 import UserIcon from "../userIcon";
-import { ActiveRequestTabHeight } from "../../constants";
-import { StatusIcon, StatusSelector } from "../statusSelector";
-import STRINGS from "../../../../common/strings";
 import TestIds from "../../test/ids";
-import { positionStats } from "../../../../common/utils/requestUtils";
-import { PositionStatus } from "../../../../common/models";
 import { dateToDisplayTime } from "../../../../common/utils";
 
 type Props = {
@@ -226,9 +220,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         // borderColor: Colors.bad,
         // borderWidth: 1
-    },
-    headerTime: {
-        flexDirection: 'column',
     },
     titleText: {
         fontSize: 16,
