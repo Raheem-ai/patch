@@ -130,7 +130,7 @@ const ShiftOccurrenceCard = observer(({
             <View style={{flexDirection: 'row'}}>
                 {shiftStatusIndicator()}
                 <View style={styles.headerRow}>
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: '80%'}}>
                         <Text style={styles.titleText}>{shiftOccurrence.title}</Text>
                         {recurrenceIcon()}
                     </View>
@@ -163,20 +163,20 @@ const styles = StyleSheet.create({
     },
     indicatorContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'center'
     },
     statusIndicator: {
-        height: 12,
-        width: 12,
-        borderRadius: 12,
-        marginHorizontal: (56 - 12)/2
+        height: 20,
+        width: 20,
+        borderRadius: 20,
+        marginHorizontal: (60 - 20)/2,
     },
     statusEmpty: {
-        borderWidth: 4,
+        borderWidth: 6,
         borderColor: Colors.bad,
     },
     statusPartiallySatisfied: {
-        borderWidth: 4,
+        borderWidth: 6,
         borderColor: Colors.okay,
     },
     statusSatisfied: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     },
     minimalContainer: {
         paddingBottom: 12,
-        paddingHorizontal: 12,
+        paddingRight: 12,
         justifyContent: 'space-evenly',
         borderTopWidth: 0,
         borderBottomWidth: 0,
