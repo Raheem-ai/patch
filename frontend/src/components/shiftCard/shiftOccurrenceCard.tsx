@@ -8,6 +8,7 @@ import { Colors, ICONS } from "../../types";
 import UserIcon from "../userIcon";
 import TestIds from "../../test/ids";
 import { dateToDisplayTime } from "../../../../common/utils";
+import moment from "moment";
 
 type Props = {
     testID: string,
@@ -26,6 +27,8 @@ const ShiftOccurrenceCard = observer(({
 } : Props) => {
     const parentshift = shiftStore().shifts.get(shiftId);
     const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
+    const now = moment();
+    const pastShift = moment(shiftOccurrence.dateTimeRange.startDate).isBefore(now);
 
     const onCardPress = (event: GestureResponderEvent) => {
         console.log('shift occurrence card pressed')
@@ -141,7 +144,7 @@ const ShiftOccurrenceCard = observer(({
         <Pressable
             onPress={onCardPress}
             testID={TestIds.shiftOccurrenceCard(testID, occurrenceId)}
-            style={[styles.container, styles.minimalContainer, style]}>
+            style={[pastShift ? styles.pastContainer : styles.container, styles.minimalContainer, style]}>
                 {header()}
                 {positionRows()}
         </Pressable>
@@ -204,13 +207,18 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderTopWidth: 4
     },
+    pastContainer: {
+        backgroundColor: Colors.backgrounds.medium,
+        borderBottomColor: '#e0e0e0',
+        borderBottomWidth: 1,
+        borderTopWidth: 4
+    },
     minimalContainer: {
         paddingBottom: 12,
         paddingRight: 12,
         justifyContent: 'space-evenly',
         borderTopWidth: 0,
         borderBottomWidth: 0,
-
     },
     headerRow: {
         flex: 1,
