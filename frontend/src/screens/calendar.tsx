@@ -108,7 +108,7 @@ const Calendar = observer(({ navigation, route }: Props) => {
             <ListHeader { ...filterHeaderProps } />
             <WrappedScrollView
                 style={{ flex: 1, paddingTop: 12 }}
-                onScrollEndDrag={handleScroll} // This works smoother than onScroll
+                onScrollEndDrag={handleScroll}
                 scrollEventThrottle={1000}>
                     <ShiftOccurrenceList />
             </WrappedScrollView>
