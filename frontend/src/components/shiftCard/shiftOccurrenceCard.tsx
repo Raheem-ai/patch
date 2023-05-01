@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 4
     },
     pastContainer: {
-        backgroundColor: Colors.backgrounds.medium,
+        backgroundColor: '#ECEBEC',
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1,
         borderTopWidth: 4

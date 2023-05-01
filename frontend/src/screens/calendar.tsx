@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { CalendarDaysFilter, CalendarDaysFilterToLabelMap, ShiftsRolesFilter, CalendarRolesFilterToLabelMap, ShiftNeedsPeopleFilter, CalendarNeedsPeopleFilterToLabelMap, ShiftOccurrence } from "../../../common/models";
 import { allEnumValues, dayNumToDayNameLabel, monthNumToMonthNameLabel } from "../../../common/utils";
@@ -10,7 +10,9 @@ import { shiftStore } from "../stores/interfaces";
 import { IconButton, Text } from "react-native-paper";
 import ShiftOccurrenceCard from "../components/shiftCard/shiftOccurrenceCard";
 import moment from "moment";
-import { wrapScrollView } from "react-native-scroll-into-view";
+import { useScrollIntoView, wrapScrollView } from "react-native-scroll-into-view";
+import { runInAction } from "mobx";
+import { FullOptions } from "react-native-scroll-into-view/build/config";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -62,36 +64,60 @@ const Calendar = observer(({ navigation, route }: Props) => {
         ]
     }
 
+    // By default, fetch shifts two weeks in the past and one month in the future.
     useEffect(() => {
-        shiftStore().setDateRange({
-            startDate: new Date(moment().minutes(0).hours(0).seconds(0).toDate()),
-            endDate: new Date(moment().minutes(0).hours(0).seconds(0).add(1, 'months').toDate()),
+        shiftStore().initializeDateRange({
+            startDate: new Date(moment().minutes(0).hours(0).seconds(0).milliseconds(0).subtract(2, 'weeks').toDate()),
+            endDate: new Date(moment().minutes(0).hours(0).seconds(0).milliseconds(0).add(1, 'months').toDate()),
         });
     }, [])
 
     const handleScroll = (e) => {
+        // Return right away if the component hasn't finished its automatic scroll
+        // during the first list render.
+        if (!shiftStore().initialScrollFinished) {
+            return;
+        }
+
         // Screen Height
         const layoutHeight = e.nativeEvent.layoutMeasurement.height;
 
-        // Height of all the calendar list content
-        const contentHeight = e.nativeEvent.contentSize.height;
-
         // When the scroll reaches the content height minus the screen height
         // we've scrolled to the end of the list.
-        const contentEnd = contentHeight - layoutHeight;
+        const contentEnd = e.nativeEvent.contentSize.height - layoutHeight;
 
         // We want to trigger a fetch of new shifts a little before the user
         // reaches the very end of the list. Currently set to fetch more shifts
         // when we've scrolled through 80% of the list (by content height, not shift count).
         const fetchFutureTrigger = .8 * contentEnd;
 
+        const fetchPastTrigger = 0;
+
         // If the y scroll offset reaches this threshold, expand our shift
         // date range by one week in the future.
         const yOffset = e.nativeEvent.contentOffset.y;
         if (yOffset >= fetchFutureTrigger) {
             shiftStore().addFutureWeekToDateRange();
+        } else if (yOffset <= fetchPastTrigger) {
+            shiftStore().addPreviousWeekToDateRange();
         }
     }
+
+    return (
+        <View style={styles.container} testID={TestIds.shiftsList.screen}>
+            <ListHeader { ...filterHeaderProps } />
+            <WrappedScrollView
+                style={{ flex: 1, paddingTop: 12 }}
+                onScroll={handleScroll}
+                scrollEventThrottle={1000}>
+                    <ShiftOccurrenceList />
+            </WrappedScrollView>
+        </View>
+    )
+})
+
+const ShiftOccurrenceList = observer(() => {
+    const scrollIntoView = useScrollIntoView();
 
     const shiftOccurrenceCards = (shifts: ShiftOccurrence[]) => {
         return shifts.map(shift => {
@@ -99,41 +125,57 @@ const Calendar = observer(({ navigation, route }: Props) => {
         })
     }
 
-    const dateHeading = (headingDate: Date) => {
-        // Extract the info for the date heading display
-        const day = dayNumToDayNameLabel(headingDate.getDay());
-        const month = monthNumToMonthNameLabel(headingDate.getMonth());
-        const date = headingDate.getDate();
-        return (
-            <View style={styles.dateHeading}>
-            <Text style={styles.dateText}>
-                <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
-            </Text>
-            <IconButton 
-                style={styles.addShiftButton} 
-                icon={ICONS.add} 
-                size={24}
-                color={Colors.icons.light}/>
-        </View>
-        )
+    return <>
+        {
+            shiftStore().filteredShiftOccurenceMetadata.map(metadata => {
+
+                return (
+                    <>
+                        <DateHeading headingDate={metadata.date} scrollTo={metadata.scrollTo} scrollIntoView={scrollIntoView} />
+                        {shiftOccurrenceCards(metadata.occurrences)}
+                    </>
+                )
+            })
+        }
+    </>
+})
+
+const DateHeading = observer(( {
+    headingDate,
+    scrollTo,
+    scrollIntoView
+}: { 
+    headingDate: Date,
+    scrollTo: boolean,
+    scrollIntoView: (view: View, options?: Partial<FullOptions>) => Promise<void>
+}) => {
+    // Extract the info for the date heading display
+    const day = dayNumToDayNameLabel(headingDate.getDay());
+    const month = monthNumToMonthNameLabel(headingDate.getMonth());
+    const date = headingDate.getDate();
+
+    const me = useRef<View>();
+    if (scrollTo) {
+        setTimeout(() => {
+            scrollIntoView(me.current, { align: 'top', animated: false});
+            runInAction(() => {
+                shiftStore().initialScrollFinished = true;
+            })
+        })
     }
 
     return (
-        <View style={styles.container} testID={TestIds.shiftsList.screen}>
-            <ListHeader { ...filterHeaderProps } />
-            <WrappedScrollView style={{ flex: 1, paddingTop: 12 }} onScroll={handleScroll} scrollEventThrottle={1000}>
-                {shiftStore().filteredShiftOccurenceMetadata.map(metadata => {
-                    return (
-                        <>
-                            {dateHeading(metadata.date)}
-                            {shiftOccurrenceCards(metadata.occurrences)}
-                        </>
-                    )
-                })}
-            </WrappedScrollView>
-        </View>
+        <View ref={me} style={styles.dateHeading}>
+        <Text style={styles.dateText}>
+            <Text style={{fontWeight: 'bold'}}>{day} </Text><Text>{month} {date}</Text>
+        </Text>
+        <IconButton 
+            style={styles.addShiftButton} 
+            icon={ICONS.add} 
+            size={24}
+            color={Colors.icons.light}/>
+    </View>
     )
-
 })
 
 export default Calendar

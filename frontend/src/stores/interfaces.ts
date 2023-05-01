@@ -272,12 +272,14 @@ export interface IShiftStore extends IBaseStore {
 
     filter: ShiftsFilter
     dateRange: DateTimeRange
+    initialScrollFinished: boolean
+    scrollToDate: Date
 
     setFilter(filter: ShiftsFilter): Promise<void>
     setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
     setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
-    setDateRange(dateRange: DateTimeRange): Promise<void>
+    initializeDateRange(dateRange: DateTimeRange): Promise<void>
     addFutureWeekToDateRange(): Promise<void>
     addPreviousWeekToDateRange(): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>

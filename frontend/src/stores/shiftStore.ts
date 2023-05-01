@@ -62,11 +62,11 @@ const recurrence: RecurringDateTimeRange = {
         days: [1,3,5]
     },
     until: {
-        repititions: 33,
+        repititions: 50,
         date: null
     },
-    startDate: new Date(moment().hour(12).minutes(0).subtract(2, 'weeks').toDate()),
-    endDate: new Date(moment().hour(12).minutes(0).subtract(2, 'weeks').add(2, 'hours').toDate()),
+    startDate: new Date(moment().hour(12).minutes(0).subtract(2, 'months').toDate()),
+    endDate: new Date(moment().hour(12).minutes(0).subtract(2, 'months').add(2, 'hours').toDate()),
 };
 
 // Mock shift definition
@@ -167,6 +167,9 @@ export default class ShiftStore implements IShiftStore {
         endDate: null,
     }
 
+    scrollToDate: Date = null;
+    initialScrollFinished = false;
+
     constructor() {
         makeAutoObservable(this);
     }
@@ -244,6 +247,9 @@ export default class ShiftStore implements IShiftStore {
         // Determine if the date and associated shifts should be returned
         // for display based on the filter.
         const iterDate = new Date(this.dateRange.startDate);
+
+        const now = moment().hours(0).minutes(0).seconds(0).milliseconds(0);
+        let foundFirstDate = false;
         while (iterDate <= this.dateRange.endDate) {
             const dateStr = moment(new Date(iterDate)).format('YYYY-MM-DD');
             const dateShifts = shiftsMap[dateStr] ? shiftsMap[dateStr] : [];
@@ -257,13 +263,25 @@ export default class ShiftStore implements IShiftStore {
                     return new Date(occurrenceA.dateTimeRange.startDate).valueOf() - new Date(occurrenceB.dateTimeRange.startDate).valueOf();
                 });
 
+                let scrollTo = false;
+                // When the calendar view is loading, we do an intial scroll to today's date
+                // or the first date that appears after today. Otherwise, check if we have a 
+                // specified date to scroll to.
+                if (!this.initialScrollFinished && !foundFirstDate && moment(iterDate).isSameOrAfter(now)) {
+                    scrollTo = true;
+                    foundFirstDate = true;
+                } else if (this.scrollToDate && moment(iterDate).isSame(this.scrollToDate)) {
+                    scrollTo = true;
+                }
+
                 filteredMetadata.push({
                     date: new Date(iterDate),
-                    occurrences: dateShifts
+                    occurrences: dateShifts,
+                    scrollTo: scrollTo
                 })
             }
 
-            // Move forward one date
+            // Move forward one day
             iterDate.setDate(iterDate.getDate() + 1);
         }
 
@@ -372,6 +390,7 @@ export default class ShiftStore implements IShiftStore {
     }
 
     addFutureWeekToDateRange = async (): Promise<void> => {
+        this.scrollToDate = null;
         const newEndDate = new Date(this.dateRange.endDate);
         newEndDate.setDate(newEndDate.getDate() + 7);
         this.dateRange = {
@@ -381,6 +400,11 @@ export default class ShiftStore implements IShiftStore {
     }
 
     addPreviousWeekToDateRange = async (): Promise<void> => {
+        // When we fetch dates in the past, we don't want the calendar
+        // list view to scroll all the way to the furthest date in the past.
+        // It should remain focused on the date the user is currently viewing,
+        // which should be the current date range's start date.
+        this.scrollToDate = this.dateRange.startDate;
         const newStartDate = new Date(this.dateRange.startDate);
         newStartDate.setDate(newStartDate.getDate() - 7);
         this.dateRange = {
@@ -389,11 +413,14 @@ export default class ShiftStore implements IShiftStore {
         }
     }
 
-    setDateRange = async (dateRange: DateTimeRange): Promise<void> => {
+    initializeDateRange = async (dateRange: DateTimeRange): Promise<void> => {
         this.dateRange = {
             startDate: dateRange.startDate,
             endDate: dateRange.endDate
         }
+
+        this.scrollToDate = null;
+        this.initialScrollFinished = false;
     }
 
     decomposeShiftOccurrenceId(shiftOccurrenceId: string): string[] {

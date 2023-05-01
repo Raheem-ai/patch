@@ -370,6 +370,7 @@ export enum ShiftStatus {
 
 export type ShiftOccurrenceMetadata = {
     date: Date,
+    scrollTo: boolean,
     occurrences: ShiftOccurrence[]
 }
 
