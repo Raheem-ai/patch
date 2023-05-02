@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -259,6 +259,33 @@ export interface IRequestStore extends IBaseStore {
     ackRequestsToJoinNotification(requestId: string): Promise<void>
     joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
     ackRequestNotification(requestId: string): Promise<void>
+}
+
+export namespace IShiftStore {
+    export const id = Symbol('IShiftStore');
+}
+
+export interface IShiftStore extends IBaseStore {
+    shifts: Map<string, Shift>
+    shiftsArray: Shift[]
+    filteredShiftOccurenceMetadata: ShiftOccurrenceMetadata[]
+
+    filter: ShiftsFilter
+    dateRange: DateTimeRange
+    initialScrollFinished: boolean
+    scrollToDate: Date
+
+    setFilter(filter: ShiftsFilter): Promise<void>
+    setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
+    setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
+    setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
+    initializeDateRange(dateRange: DateTimeRange): Promise<void>
+    addFutureWeekToDateRange(): Promise<void>
+    addPreviousWeekToDateRange(): Promise<void>
+    getShifts(shiftIds?: string[]): Promise<void>
+    getShift(shiftId: string): Promise<void>
+    getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
+    getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
@@ -644,6 +671,7 @@ export const dispatchStore = () => getStore<IDispatchStore>(IDispatchStore);
 export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateRequestStore);
 export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
 export const requestStore = () => getStore<IRequestStore>(IRequestStore);
+export const shiftStore = () => getStore<IShiftStore>(IShiftStore);
 export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 export const teamStore = () => getStore<ITeamStore>(ITeamStore);
 export const secretStore = () => getStore<ISecretStore>(ISecretStore);
@@ -672,6 +700,7 @@ export const AllStores = [
     IDispatchStore,
     ICreateRequestStore,
     IRequestStore,
+    IShiftStore,
     ISecretStore,
     IEditRequestStore,
     IBottomDrawerStore,

@@ -55,6 +55,7 @@ import boot from './src/boot';
 import * as Sentry from 'sentry-expo';
 import { apiHost, sentryDSN, inProdApp, appEnv } from './src/config';
 import HelpAndInfo from './src/screens/helpAndInfo';
+import Calendar from './src/screens/calendar';
 
 const routingInstrumentation = new Sentry.Native.ReactNavigationInstrumentation();
 
@@ -166,6 +167,7 @@ function App() {
                         <Stack.Screen name={routerNames.helpRequestDetails} component={userScreen(routerNames.helpRequestDetails, HelpRequestDetails)}/>
                         <Stack.Screen name={routerNames.helpRequestMap} component={userScreen(routerNames.helpRequestMap, HelpRequestMap)}/>
                         <Stack.Screen name={routerNames.helpRequestList} component={userScreen(routerNames.helpRequestList, visualArea(HelpRequestList))}/>
+                        <Stack.Screen name={routerNames.calendar} component={userScreen(routerNames.calendar, visualArea(Calendar))}/>
                         <Stack.Screen name={routerNames.helpRequestChat} component={userScreen(routerNames.helpRequestChat, HelpRequestChat)}/>
                         <Stack.Screen name={routerNames.teamList} component={userScreen(routerNames.teamList, visualArea(TeamList))}/>
                         <Stack.Screen name={routerNames.componentLib} component={userScreen(routerNames.componentLib, visualArea(ComponentLibrary))}/>

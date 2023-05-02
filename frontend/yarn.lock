@@ -3414,6 +3414,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rschedule/core@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@rschedule/core@npm:1.5.0"
+  checksum: 4f23c0433f6811e0e0837a21b10831d487477c8fa4d99824e3429756afe3e26710b0bcacc73b1624950b00a20ca9ea3f22a95383a15dd3a0b87c5c69be431288
+  languageName: node
+  linkType: hard
+
+"@rschedule/standard-date-adapter@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@rschedule/standard-date-adapter@npm:1.5.0"
+  peerDependencies:
+    "@rschedule/core": ^1.5.0
+  checksum: 54249a059a7ca9e5a24536da14838da1d4be7385f8f5b960344a4dfb39457bb99821ade90cce3c4ee3c9dbd4f0a767b3d1b66f9c87d36bbe43e29c8abb17ed26
+  languageName: node
+  linkType: hard
+
 "@segment/loosely-validate-event@npm:^2.0.0":
   version: 2.0.0
   resolution: "@segment/loosely-validate-event@npm:2.0.0"
@@ -7365,6 +7381,8 @@ __metadata:
     "@react-native-community/netinfo": 9.3.7
     "@react-navigation/native": ^6.0.6
     "@react-navigation/stack": ^6.0.11
+    "@rschedule/core": ^1.5.0
+    "@rschedule/standard-date-adapter": ^1.5.0
     "@sentry/react-native": 4.13.0
     "@testing-library/jest-native": ^5.4.1
     "@testing-library/react-native": 11.5.0

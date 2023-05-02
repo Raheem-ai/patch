@@ -37,7 +37,8 @@ const TestIds = {
             requests: 'headerNavigationRequests',
             channels: 'headerNavigationChannels',
             team: 'headerNavigationTeam',
-            componentLib: 'headerNavigationComponentLib'
+            componentLib: 'headerNavigationComponentLib',
+            calendar: 'headerNavigationCalendar',
         },
         submenu: {
             profile: 'header::profile',
@@ -46,6 +47,7 @@ const TestIds = {
             signOut: 'header::signOut'
         },
         actions: {
+            createShift: 'headerActionsCreateShift',
             createRequest: 'headerActionsCreateRequest',
             editProfile: 'headerActionsEditProfile',
             addTeamMember: 'headerActionsAddTeamMember',
@@ -129,6 +131,8 @@ const TestIds = {
             name: (testID: string) => `${testID}::name`
         }
     },
+    shiftOccurrenceCard: (context: string, occurenceId: string) => `shiftOccurrenceCard::${context}::${occurenceId}`,
+
 
     // input internals
     inputs: {
@@ -227,6 +231,9 @@ const TestIds = {
     requestList: {
         screen: 'requestListScreen',
     },
+    shiftsList: {
+        screen: 'shiftsListScreen',
+    },
     requestDetails: {
         notes: 'requestDetails::notes',
         tags: 'requestDetails::tags',
@@ -254,6 +261,7 @@ const TestIds = {
         goToRequests: 'userHomePage::goToRequests',
         goToChannels: 'userHomePage::goToChannels',
         goToTeam: 'userHomePage::goToTeam',
+        goToCalendar: 'userHomePage::goToCalendar',
         welcomeLabel: 'userHomePage::welcomeLabel',
         linkTo: (link: string) => `userHomePage::linkTo(${link})`,
     },

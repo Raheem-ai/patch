@@ -46,6 +46,43 @@ export function dateToDayOfWeekString(date: Date) {
     return date.toLocaleDateString([], { weekday: 'long' })
 }
 
+// `9am` `12pm` `1:45pm`
+export const dateToDisplayTime = (date: Date) => {
+    // Given a date, we're interested in displaying the time strings
+    // in a user-friendly format.
+    let amPm = 'am';
+    let hours = new Date(date).getHours();
+    const minutes = new Date(date).getMinutes();
+
+    // Convert from 24 hour to am/pm format.
+    if (hours == 12 && minutes == 0) {
+        return 'noon';
+    } else if (hours == 0 && minutes == 0) {
+        return 'midnight';
+    } else if (hours >= 12) {
+        amPm = 'pm';
+        if (hours != 12) {
+            hours = hours - 12;
+        }
+    } else {
+        amPm = 'am'
+        if (hours == 0) {
+            hours = 12;
+        }
+    }
+
+    // If the minutes are ":00" for the specified time,
+    // we don't want to display any minute text. If the minutes
+    // are single digits, we want to prepend the 0 for uniformity.
+    const minutesText = minutes == 0
+        ? ''
+        : minutes < 10 
+            ? `:0${minutes}`
+            : `:${minutes}`
+
+    return `${hours}${minutesText}${amPm}`
+}
+
 export function unwrap<T>(val: NotAFunction<T> | (() => NotAFunction<T>)): T {
     return typeof val == 'function'
         ? (val as () => NotAFunction<T>)()
@@ -92,6 +129,37 @@ export const daysToRecurringDaysLabel = (days: number[]) => {
     }
 
     return `On ${selectedDayText}`
+}
+
+export const monthNumToMonthNameLabel = (num: number) => {
+    switch (num) {
+        case 0:
+            return STRINGS.monthsOfYear.ja;
+        case 1:
+            return STRINGS.monthsOfYear.fe;
+        case 2:
+            return STRINGS.monthsOfYear.ma;
+        case 3:
+            return STRINGS.monthsOfYear.ap;
+        case 4:
+            return STRINGS.monthsOfYear.my;
+        case 5:
+            return STRINGS.monthsOfYear.ju;
+        case 6:
+            return STRINGS.monthsOfYear.jl;
+        case 7:
+            return STRINGS.monthsOfYear.au;
+        case 8:
+            return STRINGS.monthsOfYear.se;
+        case 9:
+            return STRINGS.monthsOfYear.oc;
+        case 10:
+            return STRINGS.monthsOfYear.no;
+        case 11:
+            return STRINGS.monthsOfYear.de;
+    }
+
+    throw 'bad month value'
 }
 
 // NOTE: this doesn't work well with localization

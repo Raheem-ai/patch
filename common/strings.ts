@@ -75,6 +75,20 @@ const STRINGS = {
         fr: 'F',
         sa: 'S',
     },
+    monthsOfYear: {
+        ja: 'January',
+        fe: 'February',
+        ma: 'March',
+        ap: 'April',
+        my: 'May',
+        ju: 'June',
+        jl: 'July',
+        au: 'August',
+        se: 'September',
+        oc: 'October',
+        no: 'November',
+        de: 'December'
+    },
     LINKS: {
         helpCenter: 'Documentation',
         newTicket: 'Report an issue',
@@ -152,6 +166,7 @@ const STRINGS = {
         channels: 'Channels',
         componentLibrary: 'Component Library',
         createRequest: 'Create Request',
+        calendar: 'Calendar',
     },
     EMAILS: {
         forgotPasswordSubject: `Reset Patch password`,

@@ -362,6 +362,44 @@ export enum HelpRequestSortBy {
 
 export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
 
+export enum ShiftStatus {
+    Satisfied,
+    PartiallySatisfied,
+    Empty
+}
+
+export type ShiftOccurrenceMetadata = {
+    date: Date,
+    scrollTo: boolean,
+    occurrences: ShiftOccurrence[]
+}
+
+export type ShiftOccurrence = {
+    id: string
+    shiftId: string
+    chat: Chat
+    dateTimeRange?: DateTimeRange
+    title?: string
+    description?: string
+    positions?: Position[]
+}
+
+export type Shift = {
+    // virtual fields proviced by db
+    createdAt: string
+    updatedAt: string
+    id: string
+
+    // PATCH defined fields
+    displayId: string
+    orgId: string
+    title: string
+    description: string
+    positions: Position[]
+    recurrence: RecurringDateTimeRange
+    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence }
+}
+
 export enum TeamFilter {
     Everyone = 'ev',
     OnDuty = 'on',
@@ -372,6 +410,28 @@ export enum TeamSortBy {
     ByLastName = 'bln',
     ByFirstName = 'bfn'
 };
+
+export enum CalendarDaysFilter {
+    All = 'al',
+    WithShifts = 'sh',
+    WithoutShifts = 'ns'
+};
+
+export enum ShiftNeedsPeopleFilter {
+    All = 'al',
+    Unfilled = 'un'
+};
+
+export enum ShiftsRolesFilter {
+    All = 'al',
+    My = 'my'
+};
+
+export type ShiftsFilter = {
+    daysFilter: CalendarDaysFilter,
+    needsPeopleFilter: ShiftNeedsPeopleFilter,
+    rolesFilter: ShiftsRolesFilter
+}
 
 export type Chat = {
     id: string,
@@ -424,6 +484,22 @@ export const HelpRequestSortByToLabelMap: { [key in HelpRequestSortBy] : string 
     [HelpRequestSortBy.ByStatus]: 'By status',
     [HelpRequestSortBy.BySeverity]: 'By priority'
     // [HelpRequestSortBy.ByDistance]: 'By distance'
+}
+
+export const CalendarDaysFilterToLabelMap: { [key in CalendarDaysFilter] : string } = {
+    [CalendarDaysFilter.WithShifts]: 'Days with shifts',
+    [CalendarDaysFilter.WithoutShifts]: 'Days without shifts',
+    [CalendarDaysFilter.All]: 'All days'
+}
+
+export const CalendarNeedsPeopleFilterToLabelMap: { [key in ShiftNeedsPeopleFilter] : string } = {
+    [ShiftNeedsPeopleFilter.Unfilled]: 'Unfilled shifts',
+    [ShiftNeedsPeopleFilter.All]: 'All shifts'
+}
+
+export const CalendarRolesFilterToLabelMap: { [key in ShiftsRolesFilter] : string } = {
+    [ShiftsRolesFilter.All]: 'All roles',
+    [ShiftsRolesFilter.My]: 'My roles'
 }
 
 export type ResponderRequestStatuses = 
@@ -1417,6 +1493,7 @@ export enum RecurringPeriod {
 
 export type RecurringTimePeriod = ({
     period: RecurringPeriod.Month,
+    // TODO: Change name to monthScope (e.g. day of month, to match day of week scope)
     dayScope?: boolean,
     weekScope?: boolean
 } | {
@@ -1430,8 +1507,10 @@ export type RecurringTimeConstraints = {
     every?: RecurringTimePeriod
     until?: {
         date: Date,
+        // TODO: Fix typo spelling
         repititions: null
     } | {
+        // TODO: Fix typo spelling
         date: null,
         repititions: number
     }

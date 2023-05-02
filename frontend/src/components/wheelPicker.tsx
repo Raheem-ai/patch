@@ -25,9 +25,12 @@ const WheelPicker = ({
         <View style={[{ width: 40 }, style]}>
             <Picker
                 width={'100%'}
-                initialSelectedIndex={initialSelectedIndex}
+                // Temporary fix to prevent crash when initialSelectedIndex is set to anything other than 0
+                initialSelectedIndex={0}
                 items={items}
-                onChange={scrollPickerCB(onChange)} />
+                onChange={scrollPickerCB(onChange)}
+                // flatListProps={{nestedScrollEnabled: true}}
+                />
         </View>
     )
 }
