@@ -14,8 +14,9 @@ import STRINGS from "../../../../../common/strings";
 import TestIds from "../../../test/ids";
 import { ICONS } from "../../../types";
 import { CompoundFormInputConfig } from "../../forms/types";
-import { dateToDayOfWeekString } from "../../../../utils";
+import { dateToDateString, dateToDayOfWeekString } from "../../../../../common/utils";
 import RecurringDateTimeRangeInputConfig from "../../forms/inputs/compound/recurringDateTimeRange";
+import moment from "moment";
 
 type Props = {}
 
@@ -27,8 +28,13 @@ class CreateShift extends React.Component<Props> {
 
     componentDidMount() {
         runInAction(() => {
-            // TODO: Initialize shift date/start time
-            // createRequestStore().callStartedAt = rightNow();
+            // TODO: Initialize shift date/start time as the nearest upcoming half hour
+            // if it's today, otherwise 11:30pm. Initialize the end date to be one hour
+            // after start.
+            createShiftStore().recurrence = {
+                startDate: moment().toDate(), // Today @ 10:05pm 
+                endDate: moment().add(1, 'hours').toDate(), // Tomorrow @ 12:05am 
+            }
         })
     }
 
@@ -100,10 +106,6 @@ class CreateShift extends React.Component<Props> {
         )
     })
 
-    // made a separate function in anticipation of adding an action 
-    // that places the current time into call start or call end fields
-
-
     formProps = (): FormProps => {
 
         return {
@@ -129,7 +131,24 @@ class CreateShift extends React.Component<Props> {
                     type: 'TextArea',
                     required: true,
                 },
-                // TODO: What goes here for RecurringDateTimeRangeInputConfig?
+                RecurringDateTimeRangeInputConfig({
+                    testID: TestIds.createShift.inputs.recurrence,
+                    onChange: (recurringDateTimeRange) => {
+                        createShiftStore().recurrence = recurringDateTimeRange;
+                    },
+                    val: () => {
+                        return createShiftStore().recurrence
+                    },
+                    props: {
+                        updateStartDatePromptMessage: (from: Date, to: Date) => {
+                            return `Do you want to move the next scheduled shift from ${dateToDateString(from)} to ${dateToDateString(to)}?`
+                        },
+                        updateStartDatePromptTitle: (from: Date, to: Date) => {
+                            return `Move next shift to ${dateToDayOfWeekString(to)}?`
+                        }
+                    },
+                    name: 'schedule'
+                }),
                 // Positions
                 {
                     onSave: (data) => {
@@ -151,7 +170,7 @@ class CreateShift extends React.Component<Props> {
                 }
             ] as [
                 ScreenFormInputConfig<'TextArea'>,
-                // CompoundFormInputConfig<'RecurringDateTimeRange'>,
+                CompoundFormInputConfig<'RecurringDateTimeRange'>,
                 ScreenFormInputConfig<'Positions'>,
             ]
         }

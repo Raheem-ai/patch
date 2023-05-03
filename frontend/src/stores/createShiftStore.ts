@@ -3,6 +3,7 @@ import { Store } from './meta';
 import { ICreateShiftStore, shiftStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
 import { DefaultRoleIds, MinShift, Position, RecurringDateTimeRange, Shift } from '../../../common/models';
+import moment from 'moment';
 
 
 @Store(ICreateShiftStore)
@@ -10,7 +11,13 @@ export default class CreateShiftStore implements ICreateShiftStore  {
     title: string = ''
     description: string = ''
     positions: Position[] = []
-    recurrence: RecurringDateTimeRange = null
+
+    // TODO: How do we want to initialize this value?
+    // I update the value in createShift.componentDidMount but it still throws if not set here.
+    recurrence: RecurringDateTimeRange = {
+        startDate: moment().toDate(),
+        endDate: moment().add(1, 'hours').toDate(),
+    }
 
     constructor() {
         makeAutoObservable(this)
