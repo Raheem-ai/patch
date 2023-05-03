@@ -13,6 +13,7 @@ import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
 import { RequestDetailsTabs } from '../../../common/models';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import CreateShift from '../components/bottomDrawer/views/createShift';
 
 /**
  * open minimizable view
@@ -26,7 +27,8 @@ const Config: BottomDrawerConfig = {
     [BottomDrawerView.editRequest]: EditHelpRequest,
     [BottomDrawerView.inviteUserToOrg]: AddUser,
     [BottomDrawerView.editMe]: EditUser,
-    [BottomDrawerView.editUser]: EditUser
+    [BottomDrawerView.editUser]: EditUser,
+    [BottomDrawerView.createShift]: CreateShift
 }
 
 const dimensions = Dimensions.get('screen')

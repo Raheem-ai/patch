@@ -49,7 +49,8 @@ import {
     IOrganizationSettingsStore,
     IAppUpdateStore,
     IFormStore,
-    IConnectionStore
+    IConnectionStore,
+    ICreateShiftStore
 } from './interfaces';
 import UpsertRoleStore from './upsertRoleStore';
 import ManageAttributesStore from './manageAttributesStore';
@@ -60,6 +61,7 @@ import AppUpdateStore from './appUpdateStore';
 import FormStore from './formStore';
 import ConnectionStore from './connectionStore';
 import ShiftStore from './shiftStore';
+import CreateShiftStore from './createShiftStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -69,6 +71,7 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ ICreateRequestStore, CreateRequestStore ],
     [ IRequestStore, RequestStore ],
     [ IShiftStore, ShiftStore ],
+    [ ICreateShiftStore, CreateShiftStore ],
     [ ISecretStore, SecretStore ],
     [ IEditRequestStore, EditRequestStore ],
     [ IBottomDrawerStore, BottomDrawerStore ],

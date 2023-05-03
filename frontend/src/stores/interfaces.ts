@@ -261,6 +261,27 @@ export interface IRequestStore extends IBaseStore {
     ackRequestNotification(requestId: string): Promise<void>
 }
 
+export type CreateShiftData = Pick<Shift, 
+    'title' 
+    | 'description' 
+    | 'positions' 
+    | 'recurrence'
+>
+
+export interface ITempShiftStore extends CreateShiftData {
+    // react to deletions that might affect the locally cached data this store is using
+    onRoleDeletedUpdate(roleId: string): void
+    clear(prop?: keyof CreateReqData): void
+}
+
+export namespace ICreateShiftStore {
+    export const id = Symbol('ICreateShiftStore');
+}
+
+export interface ICreateShiftStore extends ITempShiftStore {
+    createShift: () => Promise<Shift>;
+}
+
 export namespace IShiftStore {
     export const id = Symbol('IShiftStore');
 }
@@ -386,6 +407,7 @@ export enum BottomDrawerView {
     inviteUserToOrg ='iu',
     editMe = 'em',
     editUser = 'eu',
+    createShift = 'cs'
 }
 
 export type BottomDrawerComponentClass = React.ComponentClass & {
@@ -671,6 +693,7 @@ export const dispatchStore = () => getStore<IDispatchStore>(IDispatchStore);
 export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateRequestStore);
 export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
 export const requestStore = () => getStore<IRequestStore>(IRequestStore);
+export const createShiftStore = () => getStore<ICreateShiftStore>(ICreateShiftStore);
 export const shiftStore = () => getStore<IShiftStore>(IShiftStore);
 export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 export const teamStore = () => getStore<ITeamStore>(ITeamStore);
@@ -701,6 +724,7 @@ export const AllStores = [
     ICreateRequestStore,
     IRequestStore,
     IShiftStore,
+    ICreateShiftStore,
     ISecretStore,
     IEditRequestStore,
     IBottomDrawerStore,

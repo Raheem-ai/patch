@@ -384,6 +384,8 @@ export type ShiftOccurrence = {
     positions?: Position[]
 }
 
+export type MinShift = AtLeast<Shift, 'title' | 'description' | 'positions' | 'recurrence'>
+
 export type Shift = {
     // virtual fields proviced by db
     createdAt: string

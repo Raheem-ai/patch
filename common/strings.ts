@@ -236,6 +236,11 @@ const STRINGS = {
             positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
         }
     },
+    SHIFTS: {
+        createdShiftSuccess: (title: string) => `Successfully created ${title}.`,
+        description: 'Description',
+        positions: 'Add a position',
+    },
     CHANNELS: {
         noMessages: '...',
     },

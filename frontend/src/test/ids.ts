@@ -328,6 +328,15 @@ const TestIds = {
             tags: 'editRequestForm::tags'
         }
     },
+    createShift: {
+        form: 'createShiftForm',
+        inputs: {
+            title: 'createShiftForm::title',
+            description: 'createShiftForm::description',
+            positions: 'createShiftForm::positions',
+            recurrence: 'createShiftForm::recurrence',
+        }
+    },
     addUser: {
         form: 'addUserForm',
         inputs: {

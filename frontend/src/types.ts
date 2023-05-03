@@ -231,6 +231,8 @@ export const ICONS = {
     callPhone: BASIC_ICONS.phone,
     sendEmail: BASIC_ICONS.email,
     request: 'human-greeting-variant',
+    // TODO: Shift icon string?
+    shift: 'human-greeting-variant',
     permissions: 'key',
     schedule: 'calendar',
     channels: 'forum',
