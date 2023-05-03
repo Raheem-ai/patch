@@ -14,7 +14,7 @@ export const linkBaseUrl = extra.linkBaseUrl;
 export const termsOfServiceVersion = extra.termsOfServiceVersion;
 export const termsOfServiceLink = extra.termsOfServiceLink;
 
-export const appVersion = Updates.runtimeVersion;
+export const appRuntimeVersion = Updates.runtimeVersion;
 
 export const inProdApp = appEnv == 'prod'
 export const inStagingApp = appEnv == 'staging'

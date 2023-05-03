@@ -2,6 +2,7 @@ import { Model } from "@tsed/mongoose";
 import { Property } from "@tsed/schema";
 import { AuthCode } from "common/models";
 import { Collections } from "../common/dbConfig";
+import { Document } from "mongoose";
 
 // timestamps are handled by db
 @Model({ 

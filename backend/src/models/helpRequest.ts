@@ -14,6 +14,16 @@ class ChatMessageSchema  implements ChatMessage {
 }
 
 @Schema()
+class ChatSchema  implements Chat {
+    @Required() id: string
+    @Required() @CollectionOf(ChatMessageSchema) messages: ChatMessage[];
+    @Required() lastMessageId: number;
+    @Required() @CollectionOf(Number) userReceipts: {
+        [userId: string]: number;
+    };
+}
+
+@Schema()
 class PositionSchema implements Position {
     @Required() id: string
     @Required() role: string
@@ -60,13 +70,8 @@ export class HelpRequestModel implements Omit<HelpRequest, 'createdAt' | 'update
     @Property()
     notes: string
 
-    @Property({
-        id: String,
-        messages: [ChatMessageSchema],
-        lastChatId: Number,
-        userRecepits: Object
-    })
-    chat: Chat
+    @Property()
+    chat: ChatSchema
 
     @Property()
     dispatcherId: string

@@ -35,7 +35,9 @@ const rootDir = __dirname;
     `${rootDir}/protocols/**/*.ts`, // scan protocols directory
   ],
   mount: {
-    [API.base]: `${rootDir}/controllers/**/*.ts`
+    [API.base]: [
+      `${rootDir}/controllers/**/*.ts`
+    ]
   },
   acceptMimes: ["application/json"],
   mongoose: {

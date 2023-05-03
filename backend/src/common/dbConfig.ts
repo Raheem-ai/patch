@@ -1,7 +1,8 @@
 export enum Collections {
-    User = 'user',
+    User = 'users',
     Organization = 'organizations',
     HelpRequest = 'help_requests',
     AuthCode = 'auth_code',
-    Notifications = 'notifications'
+    Notifications = 'notifications',
+    DynamicConfig = 'dynamic_config'
 }

@@ -149,7 +149,7 @@ export default class Notifications {
                 // but the typings have ticket/receipt errors having the same type so they may not all be transient
                 // will have to investigate when we can force failed tickets
                 default:
-                    await this.logUnknownTicketError(failure.toJSON())
+                    await this.logUnknownTicketError(failure.toJSON() as NotificationModel<any>)
                     transientErrors.push(failure);
             }
         }

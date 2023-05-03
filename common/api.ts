@@ -21,7 +21,8 @@ import {
     AdminEditableUser,
     CategorizedItem,
     TeamMemberMetadata,
-    RequestUpdates
+    RequestUpdates,
+    DynamicConfig
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -97,6 +98,7 @@ export interface IApiClient {
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     deleteMyAccount: Authenticated<() => Promise<void>>
+    getDynamicConfig: Authenticated<() => Promise<DynamicConfig>>
 
     updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 
@@ -322,10 +324,16 @@ type ApiRoutes = {
         signInWithCode: () => {
             return `/signInWithCode`
         },
+        getDynamicConfig: () => {
+            return `/getDynamicConfig`
+        },
     }
 
     client: ApiRoutes = {
         // users
+        getDynamicConfig: () => {
+            return `${this.base}${this.namespaces.users}${this.server.getDynamicConfig()}`
+        },
         signUp: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUp()}`
         },

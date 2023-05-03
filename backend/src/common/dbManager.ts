@@ -1,7 +1,7 @@
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { MongooseService } from "@tsed/mongoose";
+import { getSchema } from "@tsed/mongoose";
 import Mongoose, { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
@@ -14,36 +14,37 @@ import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
 import { applyUpdateToRequest } from "common/utils";
 import { writeFile } from "fs/promises";
-import { getJsonSchema } from "@tsed/schema";
 import { Collections } from "./dbConfig";
+import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
 export class DBManager { 
 
-    static async fromConnectionString(mongoConnString: string, opts?: Mongoose.ConnectionOptions) {
-        const conn = await Mongoose.createConnection(mongoConnString, opts || {
-            // got these defaults from TSed
-            useCreateIndex: true,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        })
+    static async fromConnectionString(mongoConnString: string, opts?: Mongoose.ConnectOptions) {
+        const conn = await Mongoose.createConnection(mongoConnString, opts || {})
 
-        const users = conn.model<UserModel>(UserModel.name, getJsonSchema(UserModel), Collections.User)
-        const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getJsonSchema(OrganizationModel), Collections.Organization)
-        const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getJsonSchema(HelpRequestModel), Collections.HelpRequest)
-        const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getJsonSchema(AuthCodeModel), Collections.AuthCode)
+        const users = conn.model<UserModel>(UserModel.name, getSchema(UserModel), Collections.User)
+        const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getSchema(OrganizationModel), Collections.Organization)
+        const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getSchema(HelpRequestModel), Collections.HelpRequest)
+        const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getSchema(AuthCodeModel), Collections.AuthCode)
+        const dynamicConfig = conn.model<DynamicConfigModel>(DynamicConfigModel.name, getSchema(DynamicConfigModel), Collections.DynamicConfig)
 
-        return new DBManager(conn, users, orgs, requests, authCodes)
+        return new DBManager(conn, users, orgs, requests, authCodes, dynamicConfig)
     }
 
     constructor(
-        protected connection: Mongoose.Connection,
-        protected users: Model<UserModel>,
-        protected orgs: Model<OrganizationModel>,
-        protected requests: Model<HelpRequestModel>,
-        protected authCodes: Model<AuthCodeModel>,
+        public connection: Mongoose.Connection,
+        public users: Model<UserModel>,
+        public orgs: Model<OrganizationModel>,
+        public requests: Model<HelpRequestModel>,
+        public authCodes: Model<AuthCodeModel>,
+        public dynamicConfig: Model<DynamicConfigModel>
     ) { }
+
+    async closeConnection() {
+        await this.connection.close()
+    }
 
     // @Every('5 minutes')
     async dumpOrg() {
@@ -122,16 +123,50 @@ export class DBManager {
         return pubUser;
     }
 
+    async getDynamicConfig(): Promise<DynamicConfigDoc> {
+        // singleton
+        return await this.dynamicConfig.findOne()
+    }
+
+    /**
+     * Should only be called by infra/cli not controllers
+     * 
+     */
+    async upsertDynamicConfig(update: Partial<DynamicConfig>) {
+        console.log('getting existing config')
+        let config = await this.getDynamicConfig()
+
+        if (!config) {
+
+            // create a new one using the update
+            config = new this.dynamicConfig(update)
+        }
+        
+        console.log('saving update')
+        for (const prop in update) {
+            config[prop] = update[prop]
+            // console.log('markModified:', prop)
+            // config.markModified(prop);
+        }
+
+        console.log(config.appVersion)
+        console.log(config)
+
+        return config.save()
+    }
+
     async protectedOrganization(org: OrganizationDoc): Promise<Organization> {
         const membersPopulated = org.populated('members');
         const removedMembersPopulated = org.populated('removedMembers');
 
         if (!membersPopulated) {
-            org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'members', select: this.privateUserProps() });
         }
 
         if (!removedMembersPopulated) {
-            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() });
         }
 
         const jsonOrg = org.toJSON() as Organization;
@@ -146,7 +181,8 @@ export class DBManager {
     async fullOrganization(orgId: string | OrganizationDoc) {
         const org = await this.resolveOrganization(orgId);
         // TODO: I think this might be redundant with getOrganization's populate?
-        const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        // const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        const populatedOrg = await org.populate({ path: 'members' })
 
         return populatedOrg;
     }
@@ -329,11 +365,11 @@ export class DBManager {
         return await this.findById(this.users, id);
     }
 
-    async getProtectedUser(query: Partial<UserModel>): Promise<Document<ProtectedUser>> {
+    async getProtectedUser(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>> {
         return await this.users.findOne(query).select(this.privateUserProps());
     }
 
-    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<ProtectedUser>[]> {
+    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>[]> {
         return await this.users.find(query).select(this.privateUserProps());
     }
 

@@ -24,6 +24,7 @@ const NotificationLabelMap = {
     [PatchEventType.OrganizationRoleCreated]: () => '',
     [PatchEventType.OrganizationRoleEdited]: () => '',
     [PatchEventType.OrganizationRoleDeleted]: () => '',
+    [PatchEventType.SystemDynamicConfigUpdated]: () => '',
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string, prefix?: string) => {

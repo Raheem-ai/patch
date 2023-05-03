@@ -7,6 +7,7 @@ import { HelpRequestModel } from "../models/helpRequest";
 import { AuthCodeModel } from "../models/authCode";
 
 import { DBManager } from "../common/dbManager";
+import { DynamicConfigModel } from "../models/dynamicConfig";
 
 @Service()
 export class DBManagerService extends DBManager {
@@ -16,7 +17,8 @@ export class DBManagerService extends DBManager {
         @Inject(OrganizationModel) orgs: Model<OrganizationModel>,
         @Inject(HelpRequestModel) requests: Model<HelpRequestModel>,
         @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>,
+        @Inject(DynamicConfigModel) dynamicConfig: Model<DynamicConfigModel>,
     ) {
-        super(db.get(), users, orgs, requests, authCodes)
+        super(db.get(), users, orgs, requests, authCodes, dynamicConfig)
     }
 }

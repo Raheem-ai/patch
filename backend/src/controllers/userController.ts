@@ -119,6 +119,7 @@ export class UsersController implements APIController<
     | 'sendResetCode'
     | 'updatePassword'
     | 'deleteMyAccount'
+    | 'getDynamicConfig'
 > {
     @Inject(DBManagerService) db: DBManagerService;
     @Inject(UserModel) users: MongooseModel<UserModel>;
@@ -308,6 +309,14 @@ export class UsersController implements APIController<
         return {
             googleMapsApiKey
         }
+    }
+
+    @Get(API.server.getDynamicConfig())
+    @Authenticate()
+    async getDynamicConfig(
+        @User() user: UserDoc
+    ) {
+        return this.db.getDynamicConfig()
     }
 
     @Post(API.server.editMe())

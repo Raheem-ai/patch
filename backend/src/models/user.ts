@@ -73,4 +73,4 @@ export class UserModel implements User {
 
 export type UserDoc = UserModel & Document;
 
-console.log(utils.inspect(getJsonSchema(UserModel), null, 6))
+// console.log(utils.inspect(getJsonSchema(UserModel), null, 6))

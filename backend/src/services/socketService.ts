@@ -162,6 +162,9 @@ export class MySocketService {
             case PatchEventType.OrganizationRoleDeleted:
                 await this.handleOrganizationRoleDeleted(params as PatchEventParams[PatchEventType.OrganizationRoleDeleted])
                 break;
+            case PatchEventType.SystemDynamicConfigUpdated:
+                await this.handleDynamicConfigUpdate(params as PatchEventParams[PatchEventType.SystemDynamicConfigUpdated])                
+                break;
         }
     }
 
@@ -621,6 +624,27 @@ export class MySocketService {
 
     async handleOrganizationRoleDeleted(params: PatchEventParams[PatchEventType.OrganizationRoleDeleted]) {
         await this.updateUsersInOrg(PatchEventType.OrganizationRoleDeleted, params, params.orgId, notificationLabel(PatchEventType.OrganizationRoleDeleted))
+    }
+
+    async handleDynamicConfigUpdate(params: PatchEventParams[PatchEventType.SystemDynamicConfigUpdated]) {
+        await this.updateAllUsers(PatchEventType.SystemDynamicConfigUpdated, params, notificationLabel(PatchEventType.SystemDynamicConfigUpdated))
+    }
+
+    async updateAllUsers<Event extends PatchEventType>(
+        event: Event,
+        params: PatchEventParams[Event],
+        body: string
+    ) {
+        const allUserConfigs = (await this.db.users.find({})).map(u => {
+            return {
+                userId: u.id,
+                userName: u.name,
+                pushToken: u.push_token,
+                body: body
+            } as SendConfig
+        })
+
+        await this.send(allUserConfigs, { event, params })
     }
 
     async updateUsersInOrg<Event extends PatchEventType>(
