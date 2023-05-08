@@ -14,10 +14,7 @@ export default class CreateShiftStore implements ICreateShiftStore  {
 
     // TODO: How do we want to initialize this value?
     // I update the value in createShift.componentDidMount but it still throws if not set here.
-    recurrence: RecurringDateTimeRange = {
-        startDate: moment().toDate(),
-        endDate: moment().add(1, 'hours').toDate(),
-    }
+    recurrence: RecurringDateTimeRange = this.defaultShiftDateTime
 
     constructor() {
         makeAutoObservable(this)
@@ -41,7 +38,38 @@ export default class CreateShiftStore implements ICreateShiftStore  {
             }
         })
     }
-    
+
+    get defaultShiftDateTime() {
+        // Get the current time's hours and minutes
+        const now = moment().toDate();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+
+        // The hours and minutes variables that track
+        // the default start datetime, we'll return
+        let minutes = 0;
+        let hours = 0;
+
+        // If the current time is within the first half of
+        // the hour, set the shift to begin at the half hour mark
+        // of the current hour. Otherwise at the start of the next hour.
+        if (currentMinutes < 30) {
+            minutes = 30;
+            hours = currentHours;
+        } else {
+            minutes = 0;
+            hours = currentHours + 1;
+        }
+
+        const defaultStart = moment().hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
+        const defaultEnd = moment(defaultStart).add(1, 'hours').toDate();
+
+        return {
+            startDate: defaultStart,
+            endDate: defaultEnd
+        }
+    }
+
     async createShift(): Promise<Shift> {
         const shift: MinShift = {
             title: this.title,
@@ -62,7 +90,8 @@ export default class CreateShiftStore implements ICreateShiftStore  {
         this.title = '';
         this.description = '';
         this.positions = [];
-        this.recurrence = null;
+        // TODO: Setting value to null causes crash when the form is closed/cancelled.
+        // this.recurrence = null;
     }
    
 }
