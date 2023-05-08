@@ -33,43 +33,49 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
     
     return {
         inputs: () => {
-            return [{
-                onChange: setDateTimeVal,
-                val: dateTimeVal,
-                isValid: () => {
-                    return params.props?.dateTimeRangeValid
-                        ? params.props.dateTimeRangeValid(dateTimeVal())
-                        : true;
-                },
-                name: `${params.name}-DTR`,
-                type: 'DateTimeRange',
-                disabled: params.disabled,
-                required: params.required,
-                icon: ICONS.clock
-            },
-            {
-                onSave: setRecurringTimeConstraintsVal,
-                val: recurringTimeConstraintsVal,
-                isValid: () => {
-                    return params.props?.recurringTimeConstraintsValid
-                        ? params.props.recurringTimeConstraintsValid(recurringTimeConstraintsVal())
-                        : true;
-                },
-                props: {
-                    dateTimeRange: dateTimeVal,
-                    updateDateTimeRange: setDateTimeVal,
-                    updateStartDatePromptMessage: params.props.updateStartDatePromptMessage,
-                    updateStartDatePromptTitle: params.props.updateStartDatePromptTitle
-                },
-                name: `${params.name}-RTC`,
-                headerLabel: () => 'Repeat',
-                type: 'RecurringTimePeriod',
-                disabled: params.disabled,
-                required: params.required,
-                icon: ICONS.refresh
-            }] as [ 
-                InlineFormInputConfig<'DateTimeRange'>, 
-                ScreenFormInputConfig<'RecurringTimePeriod'>
+            return [
+                [
+                    {
+                        onChange: setDateTimeVal,
+                        val: dateTimeVal,
+                        isValid: () => {
+                            return params.props?.dateTimeRangeValid
+                                ? params.props.dateTimeRangeValid(dateTimeVal())
+                                : true;
+                        },
+                        name: `${params.name}-DTR`,
+                        type: 'DateTimeRange',
+                        disabled: params.disabled,
+                        required: params.required,
+                        icon: ICONS.clock
+                    },
+                    {
+                        onSave: setRecurringTimeConstraintsVal,
+                        val: recurringTimeConstraintsVal,
+                        isValid: () => {
+                            return params.props?.recurringTimeConstraintsValid
+                                ? params.props.recurringTimeConstraintsValid(recurringTimeConstraintsVal())
+                                : true;
+                        },
+                        props: {
+                            dateTimeRange: dateTimeVal,
+                            updateDateTimeRange: setDateTimeVal,
+                            updateStartDatePromptMessage: params.props.updateStartDatePromptMessage,
+                            updateStartDatePromptTitle: params.props.updateStartDatePromptTitle
+                        },
+                        name: `${params.name}-RTC`,
+                        headerLabel: () => 'Repeat',
+                        type: 'RecurringTimePeriod',
+                        disabled: params.disabled,
+                        required: params.required,
+                        icon: ICONS.refresh
+                    }
+                ]
+            ] as [
+                [
+                    InlineFormInputConfig<'DateTimeRange'>, 
+                    ScreenFormInputConfig<'RecurringTimePeriod'>
+                ]
             ]
         },
         type: 'RecurringDateTimeRange',
