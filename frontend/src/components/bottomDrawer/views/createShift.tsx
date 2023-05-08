@@ -28,19 +28,21 @@ class CreateShift extends React.Component<Props> {
 
     componentDidMount() {
         runInAction(() => {
-            // TODO: Initialize shift date/start time as the nearest upcoming half hour
-            // if it's today, otherwise 11:30pm. Initialize the end date to be one hour
-            // after start.
-            createShiftStore().recurrence = {
-                startDate: moment().toDate(), // Today @ 10:05pm 
-                endDate: moment().add(1, 'hours').toDate(), // Tomorrow @ 12:05am 
-            }
+            createShiftStore().recurrence = createShiftStore().defaultShiftDateTime;
         })
     }
 
-    // TODO: Replace with title input
     headerLabel = () => {
-        return 'Create Shift'
+        return createShiftStore().title
+                ? createShiftStore().title
+                : 'Untitled shift/event';
+    }
+
+    headerIsPlaceholder = () => {
+        // Maybe a more Javsacript way to do this?
+        return createShiftStore().title
+                ? false
+                : true;
     }
 
     setRef = (formRef: Form) => {
@@ -82,7 +84,7 @@ class CreateShift extends React.Component<Props> {
                     createShiftStore().clear()
                     bottomDrawerStore().hide()
                 },
-                label: STRINGS.INTERFACE.add,
+                label: STRINGS.SHIFTS.add,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -109,28 +111,45 @@ class CreateShift extends React.Component<Props> {
     formProps = (): FormProps => {
 
         return {
-            headerLabel: this.headerLabel, 
+            headerLabel: this.headerLabel,
+            headerIsPlaceholder: this.headerIsPlaceholder,
             homeScreen: this.formHomeScreen,
             testID: TestIds.createShift.form,
             inputs: [
-                // Description
-                {
-                    onSave: (desc) => createShiftStore().description = desc,
-                    val: () => {
-                        return createShiftStore().description;
+                [
+                    // Shift name
+                    {
+                        onChange: (title) => createShiftStore().title = title,
+                        val: () => {
+                            return createShiftStore().title
+                        },
+                        isValid: () => {
+                            return true
+                        },
+                        testID: TestIds.createShift.inputs.title,
+                        name: 'title',
+                        icon: ICONS.text,
+                        placeholderLabel: () => STRINGS.SHIFTS.title,
+                        type: 'TextInput',
+                        required: true
                     },
-                    isValid: () => {
-                        return !!createShiftStore().description;
+                    // Description
+                    {
+                        onSave: (desc) => createShiftStore().description = desc,
+                        val: () => {
+                            return createShiftStore().description;
+                        },
+                        isValid: () => {
+                            return !!createShiftStore().description;
+                        },
+                        testID: TestIds.createShift.inputs.description,
+                        name: 'description',
+                        previewLabel: () => createShiftStore().description,
+                        headerLabel: () => STRINGS.SHIFTS.description,
+                        placeholderLabel: () => STRINGS.SHIFTS.description,
+                        type: 'TextArea'
                     },
-                    testID: TestIds.createShift.inputs.description,
-                    name: 'description',
-                    icon: ICONS.shift,
-                    previewLabel: () => createShiftStore().description,
-                    headerLabel: () => STRINGS.SHIFTS.description,
-                    placeholderLabel: () => STRINGS.SHIFTS.description,
-                    type: 'TextArea',
-                    required: true,
-                },
+                ],
                 RecurringDateTimeRangeInputConfig({
                     testID: TestIds.createShift.inputs.recurrence,
                     onChange: (recurringDateTimeRange) => {
@@ -169,7 +188,10 @@ class CreateShift extends React.Component<Props> {
                     type: 'Positions'
                 }
             ] as [
-                ScreenFormInputConfig<'TextArea'>,
+                [
+                    InlineFormInputConfig<'TextInput'>,
+                    ScreenFormInputConfig<'TextArea'>
+                ],
                 CompoundFormInputConfig<'RecurringDateTimeRange'>,
                 ScreenFormInputConfig<'Positions'>,
             ]
