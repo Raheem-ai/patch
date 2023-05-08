@@ -280,6 +280,7 @@ export namespace ICreateShiftStore {
 
 export interface ICreateShiftStore extends ITempShiftStore {
     createShift: () => Promise<Shift>;
+    defaultShiftDateTime: { startDate: Date, endDate: Date }
 }
 
 export namespace IShiftStore {
