@@ -47,7 +47,7 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                         type: 'DateTimeRange',
                         disabled: params.disabled,
                         required: params.required,
-                        icon: ICONS.clock
+                        icon: ICONS.calendar
                     },
                     {
                         onSave: setRecurringTimeConstraintsVal,

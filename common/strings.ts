@@ -237,9 +237,11 @@ const STRINGS = {
         }
     },
     SHIFTS: {
+        add: 'Add shift',
         createdShiftSuccess: (title: string) => `Successfully created ${title}.`,
         description: 'Description',
         positions: 'Add a position',
+        title: 'Title',
     },
     CHANNELS: {
         noMessages: '...',

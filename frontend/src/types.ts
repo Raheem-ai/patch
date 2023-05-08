@@ -183,6 +183,7 @@ enum BASIC_ICONS {
     clockOutline = 'clock-outline',
     phone = 'phone',
     email = 'email',
+    document = 'file-document'
 }
 
 export const ICONS = {
@@ -231,8 +232,9 @@ export const ICONS = {
     callPhone: BASIC_ICONS.phone,
     sendEmail: BASIC_ICONS.email,
     request: 'human-greeting-variant',
-    // TODO: Shift icon string?
-    shift: 'human-greeting-variant',
+    document: BASIC_ICONS.document,
+    text: 'text-long',
+    calendar: 'calendar-blank-outline',
     permissions: 'key',
     schedule: 'calendar',
     channels: 'forum',
