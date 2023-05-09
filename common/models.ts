@@ -15,7 +15,7 @@ export type DynamicAppVersionConfig = {
 }
 
 export type DynamicConfig = {
-    appVersion: DynamicAppVersionConfig
+    appVersion: DynamicAppVersionConfig[]
 }
 
 export interface User {
@@ -387,7 +387,7 @@ export type Chat = {
     id: string,
     messages: ChatMessage[],
     lastMessageId: number,
-    userReceipts: { [userId: string]: number }
+    userReceipts?: { [userId: string]: number }
 }
 
 export type ChatMessage = {

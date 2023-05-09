@@ -1,5 +1,5 @@
 import { Model, Schema } from "@tsed/mongoose";
-import { Property } from "@tsed/schema";
+import { CollectionOf, Property } from "@tsed/schema";
 import { DynamicAppVersionConfig, DynamicConfig } from "common/models";
 import { Collections } from "../common/dbConfig";
 import { Document } from "mongoose";
@@ -20,8 +20,8 @@ class DynamicAppVersionConfigSchema implements DynamicAppVersionConfig {
 })
 export class DynamicConfigModel implements DynamicConfig { 
 
-    @Property()
-    appVersion: DynamicAppVersionConfigSchema
+    @CollectionOf(DynamicAppVersionConfigSchema)
+    appVersion: DynamicAppVersionConfigSchema[]
 }
 
 export type DynamicConfigDoc = DynamicConfigModel & Document;

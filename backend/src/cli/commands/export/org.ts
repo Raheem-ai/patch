@@ -5,26 +5,32 @@ import { DBManager } from "../../../common/dbManager"
 import { trySetupLocalEnv } from "../../../common/env";
 import { User } from "../../../../../common/models";
 import config from "../../../config";
-import { UserModel } from "../../../models/user";
 import { mkdir, writeFile } from "fs/promises";
-
-trySetupLocalEnv()
+import { EnvironmentId } from "infra/src/environment";
+import { enumVariants } from "infra/src/utils";
 
 export default class ExportOrg extends Command {
-    static description = ''
+    static description = 'Export all data associated with an org'
   
     static flags = {
         help: Flags.help({ char: 'h' }),
         orgId: Flags.string({ char: 'i', required: true }),
-        dir: Flags.string({ char: 'd' })
+        dir: Flags.string({ char: 'd' }),
+        env: Flags.string({
+            char: 'e', 
+            required: true,
+            description: 'Target enviroment ',
+            options: enumVariants(EnvironmentId)
+        }),
     }
   
-
-    // TODO: command for updating config dbManager.upsertDynamicConfig
-
     async run() {
         try {
             const { flags } = await this.parse(ExportOrg)
+
+            const envId = EnvironmentId[flags.env];
+
+            trySetupLocalEnv(envId)
 
             const connString = config.MONGO_CONNECTION_STRING.get().connection_string;
 

@@ -70,8 +70,8 @@ export class HelpRequestModel implements Omit<HelpRequest, 'createdAt' | 'update
     @Property()
     notes: string
 
-    @Property()
-    chat: ChatSchema
+    @Property(ChatSchema)
+    chat: Chat
 
     @Property()
     dispatcherId: string

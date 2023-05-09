@@ -11,7 +11,7 @@ import { PubSubManager } from "../../../common/pubSubManager";
 import config from "../../../config";
 
 export default class UpdateDynamicConfig extends Command {
-    static description = ''
+    static description = 'Update DynamicConfig based on the configuration associated with an env and the current build in source'
   
     static flags = {
         help: Flags.help({ char: 'h' }),
@@ -35,29 +35,43 @@ export default class UpdateDynamicConfig extends Command {
             // *** rootdir is from output lib file structure not src ***
             const rootDir = __dirname;
 
-            const frontEndBuildConfigPath = resolve(rootDir, '../../../../../../../frontend/app.config.js');
+            const frontEndBuildConfigPath = resolve(rootDir, '../../../../../../../frontend/version.js');
 
-            console.log(frontEndBuildConfigPath)
-
-            // TODO: figure out how to let these values live in frontend and be accessed here
-            // might have to break them out to their own js file and require them in both places
-            const frontEndConfig = require(frontEndBuildConfigPath);
-
-            console.log(frontEndConfig)
+            const { VERSION, ANDROID_VERSION_CODE, REQUIRES_UPDATE } = require(frontEndBuildConfigPath);
 
             const connString = config.MONGO_CONNECTION_STRING.get().connection_string;
 
             const dbManager = await DBManager.fromConnectionString(connString);
             const pubSubManager = await PubSubManager.create();
 
-            // TODO: get this from source 
-            await dbManager.upsertDynamicConfig({
-                appVersion: {
-                    latestIOS: '12.0.0',
-                    latestAndroid: '12.0.0(1)',
-                    requiresUpdate: false,
+            const dynamicConfig = await dbManager.getDynamicConfig()
+
+            if (dynamicConfig) {
+                const copy = dynamicConfig.toJSON();
+
+                // if this version hasn't already been added
+                if (copy.appVersion.every((conf) => conf.latestIOS != VERSION)) {
+                    copy.appVersion.push({
+                        latestIOS: VERSION,
+                        latestAndroid: `${VERSION}(${ANDROID_VERSION_CODE})`,
+                        requiresUpdate: REQUIRES_UPDATE,
+                    })
+    
+                    await dbManager.upsertDynamicConfig(copy)
                 }
-            })
+
+            } else {
+                // first time deploying to this env
+                await dbManager.upsertDynamicConfig({
+                    appVersion: [
+                        {
+                            latestIOS: VERSION,
+                            latestAndroid: `${VERSION}(${ANDROID_VERSION_CODE})`,
+                            requiresUpdate: REQUIRES_UPDATE,
+                        }
+                    ]
+                })
+            }
 
             await pubSubManager.sys(PatchEventType.SystemDynamicConfigUpdated, {})
 

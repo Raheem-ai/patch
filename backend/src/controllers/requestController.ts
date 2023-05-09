@@ -136,6 +136,13 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         return res;
     }
 
+    /**
+     * TODO: permission model is misalligned with frontend
+     * 
+     * 1) this asks for either requestadmin permissions or editRequestdata permissions to update your receipts
+     * 2) frontend only cares that you have requestAdmin permissions, seeallchats permissions, or are on the request
+     * 
+     * */ 
     @Post(API.server.updateRequestChatReceipt())
     @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async updateRequestChatReceipt(

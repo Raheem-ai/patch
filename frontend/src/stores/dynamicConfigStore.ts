@@ -1,6 +1,9 @@
 import { makeAutoObservable, runInAction, when } from "mobx";
 import moment from "moment";
-import { appRuntimeVersion } from "../config";
+import { Linking } from "react-native";
+import { DynamicAppVersionConfig } from "../../models";
+import STRINGS from "../../../common/strings";
+import { androidAppStoreURL, appRuntimeVersion, iosAppStoreURL } from "../config";
 import { isIos } from "../constants";
 import { persistent } from "../meta";
 import { api } from "../services/interfaces";
@@ -11,16 +14,15 @@ import { Store } from "./meta";
 export default class DynamicConfigStore implements IDynamicConfigStore {
     
     @persistent()
-    appVersion = {
+    appVersion: DynamicAppVersionConfig[] = [{
         latestIOS: '',
         latestAndroid: '',
         requiresUpdate: false
-    }
+    }]
 
     @persistent() lastAppVersionPrompt = '' 
 
-    // timeBeforeNextPromptInMs = 1000 * 60 * 60 * 24 * 7 // 7 days
-    timeBeforeNextPromptInMs = 1000 * 10 // 10 secs
+    timeBeforeNextPromptInMs = 1000 * 60 * 60 * 24 * 7 // 7 days
 
     constructor() {
         makeAutoObservable(this);
@@ -30,38 +32,31 @@ export default class DynamicConfigStore implements IDynamicConfigStore {
         await userStore().init()
         await alertStore().init()
 
-        const needToUpdate = () => isIos
-            ? this.appVersion.latestIOS && this.appVersion.latestIOS != appRuntimeVersion
-            : this.appVersion.latestAndroid && this.appVersion.latestAndroid != appRuntimeVersion
-
-        when(needToUpdate, () => {
-            /**
-             * right now this will happen once you sign in and then whenever the appversion config
-             * dynamiclaly changes and this store updates
-             */
-
-            if (this.appVersion.requiresUpdate) {
-                this.promptForRequiredUpdate()
-            } else {
-                // if you have already answered the prompt, it will remind you next time you sign in after X time period
-
-                const now = new Date();
-                
-                const lastPrompt = this.lastAppVersionPrompt 
-                    ? new Date(this.lastAppVersionPrompt)
-                    : now
-
-                const waitTime = moment(now).diff(lastPrompt) 
-                const waitedLongEnough = waitTime > this.timeBeforeNextPromptInMs;
-
-                if (!this.lastAppVersionPrompt || waitedLongEnough)
-                    this.promptForOptionalUpdate()
-            }
-        })
-
-        if (!userStore().signedIn) {
+        if (userStore().signedIn) {
+            await this.updateAfterSignIn()
+        } else {
             when(() => userStore().signedIn, this.updateAfterSignIn)
         }
+
+        const needToUpdate = () => {
+            return this.currentAppVersion && this.currentAppVersion != appRuntimeVersion
+        }
+
+        when(needToUpdate, this.tryPromptForUpdate)
+    }
+
+    get currentAppVersionConfig() {
+        return this.appVersion[this.appVersion.length - 1]
+    }
+
+    get currentAppVersion() {
+        return this.normalizedVersion(this.currentAppVersionConfig)
+    }
+
+    normalizedVersion(config: DynamicAppVersionConfig) {
+        return isIos
+            ? config.latestIOS
+            : config.latestAndroid
     }
 
     updateAfterSignIn = async () => {
@@ -76,18 +71,60 @@ export default class DynamicConfigStore implements IDynamicConfigStore {
         this.lastAppVersionPrompt = new Date().toISOString();
     }
 
+    tryPromptForUpdate = () => {
+        /**
+         * right now this will happen once you sign in and then whenever the appversion config
+         * dynamiclaly changes and this store updates
+         */
+
+        // check if any of the versions after the currently installed version required an update
+        let updateRequiredInFutureVersion = false;
+
+        for (let i = this.appVersion.length - 1; i >= 0; i--) {
+            const config = this.appVersion[i];
+
+            if (appRuntimeVersion == this.normalizedVersion(config)) {
+                break;
+            } else if (config.requiresUpdate) {
+                updateRequiredInFutureVersion = true;
+                break;
+            }
+        }
+
+        if (updateRequiredInFutureVersion) {
+            this.promptForRequiredUpdate()
+        } else {
+            // if you have already answered the prompt, it will remind you next time you sign in after X time period
+
+            const now = new Date();
+            
+            const lastPrompt = this.lastAppVersionPrompt 
+                ? new Date(this.lastAppVersionPrompt)
+                : now
+
+            const waitTime = moment(now).diff(lastPrompt) 
+            const waitedLongEnough = waitTime > this.timeBeforeNextPromptInMs;
+
+            if (!this.lastAppVersionPrompt || waitedLongEnough)
+                this.promptForOptionalUpdate()
+        }
+    }
+
     promptForRequiredUpdate() {
         this.registerVersionPrompt()
 
         alertStore().showPrompt({
-            title: 'Upgrade Patch',
-            message: 'A newer version of Patch has been released. Update to continue using the app',
+            title: STRINGS.DYNAMIC_CONFIG.requiredUpdatePrompt.title,
+            message: STRINGS.DYNAMIC_CONFIG.requiredUpdatePrompt.message,
             actions: [
                 {
-                    label: 'Okay',
+                    label: STRINGS.DYNAMIC_CONFIG.requiredUpdatePrompt.updateNow,
                     onPress: () => {
-                        // show them a "you need to upgrade" page...or link to app store?
-                    }
+                        const url = isIos ? iosAppStoreURL : androidAppStoreURL;
+                        Linking.canOpenURL(url) && Linking.openURL(url)
+                    },
+                    // block you from doing anything else
+                    dontHide: true
                 }
             ]
         })
@@ -97,14 +134,22 @@ export default class DynamicConfigStore implements IDynamicConfigStore {
         this.registerVersionPrompt()
 
         alertStore().showPrompt({
-            title: 'New Patch version!',
-            message: 'A newer version of Patch has been released. Please update to use the latest functionality',
+            title: STRINGS.DYNAMIC_CONFIG.optionalUpdatePrompt.title,
+            message: STRINGS.DYNAMIC_CONFIG.optionalUpdatePrompt.message,
             actions: [
                 {
-                    label: 'Okay',
+                    label: STRINGS.DYNAMIC_CONFIG.optionalUpdatePrompt.updateLater,
                     onPress: () => {
-                        // nothing...can we link them to the app store?
+
                     }
+                },
+                {
+                    label: STRINGS.DYNAMIC_CONFIG.optionalUpdatePrompt.updateNow,
+                    onPress: () => {
+                        const url = isIos ? iosAppStoreURL : androidAppStoreURL;
+                        Linking.canOpenURL(url) && Linking.openURL(url)
+                    },
+                    confirming: true
                 }
             ]
         })
@@ -121,6 +166,6 @@ export default class DynamicConfigStore implements IDynamicConfigStore {
     }
 
     clear() {
-        //save values are meant to be forever persistent 
+        // values are meant to be forever persistent 
     }
 }

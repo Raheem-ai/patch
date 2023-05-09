@@ -483,6 +483,7 @@ type PromptAction = {
     label: string,
     onPress: () => void
     confirming?: boolean
+    dontHide?: boolean
 }
 
 export type PromptConfig = {

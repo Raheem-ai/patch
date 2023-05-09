@@ -319,6 +319,19 @@ const STRINGS = {
         fileTicketLabel: () => 'File a ticket',
         termsLabel: () => 'Terms of Use',
         privacyLabel: () => 'Privacy Policy',
+    }, 
+    DYNAMIC_CONFIG: {
+        requiredUpdatePrompt: {
+            title: 'Upgrade Patch',
+            message: 'A newer version of Patch has been released. Update to continue using the app',
+            updateNow: 'Okay'
+        },
+        optionalUpdatePrompt: {
+            title: 'New Patch version!',
+            message: 'A newer version of Patch has been released. Please update to use the latest functionality',
+            updateNow: 'Okay',
+            updateLater: 'Later'
+        }
     }
 }
 
