@@ -513,6 +513,12 @@ export default class ShiftStore implements IShiftStore {
         })
     }
 
+    updateOrAddShift(updatedShift: Shift) {
+        this.shifts.merge({
+            [updatedShift.id]: updatedShift
+        })
+    }
+
     getShiftsAfterSignin = async () => {
         await this.getShifts([]);
 

@@ -308,6 +308,7 @@ export interface IShiftStore extends IBaseStore {
     getShift(shiftId: string): Promise<void>
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
+    updateOrAddShift(updatedShift: Shift): void
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
