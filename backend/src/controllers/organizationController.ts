@@ -8,7 +8,7 @@ import { APIController, OrgId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import Notifications from '../services/notifications';
 import * as uuid from 'uuid';
 import { Twilio } from 'twilio';
@@ -42,7 +42,7 @@ export class OrganizationController implements APIController<
     | "updateAttributes"
     | "updateTags"
     > {
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     // eventually these will probably also trigger notifications
     @Inject(Notifications) notifications: Notifications;

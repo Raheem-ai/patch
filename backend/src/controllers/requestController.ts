@@ -10,7 +10,7 @@ import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
@@ -24,7 +24,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 @Controller(API.namespaces.request)
 export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: find a better place to inject this so it is instantiated
     @Inject(UIUpdateService) uiUpdateService: UIUpdateService;
@@ -136,6 +136,13 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         return res;
     }
 
+    /**
+     * TODO: permission model is misalligned with frontend
+     * 
+     * 1) this asks for either requestadmin permissions or editRequestdata permissions to update your receipts
+     * 2) frontend only cares that you have requestAdmin permissions, seeallchats permissions, or are on the request
+     * 
+     * */ 
     @Post(API.server.updateRequestChatReceipt())
     @RequestAdminOrWithPermissions([PatchPermissions.EditRequestData])
     async updateRequestChatReceipt(

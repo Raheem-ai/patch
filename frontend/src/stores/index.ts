@@ -48,7 +48,8 @@ import {
     IOrganizationSettingsStore,
     IAppUpdateStore,
     IFormStore,
-    IConnectionStore
+    IConnectionStore,
+    IDynamicConfigStore
 } from './interfaces';
 import UpsertRoleStore from './upsertRoleStore';
 import ManageAttributesStore from './manageAttributesStore';
@@ -58,6 +59,7 @@ import OrganizationSettingsStore from './organizationSettingStore';
 import AppUpdateStore from './appUpdateStore';
 import FormStore from './formStore';
 import ConnectionStore from './connectionStore';
+import DynamicConfigStore from './dynamicConfigStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -86,7 +88,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IOrganizationSettingsStore, OrganizationSettingsStore ],
     [ IAppUpdateStore, AppUpdateStore ],
     [ IFormStore, FormStore ],
-    [ IConnectionStore, ConnectionStore ]
+    [ IConnectionStore, ConnectionStore ],
+    [ IDynamicConfigStore, DynamicConfigStore ]
 ];
 
 function validateStores() {

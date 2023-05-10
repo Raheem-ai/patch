@@ -202,8 +202,9 @@ const HelpRequestCard = observer(({
             ? potentialLabel
             : potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(u => u.id)));
 
+        //TODO: this shouldn't show/click through for requests I'm not on if I don't have the right perms
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
-            && (!request.chat.userReceipts[userStore().user.id] 
+            && (!request.chat.userReceipts?.[userStore().user.id] 
                 || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         return (

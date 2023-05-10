@@ -10,25 +10,11 @@ import '@tsed/agenda';
 import "@tsed/platform-express";
 import "@tsed/socketio";
 import config from './config';
-import { EnvironmentId } from "infra/src/environment";
-import dotenv from 'dotenv';
-import { join, resolve } from "path";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
-import { env } from "process";
-import { homedir } from "os";
-import { existsSync } from "fs";
+import { trySetupLocalEnv, trySetupLocalGCPCredentials } from "./common/env";
 
-// *** rootdir is from output lib file structure not src ***
-const rootDir = __dirname;
-
-if (process.env.PATCH_LOCAL_ENV) {
-  const dotEnvPath = resolve(rootDir, `../../../env/.env.${process.env.PATCH_LOCAL_ENV}`);
-  
-  dotenv.config( {
-    path: dotEnvPath
-  })
-}
+trySetupLocalEnv()
 
 const mongoConnectionString = config.MONGO_CONNECTION_STRING.get().connection_string;
 
@@ -39,19 +25,9 @@ const socketIOPubClient = createClient({
 });
 const socketIOSubClient = socketIOPubClient.duplicate();
 
-if (env.PATCH_LOCAL_ENV) {
-  const envName = env.PATCH_LOCAL_ENV == EnvironmentId[EnvironmentId.dev]
-    ? EnvironmentId[EnvironmentId.staging]
-    : env.PATCH_LOCAL_ENV;
+trySetupLocalGCPCredentials()
 
-  // TODO: finding this path should come from infra
-  const root = process.env.RAHEEM_INFRA_ROOT || resolve(homedir(), '.raheem_infra');
-  const googleCredsPath = join(root, `/config/raheem-${envName}-adc.json`);
-
-  if (existsSync(googleCredsPath)) {
-    env.GOOGLE_APPLICATION_CREDENTIALS = googleCredsPath
-  }
-}
+const rootDir = __dirname;
 
 @Configuration({
   rootDir,
@@ -59,7 +35,9 @@ if (env.PATCH_LOCAL_ENV) {
     `${rootDir}/protocols/**/*.ts`, // scan protocols directory
   ],
   mount: {
-    [API.base]: `${rootDir}/controllers/**/*.ts`
+    [API.base]: [
+      `${rootDir}/controllers/**/*.ts`
+    ]
   },
   acceptMimes: ["application/json"],
   mongoose: {

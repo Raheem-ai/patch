@@ -1,6 +1,6 @@
 import jwt, { decode, Jwt, verify } from 'jsonwebtoken';
 import config from './config';
-import { DBManager } from './services/dbManager';
+import { DBManagerService } from './services/dbManagerService';
 
 const accessTokenSecrets = config.SESSION.get().accessTokenSecrets;
 const refreshTokenSecrets = config.SESSION.get().refreshTokenSecrets;
@@ -59,7 +59,7 @@ export async function createAuthToken(userId: string, etag: string, secret: { ki
     return token;
 }
 
-export async function verifyRefreshToken(refreshToken: string, dbManager: DBManager) {
+export async function verifyRefreshToken(refreshToken: string, dbManager: DBManagerService) {
     const decodedRefreshToken = decode(refreshToken, { complete: true });
 
         if (!decodedRefreshToken) {

@@ -10,7 +10,7 @@ export default class AlertStore implements IAlertStore {
     defaultToastTime = 1000 * 4;
     horizontalGutter = 20;
 
-    alertTop: Animated.AnimatedInterpolation;
+    alertTop: Animated.AnimatedInterpolation<number>;
     
     toast?: ToastConfig = null;
     prompt?: PromptConfig = null;
