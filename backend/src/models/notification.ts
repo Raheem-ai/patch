@@ -2,8 +2,9 @@ import { Model, ObjectID } from "@tsed/mongoose";
 import { Property } from "@tsed/schema";
 import { PatchEventPacket, PatchEventType } from "common/models";
 import { ExpoPushSuccessTicket, ExpoPushErrorTicket, ExpoPushErrorReceipt } from 'expo-server-sdk';
+import { Collections } from "../common/dbConfig";
 
-@Model({ collection: 'notifications' })
+@Model({ collection: Collections.Notifications })
 export class NotificationModel<T extends PatchEventType = any> {
 
     @Property()

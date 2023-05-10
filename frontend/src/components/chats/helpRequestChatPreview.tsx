@@ -28,7 +28,7 @@ const HelpRequestChatPreview = observer(({
 
     const unreadIndicator = () => {
         const hasUnreadMessages = (request.chat && request.chat.messages.length)
-                                    && (!request.chat.userReceipts[userStore().user.id] 
+                                    && (!request.chat.userReceipts?.[userStore().user.id] 
                                     || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         return (

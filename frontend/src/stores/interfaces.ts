@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -510,6 +510,7 @@ type PromptAction = {
     label: string,
     onPress: () => void
     confirming?: boolean
+    dontHide?: boolean
 }
 
 export type PromptConfig = {
@@ -664,6 +665,14 @@ export interface IFormStore extends IBaseStore {
     clearDepth(): void
 }
 
+export namespace IDynamicConfigStore {
+    export const id = Symbol('IDynamicConfigStore');
+}
+
+export interface IDynamicConfigStore extends IBaseStore, DynamicConfig {
+    update(): Promise<void>
+}
+
 export const userStore = () => getStore<IUserStore>(IUserStore);
 export const locationStore = () => getStore<ILocationStore>(ILocationStore);
 export const notificationStore = () => getStore<INotificationStore>(INotificationStore);
@@ -692,6 +701,7 @@ export const organizationSettingsStore = () => getStore<IOrganizationSettingsSto
 export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
 export const formStore = () => getStore<IFormStore>(IFormStore);
 export const connectionStore = () => getStore<IConnectionStore>(IConnectionStore);
+export const dynamicConfigStore = () => getStore<IDynamicConfigStore>(IDynamicConfigStore);
 
 export const AllStores = [
     IUserStore,
@@ -721,5 +731,6 @@ export const AllStores = [
     IOrganizationSettingsStore,
     IAppUpdateStore,
     IFormStore,
-    IConnectionStore
+    IConnectionStore,
+    IDynamicConfigStore
 ]

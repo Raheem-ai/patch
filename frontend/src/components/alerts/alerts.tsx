@@ -11,11 +11,6 @@ import { Colors, ICONS } from "../../types";
 export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
 
-    const backgroundTap = (event: GestureResponderEvent) => {
-        alertStore().hideAlerts();
-        event.stopPropagation();
-    }
-
     const prompt = () => {
         if (!alertStore().prompt) {
             return null;
@@ -44,7 +39,10 @@ export const Alerts = observer(() => {
                         { 
                             alertStore().prompt.actions.map(a => {
                                 const onPress = () => {
-                                    alertStore().hidePrompt()
+                                    if(!a.dontHide) {
+                                        alertStore().hidePrompt()
+                                    }
+                                    
                                     a.onPress()
                                 }
 

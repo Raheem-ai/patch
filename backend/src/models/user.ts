@@ -4,8 +4,9 @@ import { CategorizedItem, User } from "common/models";
 import { Document } from "mongoose";
 import { PrivProps } from ".";
 import utils from 'util'
+import { Collections } from "../common/dbConfig";
 
-@Model({ collection: 'users' })
+@Model({ collection: Collections.User })
 export class UserModel implements User {
 
     static systemProperties: PrivProps<UserModel> = {
@@ -72,4 +73,4 @@ export class UserModel implements User {
 
 export type UserDoc = UserModel & Document;
 
-console.log(utils.inspect(getJsonSchema(UserModel), null, 6))
+// console.log(utils.inspect(getJsonSchema(UserModel), null, 6))

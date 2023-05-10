@@ -11,25 +11,14 @@ import {
 	servicesJsonPath
 } from './eas_build/constants';
 
+import {
+	VERSION,
+	ANDROID_VERSION_CODE
+} from './version'
+
 // NOTE: put your ngrok url here for development
 let apiHost = ''
 
-/**
- * ONLY NEEDED FOR BUILD TIME
- * ie. publish will have this be blank in the manifest and that's okay
- * For Apple:
- * - corresponds to "CFBundleShortVersionString"
- * 
- * For Android: 
- * - corresponds to "versionName"
- * 
- * NOTE: increment every time you make a change that requires
- * a new build because of native code changes or build time native 
- * config changes
- */
-const VERSION = `1.0.1`
-// NOTE: this needs to be a positive integer that gets incremented along side VERSION
-let ANDROID_VERSION_CODE = 12
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update

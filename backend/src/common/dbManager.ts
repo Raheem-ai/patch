@@ -1,10 +1,8 @@
-import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda, Every } from "@tsed/agenda";
-import { MongooseService } from "@tsed/mongoose";
-import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
+import { getSchema } from "@tsed/mongoose";
+import Mongoose, { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
 import * as uuid from 'uuid';
@@ -15,19 +13,57 @@ import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
 import { applyUpdateToRequest } from "common/utils";
+import { writeFile } from "fs/promises";
+import { Collections } from "./dbConfig";
+import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
-@Agenda()
-@Service()
-export class DBManager {
-    
-    @Inject(UserModel) users: Model<UserModel>;
-    @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
-    @Inject(HelpRequestModel) requests: Model<HelpRequestModel>;
-    @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>;
+export class DBManager { 
 
-    @Inject(MongooseService) db: MongooseService;
+    static async fromConnectionString(mongoConnString: string, opts?: Mongoose.ConnectOptions) {
+        const conn = await Mongoose.createConnection(mongoConnString, opts || {})
+
+        const users = conn.model<UserModel>(UserModel.name, getSchema(UserModel), Collections.User)
+        const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getSchema(OrganizationModel), Collections.Organization)
+        const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getSchema(HelpRequestModel), Collections.HelpRequest)
+        const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getSchema(AuthCodeModel), Collections.AuthCode)
+        const dynamicConfig = conn.model<DynamicConfigModel>(DynamicConfigModel.name, getSchema(DynamicConfigModel), Collections.DynamicConfig)
+
+        return new DBManager(conn, users, orgs, requests, authCodes, dynamicConfig)
+    }
+
+    constructor(
+        public connection: Mongoose.Connection,
+        public users: Model<UserModel>,
+        public orgs: Model<OrganizationModel>,
+        public requests: Model<HelpRequestModel>,
+        public authCodes: Model<AuthCodeModel>,
+        public dynamicConfig: Model<DynamicConfigModel>
+    ) { }
+
+    async closeConnection() {
+        await this.connection.close()
+    }
+
+    // @Every('5 minutes')
+    async dumpOrg() {
+        const orgId = '62da9695bfd645465b542368'
+
+        console.log('starting org dump')
+
+        const org = await this.fullOrganization(orgId)
+        const requests = await this.getRequests({ orgId })
+        const users = JSON.parse(JSON.stringify(org.members)) as UserModel[];
+
+        org.members = users.map(member => member.id)
+
+        await writeFile('./org.json', JSON.stringify(org, null, 4))
+        await writeFile('./requests.json', JSON.stringify(requests, null, 4))
+        await writeFile('./users.json', JSON.stringify(users, null, 4))
+
+        console.log('finished org dump')
+    }
 
     // the 'me' api handles returning non-system props along with personal
     // ones so the user has access...everywhere else a user is 
@@ -87,16 +123,50 @@ export class DBManager {
         return pubUser;
     }
 
+    async getDynamicConfig(): Promise<DynamicConfigDoc> {
+        // singleton
+        return await this.dynamicConfig.findOne()
+    }
+
+    /**
+     * Should only be called by infra/cli not controllers
+     * 
+     */
+    async upsertDynamicConfig(update: Partial<DynamicConfig>) {
+        console.log('getting existing config')
+        let config = await this.getDynamicConfig()
+
+        if (!config) {
+
+            // create a new one using the update
+            config = new this.dynamicConfig(update)
+        }
+        
+        console.log('saving update')
+        for (const prop in update) {
+            config[prop] = update[prop]
+            // console.log('markModified:', prop)
+            // config.markModified(prop);
+        }
+
+        console.log(config.appVersion)
+        console.log(config)
+
+        return config.save()
+    }
+
     async protectedOrganization(org: OrganizationDoc): Promise<Organization> {
         const membersPopulated = org.populated('members');
         const removedMembersPopulated = org.populated('removedMembers');
 
         if (!membersPopulated) {
-            org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'members', select: this.privateUserProps() });
         }
 
         if (!removedMembersPopulated) {
-            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() });
         }
 
         const jsonOrg = org.toJSON() as Organization;
@@ -111,7 +181,8 @@ export class DBManager {
     async fullOrganization(orgId: string | OrganizationDoc) {
         const org = await this.resolveOrganization(orgId);
         // TODO: I think this might be redundant with getOrganization's populate?
-        const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        // const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        const populatedOrg = await org.populate({ path: 'members' })
 
         return populatedOrg;
     }
@@ -294,11 +365,11 @@ export class DBManager {
         return await this.findById(this.users, id);
     }
 
-    async getProtectedUser(query: Partial<UserModel>): Promise<Document<ProtectedUser>> {
+    async getProtectedUser(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>> {
         return await this.users.findOne(query).select(this.privateUserProps());
     }
 
-    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<ProtectedUser>[]> {
+    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>[]> {
         return await this.users.find(query).select(this.privateUserProps());
     }
 
@@ -1569,7 +1640,7 @@ export class DBManager {
         
         let retVal;
 
-        await this.db.get().transaction(async (freshSession) => {
+        await this.connection.transaction(async (freshSession) => {
             retVal = await ops(freshSession);
         });
 
@@ -2011,4 +2082,3 @@ export class DBManager {
     //     }
     // }
 }
-
