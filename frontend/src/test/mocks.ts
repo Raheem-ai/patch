@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -8,6 +8,18 @@ export function MockSecrets(): AppSecrets {
 
 export function MockActiveRequests(): HelpRequest[] {
     return MockRequests().filter(r => r.status != RequestStatus.Closed);
+}
+
+export function MockDynamicConfig(): DynamicConfig {
+    return {
+        appVersion: [
+            {
+                latestIOS: '',
+                latestAndroid: '',
+                requiresUpdate: false
+            }
+        ]
+    }
 }
 
 export function MockRequests(): HelpRequest[] {
