@@ -21,7 +21,9 @@ import {
     AdminEditableUser,
     CategorizedItem,
     TeamMemberMetadata,
-    RequestUpdates
+    RequestUpdates,
+    MinShift,
+    Shift
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -124,7 +126,9 @@ export interface IApiClient {
     getRequests: AuthenticatedWithOrg<(requestIds?: string[]) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<TeamMemberMetadata>>
-    
+
+    createNewShift: AuthenticatedWithOrg<(shift: MinShift) => Promise<Shift>>
+
     editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>
     
@@ -162,7 +166,8 @@ type ApiRoutes = {
         dispatch: `/dispatch`,
         responder: '/responder',
         organization: '/organization',
-        request: '/request'
+        request: '/request',
+        shift: '/shift'
     }
 
     orgIdHeader = 'X-Raheem-Org'
@@ -258,6 +263,9 @@ type ApiRoutes = {
         },
         getTeamMembers: () => {
             return '/getTeamMembers'
+        },
+        createNewShift: () => {
+            return '/createNewShift'
         },
         sendChatMessage: () => {
             return '/sendChatMessage'
@@ -490,7 +498,12 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
-        }
+        },
+
+        // shift
+        createNewShift: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
+        },
     }
 }
 

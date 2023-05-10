@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, MinShift, Shift } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -596,6 +596,17 @@ export class APIClient implements IAPIService {
             headers: this.requestScopeAuthHeaders(ctx)
         })).data
     }
+
+    async createNewShift(ctx: OrgContext, shift: MinShift): Promise<Shift> {
+        const url = `${apiHost}${API.client.createNewShift()}`;
+
+        return (await this.tryPost<Shift>(url, {
+            shift
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
 
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;

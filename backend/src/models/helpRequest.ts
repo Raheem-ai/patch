@@ -2,7 +2,7 @@ import { Model, ObjectID, Schema } from "@tsed/mongoose";
 import { CollectionOf, Enum, Property, Required } from "@tsed/schema";
 import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, Position, RequestPriority, RequestStatus, RequestTeamEvent, RequestType, RequestStatusEvent } from "common/models";
 import { Document } from "mongoose";
-import { CategorizedItemSchema } from "./common";
+import { CategorizedItemSchema, PositionSchema } from "./common";
 
 @Schema()
 class ChatMessageSchema  implements ChatMessage {
@@ -10,17 +10,6 @@ class ChatMessageSchema  implements ChatMessage {
     @Required() userId: string
     @Required() message: string
     @Required() timestamp: number
-}
-
-@Schema()
-class PositionSchema implements Position {
-    @Required() id: string
-    @Required() role: string
-    @Required() min: number
-    @Required() max: number
-
-    @CollectionOf(CategorizedItemSchema) attributes: CategorizedItem[]
-    @Required() joinedUsers: string[]
 }
 
 @Schema()

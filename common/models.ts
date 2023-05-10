@@ -1147,6 +1147,13 @@ export enum PatchEventType {
     RequestDeleted = '1.0.2',
 
 
+    // TODO: Confirm values
+    // Shift.System.<_>
+    ShiftCreated = 'x.0.0', // to users notified
+    ShiftEdited =	'x.0.1',
+    ShiftDeleted = 'x.0.2',
+
+
     // TODO: what do we do about team events on request?!?!
     // 1) roll TeamEventType into these and have TeamEventType just be 
     // a subset of this type
@@ -1468,6 +1475,10 @@ export type PatchEventParams = {
         updatedRequestIds: string[],
         deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
         deletedItems: CategorizedItemUpdates['deletedItems']
+    },
+    [PatchEventType.ShiftCreated]: {
+        orgId: string,
+        shiftId: string
     }
 }
 

@@ -27,6 +27,7 @@ class CreateShift extends React.Component<Props> {
     static minimizable = true;
 
     componentDidMount() {
+        // TODO: Necessary?
         runInAction(() => {
             createShiftStore().recurrence = createShiftStore().defaultShiftDateTime;
         })

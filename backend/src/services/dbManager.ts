@@ -1,5 +1,5 @@
 import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, MinShift, Shift } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { Agenda, Every } from "@tsed/agenda";
@@ -15,6 +15,7 @@ import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
 import { applyUpdateToRequest } from "common/utils";
+import { ShiftDoc, ShiftModel } from "../models/shift";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -25,6 +26,7 @@ export class DBManager {
     @Inject(UserModel) users: Model<UserModel>;
     @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
     @Inject(HelpRequestModel) requests: Model<HelpRequestModel>;
+    @Inject(ShiftModel) shifts: Model<ShiftModel>;
     @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>;
 
     @Inject(MongooseService) db: MongooseService;
@@ -1544,6 +1546,21 @@ export class DBManager {
         request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save();
+    }
+
+    // Shifts
+    async createShift(minShift: MinShift, orgId: string): Promise<ShiftDoc> {
+        const shift = new this.shifts(minShift);
+
+        shift.orgId = orgId;
+
+        return this.transaction(async (session) => {    
+            return await shift.save({ session })
+        })
+    }
+
+    fullShift(shift: ShiftDoc): Shift {
+        return shift.toObject({ virtuals: true }) as any as Shift;
     }
 
     // HELPERS
