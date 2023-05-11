@@ -50,6 +50,7 @@ import {
     IAppUpdateStore,
     IFormStore,
     IConnectionStore,
+    IDynamicConfigStore,
     ICreateShiftStore
 } from './interfaces';
 import UpsertRoleStore from './upsertRoleStore';
@@ -60,6 +61,7 @@ import OrganizationSettingsStore from './organizationSettingStore';
 import AppUpdateStore from './appUpdateStore';
 import FormStore from './formStore';
 import ConnectionStore from './connectionStore';
+import DynamicConfigStore from './dynamicConfigStore';
 import ShiftStore from './shiftStore';
 import CreateShiftStore from './createShiftStore';
 
@@ -92,7 +94,8 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IOrganizationSettingsStore, OrganizationSettingsStore ],
     [ IAppUpdateStore, AppUpdateStore ],
     [ IFormStore, FormStore ],
-    [ IConnectionStore, ConnectionStore ]
+    [ IConnectionStore, ConnectionStore ],
+    [ IDynamicConfigStore, DynamicConfigStore ]
 ];
 
 function validateStores() {

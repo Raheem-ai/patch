@@ -7,7 +7,7 @@ import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
 import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategories, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestPriority, RequestPriorityToLabelMap, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/models';
-import { MockAuthTokens, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
+import { MockAuthTokens, MockDynamicConfig, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';
 import { routerNames } from '../../types';
@@ -253,6 +253,7 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
     const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
     const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
     const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests());
+    const getDynamicConfigMock = jest.spyOn(APIClient.prototype, 'getDynamicConfig').mockResolvedValue(MockDynamicConfig());
 
     // Submit the form
     await act(async () => {
@@ -312,6 +313,14 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
                 orgId: MockOrgMetadata().id
             },
             []
+        )
+    })
+
+    await waitFor(() => {
+        expect(getDynamicConfigMock).toHaveBeenCalledWith(
+            {
+                token: MockAuthTokens().accessToken,
+            }
         )
     })
 

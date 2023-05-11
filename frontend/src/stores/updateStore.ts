@@ -1,6 +1,6 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { createRequestStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
+import { createRequestStore, dynamicConfigStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
 import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/models';
 import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
@@ -11,6 +11,7 @@ export default class UpdateStore implements IUpdateStore {
     private UPDATE_REQ = Symbol('UPDATE_REQ');
     private UPDATE_ORG = Symbol('UPDATE_ORG');
     private UPDATE_USER = Symbol('UPDATE_USER');
+    private UPDATE_DYNAMIC_CONFIG = Symbol('UPDATE_DYNAMIC_CONFIG');
 
     private minWait = 1000; // 1 sec
     private maxWait = 10 * 1000; // 10 secs
@@ -35,17 +36,27 @@ export default class UpdateStore implements IUpdateStore {
         await userStore().init()
         await organizationStore().init()
         await requestStore().init()
+        await dynamicConfigStore().init()
     }
 
-    // TODO: put this in comment
+    // TODO: put this in common
     // convenience function for typing
     isEvent<P extends PatchEventType>(packet: PatchEventPacket, target: P): packet is PatchEventPacket<P> {
         return packet.event == target
     }
 
+    // NOTE: only gets called after being signed in from notificationStore() and socketStore()
     onEvent = async <T extends PatchEventType>(packet: PatchEventPacket<T>) => {
         console.log('UI onEvent(): ', packet.event, packet.params)
         try {
+
+            // handle one off special cases
+            if (packet.event == PatchEventType.SystemDynamicConfigUpdated) {
+                // TODO: should this be debounced like the rest?!?!
+                await dynamicConfigStore().update();
+                return
+            }
+
             // check to see if the update will cause cached stores to be out of sync with single source of truth stores
             // if it does, update all the stores that keep local caches of affected data
             // (ie. edit stores) before updating SSOT stores that we use to validate 

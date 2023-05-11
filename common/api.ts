@@ -22,6 +22,7 @@ import {
     CategorizedItem,
     TeamMemberMetadata,
     RequestUpdates,
+    DynamicConfig,
     MinShift,
     Shift
 } from './models';
@@ -99,6 +100,7 @@ export interface IApiClient {
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     deleteMyAccount: Authenticated<() => Promise<void>>
+    getDynamicConfig: Authenticated<() => Promise<DynamicConfig>>
 
     updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 
@@ -330,10 +332,16 @@ type ApiRoutes = {
         signInWithCode: () => {
             return `/signInWithCode`
         },
+        getDynamicConfig: () => {
+            return `/getDynamicConfig`
+        },
     }
 
     client: ApiRoutes = {
         // users
+        getDynamicConfig: () => {
+            return `${this.base}${this.namespaces.users}${this.server.getDynamicConfig()}`
+        },
         signUp: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUp()}`
         },
@@ -498,13 +506,12 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
-        },
+        }
 
         // shift
         createNewShift: () => {
             return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
         },
-    }
 }
 
 export default new API();

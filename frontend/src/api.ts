@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, MinShift, Shift } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig, MinShift, Shift } from '../../common/models';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -196,6 +196,16 @@ export class APIClient implements IAPIService {
     }
 
     // user scoped apis
+
+    async getDynamicConfig(ctx: TokenContext) {
+        const url = `${apiHost}${API.client.getDynamicConfig()}`;
+        
+        const config = (await this.tryGet<DynamicConfig>(url, { 
+            headers: this.userScopeAuthHeaders(ctx) 
+        })).data
+
+        return config
+    }
 
     async getSecrets(ctx: TokenContext): Promise<AppSecrets> {
         const url = `${apiHost}${API.client.getSecrets()}`;

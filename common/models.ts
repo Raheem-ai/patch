@@ -8,6 +8,16 @@ export interface AuthTokens {
     accessToken: string
 }
 
+export type DynamicAppVersionConfig = {
+    latestIOS: string,
+    latestAndroid: string,
+    requiresUpdate: boolean
+}
+
+export type DynamicConfig = {
+    appVersion: DynamicAppVersionConfig[]
+}
+
 export interface User {
     id: string;
     name: string;
@@ -439,7 +449,7 @@ export type Chat = {
     id: string,
     messages: ChatMessage[],
     lastMessageId: number,
-    userReceipts: { [userId: string]: number }
+    userReceipts?: { [userId: string]: number }
 }
 
 export type ChatMessage = {
@@ -1178,7 +1188,7 @@ export enum PatchEventType {
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: no
      */
-     RequestRespondersNotificationAck = '1.1.1',
+    RequestRespondersNotificationAck = '1.1.1',
 
     /**
      * SENT TO: request admins 
@@ -1186,48 +1196,48 @@ export enum PatchEventType {
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersRequestToJoin = '1.1.2',  
+    RequestRespondersRequestToJoin = '1.1.2',  
      /**
      * SENT TO: nobody currently
      * SENT VIA WEBSOCKET: n/a
      * SENT VIA NOTIFICATION: n/a
      * SHOULD SHOW NOTIFICATION: n/a
      */
-      RequestRespondersRequestToJoinAck = '1.1.3',  
+    RequestRespondersRequestToJoinAck = '1.1.3',  
     /**
      * SENT TO: requester...NOTE: already joined users get same as joined notification 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersAccepted =	'1.1.4',  
+    RequestRespondersAccepted =	'1.1.4',  
     /**
      * SENT TO: already joined users + request admins 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersJoined =	'1.1.5',  
+    RequestRespondersJoined =	'1.1.5',  
     /**
      * SENT TO: requester 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersDeclined =	'1.1.6',  
+    RequestRespondersDeclined =	'1.1.6',  
     /**
      * SENT TO: already joined users + request admins 
      * SENT VIA WEBSOCKET: yes 
      * SENT VIA NOTIFICATION: yes
      */
-     RequestRespondersLeft =	'1.1.7',      
+    RequestRespondersLeft =	'1.1.7',      
     /**
      * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersRemoved =	'1.1.8',  
+    RequestRespondersRemoved =	'1.1.8',  
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
@@ -1248,6 +1258,9 @@ export enum PatchEventType {
     OrganizationTagsUpdated = '2.3.0',
 
     // TODO(Shift): will need their own events
+
+    // System.DynamicConfig.<_>
+    SystemDynamicConfigUpdated = '3.0.0'
 }
 
 // PatchEventType Convenience Type
@@ -1321,6 +1334,7 @@ export type SilentNotificationEventType = PatchEventType.UserForceLogout
     | PatchEventType.OrganizationRoleCreated
     | PatchEventType.OrganizationRoleEdited
     | PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.SystemDynamicConfigUpdated
 
 // PatchEventType Convenience Type
 export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
@@ -1475,6 +1489,9 @@ export type PatchEventParams = {
         updatedRequestIds: string[],
         deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
         deletedItems: CategorizedItemUpdates['deletedItems']
+    },
+    [PatchEventType.SystemDynamicConfigUpdated]: {
+
     },
     [PatchEventType.ShiftCreated]: {
         orgId: string,
