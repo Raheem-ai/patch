@@ -506,12 +506,13 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
-        }
+        },
 
         // shift
         createNewShift: () => {
             return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
-        },
+        }
+    }
 }
 
 export default new API();
