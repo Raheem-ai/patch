@@ -165,6 +165,15 @@ export class MySocketService {
             case PatchEventType.SystemDynamicConfigUpdated:
                 await this.handleDynamicConfigUpdate(params as PatchEventParams[PatchEventType.SystemDynamicConfigUpdated])                
                 break;
+            case PatchEventType.ShiftCreated:
+                await this.handleShiftCreated(params as PatchEventParams[PatchEventType.ShiftCreated])
+                break;
+            case PatchEventType.ShiftEdited:
+                await this.handleShiftEdited(params as PatchEventParams[PatchEventType.ShiftEdited])
+                break;
+            case PatchEventType.ShiftDeleted:
+                await this.handleShiftDeleted(params as PatchEventParams[PatchEventType.ShiftDeleted])
+                break;
         }
     }
 
@@ -629,6 +638,11 @@ export class MySocketService {
     async handleDynamicConfigUpdate(params: PatchEventParams[PatchEventType.SystemDynamicConfigUpdated]) {
         await this.updateAllUsers(PatchEventType.SystemDynamicConfigUpdated, params, notificationLabel(PatchEventType.SystemDynamicConfigUpdated))
     }
+
+    // TODO
+    async handleShiftCreated(payload: PatchEventParams[PatchEventType.ShiftCreated]) {}
+    async handleShiftEdited(payload: PatchEventParams[PatchEventType.ShiftEdited]) {}
+    async handleShiftDeleted(payload: PatchEventParams[PatchEventType.ShiftDeleted]) {}
 
     async updateAllUsers<Event extends PatchEventType>(
         event: Event,
