@@ -1,4 +1,4 @@
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { getSchema } from "@tsed/mongoose";
@@ -16,6 +16,7 @@ import { applyUpdateToRequest } from "common/utils";
 import { writeFile } from "fs/promises";
 import { Collections } from "./dbConfig";
 import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
+import { ShiftDoc, ShiftModel } from "../models/shift";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -27,10 +28,11 @@ export class DBManager {
         const users = conn.model<UserModel>(UserModel.name, getSchema(UserModel), Collections.User)
         const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getSchema(OrganizationModel), Collections.Organization)
         const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getSchema(HelpRequestModel), Collections.HelpRequest)
+        const shifts = conn.model<ShiftModel>(ShiftModel.name, getSchema(ShiftModel), Collections.Shift)
         const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getSchema(AuthCodeModel), Collections.AuthCode)
         const dynamicConfig = conn.model<DynamicConfigModel>(DynamicConfigModel.name, getSchema(DynamicConfigModel), Collections.DynamicConfig)
 
-        return new DBManager(conn, users, orgs, requests, authCodes, dynamicConfig)
+        return new DBManager(conn, users, orgs, requests, shifts, authCodes, dynamicConfig)
     }
 
     constructor(
@@ -38,6 +40,7 @@ export class DBManager {
         public users: Model<UserModel>,
         public orgs: Model<OrganizationModel>,
         public requests: Model<HelpRequestModel>,
+        public shifts: Model<ShiftModel>,
         public authCodes: Model<AuthCodeModel>,
         public dynamicConfig: Model<DynamicConfigModel>
     ) { }
@@ -1615,6 +1618,21 @@ export class DBManager {
         request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save();
+    }
+
+    // Shifts
+    async createShift(minShift: MinShift, orgId: string): Promise<ShiftDoc> {
+        const shift = new this.shifts(minShift);
+
+        shift.orgId = orgId;
+
+        return this.transaction(async (session) => {
+            return await shift.save({ session })
+        })
+    }
+
+    fullShift(shift: ShiftDoc): Shift {
+        return shift.toObject({ virtuals: true }) as any as Shift;
     }
 
     // HELPERS

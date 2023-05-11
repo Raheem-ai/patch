@@ -10,7 +10,7 @@ import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
@@ -24,7 +24,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 @Controller(API.namespaces.shift)
 export class ShiftController implements APIController<'createNewShift'> {
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: find a better place to inject this so it is instantiated
     @Inject(UIUpdateService) uiUpdateService: UIUpdateService;
