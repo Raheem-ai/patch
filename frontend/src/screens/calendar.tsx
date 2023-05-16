@@ -188,23 +188,19 @@ const styles = StyleSheet.create({
     card: {
         marginHorizontal: 12,
         marginBottom: 12,
-        borderRadius: 4,
-        shadowColor: '#000',
-        shadowOpacity: .2,
-        shadowRadius: 2,
-        shadowOffset: {
-            width: 0,
-            height: 1
-        }
+
     },
     dateHeading: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: 16,
+        marginBottom: 8,
+        paddingLeft: 16,
+        paddingRight: 8,
     },
     dateText: {
-        margin: 12,
-        fontSize: 14,
+        fontSize: 16,
     },
     addShiftButton: {
         alignSelf: 'center',

@@ -341,7 +341,8 @@ const styles = StyleSheet.create({
         color: '#E0DEE0'
     },
     typeText: {
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        lineHeight: 18
     },
     statusRow: {
         margin: 12,

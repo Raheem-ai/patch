@@ -96,6 +96,7 @@ export const Colors = {
     backgrounds: {
         splash: '#53317C',
         standard: '#FFF',
+        standardDisabled: '#f9f9f9',
         settings: '#F0EDF0',
         secondary: '#F6F4F6',
         signIn: '#F0EDF0',

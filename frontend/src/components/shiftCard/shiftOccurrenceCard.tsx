@@ -67,7 +67,7 @@ const ShiftOccurrenceCard = observer(({
         return (
             <IconButton
                 icon={ICONS.refresh} 
-                color='#666'
+                color={Colors.icons.lighter}
                 size={20} 
                 style={{ margin: 0, marginLeft: 6, padding: 0, width: 20 }}
             />
@@ -107,14 +107,15 @@ const ShiftOccurrenceCard = observer(({
             rows.push(
                 <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginLeft: 60, marginTop: 15}}>
                     <Text>{organizationStore().roles.get(position.role).name}</Text>
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <View style={[{flexDirection: 'row', alignItems: 'center'}, styles.userNeededIconContainer]}>
                         {userIcons}
                     </View>
                 </View>
             )
         }
 
-        return rows;
+        const positions = <View style={{paddingBottom: 12 }}>{rows}</View>
+        return positions;
     }
 
     const header = () => {
@@ -127,7 +128,7 @@ const ShiftOccurrenceCard = observer(({
             <View style={{flexDirection: 'row'}}>
                 {shiftStatusIndicator()}
                 <View style={styles.headerRow}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: '80%'}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: '75%'}}>
                         <Text style={styles.titleText}>{shiftOccurrence.title}</Text>
                         {recurrenceIcon()}
                     </View>
@@ -153,10 +154,11 @@ const ShiftOccurrenceCard = observer(({
 
 export default ShiftOccurrenceCard;
 
-const USER_NEEDED_SPACING_BASIC = 6;
+const USER_NEEDED_SPACING_BASIC = 4;
 const styles = StyleSheet.create({
     endTimeText: {
         color: Colors.text.tertiary,
+        marginTop: 4,
     },
     indicatorContainer: {
         flexDirection: 'row',
@@ -205,17 +207,24 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.backgrounds.standard,
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1,
-        borderTopWidth: 4
+        borderTopWidth: 4,
+        borderRadius: 4,
+        shadowColor: '#000',
+        shadowOpacity: .2,
+        shadowRadius: 2,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        },
     },
     pastContainer: {
-        backgroundColor: '#ECEBEC',
+        backgroundColor: Colors.backgrounds.standardDisabled,
         borderBottomColor: '#e0e0e0',
         borderBottomWidth: 1,
-        borderTopWidth: 4
+        borderTopWidth: 4,
+        borderRadius: 4,
     },
     minimalContainer: {
-        paddingBottom: 12,
-        paddingRight: 12,
         justifyContent: 'space-evenly',
         borderTopWidth: 0,
         borderBottomWidth: 0,
@@ -223,15 +232,20 @@ const styles = StyleSheet.create({
     headerRow: {
         flex: 1,
         marginVertical: 12,
+        paddingRight: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        // borderColor: Colors.bad,
-        // borderWidth: 1
+//         borderColor: Colors.bad,
+//         borderWidth: 1
     },
     titleText: {
         fontSize: 16,
+        lineHeight: 20,
         fontWeight: 'bold'
+    },
+    userNeededIconContainer: {
+        paddingRight: 4,
     },
     userNeededIcon: {
         color: Colors.icons.dark,
