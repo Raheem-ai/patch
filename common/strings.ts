@@ -27,7 +27,6 @@ const STRINGS = {
                 ? 'attributes'
                 : 'attribute'
         ),
-        shift: 'shift',
         tag: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
                 ? 'Tags'
@@ -46,6 +45,10 @@ const STRINGS = {
         responder: (isPlural?: boolean) => (isPlural 
             ? 'responders'
             : 'responder'
+        ),
+        shift: (isPlural?: boolean) => (isPlural 
+            ? 'shifts'
+            : 'shift'
         ),
     },
     visualDelim: '·',
