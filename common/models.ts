@@ -412,6 +412,15 @@ export type Shift = {
     occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence }
 }
 
+// TODO: Apply this type to arrays in case the objects it’s holding also has dates
+export type WithoutDates<T> = {
+    [key in keyof T]: T[key] extends number | string | Array<any> | boolean 
+        ? T[key] 
+        : T[key] extends Date
+            ? string 
+            : WithoutDates<T[key]>
+}
+
 export enum TeamFilter {
     Everyone = 'ev',
     OnDuty = 'on',
