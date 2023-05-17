@@ -52,4 +52,32 @@ export class ShiftController implements APIController<'createNewShift'> {
 
         return res;
     }
+
+    @Get(API.server.getShift())
+    @RequireAllPermissions([])
+    async getShift(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        // getting this off the header so we can use get without having to introduce 
+        // path params
+        @RequestId() shiftId: string
+    ) {
+        const shift = this.db.fullShift((await this.db.resolveShift(shiftId)))
+
+        return shift;
+    }
+
+    @Post(API.server.getShifts())
+    @RequireAllPermissions([])
+    async getShifts(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @BodyParams('shiftIds') shiftIds?: string[]
+    ) {
+        if (shiftIds && shiftIds.length) {
+            return (await this.db.getSpecificShifts(orgId, shiftIds)).map(this.db.fullShift)
+        } else {
+            return (await this.db.getAllShifts(orgId)).map(this.db.fullShift)
+        }
+    }
 }

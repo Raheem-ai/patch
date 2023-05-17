@@ -1,4 +1,4 @@
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { getSchema } from "@tsed/mongoose";
@@ -1631,8 +1631,38 @@ export class DBManager {
         })
     }
 
-    fullShift(shift: ShiftDoc): Shift {
-        return shift.toObject({ virtuals: true }) as any as Shift;
+    getShifts(query: FilterQuery<HelpRequestModel>) {
+        return this.shifts.find(query);
+    }
+
+    async getShift(query: Partial<ShiftModel>): Promise<ShiftDoc> {
+        return await this.shifts.findOne(query);
+    }
+
+    async getSpecificShifts(orgId: string, shiftIds: string[]): Promise<ShiftDoc[]> {
+        return this.getShifts({ orgId })
+            .where({ _id: { $in: shiftIds } });
+    }
+
+    fullShift(shift: ShiftDoc): WithoutDates<Shift> {
+        return shift.toObject({ virtuals: true }) as any as WithoutDates<Shift>;
+    }
+
+    async resolveShift(shiftId: string | ShiftDoc) {
+        const shift = typeof shiftId === 'string'
+            ? await this.getShift({ _id: shiftId })
+            : shiftId;
+
+        if (!shift) {
+            throw STRINGS.errorMessages.unknownElement(STRINGS.ELEMENTS.shift())
+        }
+
+        return shift;
+    }
+
+    async getAllShifts(orgId: string): Promise<ShiftDoc[]> {
+        return this.getShifts({ orgId })
+            .sort({ createdAt: 'asc' });
     }
 
     // HELPERS

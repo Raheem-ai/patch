@@ -1,146 +1,18 @@
 import { makeAutoObservable, ObservableMap, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IShiftStore, organizationStore, userStore } from './interfaces';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata } from '../../../common/models';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata, WithoutDates } from '../../../common/models';
 import { positionStats } from '../../../common/utils/requestUtils';
 import moment from 'moment';
 import { DateAdapter, IRuleOptions, Rule, RuleOption, Schedule } from '../utils/rschedule'
 import * as uuid from 'uuid';
-import { securelyPersistent } from '../meta';
-
-// Mock data for testing and debugging purposes.
-// Will be removed as feature progresses.
-// User Ids in Patch org for test purposes
-const userIds = [
-    "62da9696bfd645465b54236d",
-    "62da9696bfd645465b54236f",
-    "62da9696bfd645465b542373",
-    "62da9695bfd645465b542366",
-    "63e2f010c9c2a1001fed363d",
-    "62da9696bfd645465b542371"
-]
-
-// Mock shift occurrence diff
-const mockInstanceDiff: ShiftOccurrence = {
-    shiftId: 'mock-id-1---2023-05-05',
-    id: 'mock-id-1',
-    chat: null,
-    title: 'Special Water Distribution with a really really long title multiple times over',
-    positions: [
-        {
-            id: 'pos-id-1',
-            attributes: [],
-            role: DefaultRoleIds.Anyone,
-            min: 2,
-            max: 1,
-            joinedUsers: [userIds[0]]
-        },
-        {
-            id: 'pos-id-2',
-            attributes: [],
-            role: DefaultRoleIds.Dispatcher,
-            min: 1,
-            max: 1,
-            joinedUsers: [userIds[4]]
-        },
-        {
-            id: 'pos-id-2',
-            attributes: [],
-            role: DefaultRoleIds.Responder,
-            min: 2,
-            max: 2,
-            joinedUsers: [userIds[5], userIds[2]]
-        }
-    ],
-}
-
-// Shift recurrence definition
-const recurrence: RecurringDateTimeRange = {
-    every: {
-        period: RecurringPeriod.Week,
-        numberOf: 1,
-        days: [1,3,5]
-    },
-    until: {
-        repititions: 50,
-        date: null
-    },
-    startDate: new Date(moment().hour(12).minutes(0).subtract(2, 'months').toDate()),
-    endDate: new Date(moment().hour(12).minutes(0).subtract(2, 'months').add(2, 'hours').toDate()),
-};
-
-// Mock shift definition
-const mockShift: Shift = {
-    createdAt: '',
-    updatedAt: '',
-    id: 'mock-id-1',
-    displayId: 'mock-display-id-1',
-    orgId: 'mock-org-id',
-    title: 'Water Distribution',
-    description: 'This is the first mock shift',
-    recurrence: recurrence,
-    occurrenceDiffs: {
-        ['2023-05-05']: mockInstanceDiff
-    },
-    positions: [
-        {
-            id: 'pos-id-1',
-            attributes: [],
-            role: DefaultRoleIds.Anyone,
-            min: 1,
-            max: 1,
-            joinedUsers: []
-        },
-        {
-            id: 'pos-id-2',
-            attributes: [],
-            role: DefaultRoleIds.Dispatcher,
-            min: 1,
-            max: 1,
-            joinedUsers: []
-        },
-        {
-            id: 'pos-id-2',
-            attributes: [],
-            role: DefaultRoleIds.Responder,
-            min: 2,
-            max: 2,
-            joinedUsers: []
-        }
-    ],
-}
-
-// Second shift recurrence definition
-const recurrence2: RecurringDateTimeRange = {
-    every: {
-        period: RecurringPeriod.Week,
-        numberOf: 1,
-        days: [1,3,5]
-    },
-    until: {
-        repititions: 20,
-        date: null
-    },
-    startDate: new Date(moment().hour(22).minutes(5).toDate()), // Today @ 10:05pm 
-    endDate: new Date(moment().hour(22).minutes(0).add(2, 'hours').toDate()), // Tomorrow @ 12:05am 
-};
-
-// Second mock shift definition
-const mockShift2: Shift = {
-    createdAt: '',
-    updatedAt: '',
-    id: 'mock-id-2',
-    displayId: 'mock-display-id-2',
-    orgId: 'mock-org-id',
-    title: 'No New Cops March',
-    description: 'This is the second mock shift',
-    recurrence: recurrence2,
-    occurrenceDiffs: {},
-    positions: [],
-}
+import { persistent, securelyPersistent } from '../meta';
+import { api } from '../services/interfaces';
+import { OrgContext } from '../../../common/api';
 
 @Store(IShiftStore)
 export default class ShiftStore implements IShiftStore {
+    @persistent() currentShiftId: string = null;
     @securelyPersistent({
         // TODO: create standard decorators to handle this de/serialization
         // Could also allow for serialization into classes from raw json 
@@ -152,7 +24,62 @@ export default class ShiftStore implements IShiftStore {
                 return new ObservableMap(entries)
             }
         }
-    }) shifts: ObservableMap<string, Shift> = new ObservableMap();
+    }) _shifts: ObservableMap<string, WithoutDates<Shift>> = new ObservableMap();
+
+    get shifts(): ObservableMap<string, Shift> {
+        
+        const resolvedShifts = Array.from(this._shifts.entries()).map(entry => {
+            return [entry[0], this.fromShiftWithoutDates(entry[1])] as [string, Shift]
+        });
+
+        return new ObservableMap<string, Shift>(resolvedShifts);
+    }
+
+    fromShiftWithoutDates(shift: WithoutDates<Shift>): Shift {
+        const copy = JSON.parse(JSON.stringify(shift));
+        return {
+            createdAt: copy.createdAt,
+            updatedAt: copy.updatedAt,
+            id: copy.id,
+            displayId: copy.displayId,
+            orgId: copy.orgId,
+            title: copy.title,
+            description: copy.description,
+            positions: copy.positions,
+            recurrence: this.fromRecurrenceWithoutDates(copy.recurrence),
+            occurrenceDiffs: this.fromOccurrenceDiffsWithoutDates(copy.occurrenceDiffs)
+        }
+    }
+
+    fromRecurrenceWithoutDates(recurrence: WithoutDates<RecurringDateTimeRange>): RecurringDateTimeRange {
+        const recurrenceWithDates =  {
+            startDate: new Date(recurrence.startDate),
+            endDate: new Date(recurrence.endDate),
+            every: recurrence.every,
+            until: recurrence.until
+                ? {
+                    date: recurrence.until.date
+                        ? new Date(recurrence.until.date)
+                        : null,
+                    repititions: recurrence.until.repititions
+                        ? recurrence.until.repititions
+                        : null
+                }
+                : null
+        }
+
+        return recurrenceWithDates as RecurringDateTimeRange;
+    }
+
+    fromOccurrenceDiffsWithoutDates(diffs: { [occurenceId: string]: ShiftOccurrence}): { [occurenceId: string]: ShiftOccurrence} {
+        const diffsWithDates = {}
+        if (diffs) {
+            for (const [key, value] of Object.entries(diffs)) {
+                diffsWithDates[key] = value;
+            }
+        }
+        return diffsWithDates;
+    }
 
     // Filter which shift occurrences to retrieve
     filter: ShiftsFilter = {
@@ -181,6 +108,12 @@ export default class ShiftStore implements IShiftStore {
         } else {
             when(() => userStore().signedIn, this.getShiftsAfterSignin)
         }
+    }
+
+    get currentShift() {
+        return this.currentShiftId
+            ? this.shifts[this.currentShiftId]
+            : null;
     }
 
     get shiftsArray() {
@@ -318,10 +251,15 @@ export default class ShiftStore implements IShiftStore {
             [RecurringPeriod.Day]: 'DAILY'
         }
 
+        const shiftDuration = recurringDateTime.endDate.getTime() - recurringDateTime.startDate.getTime();
+        if (shiftDuration < 0) {
+            return null;
+        }
+
         // Specify the options for the rule we're creating
         const ruleOptions: IRuleOptions = {
             start: new Date(recurringDateTime.startDate),
-            duration: recurringDateTime.endDate.getTime() - recurringDateTime.startDate.getTime(),
+            duration: shiftDuration,
             frequency: recurringDateTime.every?.period
                         ? frequencyMap[recurringDateTime.every.period]
                         : frequencyMap[RecurringPeriod.Day],
@@ -497,24 +435,50 @@ export default class ShiftStore implements IShiftStore {
     }
 
     async getShifts(shiftIds?: string[]): Promise<void> {
-        runInAction(() => {
-            this.shifts.merge({
-                [mockShift.id]: mockShift,
-                [mockShift2.id]: mockShift2
-            });
-        })
+        try {
+            const oldCurrentShiftId = this.currentShiftId;
+            let possibleUpdatedCurrentShift: Shift;
+
+            const shifts = await api().getShifts(this.orgContext(), shiftIds);
+
+            for (const shift of shifts) {
+                if (shift.id == oldCurrentShiftId) {
+                    possibleUpdatedCurrentShift = this.fromShiftWithoutDates(shift);
+                }
+            }
+
+            runInAction(() => {
+                shifts.forEach(s => this.updateOrAddShift(s));
+                this.setCurrentShift(possibleUpdatedCurrentShift);
+            })
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async getShift(shiftId: string): Promise<void> {
+        const shift = await api().getShift(this.orgContext(), shiftId);
+
+        // TODO: what to do if not found?
+        if (shift) {
+            runInAction(() => {
+                this.updateOrAddShift(shift);
+            })
+        }
+    }
+
+    setCurrentShift(shift: Shift): void {
+        if (!shift) {
+            return;
+        }
+
         runInAction(() => {
-            this.shifts.merge({
-                [mockShift.id]: mockShift
-            });
+            this.currentShiftId = shift.id;
         })
     }
 
-    updateOrAddShift(updatedShift: Shift) {
-        this.shifts.merge({
+    updateOrAddShift(updatedShift: WithoutDates<Shift>) {
+        this._shifts.merge({
             [updatedShift.id]: updatedShift
         })
     }
@@ -527,9 +491,14 @@ export default class ShiftStore implements IShiftStore {
         })
     }
 
+    orgContext(orgId?: string): OrgContext {
+        return {
+            token: userStore().authToken,
+            orgId: orgId || userStore().currentOrgId
+        }
+    }
+
     clear(): void {
-        runInAction(() => {
-            this.shifts.clear();
-        })
+        this._shifts.clear();
     }
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata, WithoutDates } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -279,7 +279,7 @@ export namespace ICreateShiftStore {
 }
 
 export interface ICreateShiftStore extends ITempShiftStore {
-    createShift: () => Promise<Shift>;
+    createShift: () => Promise<WithoutDates<Shift>>;
     defaultShiftDateTime: { startDate: Date, endDate: Date }
 }
 
@@ -297,6 +297,9 @@ export interface IShiftStore extends IBaseStore {
     initialScrollFinished: boolean
     scrollToDate: Date
 
+    currentShift: Shift
+    currentShiftId: string
+
     setFilter(filter: ShiftsFilter): Promise<void>
     setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
@@ -308,7 +311,8 @@ export interface IShiftStore extends IBaseStore {
     getShift(shiftId: string): Promise<void>
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
-    updateOrAddShift(updatedShift: Shift): void
+    updateOrAddShift(updatedShift: WithoutDates<Shift>): void
+    setCurrentShift(shift: Shift): void;
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

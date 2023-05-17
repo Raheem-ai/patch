@@ -24,7 +24,8 @@ import {
     RequestUpdates,
     DynamicConfig,
     MinShift,
-    Shift
+    Shift,
+    WithoutDates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -69,8 +70,8 @@ type MapJson<T = Map<string | number, any>> = T extends Map<any, infer V> ? { [k
 
 export type ClientSideFormat<T> = {
     [key in keyof T]: T[key] extends Map<any, any> 
-        ? MapJson<T[key]>
-        : T[key]
+        ? WithoutDates<MapJson<T[key]>>
+        : WithoutDates<T[key]>
 }
  
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
@@ -129,7 +130,9 @@ export interface IApiClient {
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<TeamMemberMetadata>>
 
-    createNewShift: AuthenticatedWithOrg<(shift: MinShift) => Promise<Shift>>
+    createNewShift: AuthenticatedWithOrg<(shift: MinShift) => Promise<WithoutDates<Shift>>>
+    getShifts: AuthenticatedWithOrg<(shiftIds?: string[]) => Promise<WithoutDates<Shift>[]>>
+    getShift: AuthenticatedWithOrg<(shiftId: string) => Promise<WithoutDates<Shift>>>
 
     editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>
@@ -174,6 +177,7 @@ type ApiRoutes = {
 
     orgIdHeader = 'X-Raheem-Org'
     requestIdHeader = 'X-Raheem-Request'
+    shiftIdHeader = 'X-Raheem-Shift'
 
     server: ApiRoutes = {
         signUp: () => {
@@ -268,6 +272,12 @@ type ApiRoutes = {
         },
         createNewShift: () => {
             return '/createNewShift'
+        },
+        getShifts: () => {
+            return '/getShifts'
+        },
+        getShift: () => {
+            return '/getShift'
         },
         sendChatMessage: () => {
             return '/sendChatMessage'
@@ -511,7 +521,13 @@ type ApiRoutes = {
         // shift
         createNewShift: () => {
             return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
-        }
+        },
+        getShifts: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.getShifts()}`
+        },
+        getShift: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.getShift()}`
+        },
     }
 }
 
