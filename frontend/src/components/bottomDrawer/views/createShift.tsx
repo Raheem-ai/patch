@@ -3,7 +3,7 @@ import { createShiftStore, alertStore, bottomDrawerStore } from "../../../stores
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { PatchPermissions, Shift } from "../../../../../common/models";
+import { PatchPermissions, Shift, WithoutDates } from "../../../../../common/models";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { View } from "react-native";
@@ -67,7 +67,7 @@ class CreateShift extends React.Component<Props> {
             },
             save: {
                 handler: async () => {
-                    let createdShift: Shift;
+                    let createdShift: WithoutDates<Shift>;
         
                     try {
                         bottomDrawerStore().startSubmitting()
