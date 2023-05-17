@@ -31,14 +31,12 @@ const PermissionGroupListConfig: {
             PatchPermissionGroups.EditRoles
         ]
     },
-    /*
     {
         icon: ICONS.schedule,
         groups: [
             PatchPermissionGroups.ManageSchedule,
         ]
     },
-    */
     {
         icon: ICONS.request,
         groups: [
