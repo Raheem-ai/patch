@@ -280,6 +280,8 @@ export namespace ICreateShiftStore {
 
 export interface ICreateShiftStore extends ITempShiftStore {
     createShift: () => Promise<WithoutDates<Shift>>;
+    setStartDate: (date?: Date) => Promise<void>;
+    startDate: Date;
     defaultShiftDateTime: { startDate: Date, endDate: Date }
 }
 
@@ -413,7 +415,8 @@ export enum BottomDrawerView {
     inviteUserToOrg ='iu',
     editMe = 'em',
     editUser = 'eu',
-    createShift = 'cs'
+    createShift = 'cs',
+    editShift = 'es'
 }
 
 export type BottomDrawerComponentClass = React.ComponentClass & {

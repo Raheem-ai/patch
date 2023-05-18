@@ -15,6 +15,7 @@ export default class CreateShiftStore implements ICreateShiftStore  {
 
     // TODO: How do we want to initialize this value?
     // I update the value in createShift.componentDidMount but it still throws if not set here.
+    startDate: Date = moment().toDate();
     recurrence: RecurringDateTimeRange = this.defaultShiftDateTime
 
     constructor() {
@@ -62,7 +63,9 @@ export default class CreateShiftStore implements ICreateShiftStore  {
             hours = currentHours + 1;
         }
 
-        const defaultStart = moment().hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
+        // Set the default start date and time to the class's start date and the nearest upcoming half hour,
+        // per the logic above. Set the end time to be an hour after the calculated start.
+        const defaultStart = moment(this.startDate).hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
         const defaultEnd = moment(defaultStart).add(1, 'hours').toDate();
 
         return {
@@ -70,6 +73,16 @@ export default class CreateShiftStore implements ICreateShiftStore  {
             endDate: defaultEnd
         }
     }
+
+    async setStartDate(date?: Date): Promise<void> {
+        if (date) {
+            this.startDate = date;
+        } else {
+            this.startDate = moment().toDate();
+        }
+
+        this.recurrence = this.defaultShiftDateTime;
+    };
 
     async createShift(): Promise<WithoutDates<Shift>> {
         const shift: MinShift = {

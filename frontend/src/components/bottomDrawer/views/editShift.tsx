@@ -21,7 +21,7 @@ import moment from "moment";
 type Props = {}
 
 @observer
-class CreateShift extends React.Component<Props> {
+class EditShift extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
 
     static minimizable = true;
@@ -197,4 +197,4 @@ class CreateShift extends React.Component<Props> {
     }
 }
 
-export default CreateShift
+export default EditShift

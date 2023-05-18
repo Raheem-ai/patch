@@ -6,7 +6,7 @@ import { allEnumValues, dayNumToDayNameLabel, monthNumToMonthNameLabel } from ".
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";
 import { Colors, ICONS, ScreenProps } from "../types";
 import TestIds from "../test/ids";
-import { shiftStore } from "../stores/interfaces";
+import { BottomDrawerView, bottomDrawerStore, createShiftStore, shiftStore } from "../stores/interfaces";
 import { IconButton, Text } from "react-native-paper";
 import ShiftOccurrenceCard from "../components/shiftCard/shiftOccurrenceCard";
 import moment from "moment";
@@ -164,6 +164,11 @@ const DateHeading = observer(( {
         })
     }
 
+    const createNewShift = () => {
+        createShiftStore().setStartDate(headingDate);
+        bottomDrawerStore().show(BottomDrawerView.createShift, true);
+    }
+
     return (
         <View ref={me} style={styles.dateHeading}>
         <Text style={styles.dateText}>
@@ -173,6 +178,7 @@ const DateHeading = observer(( {
             style={styles.addShiftButton} 
             icon={ICONS.add} 
             size={24}
+            onPress={createNewShift}
             color={Colors.icons.light}/>
     </View>
     )
