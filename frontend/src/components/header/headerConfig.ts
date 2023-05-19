@@ -231,6 +231,35 @@ const HeaderConfig: {
             }
         ]
     },
+    [routerNames.shiftDetails]: () => {   
+        const title = () => {
+            return 'Placeholder Id'
+        };
+
+        const leftActions = [{
+            icon: ICONS.navBack,
+            callback: () => {
+                navigationRef.current.goBack();
+            }
+        }]
+
+        const rightActions = iHaveAllPermissions([PatchPermissions.ShiftAdmin])
+            ? [
+                {
+                    icon: ICONS.edit,
+                    callback: async () => {
+                        bottomDrawerStore().show(BottomDrawerView.editShift, true);
+                    }
+                }
+            ]
+            : [];
+        
+        return {
+            title,
+            leftActions,
+            rightActions 
+        }
+    },
     [routerNames.componentLib]: {
         title: STRINGS.PAGE_TITLES.componentLibrary
     }, 

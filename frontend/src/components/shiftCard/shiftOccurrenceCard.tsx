@@ -4,11 +4,12 @@ import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyl
 import { IconButton, Text } from "react-native-paper";
 import { ShiftOccurrence, ShiftStatus } from "../../../../common/models";
 import { organizationStore, shiftStore } from "../../stores/interfaces";
-import { Colors, ICONS } from "../../types";
+import { Colors, ICONS, routerNames } from "../../types";
 import UserIcon from "../userIcon";
 import TestIds from "../../test/ids";
 import { dateToDisplayTime } from "../../../../common/utils";
 import moment from "moment";
+import { navigateTo } from "../../navigation";
 
 type Props = {
     testID: string,
@@ -32,14 +33,12 @@ const ShiftOccurrenceCard = observer(({
 
     const onCardPress = (event: GestureResponderEvent) => {
         console.log('shift occurrence card pressed')
-        /*
         if (onPress) {
             onPress(event, null);
         } else {
-            shiftStore().setCurrentShiftInstance(null)
-            navigateTo(routerNames.shiftOccurrenceDetails);
+            shiftStore().setCurrentShiftOccurrence(shiftOccurrence);
+            navigateTo(routerNames.shiftDetails);
         }
-        */
     }
 
     const shiftStatusIndicator = () => {

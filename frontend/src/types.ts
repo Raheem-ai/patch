@@ -32,6 +32,7 @@ export type RootStackParamList = {
     HelpAndInfo: undefined;
     Chats: undefined;
     Calendar: undefined;
+    ShiftDetails: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization];
 };
 
@@ -62,7 +63,8 @@ export const routerNames: TypedRouterNames = {
     settings: "Settings",
     helpAndInfo: "HelpAndInfo",
     chats: "Channels",
-    calendar: "Calendar"
+    calendar: "Calendar",
+    shiftDetails: "ShiftDetails"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
