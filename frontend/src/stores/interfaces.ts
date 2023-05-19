@@ -299,8 +299,8 @@ export interface IShiftStore extends IBaseStore {
     initialScrollFinished: boolean
     scrollToDate: Date
 
-    currentShift: Shift
-    currentShiftId: string
+    currentShiftOccurrence: ShiftOccurrence
+    currentShiftOccurrenceId: string
 
     setFilter(filter: ShiftsFilter): Promise<void>
     setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
@@ -314,7 +314,7 @@ export interface IShiftStore extends IBaseStore {
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
     updateOrAddShift(updatedShift: WithoutDates<Shift>): void
-    setCurrentShift(shift: Shift): void;
+    setCurrentShiftOccurrence(shift: ShiftOccurrence): void;
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>

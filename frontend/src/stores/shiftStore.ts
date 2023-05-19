@@ -12,7 +12,7 @@ import { OrgContext } from '../../../common/api';
 
 @Store(IShiftStore)
 export default class ShiftStore implements IShiftStore {
-    @persistent() currentShiftId: string = null;
+    @persistent() currentShiftOccurrenceId: string = null;
     @securelyPersistent({
         // TODO: create standard decorators to handle this de/serialization
         // Could also allow for serialization into classes from raw json 
@@ -110,9 +110,9 @@ export default class ShiftStore implements IShiftStore {
         }
     }
 
-    get currentShift() {
-        return this.currentShiftId
-            ? this.shifts[this.currentShiftId]
+    get currentShiftOccurrence(): ShiftOccurrence {
+        return this.currentShiftOccurrenceId
+            ? this.getShiftOccurrence(this.currentShiftOccurrenceId)
             : null;
     }
 
@@ -393,6 +393,8 @@ export default class ShiftStore implements IShiftStore {
         // Get the parent shift
         const shift = this.shifts.get(shiftId);
 
+        // TODO: Handle case where shift not found?
+
         // Check if a diff of the shift exists for this date's occurrence
         const diff = shift.occurrenceDiffs[occurrenceDateStr];
 
@@ -436,20 +438,13 @@ export default class ShiftStore implements IShiftStore {
 
     async getShifts(shiftIds?: string[]): Promise<void> {
         try {
-            const oldCurrentShiftId = this.currentShiftId;
-            let possibleUpdatedCurrentShift: Shift;
-
+            const oldCurrentShiftId = this.currentShiftOccurrenceId;
             const shifts = await api().getShifts(this.orgContext(), shiftIds);
-
-            for (const shift of shifts) {
-                if (shift.id == oldCurrentShiftId) {
-                    possibleUpdatedCurrentShift = this.fromShiftWithoutDates(shift);
-                }
-            }
 
             runInAction(() => {
                 shifts.forEach(s => this.updateOrAddShift(s));
-                this.setCurrentShift(possibleUpdatedCurrentShift);
+                const possibleUpdatedCurrentShift = this.getShiftOccurrence(oldCurrentShiftId);
+                this.setCurrentShiftOccurrence(possibleUpdatedCurrentShift);
             })
         } catch (e) {
             console.error(e);
@@ -467,13 +462,13 @@ export default class ShiftStore implements IShiftStore {
         }
     }
 
-    setCurrentShift(shift: Shift): void {
+    setCurrentShiftOccurrence(shift: ShiftOccurrence): void {
         if (!shift) {
             return;
         }
 
         runInAction(() => {
-            this.currentShiftId = shift.id;
+            this.currentShiftOccurrenceId = shift.id;
         })
     }
 
