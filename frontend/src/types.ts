@@ -212,6 +212,7 @@ export const ICONS = {
     selectListItem: BASIC_ICONS.check,
     navCancel: BASIC_ICONS.xMark,
     navBack: BASIC_ICONS.chevronLeft,
+    navForward: BASIC_ICONS.chevronRight,
     showPassword: 'eye',
     hidePassword: 'eye-off',
     textInputClear: 'close-circle',
