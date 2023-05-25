@@ -6,7 +6,6 @@ import moment from 'moment';
 import STRINGS from '../../../common/strings';
 import { Colors, ICONS } from "../types";
 
-
 type DateChangedCallback = (date: moment) => void;
 
 type CalendarPickerProps = {
@@ -38,11 +37,18 @@ const CalendarPicker = ({
 
     const calPickerRef = useRef<Calendar>();
 
-    const [currentMonth, setCurrentMonth] = useState<number>(5);
+    // note that minDate and maxDate have to be set
+    // if they're not desired, set them far off :-/
+    const minDate=moment().date(1) // first of this month
+    const maxDate=moment().add(1, 'y') // a year from now
+
+    const [currentMonth, setCurrentMonth] = useState<number>(initialDate.getMonth());
+    const [hidePreviousButton, setHidePreviousButton] = useState<boolean>(!moment(initialDate).isAfter(minDate, 'month'));
+    const [hideNextButton, setHideNextButton] = useState<boolean>(!moment(initialDate).isBefore(maxDate, 'month'));
 
     const dateChanged = (mDate) => {
         // called whenever a new date is selected
-        //  is this used anywhere? delete?
+        //  is this used anywhere? can we delete?
         onDateChange(mDate.toDate());
     }
 
@@ -50,6 +56,10 @@ const CalendarPicker = ({
         // called whenever the view is moved to a new month
         // used to keep local state in sync with CalendarPicker internal state
         setCurrentMonth(mDate.month() + 1);
+
+        // disable nav at min/max months
+        setHidePreviousButton(moment(mDate).isAfter(minDate, 'month') ? false : true);
+        setHideNextButton(moment(mDate).isBefore(maxDate, 'month') ? false : true);
     }
 
     const goPreviousMonth = () => {
@@ -66,7 +76,7 @@ const CalendarPicker = ({
         calPickerRef.current?.handleOnPressNext();
     }
 
-    // is this used anywhere? delete?
+    // is this used anywhere? can we delete?
     const today = moment().hours(12).minutes(0).seconds(0).milliseconds(0);
 
     return (
@@ -76,7 +86,8 @@ const CalendarPicker = ({
                 <IconButton
                     style={{ flex: 0, height: 24, width: 24, alignSelf: 'center' }}
                     icon={ICONS.navBack}
-                    color={Colors.icons.lighter}
+                    color={hidePreviousButton ? Colors.nocolor : Colors.icons.dark}
+                    disabled={hidePreviousButton}
                     onPress={goPreviousMonth}
                     size={24} />
             </View>
@@ -87,8 +98,10 @@ const CalendarPicker = ({
                 <IconButton
                         style={{ flex: 0, height: 24, width: 24, alignSelf: 'center' }}
                         icon={ICONS.navForward}
-                        color={Colors.icons.lighter}
+                        color={Colors.icons.dark}
                         onPress={goNextMonth}
+                        disabled={hideNextButton}
+                        color={hideNextButton ? Colors.nocolor : Colors.icons.dark}
                         size={24} />
             </View>
         </View>
@@ -113,12 +126,11 @@ const CalendarPicker = ({
             // need to restrict navigation with min/max to make
             // scroll behavior work right
             restrictMonthNavigation
-            minDate={moment().date(1)}// first of this month
-            maxDate={moment().add(1, 'y')} // a year from now
+            minDate={minDate}
+            maxDate={maxDate}
 
             selectedStartDate={initialDate}
             initialDate={moment(initialDate)}
-            showDayStragglers={true}
             scrollable={true}
 
             headerWrapperStyle={{ height: 0, margin: 0, padding: 0 }}
@@ -150,13 +162,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         backgroundColor: '#000'
     },
-    todayStyle: {
-        color: '#000',
-        backgroundColor: '#fff',
-        borderBottomWidth: 3, 
-        borderColor: '#000',
-        borderRadius: 0
-    },
+
     selectedStyle: {
         color: '#fff',
         backgroundColor: '#000'
