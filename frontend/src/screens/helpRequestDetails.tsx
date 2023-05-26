@@ -856,8 +856,8 @@ const styles = StyleSheet.create({
         flex: 1
     },
     typeLabel: {
-        fontSize: 17,
-        fontWeight: 'bold'
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     editIcon: {
         width: 20,

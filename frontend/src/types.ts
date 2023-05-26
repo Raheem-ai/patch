@@ -96,6 +96,7 @@ export const Colors = {
     backgrounds: {
         splash: '#53317C',
         standard: '#FFF',
+        standardDisabled: '#f9f9f9',
         settings: '#F0EDF0',
         secondary: '#F6F4F6',
         signIn: '#F0EDF0',
@@ -211,6 +212,7 @@ export const ICONS = {
     selectListItem: BASIC_ICONS.check,
     navCancel: BASIC_ICONS.xMark,
     navBack: BASIC_ICONS.chevronLeft,
+    navForward: BASIC_ICONS.chevronRight,
     showPassword: 'eye',
     hidePassword: 'eye-off',
     textInputClear: 'close-circle',
