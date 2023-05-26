@@ -10,7 +10,6 @@ type DateChangedCallback = (date: moment) => void;
 
 type CalendarPickerProps = {
     onDateChange?: DateChangedCallback | undefined;
-    onMonthChange?: DateChangedCallback | undefined;
     initialDate: Date
 }
 
@@ -32,7 +31,6 @@ const monthNames = [
 const CalendarPicker = ({
     initialDate,
     onDateChange,
-    onMonthChange,
 }: CalendarPickerProps) => {
 
     const calPickerRef = useRef<Calendar>();
@@ -43,12 +41,11 @@ const CalendarPicker = ({
     const maxDate=moment().add(1, 'y') // a year from now
 
     const [currentMonth, setCurrentMonth] = useState<number>(initialDate.getMonth());
-    const [hidePreviousButton, setHidePreviousButton] = useState<boolean>(!moment(initialDate).isAfter(minDate, 'month'));
-    const [hideNextButton, setHideNextButton] = useState<boolean>(!moment(initialDate).isBefore(maxDate, 'month'));
+    const [hidePreviousButton, setHidePreviousButton] = useState<boolean>(moment(initialDate).isSameOrBefore(minDate, 'month'));
+    const [hideNextButton, setHideNextButton] = useState<boolean>(moment(initialDate).isSameOrAfter(maxDate, 'month'));
 
     const dateChanged = (mDate) => {
-        // called whenever a new date is selected
-        //  is this used anywhere? can we delete?
+        // called whenever a new date is selected and passes the date to the callback function
         onDateChange(mDate.toDate());
     }
 
@@ -58,8 +55,8 @@ const CalendarPicker = ({
         setCurrentMonth(mDate.month() + 1);
 
         // disable nav at min/max months
-        setHidePreviousButton(moment(mDate).isAfter(minDate, 'month') ? false : true);
-        setHideNextButton(moment(mDate).isBefore(maxDate, 'month') ? false : true);
+        setHidePreviousButton(moment(mDate).isSameOrBefore(minDate, 'month'));
+        setHideNextButton(moment(mDate).isSameOrAfter(maxDate, 'month'));
     }
 
     const goPreviousMonth = () => {
