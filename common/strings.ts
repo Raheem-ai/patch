@@ -241,7 +241,9 @@ const STRINGS = {
     },
     SHIFTS: {
         add: 'Add shift',
+        edit: 'Edit shift',
         createdShiftSuccess: (title: string) => `Successfully created ${title}.`,
+        updatedShiftSuccess: (title: string) => `Successfully updated ${title}.`,
         description: 'Description',
         positions: 'Add a position',
         title: 'Title',
