@@ -337,6 +337,15 @@ const TestIds = {
             recurrence: 'createShiftForm::recurrence',
         }
     },
+    editShift: {
+        form: 'editShiftForm',
+        inputs: {
+            title: 'editShiftForm::title',
+            description: 'editShiftForm::description',
+            positions: 'editShiftForm::positions',
+            recurrence: 'editShiftForm::recurrence',
+        }
+    },
     addUser: {
         form: 'addUserForm',
         inputs: {
