@@ -118,7 +118,7 @@ class CreateShift extends React.Component<Props> {
                             return createShiftStore().title
                         },
                         isValid: () => {
-                            return true
+                            return !!createShiftStore().title
                         },
                         testID: TestIds.createShift.inputs.title,
                         name: 'title',
@@ -134,7 +134,7 @@ class CreateShift extends React.Component<Props> {
                             return createShiftStore().description;
                         },
                         isValid: () => {
-                            return !!createShiftStore().description;
+                            return true;
                         },
                         testID: TestIds.createShift.inputs.description,
                         name: 'description',
@@ -193,7 +193,7 @@ class CreateShift extends React.Component<Props> {
     }
 
     render() {
-        return <Form sentry-label='CreateShiftForm' ref={this.setRef} {...this.formProps()}/>
+        return <Form sentry-label={TestIds.createShift.form} ref={this.setRef} {...this.formProps()}/>
     }
 }
 
