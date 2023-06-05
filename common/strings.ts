@@ -243,7 +243,9 @@ const STRINGS = {
         add: 'Add shift',
         edit: 'Edit shift',
         createdShiftSuccess: (title: string) => `Successfully created ${title}.`,
-        updatedShiftSuccess: (title: string) => `Successfully updated ${title}.`,
+        // TODO: Finalize strings w/ Nadav
+        updatedShiftDefinitionSuccess: (title: string) => `Successfully updated ${title}.`,
+        updatedShiftOccurrenceSuccess: (title: string) => `Successfully updated ${title}.`,
         description: 'Description',
         positions: 'Add a position',
         title: 'Title',
