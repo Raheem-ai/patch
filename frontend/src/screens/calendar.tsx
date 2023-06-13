@@ -165,7 +165,7 @@ const DateHeading = observer(( {
     }
 
     const createNewShift = () => {
-        createShiftStore().setStartDate(headingDate);
+        createShiftStore().initializeStartDate(headingDate);
         bottomDrawerStore().show(BottomDrawerView.createShift, true);
     }
 
