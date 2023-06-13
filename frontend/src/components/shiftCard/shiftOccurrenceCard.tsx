@@ -124,8 +124,11 @@ const ShiftOccurrenceCard = observer(({
 
     const header = () => {
         // For the card's header, get the start and end time strings in the display format.
-        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startTime);
-        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endTime);
+        const dateDiffDuration = shiftOccurrence.dateTimeRange.endDate.getTime() - shiftOccurrence.dateTimeRange.startDate.getTime();
+        const differenceInDays = dateDiffDuration / (1000 * 3600 * 24);
+
+        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startTime, differenceInDays);
+        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endTime, differenceInDays);
 
         // The header of a shift card includes the status of its positions, the title, recurrence, and time info.
         return (

@@ -47,7 +47,7 @@ export function dateToDayOfWeekString(date: Date) {
 }
 
 // `9am` `12pm` `1:45pm`
-export const dateToDisplayTime = (date: Date) => {
+export const dateToDisplayTime = (date: Date, offset?: number) => {
     // Given a date, we're interested in displaying the time strings
     // in a user-friendly format.
     let amPm = 'am';
@@ -80,7 +80,7 @@ export const dateToDisplayTime = (date: Date) => {
             ? `:0${minutes}`
             : `:${minutes}`
 
-    return `${hours}${minutesText}${amPm}`
+    return `${hours}${minutesText}${amPm}${offset > 0 ? ` (+${offset})` : ''}`
 }
 
 export function unwrap<T>(val: NotAFunction<T> | (() => NotAFunction<T>)): T {
