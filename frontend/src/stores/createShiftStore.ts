@@ -63,18 +63,28 @@ export default class CreateShiftStore implements ICreateShiftStore  {
             hours = currentHours + 1;
         }
 
-        // Set the default start date and time to the class's start date and the nearest upcoming half hour,
-        // per the logic above. Set the end time to be an hour after the calculated start.
-        const defaultStart = moment(this.startDate).hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
-        const defaultEnd = moment(defaultStart).add(1, 'hours').toDate();
+        // Set the date-agnostic start time of the shift per the logic above.
+        // Set the end time to be an hour after the calculated start.
+        const defaultStartTime = moment(new Date(0)).hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
+        const defaultEndTime = moment(defaultStartTime).add(1, 'hours').toDate();
+
+        // Set the default start date according to the class's start date.
+        // Set the default end date based on the start date, start time, and duration of the shift.
+        // TODO: End date calculation feels hacky, but how else to compute the end date than to set start date + start time + shift duration
+        // since neither start time or start date alone contain the info needed?
+        const duration = defaultEndTime.getTime() - defaultStartTime.getTime();
+        const defaultStartDate = moment(this.startDate).hours(0).minutes(0).seconds(0).milliseconds(0).toDate();
+        const defaultEndDate = moment(defaultStartDate).hours(hours).minutes(minutes).add(duration, 'milliseconds').hours(0).minutes(0).toDate();
 
         return {
-            startDate: defaultStart,
-            endDate: defaultEnd
+            startDate: defaultStartDate,
+            endDate: defaultEndDate,
+            startTime: defaultStartTime,
+            endTime: defaultEndTime
         }
     }
 
-    async setStartDate(date?: Date): Promise<void> {
+    async initializeStartDate(date?: Date): Promise<void> {
         if (date) {
             this.startDate = date;
         } else {
