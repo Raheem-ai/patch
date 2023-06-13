@@ -225,7 +225,7 @@ const HeaderConfig: {
                 testId: TestIds.header.actions.createShift,
                 icon: ICONS.add,
                 callback: () => {
-                    createShiftStore().setStartDate();
+                    createShiftStore().initializeStartDate();
                     bottomDrawerStore().show(BottomDrawerView.createShift, true);
                 }
             }
