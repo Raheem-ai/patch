@@ -8,18 +8,22 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
 
         return {
             startDate: value.startDate,
-            endDate: value.endDate
+            startTime: value.startTime,
+            endDate: value.endDate,
+            endTime: value.endTime
         }
     }
 
     const setDateTimeVal = (data: DateTimeRange) => {
         const update = Object.assign({}, params.val(), data);
         params.onChange(update)
+        params.props?.onDateTimeRangeChange?.(data)
     }
 
     const setRecurringTimeConstraintsVal = (data: RecurringTimeConstraints) => {
         const update = Object.assign({}, params.val(), data);
         params.onChange(update)
+        params.props?.onRecurringTimeConstraintsChange?.(data)
     }
 
     const recurringTimeConstraintsVal = () => {
@@ -34,7 +38,6 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
     return {
         inputs: () => {
             return [
-                [
                     {
                         onChange: setDateTimeVal,
                         val: dateTimeVal,
@@ -70,12 +73,9 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
                         required: params.required,
                         icon: ICONS.refresh
                     }
-                ]
             ] as [
-                [
                     InlineFormInputConfig<'DateTimeRange'>, 
                     ScreenFormInputConfig<'RecurringTimePeriod'>
-                ]
             ]
         },
         type: 'RecurringDateTimeRange',

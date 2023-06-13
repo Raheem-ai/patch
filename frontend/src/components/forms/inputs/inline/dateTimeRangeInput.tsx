@@ -12,6 +12,7 @@ import { useWhenParamsChange } from "../../../../hooks/useWhenParamsChange";
 // import CalendarPicker from 'react-native-calendar-picker';
 import WheelPicker from "../../../wheelPicker";
 import CalendarPicker from "../../../calendarPicker";
+import useFirstRenderCheck from "../../../../hooks/useFirstRenderCheck";
 
 enum TimeRangeSections {
     Start,
@@ -66,23 +67,34 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
     const [timePickerOpen, setTimePickerOpen] = useState(false)
     const [currentSection, setCurrentSection] = useState<TimeRangeSections>(null)
 
-    const startParts = dateToDateTimeParts(config.val().startDate)
+    const startParts = dateToDateTimeParts(config.val().startDate, config.val().startTime);
+    // start date parts
     const [startDay, setStartDay] = useState<string>(startParts.date)
+
+    // start time parts
     const [startHours, setStartHours] = useState<number>(startParts.hours)
     const [startMinutes, setStartMinutes] = useState<number>(startParts.minutes)
     const [startTimeOfDay, setStartTimeOfDay] = useState<DateParts['timeOfDay']>(startParts.timeOfDay)
 
-    const endParts = dateToDateTimeParts(config.val().endDate)
+    const endParts = dateToDateTimeParts(config.val().endDate, config.val().endTime)
+    // end date parts
     const [endDay, setEndDay] = useState<string>(endParts.date)
+
+    // end time parts
     const [endHours, setEndHours] = useState<number>(endParts.hours)
     const [endMinutes, setEndMinutes] = useState<number>(endParts.minutes)
     const [endTimeOfDay, setEndTimeOfDay] = useState<DateParts['timeOfDay']>(endParts.timeOfDay)
+
+    // don't trigger the onChange call back when rendering for the first time
+    // because it means we are initializing the value of the input.
+    const checkIfFirstRender = useFirstRenderCheck();
+    const isFirstRender = checkIfFirstRender();
 
     useEffect(() => {
 
         let diff: Partial<DateTimeRange> = {};
 
-        diff.startDate = datePartsToDate({
+        [diff.startDate, diff.startTime] = datePartsToDate({
             date: startDay, 
             hours: startHours, 
             minutes: startMinutes, 
@@ -92,8 +104,9 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
         const cpy = Object.assign({}, config.val(), diff)
 
         // update parent when our internal state changes
-        config?.onChange?.(cpy)
-
+        if (!isFirstRender) {
+            config?.onChange?.(cpy)
+        }
     }, [
         startDay,
         startHours, 
@@ -105,7 +118,7 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
 
         let diff: Partial<DateTimeRange> = {};
 
-        diff.endDate = datePartsToDate({
+        [diff.endDate, diff.endTime] = datePartsToDate({
             date: endDay, 
             hours: endHours, 
             minutes: endMinutes, 
@@ -115,8 +128,9 @@ const DateTimeRangeInput = observer(({ config }: DateTimeRangeInputProps) => {
         const cpy = Object.assign({}, config.val(), diff)
 
         // update parent when our internal state changes
-        config?.onChange?.(cpy)
-
+        if (!isFirstRender) {
+            config?.onChange?.(cpy)
+        }
     }, [
         endDay,
         endHours, 
@@ -268,7 +282,7 @@ const Section = ({
     onMinChange,
     onTimeOfDayChange,
 }: SectionProps) => {
-    const date = datePartsToDate(dateParts)
+    const [date, time] = datePartsToDate(dateParts)
 
     const initialHour = HOURS.findIndex(val => {
         const hourVal = parseInt(val) 
@@ -297,7 +311,7 @@ const Section = ({
                     <Text style={[styles.label, { lineHeight: 60 }]}>{dateToDateString(date)}</Text>
                 </Pressable>
                 <Pressable onPress={() => toggleTimePicker(section)}>
-                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(date)}</Text>
+                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(time)}</Text>
                 </Pressable>
             </View>
             {
@@ -333,20 +347,25 @@ const Section = ({
 
 export default DateTimeRangeInput;
 
-const dateToDateTimeParts = (date: Date): DateParts => {
-    const mDate = moment(date);
-    
+const dateToDateTimeParts = (date: Date, time: Date): DateParts => {
+    const mDateTime = moment(date).hours(time.getHours())
+                                  .minutes(time.getMinutes())
+                                  .seconds(0)
+                                  .milliseconds(0);
+
     const parts: DateParts = {
-        date: dateToDateYearString(date), 
-        hours: mDate.hours() % 12, 
-        minutes: mDate.minutes(), 
-        timeOfDay: mDate.hours() >= 12 ? 'pm' : 'am'
+        date: dateToDateYearString(date),
+        hours: mDateTime.hours() % 12,
+        minutes: mDateTime.minutes(),
+        timeOfDay: mDateTime.hours() >= 12 ? 'pm' : 'am'
     }
-         
+
     return parts;
 }
-const datePartsToDate = (parts: DateParts): Date => {    
-    const mmnt = moment(parts.date);
+
+const datePartsToDate = (parts: DateParts): [Date, Date] => {
+    const dateMmnt = moment(parts.date);
+    dateMmnt.hours(0).minutes(0).seconds(0).milliseconds(0);
     
     const hoursToSet = parts.hours + 
         (parts.timeOfDay.toLowerCase() == 'pm' 
@@ -357,16 +376,15 @@ const datePartsToDate = (parts: DateParts): Date => {
                 ? -12 // 12am = 0 hours
                 : 0) // 1-11am = n hours ie 2am = 2 hours
 
-    mmnt.hours(hoursToSet)
+    const timeMmnt = moment(new Date(0));
+    timeMmnt.hours(hoursToSet);
+    timeMmnt.minutes(parts.minutes)
+    timeMmnt.seconds(0)
+    timeMmnt.milliseconds(0)
 
-    mmnt.minutes(parts.minutes)
-
-    mmnt.seconds(0)
-    mmnt.milliseconds(0)
-
-    const date = mmnt.toDate()
-
-    return date
+    const date = dateMmnt.toDate()
+    const time = timeMmnt.toDate()
+    return [date, time]
 }
 
 const styles = StyleSheet.create({
