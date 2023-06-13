@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IShiftStore, organizationStore, userStore } from './interfaces';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata, WithoutDates } from '../../../common/models';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata, WithoutDates, ShiftOccurrenceDiff } from '../../../common/models';
 import { positionStats } from '../../../common/utils/requestUtils';
 import moment from 'moment';
 import { DateAdapter, IRuleOptions, Rule, RuleOption, Schedule } from '../utils/rschedule'
@@ -25,6 +25,15 @@ export default class ShiftStore implements IShiftStore {
             }
         }
     }) _shifts: ObservableMap<string, WithoutDates<Shift>> = new ObservableMap();
+
+    // Date range window to retrieve shift occurrences
+    dateRange: { startDate: Date, endDate: Date } = {
+        startDate: null,
+        endDate: null
+    }
+
+    scrollToDate: Date = null;
+    initialScrollFinished = false;
 
     get shifts(): ObservableMap<string, Shift> {
         
@@ -55,6 +64,8 @@ export default class ShiftStore implements IShiftStore {
         const recurrenceWithDates =  {
             startDate: new Date(recurrence.startDate),
             endDate: new Date(recurrence.endDate),
+            startTime: new Date(recurrence.startTime),
+            endTime: new Date(recurrence.endTime),
             every: recurrence.every,
             until: recurrence.until
                 ? {
@@ -87,15 +98,6 @@ export default class ShiftStore implements IShiftStore {
         needsPeopleFilter: ShiftNeedsPeopleFilter.All,
         rolesFilter: ShiftsRolesFilter.All
     };
-
-    // Date range window to retrieve shift occurrences
-    dateRange: DateTimeRange = {
-        startDate: null,
-        endDate: null,
-    }
-
-    scrollToDate: Date = null;
-    initialScrollFinished = false;
 
     constructor() {
         makeAutoObservable(this);
@@ -173,6 +175,8 @@ export default class ShiftStore implements IShiftStore {
                     shiftsMap[dateStr].push(shiftOccurrence);    
                 }
             })
+
+            // TODO: Add detached occurrences for this shift
         });
 
         // Iterate through each day in our specified date range.
@@ -191,9 +195,27 @@ export default class ShiftStore implements IShiftStore {
                                 || (this.filter.daysFilter == CalendarDaysFilter.WithoutShifts && dateShifts.length == 0);
 
             if (addMetadata) {
-                // Since we've sequentially added shifts from potentially many different shift definitions, we need to do a final sort by date.
+                // Since we've sequentially added shifts from potentially many different shift definitions, we need to do a final sort by start date and times.
                 dateShifts.sort(function(occurrenceA, occurrenceB) {
-                    return new Date(occurrenceA.dateTimeRange.startDate).valueOf() - new Date(occurrenceB.dateTimeRange.startDate).valueOf();
+                    // TODO: Move to helper
+                    const startTimeA = moment(occurrenceA.dateTimeRange.startDate)
+                                        .hours(occurrenceA.dateTimeRange.startTime.getHours())
+                                        .minutes(occurrenceA.dateTimeRange.startTime.getMinutes())
+                                        .toDate();
+                    const startTimeB = moment(occurrenceB.dateTimeRange.startDate)
+                                        .hours(occurrenceB.dateTimeRange.startTime.getHours())
+                                        .minutes(occurrenceB.dateTimeRange.startTime.getMinutes())
+                                        .toDate();
+
+                    const endTimeA = moment(occurrenceA.dateTimeRange.endDate)
+                                        .hours(occurrenceA.dateTimeRange.endTime.getHours())
+                                        .minutes(occurrenceA.dateTimeRange.endTime.getMinutes())
+                                        .toDate();
+                    const endTimeB = moment(occurrenceB.dateTimeRange.endDate)
+                                        .hours(occurrenceB.dateTimeRange.endTime.getHours())
+                                        .minutes(occurrenceB.dateTimeRange.endTime.getMinutes())
+                                        .toDate();
+                    return startTimeA.getTime() - startTimeB.getTime() || endTimeA.getTime() - endTimeB.getTime();
                 });
 
                 let scrollTo = false;
@@ -251,14 +273,17 @@ export default class ShiftStore implements IShiftStore {
             [RecurringPeriod.Day]: 'DAILY'
         }
 
-        const shiftDuration = recurringDateTime.endDate.getTime() - recurringDateTime.startDate.getTime();
-        if (shiftDuration < 0) {
+        const shiftDuration = recurringDateTime.endTime.getTime() - recurringDateTime.startTime.getTime();
+        if (shiftDuration <= 0) {
             return null;
         }
 
         // Specify the options for the rule we're creating
         const ruleOptions: IRuleOptions = {
-            start: new Date(recurringDateTime.startDate),
+            start: moment(new Date(recurringDateTime.startDate))
+                    .hours(recurringDateTime.startTime.getHours())
+                    .minutes(recurringDateTime.startTime.getMinutes())
+                    .toDate(),
             duration: shiftDuration,
             frequency: recurringDateTime.every?.period
                         ? frequencyMap[recurringDateTime.every.period]
@@ -268,7 +293,6 @@ export default class ShiftStore implements IShiftStore {
             weekStart: DateAdapter.WEEKDAYS[0]
         }
 
-        // 
         if (recurringDateTime.every) {
             ruleOptions.interval = recurringDateTime.every.numberOf;
         }
@@ -362,8 +386,17 @@ export default class ShiftStore implements IShiftStore {
     }
 
     decomposeShiftOccurrenceId(shiftOccurrenceId: string): string[] {
+        if (!shiftOccurrenceId) {
+            return null;
+        }
+
         // Split a shift occurrence id into its parent ID and date components.
         return shiftOccurrenceId.split('---');
+    }
+
+    getShiftIdFromShiftOccurrenceId(shiftOccurrenceId: string): string {
+        // Return just the parent shift id from a shift occurrence id
+        return shiftOccurrenceId.split('---')[0];
     }
 
     composeShiftOccurrenceId(shiftId: string, date: Date): string {
@@ -373,16 +406,27 @@ export default class ShiftStore implements IShiftStore {
         return `${shiftId}---${dateStr}`;
     }
 
-    getShiftOccurrenceDateTime(shift: Shift, occurrenceDateStr: string): DateTimeRange {
+    getShiftOccurrenceDateTime(shift: Shift, diff: ShiftOccurrenceDiff, occurrenceDateStr: string): DateTimeRange {
         // Given a shift and an ISO string representing the date of an occurrence,
         // generate the date time range object that defines this specific occurrence.
-        const shiftDuration = shift.recurrence.endDate.valueOf() - shift.recurrence.startDate.valueOf();
-        const startDate = moment(occurrenceDateStr).set({'hour': shift.recurrence.startDate.getHours(), 'minute': shift.recurrence.startDate.getMinutes()}).toDate();
-        const endDate = moment(startDate).add(shiftDuration, 'milliseconds').toDate();
+
+        // The shift start/end time and duration is determined by the shift definition recurrence OR a diff value
+        const startTime = diff?.dateTimeRange?.startTime ? diff.dateTimeRange.startTime : shift.recurrence.startTime;
+        const endTime = diff?.dateTimeRange?.endTime ? diff.dateTimeRange.endTime : shift.recurrence.endTime;
+
+        // Start date has to be retrieved from the diff OR the occurrence date string portion of its id
+        // Get the time between the shift definition's start and end date to calculate the shift's default end date if necessary.
+        const dateDiffDuration = shift.recurrence.endDate.getTime() - shift.recurrence.startDate.getTime();
+        const startDate = diff?.dateTimeRange?.startDate ? diff.dateTimeRange.startDate : moment(occurrenceDateStr).hours(0).minutes(0).toDate();
+        const endDate = diff?.dateTimeRange?.endDate
+                        ? diff.dateTimeRange.endDate
+                        : moment(startDate).add(dateDiffDuration, 'milliseconds').toDate();
 
         return {
             startDate: startDate,
-            endDate: endDate
+            startTime: startTime,
+            endDate: endDate,
+            endTime: endTime
         }
     }
 
@@ -394,6 +438,9 @@ export default class ShiftStore implements IShiftStore {
         const shift = this.shifts.get(shiftId);
 
         // TODO: Handle case where shift not found?
+        if (!shift) {
+            return null;
+        }
 
         // Check if a diff of the shift exists for this date's occurrence
         const diff = shift.occurrenceDiffs[occurrenceDateStr];
@@ -404,7 +451,7 @@ export default class ShiftStore implements IShiftStore {
             id: shiftOccurrenceId,
             shiftId: shift.id,
             // Get values from diff if they exist
-            chat: diff?.chat 
+            chat: diff?.chat
                     ? diff.chat
                     : {
                         id: uuid.v1(),
@@ -412,9 +459,7 @@ export default class ShiftStore implements IShiftStore {
                         lastMessageId: 0,
                         userReceipts: {}
                     },
-            dateTimeRange: diff?.dateTimeRange
-                            ? diff.dateTimeRange
-                            : this.getShiftOccurrenceDateTime(shift, occurrenceDateStr),
+            dateTimeRange: this.getShiftOccurrenceDateTime(shift, diff, occurrenceDateStr),
             title: diff?.title ? diff.title : shift.title,
             description: diff?.description ? diff.description : shift.description,
             positions: diff?.positions != null
@@ -443,8 +488,10 @@ export default class ShiftStore implements IShiftStore {
 
             runInAction(() => {
                 shifts.forEach(s => this.updateOrAddShift(s));
-                const possibleUpdatedCurrentShift = this.getShiftOccurrence(oldCurrentShiftId);
-                this.setCurrentShiftOccurrence(possibleUpdatedCurrentShift);
+                if (oldCurrentShiftId) {
+                    const possibleUpdatedCurrentShift = this.getShiftOccurrence(oldCurrentShiftId);
+                    this.setCurrentShiftOccurrence(possibleUpdatedCurrentShift);
+                }
             })
         } catch (e) {
             console.error(e);
@@ -462,13 +509,16 @@ export default class ShiftStore implements IShiftStore {
         }
     }
 
-    setCurrentShiftOccurrence(shift: ShiftOccurrence): void {
-        if (!shift) {
+    setCurrentShiftOccurrence(shiftOccurrence: ShiftOccurrence): void {
+        // Clear the current shift occurrence ID if the given occurrence is null
+        if (!shiftOccurrence) {
+            this.currentShiftOccurrenceId = null;
             return;
         }
 
+        // Otherwise update the shift store's currend ID
         runInAction(() => {
-            this.currentShiftOccurrenceId = shift.id;
+            this.currentShiftOccurrenceId = shiftOccurrence.id;
         })
     }
 
@@ -495,5 +545,11 @@ export default class ShiftStore implements IShiftStore {
 
     clear(): void {
         this._shifts.clear();
+        this.currentShiftOccurrenceId = null;
+        this.dateRange = {
+            startDate: null,
+            endDate: null
+        };
+        this.scrollToDate = null;
     }
 }
