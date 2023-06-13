@@ -52,5 +52,7 @@ export class ChatSchema  implements Chat {
 @Schema()
 export class DateTimeRangeSchema implements DateTimeRange {
     @Required() startDate: Date;
+    @Required() startTime: Date;
     @Required() endDate: Date;
+    @Required() endTime: Date;
 }

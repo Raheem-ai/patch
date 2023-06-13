@@ -30,7 +30,9 @@ class RecurringTimePeriodSchemaDaily  {
 @Schema()
 class RecurringDateTimeRangeSchema implements RecurringDateTimeRange {
     @Required() startDate: Date;
+    @Required() startTime: Date;
     @Required() endDate: Date;
+    @Required() endTime: Date;
     @OneOf([RecurringTimePeriodSchemaMonthly, RecurringTimePeriodSchemaWeekly, RecurringTimePeriodSchemaDaily])
     every?: RecurringTimePeriod;
     @Property() until?: { 
@@ -47,11 +49,10 @@ class ShiftOccurrenceSchema  implements ShiftOccurrence {
     @Required() id: string;
     @Required() shiftId: string;
     @Required() @Property(ChatSchema) chat: Chat;
-    @Property(DateTimeRangeSchema) dateTimeRange?: DateTimeRange;
-    // TODO: No longer optional
-    @Property() title?: string;
-    @Property() description?: string;
-    @CollectionOf(PositionSchema) positions?: Position[];
+    @Property(DateTimeRangeSchema) dateTimeRange: DateTimeRange;
+    @Property() title: string;
+    @Property() description: string;
+    @CollectionOf(PositionSchema) positions: Position[];
 }
 
 // type ShiftOccurrenceDiff = Record<string, ShiftOccurrenceSchema>;
