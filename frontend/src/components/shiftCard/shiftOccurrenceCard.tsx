@@ -28,8 +28,14 @@ const ShiftOccurrenceCard = observer(({
 } : Props) => {
     const parentshift = shiftStore().shifts.get(shiftId);
     const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
+
+    // Compare if the end date + end time of the shift is after the current moment in time.
+    // If the shift has already ended, turn on the pastShift flag so it can be displayed as such.
     const now = moment();
-    const pastShift = moment(shiftOccurrence.dateTimeRange.startDate).isBefore(now);
+    const pastShift = moment(shiftOccurrence.dateTimeRange.endDate)
+                        .hours(shiftOccurrence.dateTimeRange.endTime.getHours())
+                        .minutes(shiftOccurrence.dateTimeRange.endTime.getMinutes())
+                        .isBefore(now);
 
     const onCardPress = (event: GestureResponderEvent) => {
         console.log('shift occurrence card pressed')
@@ -118,8 +124,8 @@ const ShiftOccurrenceCard = observer(({
 
     const header = () => {
         // For the card's header, get the start and end time strings in the display format.
-        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startDate);
-        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endDate);
+        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startTime);
+        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endTime);
 
         // The header of a shift card includes the status of its positions, the title, recurrence, and time info.
         return (
