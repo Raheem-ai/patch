@@ -25,7 +25,8 @@ import {
     DynamicConfig,
     MinShift,
     Shift,
-    WithoutDates
+    WithoutDates,
+    ShiftUpdates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -36,10 +37,12 @@ export type TokenContext = { token: string };
 export type OrgContext = TokenContext & { orgId: string };
 export type RequestContext = OrgContext & { requestId: string }
 export type RoleContext = OrgContext & { roleId: string }
+export type ShiftContext = OrgContext & { shiftId: string }
 
 type Authenticated<T extends (...args: any) => Promise<any>> = (ctx: TokenContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithOrg<T extends (...args: any) => Promise<any>> = (ctx: OrgContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithRequest<T extends (...args: any) => Promise<any>> = (ctx: RequestContext, ...args: Parameters<T>) => ReturnType<T>
+type AuthenticatedWithShift<T extends (...args: any) => Promise<any>> = (ctx: ShiftContext, ...args: Parameters<T>) => ReturnType<T>
 
 // these check if you are logged in
 type SSAuthenticated<T extends (...args: any) => Promise<any>, User> = (user: User, ...args: Rest<Parameters<T>>) => ReturnType<T>
@@ -156,6 +159,8 @@ export interface IApiClient {
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     // getResources: () => string
+
+    editShift: AuthenticatedWithShift<(shiftUpdates: ShiftUpdates) => Promise<WithoutDates<Shift>>>
 }
 
 type ApiRoutes = {
@@ -272,6 +277,9 @@ type ApiRoutes = {
         },
         createNewShift: () => {
             return '/createNewShift'
+        },
+        editShift: () => {
+            return '/editShift'
         },
         getShifts: () => {
             return '/getShifts'
@@ -521,6 +529,9 @@ type ApiRoutes = {
         // shift
         createNewShift: () => {
             return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
+        },
+        editShift: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.editShift()}`
         },
         getShifts: () => {
             return `${this.base}${this.namespaces.shift}${this.server.getShifts()}`

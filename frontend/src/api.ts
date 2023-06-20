@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates } from '../../common/models';
-import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates, ShiftUpdates } from '../../common/models';
+import API, { ClientSideFormat, OrgContext, RequestContext, ShiftContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
 import { securelyPersistent } from './meta';
@@ -617,6 +617,13 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async editShift(ctx: ShiftContext, shiftUpdates: ShiftUpdates): Promise<WithoutDates<Shift>> {
+        const url = `${apiHost}${API.client.editShift()}`;
+        return (await this.tryPost<WithoutDates<Shift>>(url, { shiftUpdates } ,{
+            headers: this.shiftScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async getShifts(ctx: OrgContext, shiftIds: string[]): Promise<WithoutDates<Shift>[]> {
         const url = `${apiHost}${API.client.getShifts()}`;
 
@@ -706,6 +713,13 @@ export class APIClient implements IAPIService {
     requestScopeAuthHeaders(ctx: RequestContext) {
         const headers = this.orgScopeAuthHeaders(ctx);
         headers[API.requestIdHeader] = ctx.requestId;
+
+        return headers;
+    }
+
+    shiftScopeAuthHeaders(ctx: ShiftContext) {
+        const headers = this.orgScopeAuthHeaders(ctx);
+        headers[API.shiftIdHeader] = ctx.shiftId;
 
         return headers;
     }
