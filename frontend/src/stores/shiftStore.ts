@@ -1,7 +1,7 @@
 import { makeAutoObservable, ObservableMap, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IShiftStore, organizationStore, userStore } from './interfaces';
-import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata, WithoutDates, ShiftOccurrenceDiff } from '../../../common/models';
+import { CalendarDaysFilter, ShiftsFilter, ShiftsRolesFilter, ShiftNeedsPeopleFilter, DefaultRoleIds, Shift, RecurringDateTimeRange, RecurringPeriod, ShiftOccurrence, DateTimeRange, ShiftStatus, ShiftOccurrenceMetadata, WithoutDates, ShiftOccurrenceDiff, ShiftSeries, DateWindow } from '../../../common/models';
 import { positionStats } from '../../../common/utils/requestUtils';
 import moment from 'moment';
 import { DateAdapter, IRuleOptions, Rule, RuleOption, Schedule } from '../utils/rschedule'
@@ -27,7 +27,7 @@ export default class ShiftStore implements IShiftStore {
     }) _shifts: ObservableMap<string, WithoutDates<Shift>> = new ObservableMap();
 
     // Date range window to retrieve shift occurrences
-    dateRange: { startDate: Date, endDate: Date } = {
+    dateRange: DateWindow = {
         startDate: null,
         endDate: null
     }
@@ -46,18 +46,28 @@ export default class ShiftStore implements IShiftStore {
 
     fromShiftWithoutDates(shift: WithoutDates<Shift>): Shift {
         const copy = JSON.parse(JSON.stringify(shift));
-        return {
+        const shiftSeries: ShiftSeries[] = copy.series.map(series => {
+            const seriesCopy = JSON.parse(JSON.stringify(series));
+            return {
+                startDate: seriesCopy.startDate,
+                displayId: seriesCopy.displayId,
+                title: seriesCopy.title,
+                description: seriesCopy.description,
+                positions: seriesCopy.positions,
+                recurrence: this.fromRecurrenceWithoutDates(seriesCopy.recurrence),
+                occurrenceDiffs: this.fromOccurrenceDiffsWithoutDates(seriesCopy.occurrenceDiffs)
+            }
+        })
+
+        const shiftWithDates: Shift = {
             createdAt: copy.createdAt,
             updatedAt: copy.updatedAt,
             id: copy.id,
-            displayId: copy.displayId,
             orgId: copy.orgId,
-            title: copy.title,
-            description: copy.description,
-            positions: copy.positions,
-            recurrence: this.fromRecurrenceWithoutDates(copy.recurrence),
-            occurrenceDiffs: this.fromOccurrenceDiffsWithoutDates(copy.occurrenceDiffs)
+            series: shiftSeries
         }
+
+        return shiftWithDates;
     }
 
     fromRecurrenceWithoutDates(recurrence: WithoutDates<RecurringDateTimeRange>): RecurringDateTimeRange {
@@ -141,42 +151,45 @@ export default class ShiftStore implements IShiftStore {
         // For each shift that we have a definition for, collect the occurrences within
         // the specified date range that satisfy the filter criteria.
         this.shiftsArray.forEach(shift => {
-            // Generate an rSchedule rule object, to generate the shifts schedule.
-            const rule = this.patchRecurrenceToRRule(shift.id, shift.recurrence);
-            if (rule == null) {
-                return;
-            }
-
-            const shiftSchedule = new Schedule({
-                rrules: [rule]
-            });
-
-            shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().forEach(occurrence => {
-                // Compose id from parent shift id and occurrence date (works because no shift has multiple occurrences starting on the same day)
-                const occurrenceId = this.composeShiftOccurrenceId(shift.id, occurrence.date);
-
-                // Helper function retrieves and builds up the shift occurrence object for this date.
-                const shiftOccurrence: ShiftOccurrence = this.getShiftOccurrence(occurrenceId);
-
-                // Verify it satisfies the filter conditions before pushing to our array.
-                const satisfiesRolesFilter = this.filter.rolesFilter == ShiftsRolesFilter.All
-                                                || this.userHasShiftRoles(userStore().user.id, shiftOccurrence);
-                const satisfiesNeedsPeopleFilter = this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.All
-                                                    || (this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.Unfilled
-                                                        && this.getShiftStatus(shiftOccurrence) != ShiftStatus.Satisfied);
-
-                if (satisfiesNeedsPeopleFilter && satisfiesRolesFilter) {
-                    // Add the occurrence to the collection of occurrences on this date.
-                    const dateStr = moment(new Date(occurrence.date)).format('YYYY-MM-DD');
-                    if (!shiftsMap[dateStr]) {
-                        shiftsMap[dateStr] = []
-                    }
-
-                    shiftsMap[dateStr].push(shiftOccurrence);    
+            shift.series.forEach(shiftSeries => {
+                // Generate an rSchedule rule object, to generate the shifts schedule.
+                const rule = this.patchRecurrenceToRRule(shift.id, shiftSeries.recurrence);
+                if (rule == null) {
+                    return;
                 }
-            })
 
-            // TODO: Add detached occurrences for this shift
+                const shiftSchedule = new Schedule({
+                    rrules: [rule]
+                });
+
+                shiftSchedule.occurrences({ start: this.dateRange.startDate, end: this.dateRange.endDate }).toArray().forEach(occurrence => {
+                    // Compose id from parent shift id and occurrence date (works because no shift has multiple occurrences starting on the same day)
+                    const occurrenceId = this.composeShiftOccurrenceId(shift.id, occurrence.date);
+
+                    // Helper function retrieves and builds up the shift occurrence object for this date.
+                    const shiftOccurrence: ShiftOccurrence = this.getShiftOccurrence(occurrenceId);
+
+                    // Verify it satisfies the filter conditions before pushing to our array.
+                    const satisfiesRolesFilter = this.filter.rolesFilter == ShiftsRolesFilter.All
+                                                    || this.userHasShiftRoles(userStore().user.id, shiftOccurrence);
+
+                    const satisfiesNeedsPeopleFilter = this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.All
+                                                        || (this.filter.needsPeopleFilter == ShiftNeedsPeopleFilter.Unfilled
+                                                            && this.getShiftStatus(shiftOccurrence) != ShiftStatus.Satisfied);
+
+                    if (satisfiesNeedsPeopleFilter && satisfiesRolesFilter) {
+                        // Add the occurrence to the collection of occurrences on this date.
+                        const dateStr = moment(new Date(occurrence.date)).format('YYYY-MM-DD');
+                        if (!shiftsMap[dateStr]) {
+                            shiftsMap[dateStr] = []
+                        }
+
+                        shiftsMap[dateStr].push(shiftOccurrence);
+                    }
+                })
+
+                // TODO: Add detached occurrences for this shift
+            });
         });
 
         // Iterate through each day in our specified date range.
@@ -375,7 +388,7 @@ export default class ShiftStore implements IShiftStore {
         }
     }
 
-    initializeDateRange = async (dateRange: DateTimeRange): Promise<void> => {
+    initializeDateRange = async (dateRange: DateWindow): Promise<void> => {
         this.dateRange = {
             startDate: dateRange.startDate,
             endDate: dateRange.endDate
@@ -406,17 +419,17 @@ export default class ShiftStore implements IShiftStore {
         return `${shiftId}---${dateStr}`;
     }
 
-    getShiftOccurrenceDateTime(shift: Shift, diff: ShiftOccurrenceDiff, occurrenceDateStr: string): DateTimeRange {
+    getShiftOccurrenceDateTime(shiftSeries: ShiftSeries, diff: ShiftOccurrenceDiff, occurrenceDateStr: string): DateTimeRange {
         // Given a shift and an ISO string representing the date of an occurrence,
         // generate the date time range object that defines this specific occurrence.
 
         // The shift start/end time and duration is determined by the shift definition recurrence OR a diff value
-        const startTime = diff?.dateTimeRange?.startTime ? diff.dateTimeRange.startTime : shift.recurrence.startTime;
-        const endTime = diff?.dateTimeRange?.endTime ? diff.dateTimeRange.endTime : shift.recurrence.endTime;
+        const startTime = diff?.dateTimeRange?.startTime ? diff.dateTimeRange.startTime : shiftSeries.recurrence.startTime;
+        const endTime = diff?.dateTimeRange?.endTime ? diff.dateTimeRange.endTime : shiftSeries.recurrence.endTime;
 
         // Start date has to be retrieved from the diff OR the occurrence date string portion of its id
         // Get the time between the shift definition's start and end date to calculate the shift's default end date if necessary.
-        const dateDiffDuration = shift.recurrence.endDate.getTime() - shift.recurrence.startDate.getTime();
+        const dateDiffDuration = shiftSeries.recurrence.endDate.getTime() - shiftSeries.recurrence.startDate.getTime();
         const startDate = diff?.dateTimeRange?.startDate ? diff.dateTimeRange.startDate : moment(occurrenceDateStr).hours(0).minutes(0).toDate();
         const endDate = diff?.dateTimeRange?.endDate
                         ? diff.dateTimeRange.endDate
@@ -428,6 +441,33 @@ export default class ShiftStore implements IShiftStore {
             endDate: endDate,
             endTime: endTime
         }
+    }
+
+    getShiftSeriesFromShift(shift: Shift, occurrenceDateStr: string): ShiftSeries {
+        const occurrenceDate = moment(occurrenceDateStr, 'YYYY-MM-DD');
+        // The last series (in our ordered list of series), for which the
+        // series start date is either the same or before the occurrence
+        // date is the series that the occurrence belongs to.
+        for (const series of Array.from(shift.series).reverse()) {
+            const seriesStartMmt = moment(series.startDate).hours(0).minutes(0);
+            if (occurrenceDate.isSameOrAfter(seriesStartMmt)) {
+                return series;
+            }
+        }
+
+        // If the occurrence date is before all series in the shift, then
+        // the occurrence is no longer reachable.
+        return null;
+    }
+
+    getShiftSeriesFromShiftOccurrenceId(shiftOccurrenceId: string): ShiftSeries {
+        const [shiftId, occurrenceDateStr] = this.decomposeShiftOccurrenceId(shiftOccurrenceId);
+        const shift = this.shifts.get(shiftId);
+        if (!shift) {
+            return null;
+        }
+
+        return this.getShiftSeriesFromShift(shift, occurrenceDateStr);
     }
 
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence {
@@ -442,8 +482,13 @@ export default class ShiftStore implements IShiftStore {
             return null;
         }
 
+        const shiftSeries = this.getShiftSeriesFromShift(shift, occurrenceDateStr);
+        if (!shiftSeries) {
+            return null;
+        }
+
         // Check if a diff of the shift exists for this date's occurrence
-        const diff = shift.occurrenceDiffs[occurrenceDateStr];
+        const diff = shiftSeries.occurrenceDiffs[occurrenceDateStr];
 
         // Compose the final shift occurrence object from a mix of the parent
         // shift details and the diff details if one exists.
@@ -459,12 +504,12 @@ export default class ShiftStore implements IShiftStore {
                         lastMessageId: 0,
                         userReceipts: {}
                     },
-            dateTimeRange: this.getShiftOccurrenceDateTime(shift, diff, occurrenceDateStr),
-            title: diff?.title ? diff.title : shift.title,
-            description: diff?.description ? diff.description : shift.description,
+            dateTimeRange: this.getShiftOccurrenceDateTime(shiftSeries, diff, occurrenceDateStr),
+            title: diff?.title ? diff.title : shiftSeries.title,
+            description: diff?.description ? diff.description : shiftSeries.description,
             positions: diff?.positions != null
                         ? JSON.parse(JSON.stringify(diff.positions))
-                        : JSON.parse(JSON.stringify(shift.positions))
+                        : JSON.parse(JSON.stringify(shiftSeries.positions))
         };
     }
 

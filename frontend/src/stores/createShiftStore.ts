@@ -3,7 +3,7 @@ import { Store } from './meta';
 import { ICreateShiftStore, shiftStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
 import { api } from '../services/interfaces';
-import { DefaultRoleIds, MinShift, Position, RecurringDateTimeRange, Shift, WithoutDates } from '../../../common/models';
+import { DefaultRoleIds, MinShift, MinShiftSeries, Position, RecurringDateTimeRange, Shift, ShiftSeries, WithoutDates } from '../../../common/models';
 import moment from 'moment';
 
 
@@ -95,11 +95,16 @@ export default class CreateShiftStore implements ICreateShiftStore  {
     };
 
     async createShift(): Promise<WithoutDates<Shift>> {
-        const shift: MinShift = {
+        const shiftSeries: MinShiftSeries = {
+            startDate: this.recurrence.startDate,
             title: this.title,
             description: this.description,
             positions: this.positions,
             recurrence: this.recurrence
+        }
+    
+        const shift: MinShift = {
+            series: [shiftSeries]
         }
 
         const createdShift: WithoutDates<Shift> = await api().createNewShift(this.orgContext(), shift);

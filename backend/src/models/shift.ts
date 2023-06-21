@@ -1,6 +1,6 @@
 import { Model, ObjectID, Schema, getSchema } from "@tsed/mongoose";
 import { CollectionOf, Property, Required, RecordOf, getJsonSchema, OneOf, Enum, number } from "@tsed/schema";
-import { Position, Shift, RecurringDateTimeRange, ShiftOccurrence, Chat, DateTimeRange, RecurringTimePeriod, RecurringPeriod } from "common/models";
+import { Position, Shift, RecurringDateTimeRange, ShiftOccurrence, Chat, DateTimeRange, RecurringTimePeriod, RecurringPeriod, ShiftSeries, ShiftOccurrenceDiff } from "common/models";
 import { Document } from "mongoose";
 import { ChatSchema, DateTimeRangeSchema, ObjectOf, PositionSchema } from "./common";
 import utils from 'util'
@@ -55,6 +55,30 @@ class ShiftOccurrenceSchema  implements ShiftOccurrence {
     @CollectionOf(PositionSchema) positions: Position[];
 }
 
+@Schema()
+class ShiftSeriesSchema implements ShiftSeries {
+    @Property()
+    startDate: Date;
+
+    @Property()
+    displayId: string;
+
+    @Property()
+    title: string;
+
+    @Property()
+    description: string;
+
+    @CollectionOf(PositionSchema)
+    positions: Position[];
+
+    @Property(RecurringDateTimeRangeSchema)
+    recurrence: RecurringDateTimeRange;
+
+    @ObjectOf(ShiftOccurrenceSchema)
+    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence; };
+}
+
 // type ShiftOccurrenceDiff = Record<string, ShiftOccurrenceSchema>;
 
 // timestamps are handled by db
@@ -73,25 +97,10 @@ export class ShiftModel implements Omit<Shift, 'createdAt' | 'updatedAt'> {
     _id: string;
 
     @Property()
-    displayId: string;
-
-    @Property()
     orgId: string;
 
-    @CollectionOf(PositionSchema)
-    positions: Position[];
-
-    @Property()
-    title: string;
-
-    @Property()
-    description: string;
-
-    @Property(RecurringDateTimeRangeSchema)
-    recurrence: RecurringDateTimeRange;
-
-    @ObjectOf(ShiftOccurrenceSchema)
-    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence; };
+    @CollectionOf(ShiftSeriesSchema)
+    series: ShiftSeries[];
 }
 
 export type ShiftDoc = ShiftModel & Document;

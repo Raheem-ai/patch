@@ -26,7 +26,7 @@ const ShiftOccurrenceCard = observer(({
     style,
     onPress
 } : Props) => {
-    const parentshift = shiftStore().shifts.get(shiftId);
+    const shiftSeries = shiftStore().getShiftSeriesFromShiftOccurrenceId(occurrenceId);
     const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
 
     // Compare if the end date + end time of the shift is after the current moment in time.
@@ -64,8 +64,8 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const recurrenceIcon = () => {
-        // Display a recurrence icon if the shift repeats.
-        if (!parentshift.recurrence) {
+        // Display a recurrence icon if the shift has any repitition.
+        if (!(shiftSeries?.recurrence?.every || shiftSeries?.recurrence?.until)) {
             return null;
         }
 
