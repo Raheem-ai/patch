@@ -1,9 +1,9 @@
 import React from "react";
-import { createShiftStore, alertStore, bottomDrawerStore } from "../../../stores/interfaces";
+import { alertStore, bottomDrawerStore, shiftStore, editShiftStore, PromptAction } from "../../../stores/interfaces";
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { PatchPermissions, Shift, WithoutDates } from "../../../../../common/models";
+import { DateTimeRange, PatchPermissions, RecurringTimeConstraints, Shift, WithoutDates } from "../../../../../common/models";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { View } from "react-native";
@@ -26,15 +26,17 @@ class EditShift extends React.Component<Props> {
 
     static minimizable = true;
 
+    static onShow() {
+        editShiftStore().loadShift(shiftStore().currentShiftOccurrenceId);
+    }
+
     headerLabel = () => {
-        return createShiftStore().title
-                ? createShiftStore().title
-                : 'Untitled shift/event';
+        return editShiftStore().title;
     }
 
     headerIsPlaceholder = () => {
         // Maybe a more Javsacript way to do this?
-        return createShiftStore().title
+        return editShiftStore().title
                 ? false
                 : true;
     }
@@ -52,33 +54,21 @@ class EditShift extends React.Component<Props> {
     }: CustomFormHomeScreenProps) => {
 
         const headerConfig: BackButtonHeaderProps = {
-            testID: TestIds.createShift.form,
+            testID: TestIds.editShift.form,
             cancel: {
                 handler: async () => {
-                    createShiftStore().clear();
+                    editShiftStore().clear();
                 },
             },
             save: {
                 handler: async () => {
-                    let createdShift: WithoutDates<Shift>;
-        
-                    try {
-                        bottomDrawerStore().startSubmitting()
-                        createdShift = await createShiftStore().createShift()
-                    } catch(e) {
-                        alertStore().toastError(resolveErrorMessage(e))
-                        return
-                    } finally {
-                        bottomDrawerStore().endSubmitting()
-                    }
-
-                    const successMsg = STRINGS.SHIFTS.createdShiftSuccess(createdShift.title);
-
-                    alertStore().toastSuccess(successMsg)
-                    createShiftStore().clear()
-                    bottomDrawerStore().hide()
+                    alertStore().showPrompt({
+                        title:  "Save changes to shift",
+                        message: "Do you want to save changes to all or just this shift?",
+                        actions: this.getFormActions()
+                    })
                 },
-                label: STRINGS.SHIFTS.add,
+                label: STRINGS.SHIFTS.edit,
                 validator: () => {
                     return this.formInstance.get()?.isValid.get()
                 }
@@ -91,7 +81,7 @@ class EditShift extends React.Component<Props> {
         return (
             <KeyboardAwareArea>
                 <BackButtonHeader {...headerConfig} />
-                <ScrollView testID={TestIds.createShift.form} showsVerticalScrollIndicator={false}>
+                <ScrollView testID={TestIds.editShift.form} showsVerticalScrollIndicator={false}>
                     <View style={{ paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(inputs()) }
@@ -102,25 +92,99 @@ class EditShift extends React.Component<Props> {
         )
     })
 
+    getFormActions = (): [PromptAction] | [PromptAction, PromptAction] => {
+        const actions: [PromptAction] | [PromptAction, PromptAction] = [
+            {
+                label: "all",
+                onPress: async () => {
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await editShiftStore().editAllShifts();
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+
+                    const successMsg = STRINGS.SHIFTS.updatedShiftDefinitionSuccess(editShiftStore().title);
+
+                    alertStore().toastSuccess(successMsg)
+                    editShiftStore().clear()
+                    bottomDrawerStore().hide()
+                },
+                confirming: true
+            },
+            /*
+            {
+                label: "this and all future",
+                onPress: async () => {
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await editShiftStore().editThisAndFutureShifts();
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+
+                    const successMsg = STRINGS.SHIFTS.updatedShiftDefinitionSuccess(editShiftStore().title);
+
+                    alertStore().toastSuccess(successMsg)
+                    editShiftStore().clear()
+                    bottomDrawerStore().hide()
+                },
+                confirming: true
+            } */
+        ];
+
+        if (editShiftStore().canUpdateSingleOccurrence()) {
+            actions.push({
+                label: "only this",
+                onPress: async () => {
+                    try {
+                        bottomDrawerStore().startSubmitting()
+                        await editShiftStore().editShiftOccurrence();
+                    } catch(e) {
+                        alertStore().toastError(resolveErrorMessage(e))
+                        return
+                    } finally {
+                        bottomDrawerStore().endSubmitting()
+                    }
+
+                    const successMsg = STRINGS.SHIFTS.updatedShiftOccurrenceSuccess(editShiftStore().title);
+
+                    alertStore().toastSuccess(successMsg)
+                    editShiftStore().clear()
+                    bottomDrawerStore().hide()
+                },
+                confirming: true
+            })
+        }
+
+        return actions;
+    }
+
     formProps = (): FormProps => {
 
         return {
             headerLabel: this.headerLabel,
             headerIsPlaceholder: this.headerIsPlaceholder,
             homeScreen: this.formHomeScreen,
-            testID: TestIds.createShift.form,
+            testID: TestIds.editShift.form,
             inputs: [
                 [
                     // Shift name
                     {
-                        onChange: (title) => createShiftStore().title = title,
+                        onChange: (title) => editShiftStore().title = title,
                         val: () => {
-                            return createShiftStore().title
+                            return editShiftStore().title
                         },
                         isValid: () => {
-                            return true
+                            return !!editShiftStore().title;
                         },
-                        testID: TestIds.createShift.inputs.title,
+                        testID: TestIds.editShift.inputs.title,
                         name: 'title',
                         icon: ICONS.text,
                         placeholderLabel: () => STRINGS.SHIFTS.title,
@@ -129,28 +193,33 @@ class EditShift extends React.Component<Props> {
                     },
                     // Description
                     {
-                        onSave: (desc) => createShiftStore().description = desc,
+                        onSave: (desc) => editShiftStore().description = desc,
                         val: () => {
-                            return createShiftStore().description;
+                            return editShiftStore().description;
                         },
                         isValid: () => {
-                            return !!createShiftStore().description;
+                            return true;
                         },
-                        testID: TestIds.createShift.inputs.description,
+                        testID: TestIds.editShift.inputs.description,
                         name: 'description',
-                        previewLabel: () => createShiftStore().description,
+                        previewLabel: () => editShiftStore().description,
                         headerLabel: () => STRINGS.SHIFTS.description,
                         placeholderLabel: () => STRINGS.SHIFTS.description,
                         type: 'TextArea'
                     },
                 ],
                 RecurringDateTimeRangeInputConfig({
-                    testID: TestIds.createShift.inputs.recurrence,
-                    onChange: (recurringDateTimeRange) => {
-                        createShiftStore().recurrence = recurringDateTimeRange;
-                    },
+                    testID: TestIds.editShift.inputs.recurrence,
+                    onChange: () => {},
                     val: () => {
-                        return createShiftStore().recurrence
+                        return {
+                            startDate: editShiftStore().dateTimeRange.startDate,
+                            startTime: editShiftStore().dateTimeRange.startTime,
+                            endDate: editShiftStore().dateTimeRange.endDate,
+                            endTime: editShiftStore().dateTimeRange.endTime,
+                            every: editShiftStore().recurringTimeConstraints.every,
+                            until: editShiftStore().recurringTimeConstraints.until
+                        }
                     },
                     props: {
                         updateStartDatePromptMessage: (from: Date, to: Date) => {
@@ -158,17 +227,25 @@ class EditShift extends React.Component<Props> {
                         },
                         updateStartDatePromptTitle: (from: Date, to: Date) => {
                             return `Move next shift to ${dateToDayOfWeekString(to)}?`
-                        }
+                        },
+                        onDateTimeRangeChange: (dateTimeRange: DateTimeRange) => {
+                            console.log('dateTimeRange is changing!');
+                            editShiftStore().dateTimeRange = dateTimeRange;
+                        },
+                        onRecurringTimeConstraintsChange: (constraints: RecurringTimeConstraints) => {
+                            console.log('recurrence is changing!');
+                            editShiftStore().recurringTimeConstraints = constraints;
+                        },
                     },
                     name: 'schedule'
                 }),
                 // Positions
                 {
-                    onSave: (data) => {
-                        createShiftStore().positions = data;
+                    onSave: (_, diff) => {
+                        editShiftStore().savePositionUpdates(diff);
                     },
                     val: () => {
-                        return createShiftStore().positions;
+                        return editShiftStore().positions;
                     },
                     isValid: () => true,
                     headerLabel: () => STRINGS.SHIFTS.positions,
@@ -177,7 +254,7 @@ class EditShift extends React.Component<Props> {
                     props: {
                         editPermissions: [PatchPermissions.ShiftAdmin]
                     },
-                    testID: TestIds.createShift.inputs.positions,
+                    testID: TestIds.editShift.inputs.positions,
                     name: 'positions',
                     type: 'Positions'
                 }
@@ -193,7 +270,7 @@ class EditShift extends React.Component<Props> {
     }
 
     render() {
-        return <Form sentry-label='CreateShiftForm' ref={this.setRef} {...this.formProps()}/>
+        return <Form sentry-label={TestIds.editShift.form} ref={this.setRef} {...this.formProps()}/>
     }
 }
 

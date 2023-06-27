@@ -51,7 +51,8 @@ import {
     IFormStore,
     IConnectionStore,
     IDynamicConfigStore,
-    ICreateShiftStore
+    ICreateShiftStore,
+    IEditShiftStore
 } from './interfaces';
 import UpsertRoleStore from './upsertRoleStore';
 import ManageAttributesStore from './manageAttributesStore';
@@ -64,6 +65,7 @@ import ConnectionStore from './connectionStore';
 import DynamicConfigStore from './dynamicConfigStore';
 import ShiftStore from './shiftStore';
 import CreateShiftStore from './createShiftStore';
+import EditShiftStore from './editShiftStore';
 
 const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IUserStore, UserStore ],
@@ -74,6 +76,7 @@ const storeMappings: [{ id: symbol }, new () => any][] = [
     [ IRequestStore, RequestStore ],
     [ IShiftStore, ShiftStore ],
     [ ICreateShiftStore, CreateShiftStore ],
+    [ IEditShiftStore, EditShiftStore ],
     [ ISecretStore, SecretStore ],
     [ IEditRequestStore, EditRequestStore ],
     [ IBottomDrawerStore, BottomDrawerStore ],

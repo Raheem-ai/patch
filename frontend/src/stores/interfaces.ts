@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata, WithoutDates } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig, Shift, ShiftOccurrence, ShiftsFilter, DateTimeRange, ShiftNeedsPeopleFilter, PositionStatus, ShiftsRolesFilter, ShiftStatus, CalendarDaysFilter, ShiftOccurrenceMetadata, WithoutDates, RecurringDateTimeRange, ShiftOccurrenceSetUpdate, RecurringTimeConstraints, ShiftSeries, DateWindow } from '../../../common/models'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -261,28 +261,52 @@ export interface IRequestStore extends IBaseStore {
     ackRequestNotification(requestId: string): Promise<void>
 }
 
-export type CreateShiftData = Pick<Shift, 
+export type CreateShiftData = Pick<ShiftSeries, 
     'title' 
     | 'description' 
     | 'positions' 
     | 'recurrence'
 >
 
-export interface ITempShiftStore extends CreateShiftData {
+export type EditShiftData = Pick<ShiftSeries, 
+    'title' 
+    | 'description' 
+    | 'positions'
+> & {
+    recurringTimeConstraints: RecurringTimeConstraints,
+    dateTimeRange: DateTimeRange
+}
+
+export interface ITempShiftStore {
     // react to deletions that might affect the locally cached data this store is using
     onRoleDeletedUpdate(roleId: string): void
-    clear(prop?: keyof CreateReqData): void
+    clear(prop?: keyof CreateShiftData): void
 }
 
 export namespace ICreateShiftStore {
     export const id = Symbol('ICreateShiftStore');
 }
 
-export interface ICreateShiftStore extends ITempShiftStore {
+export interface ICreateShiftStore extends ITempShiftStore, CreateShiftData {
     createShift: () => Promise<WithoutDates<Shift>>;
-    setStartDate: (date?: Date) => Promise<void>;
+    initializeStartDate: (date?: Date) => Promise<void>;
     startDate: Date;
     defaultShiftDateTime: { startDate: Date, endDate: Date }
+}
+
+export namespace IEditShiftStore {
+    export const id = Symbol('IEditShiftStore');
+}
+
+export interface IEditShiftStore extends ITempShiftStore, EditShiftData {
+    loadShift(shiftId: string): void
+    editShiftOccurrence(): Promise<void>
+    editAllShifts(): Promise<void>
+    editThisAndFutureShifts(): Promise<void>
+    titleValid: boolean
+
+    savePositionUpdates(diff: PositionSetUpdate)
+    canUpdateSingleOccurrence()
 }
 
 export namespace IShiftStore {
@@ -295,7 +319,7 @@ export interface IShiftStore extends IBaseStore {
     filteredShiftOccurenceMetadata: ShiftOccurrenceMetadata[]
 
     filter: ShiftsFilter
-    dateRange: DateTimeRange
+    dateRange: { startDate: Date, endDate: Date }
     initialScrollFinished: boolean
     scrollToDate: Date
 
@@ -306,12 +330,14 @@ export interface IShiftStore extends IBaseStore {
     setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
     setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
-    initializeDateRange(dateRange: DateTimeRange): Promise<void>
+    initializeDateRange(dateRange: DateWindow): Promise<void>
     addFutureWeekToDateRange(): Promise<void>
     addPreviousWeekToDateRange(): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>
     getShift(shiftId: string): Promise<void>
+    getShiftIdFromShiftOccurrenceId(shiftOccurrenceId: string): string
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
+    getShiftSeriesFromShiftOccurrenceId(shiftOccurrenceId: string): ShiftSeries
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
     updateOrAddShift(updatedShift: WithoutDates<Shift>): void
     setCurrentShiftOccurrence(shift: ShiftOccurrence): void;
@@ -535,7 +561,7 @@ export namespace IAlertStore {
     export const id = Symbol('IAlertStore');
 }
 
-type PromptAction = {
+export type PromptAction = {
     // TODO: Make required?
     testID?: string,
     label: string,
@@ -712,6 +738,7 @@ export const createRequestStore = () => getStore<ICreateRequestStore>(ICreateReq
 export const editRequestStore = () => getStore<IEditRequestStore>(IEditRequestStore);
 export const requestStore = () => getStore<IRequestStore>(IRequestStore);
 export const createShiftStore = () => getStore<ICreateShiftStore>(ICreateShiftStore);
+export const editShiftStore = () => getStore<IEditShiftStore>(IEditShiftStore);
 export const shiftStore = () => getStore<IShiftStore>(IShiftStore);
 export const organizationStore = () => getStore<IOrganizationStore>(IOrganizationStore);
 export const teamStore = () => getStore<ITeamStore>(ITeamStore);
@@ -744,6 +771,7 @@ export const AllStores = [
     IRequestStore,
     IShiftStore,
     ICreateShiftStore,
+    IEditShiftStore,
     ISecretStore,
     IEditRequestStore,
     IBottomDrawerStore,

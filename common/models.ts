@@ -388,37 +388,68 @@ export type ShiftOccurrence = {
     id: string
     shiftId: string
     chat: Chat
-    dateTimeRange?: DateTimeRange
-    title?: string
-    description?: string
-    positions?: Position[]
+    dateTimeRange: DateTimeRange
+    title: string
+    description: string
+    positions: Position[]
 }
 
-export type MinShift = AtLeast<Shift, 'title' | 'description' | 'positions' | 'recurrence'>
+export type ShiftOccurrenceDiff = {
+    [key in keyof ShiftOccurrence]: key extends 'dateTimeRange'
+        ? Partial<ShiftOccurrence[key]>
+        : ShiftOccurrence[key]
+}
+
+// TODO: Define using Shift type somehow?
+export type MinShift = { series: [MinShiftSeries, ...MinShiftSeries[]] }
 
 export type Shift = {
     // virtual fields proviced by db
     createdAt: string
     updatedAt: string
     id: string
+    orgId: string
+
+    // sorted?
+    series: ShiftSeries[];
+}
+
+export type MinShiftSeries = AtLeast<ShiftSeries, 'startDate' | 'title' | 'description' | 'positions' | 'recurrence'>
+
+export type ShiftSeries = {
+    startDate: Date
 
     // PATCH defined fields
     displayId: string
-    orgId: string
     title: string
     description: string
     positions: Position[]
     recurrence: RecurringDateTimeRange
-    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence }
+
+    // Series diffs that occur within the recurrence projection.
+    // When deleted, remove diffs from map AND add ID to deletedOccurrences.
+    // TODO: occurreneDiffs -> seriesDiffs
+    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrenceDiff }
+
+    // Diffs that exist outside of the recurrence projection.
+    // When deleted, simply remove the diffs. Do not add to deletedOccurrences.
+    // detachedDiffs: { [occurenceId: string]: ShiftOccurrence }
+
+    // Tracks occurrences in the recurrence series that a user deleted.
+    // deletedSeriesOccurrences: string[]
 }
 
 // TODO: Apply this type to arrays in case the objects it’s holding also has dates
 export type WithoutDates<T> = {
-    [key in keyof T]: T[key] extends number | string | Array<any> | boolean 
-        ? T[key] 
+    [key in keyof T]: T[key] extends number | string | boolean 
+        ? T[key]
         : T[key] extends Date
             ? string 
-            : WithoutDates<T[key]>
+            : T[key] extends Array<ShiftSeries>
+                ? Array<WithoutDates<ShiftSeries>>
+                : T[key] extends Array<any>
+                    ? T[key]
+                    : WithoutDates<T[key]>
 }
 
 export enum TeamFilter {
@@ -1525,9 +1556,16 @@ export type PatchNotification<T extends PatchEventType = PatchEventType> = {
     payload: PatchEventPacket<T>
 }
 
+export type DateWindow = {
+    startDate: Date,
+    endDate: Date
+}
+
 export type DateTimeRange = {
     startDate: Date
+    startTime: Date
     endDate: Date
+    endTime: Date
 }
 
 export enum RecurringPeriod {
@@ -1559,6 +1597,8 @@ export type RecurringTimeConstraints = {
         date: null,
         repititions: number
     }
+
+    // TODO: consider a third option where both?
 }
 
 export type RecurringDateTimeRange = RecurringTimeConstraints & DateTimeRange;
@@ -1970,3 +2010,88 @@ export type RequestUpdates = {
     typeUpdates: ArrayCollectionUpdate<RequestType>,
     positionUpdates: PositionSetUpdate
 }
+
+// Shift Diff Types
+// Shift Occurrence Level
+export type ReplaceableShiftOccurrenceProps = Pick<ShiftOccurrence, 'title' | 'description' | 'dateTimeRange'>
+
+export type ShiftOccurrenceUpdate = {
+    id: string,
+    replacedProperties: {
+        [key in keyof ReplaceableShiftOccurrenceProps]?: ShiftOccurrence[key]
+    }
+    positionUpdates: PositionSetUpdate,
+}
+
+export type ShiftOccurrenceSetUpdate = ArrayItemUpdate<ShiftOccurrenceUpdate>
+
+// Shift Series Level
+export type ReplaceableShiftSeriesProps = Pick<ShiftSeries, 'title' | 'description' | 'recurrence'>
+
+export type ShiftSeriesUpdate = {
+    replacedProperties: {
+        [key in keyof ReplaceableShiftSeriesProps]?: ShiftSeries[key]
+    },
+    positionUpdates: PositionSetUpdate,
+    shiftOccurrenceUpdates: ShiftOccurrenceSetUpdate
+}
+
+export type ShiftSeriesSetUpdate = ArrayItemUpdate<ShiftSeriesUpdate>
+
+export type EditShiftSeriesUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableShiftSeriesProps]?: ShiftSeries[key]
+    } & {
+        [key in keyof ReplaceableShiftOccurrenceProps]?: ShiftOccurrence[key]
+    },
+    positionUpdates: PositionSetUpdate,
+}
+
+// Shift Level
+// ShiftUpdates allows us to send updates for a Shift record to the server.
+// Only properties on a series are editable, hence no Shift-level replaceable properties.
+export type ShiftUpdates = {
+    // shiftSeriesUpdates: ShiftSeriesSetUpdate
+    shiftSeriesUpdates: ShiftSeriesUpdate
+}
+
+// EditShiftUpdates holds the form edits until the user
+// indicates at which level the edits are for and transfer
+// the values to a ShiftUpdates object for the server.
+export type EditShiftUpdates = {
+    shiftSeriesUpdates: EditShiftSeriesUpdates
+}
+
+/*
+// Shift Diff Types
+export type ReplaceableShiftOccurrenceProps = Pick<ShiftOccurrence, 'title' | 'description' | 'dateTimeRange'>
+
+export type ShiftOccurrenceUpdate = {
+    id: string,
+    replacedProperties: {
+        [key in keyof ReplaceableShiftOccurrenceProps]?: ShiftOccurrence[key]
+    }
+    positionUpdates: PositionSetUpdate,
+}
+
+export type ShiftOccurrenceSetUpdate = ArrayItemUpdate<ShiftOccurrenceUpdate>
+
+export type ReplaceableShiftProps = Pick<Shift, 'title' | 'description' | 'recurrence'>
+
+export type ShiftUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableShiftProps]?: Shift[key]
+    },
+    positionUpdates: PositionSetUpdate,
+    shiftOccurrenceUpdates: ShiftOccurrenceSetUpdate
+}
+
+export type EditShiftUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableShiftProps]?: Shift[key]
+    } & {
+        [key in keyof ReplaceableShiftOccurrenceProps]?: ShiftOccurrence[key]
+    },
+    positionUpdates: PositionSetUpdate,
+}
+*/
