@@ -72,7 +72,7 @@ class CreateShift extends React.Component<Props> {
                         bottomDrawerStore().endSubmitting()
                     }
 
-                    const successMsg = STRINGS.SHIFTS.createdShiftSuccess(createdShift.title);
+                    const successMsg = STRINGS.SHIFTS.createdShiftSuccess(createdShift.series[0].title);
 
                     alertStore().toastSuccess(successMsg)
                     createShiftStore().clear()
