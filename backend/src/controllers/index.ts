@@ -3,8 +3,9 @@ import { IApiClient, ServerSide } from "common/api";
 import API from 'common/api';
 import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc, UserModel } from "../models/user";
+import { ShiftDoc } from "../models/shift";
 
-export type APIController<T extends keyof IApiClient> = Pick<ServerSide<HelpRequestDoc, UserDoc>, T>
+export type APIController<T extends keyof IApiClient> = Pick<ServerSide<HelpRequestDoc, UserDoc, ShiftDoc>, T>
 
 export function OrgId(): ParameterDecorator {
     return HeaderParams(API.orgIdHeader)
@@ -12,4 +13,8 @@ export function OrgId(): ParameterDecorator {
 
 export function RequestId(): ParameterDecorator {
     return HeaderParams(API.requestIdHeader)
+}
+
+export function ShiftId(): ParameterDecorator {
+    return HeaderParams(API.shiftIdHeader)
 }

@@ -1,13 +1,9 @@
 import { BodyParams, Controller, Get, Inject, Post, Req } from "@tsed/common";
 import { Required } from "@tsed/schema";
-import { AtLeast } from "common";
 import API from 'common/api';
-import { HelpRequest, MinHelpRequest, MinOrg, MinShift, PatchEventType, PatchPermissions, RequestStatus, RequestUpdates, ResponderRequestStatuses, UserRole } from "common/models";
-import { assignedResponderBasedRequestStatus, getPreviousOpenStatus as getPreviousOpenStatus } from "common/utils/requestUtils";
-import { APIController, OrgId, RequestId } from ".";
-import { HelpReq, RequestAdminOrOnRequestWithPermissions, RequestAdminOrWithPermissions } from "../middlewares/requestAccessMiddleware";
+import { MinOrg, MinShift, PatchEventType, PatchPermissions, ShiftUpdates } from "common/models";
+import { APIController, OrgId, ShiftId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
-import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
 import { DBManagerService } from "../services/dbManagerService";
@@ -15,6 +11,8 @@ import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
 import { UIUpdateService } from "../services/uiUpdateService";
+import { ShiftDoc } from "../models/shift";
+import { Shift, ShiftAdminOrWithPermissions } from "../middlewares/shiftAccessMiddleware";
 
 export class ValidatedMinOrg implements MinOrg {
     @Required()
@@ -23,7 +21,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.shift)
-export class ShiftController implements APIController<'createNewShift'> {
+export class ShiftController implements APIController<'createNewShift' | 'editShift'> {
     @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: find a better place to inject this so it is instantiated
@@ -60,7 +58,7 @@ export class ShiftController implements APIController<'createNewShift'> {
         @User() user: UserDoc,
         // getting this off the header so we can use get without having to introduce 
         // path params
-        @RequestId() shiftId: string
+        @ShiftId() shiftId: string
     ) {
         const shift = this.db.fullShift((await this.db.resolveShift(shiftId)))
 
@@ -79,5 +77,25 @@ export class ShiftController implements APIController<'createNewShift'> {
         } else {
             return (await this.db.getAllShifts(orgId)).map(this.db.fullShift)
         }
+    }
+
+    // TODO: Require permissions
+    @Post(API.server.editShift())
+    @ShiftAdminOrWithPermissions([])
+    async editShift(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Shift() shift: ShiftDoc,
+        @BodyParams('shiftUpdates') shiftUpdates: ShiftUpdates,
+        @BodyParams('shiftOccurrenceId') shiftOccurrenceId?: string,
+        ) {
+        const res = this.db.fullShift((await this.db.editShift(shift, shiftUpdates, shiftOccurrenceId)))
+
+        await this.pubSub.sys(PatchEventType.ShiftEdited, { 
+            shiftId: res.id,
+            orgId 
+        });
+
+        return res;
     }
 }

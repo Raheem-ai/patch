@@ -617,9 +617,9 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async editShift(ctx: ShiftContext, shiftUpdates: ShiftUpdates): Promise<WithoutDates<Shift>> {
+    async editShift(ctx: ShiftContext, shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string): Promise<WithoutDates<Shift>> {
         const url = `${apiHost}${API.client.editShift()}`;
-        return (await this.tryPost<WithoutDates<Shift>>(url, { shiftUpdates } ,{
+        return (await this.tryPost<WithoutDates<Shift>>(url, { shiftUpdates, shiftOccurrenceId } ,{
             headers: this.shiftScopeAuthHeaders(ctx)
         })).data
     }

@@ -54,16 +54,21 @@ type SSAuthenticatedWithOrg<T extends (...args: any) => Promise<any>, User> = (o
 // a responder currently assigned to the request
 type SSAuthenticatedWithRequest<T extends (...args: any) => Promise<any>, Req, User> = (orgId: string, user: User, helpRequest: Req, ...args: Rest<Parameters<T>>) => ReturnType<T>
 
+type SSAuthenticatedWithShift<T extends (...args: any) => Promise<any>, Shift, User> = (orgId: string, user: User, shift: Shift, ...args: Rest<Parameters<T>>) => ReturnType<T>
+
+
 type Rest<T extends any[]> = T extends [any, ...infer U] ? U : never;
 
-export type ServerSide<Req, User> = {
+export type ServerSide<Req, User, Shift> = {
     [ api in keyof IApiClient ]: Parameters<IApiClient[api]>[0] extends RequestContext
         ? SSAuthenticatedWithRequest<IApiClient[api], Req, User>
-        : Parameters<IApiClient[api]>[0] extends OrgContext
-            ? SSAuthenticatedWithOrg<IApiClient[api], User>
-            : Parameters<IApiClient[api]>[0] extends TokenContext
-                ? SSAuthenticated<IApiClient[api], User>
-                : IApiClient[api]
+        : Parameters<IApiClient[api]>[0] extends ShiftContext
+            ? SSAuthenticatedWithShift<IApiClient[api], Shift, User>
+            : Parameters<IApiClient[api]>[0] extends OrgContext
+                ? SSAuthenticatedWithOrg<IApiClient[api], User>
+                : Parameters<IApiClient[api]>[0] extends TokenContext
+                    ? SSAuthenticated<IApiClient[api], User>
+                    : IApiClient[api]
 }
 
 
@@ -160,7 +165,7 @@ export interface IApiClient {
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     // getResources: () => string
 
-    editShift: AuthenticatedWithShift<(shiftUpdates: ShiftUpdates) => Promise<WithoutDates<Shift>>>
+    editShift: AuthenticatedWithShift<(shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string) => Promise<WithoutDates<Shift>>>
 }
 
 type ApiRoutes = {
