@@ -93,6 +93,8 @@ class EditShift extends React.Component<Props> {
     })
 
     getFormActions = (): [PromptAction] | [PromptAction, PromptAction] => {
+        // TODO: Update the prompt form to be able to accept three prompt actions:
+        // 1) "only this" 2) "all" 3) "this and all future"
         const actions: [PromptAction] | [PromptAction, PromptAction] = [
             {
                 label: "all",
@@ -136,7 +138,8 @@ class EditShift extends React.Component<Props> {
                     bottomDrawerStore().hide()
                 },
                 confirming: true
-            } */
+            }
+            */
         ];
 
         if (editShiftStore().canUpdateSingleOccurrence()) {
