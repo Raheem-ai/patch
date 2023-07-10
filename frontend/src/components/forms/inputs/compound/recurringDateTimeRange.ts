@@ -15,6 +15,10 @@ const RecurringDateTimeRangeInputConfig: CompoundFormInputFactory<'RecurringDate
     }
 
     const setDateTimeVal = (data: DateTimeRange) => {
+        // TODO: Ensure that end date and end time are at least the same or after
+        // start date and start time. Perhaps we automatically set the end date
+        // to the later of its current value and the updated start date.
+        // Ensure end time is after start time (or end date is after start date).
         const update = Object.assign({}, params.val(), data);
         params.onChange(update)
         params.props?.onDateTimeRangeChange?.(data)
