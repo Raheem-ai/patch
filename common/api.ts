@@ -140,7 +140,6 @@ export interface IApiClient {
 
     createNewShift: AuthenticatedWithOrg<(shift: MinShift) => Promise<WithoutDates<Shift>>>
     getShifts: AuthenticatedWithOrg<(shiftIds?: string[]) => Promise<WithoutDates<Shift>[]>>
-    getShift: AuthenticatedWithOrg<(shiftId: string) => Promise<WithoutDates<Shift>>>
 
     editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>
@@ -288,9 +287,6 @@ type ApiRoutes = {
         },
         getShifts: () => {
             return '/getShifts'
-        },
-        getShift: () => {
-            return '/getShift'
         },
         sendChatMessage: () => {
             return '/sendChatMessage'
@@ -540,9 +536,6 @@ type ApiRoutes = {
         },
         getShifts: () => {
             return `${this.base}${this.namespaces.shift}${this.server.getShifts()}`
-        },
-        getShift: () => {
-            return `${this.base}${this.namespaces.shift}${this.server.getShift()}`
         },
     }
 }
