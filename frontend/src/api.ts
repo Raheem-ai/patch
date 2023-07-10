@@ -634,15 +634,6 @@ export class APIClient implements IAPIService {
         })).data
     }
 
-    async getShift(ctx: OrgContext, shiftId: string): Promise<WithoutDates<Shift>> {
-        const url = `${apiHost}${API.client.getShift()}`;
-
-        // TODO: use shift id
-        return (await this.tryGet<WithoutDates<Shift>>(url, {
-            // headers: this.shiftScopeAuthHeaders({ ...ctx, shiftId })
-        })).data
-    }
-
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
