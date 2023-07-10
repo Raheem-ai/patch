@@ -119,19 +119,18 @@ const Calendar = observer(({ navigation, route }: Props) => {
 const ShiftOccurrenceList = observer(() => {
     const scrollIntoView = useScrollIntoView();
 
-    const shiftOccurrenceCards = (shifts: ShiftOccurrence[]) => {
-        return shifts.map(shift => {
-            return <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={shift.id} shiftId={shift.shiftId} occurrenceId={shift.id} />
+    const shiftOccurrenceCards = (shiftOccurrences: ShiftOccurrence[]) => {
+        return shiftOccurrences.map(occurrence => {
+            return <ShiftOccurrenceCard testID={TestIds.shiftsList.screen} style={styles.card} key={occurrence.id} shiftId={occurrence.shiftId} occurrenceId={occurrence.id} />
         })
     }
 
     return <>
         {
             shiftStore().filteredShiftOccurenceMetadata.map(metadata => {
-
                 return (
                     <>
-                        <DateHeading headingDate={metadata.date} scrollTo={metadata.scrollTo} scrollIntoView={scrollIntoView} />
+                        <DateHeading key={metadata.date.toISOString()} headingDate={metadata.date} scrollTo={metadata.scrollTo} scrollIntoView={scrollIntoView} />
                         {shiftOccurrenceCards(metadata.occurrences)}
                     </>
                 )
@@ -156,8 +155,8 @@ const DateHeading = observer(( {
 
     const me = useRef<View>();
     if (scrollTo) {
-        setTimeout(() => {
-            scrollIntoView(me.current, { align: 'top', animated: false});
+        setTimeout(async () => {
+            await scrollIntoView(me.current, { align: 'top', animated: false});
             runInAction(() => {
                 shiftStore().initialScrollFinished = true;
             })
