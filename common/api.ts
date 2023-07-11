@@ -22,7 +22,11 @@ import {
     CategorizedItem,
     TeamMemberMetadata,
     RequestUpdates,
-    DynamicConfig
+    DynamicConfig,
+    MinShift,
+    Shift,
+    WithoutDates,
+    ShiftUpdates
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -33,10 +37,12 @@ export type TokenContext = { token: string };
 export type OrgContext = TokenContext & { orgId: string };
 export type RequestContext = OrgContext & { requestId: string }
 export type RoleContext = OrgContext & { roleId: string }
+export type ShiftContext = OrgContext & { shiftId: string }
 
 type Authenticated<T extends (...args: any) => Promise<any>> = (ctx: TokenContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithOrg<T extends (...args: any) => Promise<any>> = (ctx: OrgContext, ...args: Parameters<T>) => ReturnType<T>
 type AuthenticatedWithRequest<T extends (...args: any) => Promise<any>> = (ctx: RequestContext, ...args: Parameters<T>) => ReturnType<T>
+type AuthenticatedWithShift<T extends (...args: any) => Promise<any>> = (ctx: ShiftContext, ...args: Parameters<T>) => ReturnType<T>
 
 // these check if you are logged in
 type SSAuthenticated<T extends (...args: any) => Promise<any>, User> = (user: User, ...args: Rest<Parameters<T>>) => ReturnType<T>
@@ -48,16 +54,21 @@ type SSAuthenticatedWithOrg<T extends (...args: any) => Promise<any>, User> = (o
 // a responder currently assigned to the request
 type SSAuthenticatedWithRequest<T extends (...args: any) => Promise<any>, Req, User> = (orgId: string, user: User, helpRequest: Req, ...args: Rest<Parameters<T>>) => ReturnType<T>
 
+type SSAuthenticatedWithShift<T extends (...args: any) => Promise<any>, Shift, User> = (orgId: string, user: User, shift: Shift, ...args: Rest<Parameters<T>>) => ReturnType<T>
+
+
 type Rest<T extends any[]> = T extends [any, ...infer U] ? U : never;
 
-export type ServerSide<Req, User> = {
+export type ServerSide<Req, User, Shift> = {
     [ api in keyof IApiClient ]: Parameters<IApiClient[api]>[0] extends RequestContext
         ? SSAuthenticatedWithRequest<IApiClient[api], Req, User>
-        : Parameters<IApiClient[api]>[0] extends OrgContext
-            ? SSAuthenticatedWithOrg<IApiClient[api], User>
-            : Parameters<IApiClient[api]>[0] extends TokenContext
-                ? SSAuthenticated<IApiClient[api], User>
-                : IApiClient[api]
+        : Parameters<IApiClient[api]>[0] extends ShiftContext
+            ? SSAuthenticatedWithShift<IApiClient[api], Shift, User>
+            : Parameters<IApiClient[api]>[0] extends OrgContext
+                ? SSAuthenticatedWithOrg<IApiClient[api], User>
+                : Parameters<IApiClient[api]>[0] extends TokenContext
+                    ? SSAuthenticated<IApiClient[api], User>
+                    : IApiClient[api]
 }
 
 
@@ -67,8 +78,8 @@ type MapJson<T = Map<string | number, any>> = T extends Map<any, infer V> ? { [k
 
 export type ClientSideFormat<T> = {
     [key in keyof T]: T[key] extends Map<any, any> 
-        ? MapJson<T[key]>
-        : T[key]
+        ? WithoutDates<MapJson<T[key]>>
+        : WithoutDates<T[key]>
 }
  
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
@@ -126,7 +137,10 @@ export interface IApiClient {
     getRequests: AuthenticatedWithOrg<(requestIds?: string[]) => Promise<HelpRequest[]>>
     getRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     getTeamMembers: AuthenticatedWithOrg<(userIds?: string[]) => Promise<TeamMemberMetadata>>
-    
+
+    createNewShift: AuthenticatedWithOrg<(shift: MinShift) => Promise<WithoutDates<Shift>>>
+    getShifts: AuthenticatedWithOrg<(shiftIds?: string[]) => Promise<WithoutDates<Shift>[]>>
+
     editMe: AuthenticatedWithOrg<(me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>) => Promise<Me>>
     editUser: AuthenticatedWithOrg<(userId: string, user: Partial<AdminEditableUser>) => Promise<ProtectedUser>>
     
@@ -149,6 +163,8 @@ export interface IApiClient {
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     // getResources: () => string
+
+    editShift: AuthenticatedWithShift<(shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string) => Promise<WithoutDates<Shift>>>
 }
 
 type ApiRoutes = {
@@ -164,11 +180,13 @@ type ApiRoutes = {
         dispatch: `/dispatch`,
         responder: '/responder',
         organization: '/organization',
-        request: '/request'
+        request: '/request',
+        shift: '/shift'
     }
 
     orgIdHeader = 'X-Raheem-Org'
     requestIdHeader = 'X-Raheem-Request'
+    shiftIdHeader = 'X-Raheem-Shift'
 
     server: ApiRoutes = {
         signUp: () => {
@@ -260,6 +278,15 @@ type ApiRoutes = {
         },
         getTeamMembers: () => {
             return '/getTeamMembers'
+        },
+        createNewShift: () => {
+            return '/createNewShift'
+        },
+        editShift: () => {
+            return '/editShift'
+        },
+        getShifts: () => {
+            return '/getShifts'
         },
         sendChatMessage: () => {
             return '/sendChatMessage'
@@ -498,7 +525,18 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
-        }
+        },
+
+        // shift
+        createNewShift: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.createNewShift()}`
+        },
+        editShift: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.editShift()}`
+        },
+        getShifts: () => {
+            return `${this.base}${this.namespaces.shift}${this.server.getShifts()}`
+        },
     }
 }
 

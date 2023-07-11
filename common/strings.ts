@@ -27,7 +27,6 @@ const STRINGS = {
                 ? 'attributes'
                 : 'attribute'
         ),
-        shift: 'shift',
         tag: (props?: CaseAndNumber) => (props?.cap 
             ? props?.plural
                 ? 'Tags'
@@ -46,6 +45,10 @@ const STRINGS = {
         responder: (isPlural?: boolean) => (isPlural 
             ? 'responders'
             : 'responder'
+        ),
+        shift: (isPlural?: boolean) => (isPlural 
+            ? 'shifts'
+            : 'shift'
         ),
     },
     visualDelim: '·',
@@ -235,6 +238,17 @@ const STRINGS = {
         errorMessages: {
             positionNotOnRequest: (prefix: string, requestId: string) => `This position doesn't exist for ${prefix + '–' || 'Request '}${requestId}.`,
         }
+    },
+    SHIFTS: {
+        add: 'Add shift',
+        edit: 'Edit shift',
+        createdShiftSuccess: (title: string) => `Successfully created ${title}.`,
+        // TODO: Finalize strings w/ Nadav
+        updatedShiftDefinitionSuccess: (title: string) => `Successfully updated ${title}.`,
+        updatedShiftOccurrenceSuccess: (title: string) => `Successfully updated ${title}.`,
+        description: 'Description',
+        positions: 'Add a position',
+        title: 'Title',
     },
     CHANNELS: {
         noMessages: '...',

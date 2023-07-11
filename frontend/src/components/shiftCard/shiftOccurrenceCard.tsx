@@ -4,11 +4,12 @@ import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyl
 import { IconButton, Text } from "react-native-paper";
 import { ShiftOccurrence, ShiftStatus } from "../../../../common/models";
 import { organizationStore, shiftStore } from "../../stores/interfaces";
-import { Colors, ICONS } from "../../types";
+import { Colors, ICONS, routerNames } from "../../types";
 import UserIcon from "../userIcon";
 import TestIds from "../../test/ids";
 import { dateToDisplayTime } from "../../../../common/utils";
 import moment from "moment";
+import { navigateTo } from "../../navigation";
 
 type Props = {
     testID: string,
@@ -25,21 +26,25 @@ const ShiftOccurrenceCard = observer(({
     style,
     onPress
 } : Props) => {
-    const parentshift = shiftStore().shifts.get(shiftId);
+    const [seriesIdx, shiftSeries] = shiftStore().getShiftSeriesFromShiftOccurrenceId(occurrenceId);
     const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
+
+    // Compare if the end date + end time of the shift is after the current moment in time.
+    // If the shift has already ended, turn on the pastShift flag so it can be displayed as such.
     const now = moment();
-    const pastShift = moment(shiftOccurrence.dateTimeRange.startDate).isBefore(now);
+    const pastShift = moment(shiftOccurrence.dateTimeRange.endDate)
+                        .hours(shiftOccurrence.dateTimeRange.endTime.getHours())
+                        .minutes(shiftOccurrence.dateTimeRange.endTime.getMinutes())
+                        .isBefore(now);
 
     const onCardPress = (event: GestureResponderEvent) => {
         console.log('shift occurrence card pressed')
-        /*
         if (onPress) {
             onPress(event, null);
         } else {
-            shiftStore().setCurrentShiftInstance(null)
-            navigateTo(routerNames.shiftOccurrenceDetails);
+            shiftStore().setCurrentShiftOccurrence(shiftOccurrence);
+            navigateTo(routerNames.shiftDetails);
         }
-        */
     }
 
     const shiftStatusIndicator = () => {
@@ -59,8 +64,8 @@ const ShiftOccurrenceCard = observer(({
     }
 
     const recurrenceIcon = () => {
-        // Display a recurrence icon if the shift repeats.
-        if (!parentshift.recurrence) {
+        // Display a recurrence icon if the shift has any repitition.
+        if (!(shiftSeries?.recurrence?.every || shiftSeries?.recurrence?.until)) {
             return null;
         }
 
@@ -120,8 +125,11 @@ const ShiftOccurrenceCard = observer(({
 
     const header = () => {
         // For the card's header, get the start and end time strings in the display format.
-        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startDate);
-        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endDate);
+        const dateDiffDuration = shiftOccurrence.dateTimeRange.endDate.getTime() - shiftOccurrence.dateTimeRange.startDate.getTime();
+        const differenceInDays = dateDiffDuration / (1000 * 3600 * 24);
+
+        const startTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.startTime, differenceInDays);
+        const endTimeStr = dateToDisplayTime(shiftOccurrence.dateTimeRange.endTime, differenceInDays);
 
         // The header of a shift card includes the status of its positions, the title, recurrence, and time info.
         return (

@@ -1,6 +1,6 @@
 import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
 import { navigateTo, navigationRef } from "../../navigation"
-import { bottomDrawerStore, BottomDrawerView, editRequestStore, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
+import { bottomDrawerStore, BottomDrawerView, createShiftStore, editRequestStore, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import TestIds from "../../test/ids"
 import { ICONS, RootStackParamList, routerNames } from "../../types"
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../../utils"
@@ -225,11 +225,40 @@ const HeaderConfig: {
                 testId: TestIds.header.actions.createShift,
                 icon: ICONS.add,
                 callback: () => {
-                    // TODO: Replace with Create Shift form
-                    bottomDrawerStore().show(BottomDrawerView.createRequest, true);
+                    createShiftStore().initializeStartDate();
+                    bottomDrawerStore().show(BottomDrawerView.createShift, true);
                 }
             }
         ]
+    },
+    [routerNames.shiftDetails]: () => {   
+        const title = () => {
+            return 'Placeholder Id'
+        };
+
+        const leftActions = [{
+            icon: ICONS.navBack,
+            callback: () => {
+                navigationRef.current.goBack();
+            }
+        }]
+
+        const rightActions = iHaveAllPermissions([PatchPermissions.ShiftAdmin])
+            ? [
+                {
+                    icon: ICONS.edit,
+                    callback: async () => {
+                        bottomDrawerStore().show(BottomDrawerView.editShift, true);
+                    }
+                }
+            ]
+            : [];
+        
+        return {
+            title,
+            leftActions,
+            rightActions 
+        }
     },
     [routerNames.componentLib]: {
         title: STRINGS.PAGE_TITLES.componentLibrary

@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig } from '../../common/models';
-import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates, ShiftUpdates } from '../../common/models';
+import API, { ClientSideFormat, OrgContext, RequestContext, ShiftContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
 import { securelyPersistent } from './meta';
@@ -607,6 +607,33 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async createNewShift(ctx: OrgContext, shift: MinShift): Promise<WithoutDates<Shift>> {
+        const url = `${apiHost}${API.client.createNewShift()}`;
+
+        return (await this.tryPost<WithoutDates<Shift>>(url, {
+            shift
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async editShift(ctx: ShiftContext, shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string): Promise<WithoutDates<Shift>> {
+        const url = `${apiHost}${API.client.editShift()}`;
+        return (await this.tryPost<WithoutDates<Shift>>(url, { shiftUpdates, shiftOccurrenceId } ,{
+            headers: this.shiftScopeAuthHeaders(ctx)
+        })).data
+    }
+
+    async getShifts(ctx: OrgContext, shiftIds: string[]): Promise<WithoutDates<Shift>[]> {
+        const url = `${apiHost}${API.client.getShifts()}`;
+
+        return (await this.tryPost<WithoutDates<Shift>[]>(url, {
+            shiftIds
+        }, {
+            headers: this.orgScopeAuthHeaders(ctx)
+        })).data
+    }
+
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
         const url = `${apiHost}${API.client.sendChatMessage()}`;
 
@@ -677,6 +704,13 @@ export class APIClient implements IAPIService {
     requestScopeAuthHeaders(ctx: RequestContext) {
         const headers = this.orgScopeAuthHeaders(ctx);
         headers[API.requestIdHeader] = ctx.requestId;
+
+        return headers;
+    }
+
+    shiftScopeAuthHeaders(ctx: ShiftContext) {
+        const headers = this.orgScopeAuthHeaders(ctx);
+        headers[API.shiftIdHeader] = ctx.shiftId;
 
         return headers;
     }

@@ -17,6 +17,7 @@ const Stack = createStackNavigator();
 export type FormProps = {
     inputs: Grouped<FormInputConfig>[] | (() => Grouped<FormInputConfig>[]),
     headerLabel?: () => string,
+    headerIsPlaceholder?: () => boolean,
     onExpand?(): void,
     onBack?(): void,
     submit?: {
@@ -324,10 +325,14 @@ export default class Form extends React.Component<FormProps> {
                     justifyContent: 'center',
                     padding: 20
                 }}>
-                    <Text style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                    }}>{this.props.headerLabel()}</Text>
+                    <Text style={[
+                        styles.defaultHeaderLabel,
+                        this.props.headerIsPlaceholder
+                            ? this.props.headerIsPlaceholder()
+                                ? styles.placeholderHeaderLabel
+                                : null
+                            : null
+                        ]}>{this.props.headerLabel()}</Text>
                 </View>
                 : null
         }
@@ -890,5 +895,12 @@ const styles = StyleSheet.create({
     disabledSubmitButton: {
         color: Colors.text.buttonLabelPrimary,
         backgroundColor: Colors.primary.delta,
+    },
+    defaultHeaderLabel: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    placeholderHeaderLabel: {
+        color: Colors.text.disabled
     }
 })

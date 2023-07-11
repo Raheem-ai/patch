@@ -1,4 +1,4 @@
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates, ShiftUpdates, ShiftSeries } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { getSchema } from "@tsed/mongoose";
@@ -12,10 +12,11 @@ import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
-import { applyUpdateToRequest } from "common/utils";
+import { applyUpdateToRequest, applyUpdateToShift } from "common/utils";
 import { writeFile } from "fs/promises";
 import { Collections } from "./dbConfig";
 import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
+import { ShiftDoc, ShiftModel } from "../models/shift";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
@@ -27,10 +28,11 @@ export class DBManager {
         const users = conn.model<UserModel>(UserModel.name, getSchema(UserModel), Collections.User)
         const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getSchema(OrganizationModel), Collections.Organization)
         const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getSchema(HelpRequestModel), Collections.HelpRequest)
+        const shifts = conn.model<ShiftModel>(ShiftModel.name, getSchema(ShiftModel), Collections.Shift)
         const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getSchema(AuthCodeModel), Collections.AuthCode)
         const dynamicConfig = conn.model<DynamicConfigModel>(DynamicConfigModel.name, getSchema(DynamicConfigModel), Collections.DynamicConfig)
 
-        return new DBManager(conn, users, orgs, requests, authCodes, dynamicConfig)
+        return new DBManager(conn, users, orgs, requests, shifts, authCodes, dynamicConfig)
     }
 
     constructor(
@@ -38,6 +40,7 @@ export class DBManager {
         public users: Model<UserModel>,
         public orgs: Model<OrganizationModel>,
         public requests: Model<HelpRequestModel>,
+        public shifts: Model<ShiftModel>,
         public authCodes: Model<AuthCodeModel>,
         public dynamicConfig: Model<DynamicConfigModel>
     ) { }
@@ -1617,7 +1620,66 @@ export class DBManager {
         return await request.save();
     }
 
-    // HELPERS
+    // Shifts
+    async createShift(minShift: MinShift, orgId: string): Promise<ShiftDoc> {
+        const shift = new this.shifts(minShift);
+
+        shift.orgId = orgId;
+
+        return this.transaction(async (session) => {
+            return await shift.save({ session })
+        })
+    }
+
+    async editShift(shift: string | ShiftDoc, shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string) {
+        const resolvedShift = await this.resolveShift(shift);
+        applyUpdateToShift(resolvedShift, shiftUpdates, shiftOccurrenceId, uuid.v1());
+
+        // Let the db know that the series within this shift have been edited in some way
+        // and the modified value should be stored.
+        resolvedShift.markModified('series');
+        return await resolvedShift.save()
+    }
+
+    getShifts(query: FilterQuery<HelpRequestModel>) {
+        return this.shifts.find(query);
+    }
+
+    async getShift(query: Partial<ShiftModel>): Promise<ShiftDoc> {
+        return await this.shifts.findOne(query);
+    }
+
+    async getSpecificShifts(orgId: string, shiftIds: string[]): Promise<ShiftDoc[]> {
+        return this.getShifts({ orgId })
+            .where({ _id: { $in: shiftIds } });
+    }
+
+    fullShift(shift: ShiftDoc): WithoutDates<Shift> {
+        return shift.toObject({ virtuals: true }) as any as WithoutDates<Shift>;
+    }
+
+    async resolveShift(shiftId: string | ShiftDoc) {
+        const shift = typeof shiftId === 'string'
+            ? await this.getShift({ _id: shiftId })
+            : shiftId;
+
+        if (!shift) {
+            throw STRINGS.errorMessages.unknownElement(STRINGS.ELEMENTS.shift())
+        }
+
+        return shift;
+    }
+
+    async getAllShifts(orgId: string): Promise<ShiftDoc[]> {
+        return this.getShifts({ orgId })
+            .sort({ createdAt: 'asc' });
+    }
+
+    async deleteAllShifts() {
+        const oldShifts = await this.getShifts({});
+        console.log('deleting old shifts')
+        await this.bulkDelete(this.shifts, oldShifts);
+    }
 
     findByIds<M extends Model<any>, D=DocFromModel<M>>(model: M, ids: string[]): Query<D[], D> {
         return model.find({ _id: { $in: ids } });

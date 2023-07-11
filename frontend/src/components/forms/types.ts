@@ -185,12 +185,15 @@ export type CompoundFormInputOptions = {
             updateStartDatePromptTitle: (from: Date, to: Date) => void,
             dateTimeRangeValid?: (dateTimeRange: DateTimeRange) => boolean,
             recurringTimeConstraintsValid?: (constraints: RecurringTimeConstraints) => boolean
+            onDateTimeRangeChange?: (dateTimeRange: DateTimeRange) => void,
+            onRecurringTimeConstraintsChange?: (constraints: RecurringTimeConstraints) => void
         }
         type: RecurringDateTimeRange
     }
 }
 
 // catch all type that gets passed to form for input configuration
+// TODO: Allow CompoundFormInputConfigs to be grouped (i.e. Grouped<CompoundFormInputConfigs>)
 export type FormInputConfig = CompoundFormInputConfig | StandAloneFormInputConfig;
 
 // form input configuration types that correspond to at least 1 visual component on the form homepage

@@ -32,6 +32,7 @@ export type RootStackParamList = {
     HelpAndInfo: undefined;
     Chats: undefined;
     Calendar: undefined;
+    ShiftDetails: undefined;
     SignUpThroughOrg: LinkParams[LinkExperience.SignUpThroughOrganization];
 };
 
@@ -62,7 +63,8 @@ export const routerNames: TypedRouterNames = {
     settings: "Settings",
     helpAndInfo: "HelpAndInfo",
     chats: "Channels",
-    calendar: "Calendar"
+    calendar: "Calendar",
+    shiftDetails: "ShiftDetails"
 };
 
 export type ScreenProps<T extends keyof RootStackParamList> = StackScreenProps<RootStackParamList, T>
@@ -184,6 +186,7 @@ enum BASIC_ICONS {
     clockOutline = 'clock-outline',
     phone = 'phone',
     email = 'email',
+    document = 'file-document'
 }
 
 export const ICONS = {
@@ -233,6 +236,9 @@ export const ICONS = {
     callPhone: BASIC_ICONS.phone,
     sendEmail: BASIC_ICONS.email,
     request: 'human-greeting-variant',
+    document: BASIC_ICONS.document,
+    text: 'text-long',
+    calendar: 'calendar-blank-outline',
     permissions: 'key',
     schedule: 'calendar',
     channels: 'forum',
