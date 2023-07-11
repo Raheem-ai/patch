@@ -38,6 +38,8 @@ export default class DynamicConfigStore implements IDynamicConfigStore {
             when(() => userStore().signedIn, this.updateAfterSignIn)
         }
 
+        // TODO: if we end up deciding dynamicConfig is okay to be an unauthenticated api call,
+        // this logic should move to appUpdateStore
         const needToUpdate = () => {
             return this.currentAppVersion && this.currentAppVersion != appRuntimeVersion
         }

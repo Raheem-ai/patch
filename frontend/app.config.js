@@ -13,7 +13,8 @@ import {
 
 import {
 	VERSION,
-	ANDROID_VERSION_CODE
+	ANDROID_VERSION_CODE,
+	IOS_VERSION_CODE
 } from './version'
 
 // NOTE: put your ngrok url here for development
@@ -23,10 +24,6 @@ let apiHost = ''
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
 const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
-
-// this value shouldn't need to change 
-let IOS_BUILD_NUMBER = "1"
-
 
 let SENTRY_AUTH_TOKEN = ''
 let SENTRY_DSN = ''
@@ -261,7 +258,7 @@ const config = {
 			"remote-notification"
 		  ]
 		},
-		"buildNumber": IOS_BUILD_NUMBER,
+		"buildNumber": IOS_VERSION_CODE,
 		"bundleIdentifier": appId(),
 		"config": {
 		  "googleMapsApiKey": GOOGLE_MAPS_KEY

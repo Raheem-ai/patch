@@ -6,6 +6,8 @@ import * as Updates from 'expo-updates';
  * - in app.config.js (build time config tied to apps nativeVersion)
  * - here (runtime config tied to specific deployment of apps nativeVersion) 
  * - dynamicConfig (runtime config that always reflects db but has to be loaded on startup)
+ * 
+ * also, should dynamicConfig be something that is publicly accessable?...otherwise we can only surface it AFTER signing in
  * */ 
 
 const extra = Constants.manifest?.extra // build with no updates yet
