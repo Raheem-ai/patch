@@ -1,11 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore, organizationStore, IEditShiftStore, shiftStore } from './interfaces';
-import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, HelpRequest, MinHelpRequest, Position, PositionUpdate, PositionSetUpdate, ReplaceableRequestProps, RequestPriority, RequestType, RequestUpdates, ShiftUpdates, ShiftOccurrence, Shift, ShiftOccurrenceSetUpdate, RecurringDateTimeRange, EditShiftUpdates, ReplaceableShiftOccurrenceProps, ShiftOccurrenceUpdate, RecurringTimeConstraints, DateTimeRange, ShiftSeries } from '../../../common/models';
-import { OrgContext, RequestContext, ShiftContext } from '../../../common/api';
-import { projectArrayUpdates, projectPositionUpdates, applyUpdateToPosition, categorizedItemToString, mergeArrayCollectionUpdates, mergePositionUpdates, mergePositionSetUpdates, projectShiftOccurrenceUpdates, mergeShiftOccurrenceSetUpdates, mergeEditShiftUpdatesForBulkShifts, mergeEditShiftUpdatesForShiftOccurrence } from '../../../common/utils';
+import { userStore, organizationStore, IEditShiftStore, shiftStore } from './interfaces';
+import { DefaultRoleIds, Position, PositionSetUpdate, ShiftUpdates, ShiftOccurrence, Shift, EditShiftUpdates, RecurringTimeConstraints, DateTimeRange, ShiftSeries } from '../../../common/models';
+import { OrgContext, ShiftContext } from '../../../common/api';
+import { projectPositionUpdates, mergePositionSetUpdates, mergeEditShiftUpdatesForBulkShifts, mergeEditShiftUpdatesForShiftOccurrence } from '../../../common/utils';
 import { api } from '../services/interfaces';
-import { DateTime } from '@rschedule/core';
+import { getShiftIdFromShiftOccurrenceId } from '../../../common/utils/shiftUtils';
 
 @Store(IEditShiftStore)
 export default class EditShiftStore implements IEditShiftStore {
@@ -54,17 +54,20 @@ export default class EditShiftStore implements IEditShiftStore {
         // ie. unlike createRequestStore
     }
 
+    // The editShift API has the following contract:
+    // 1) IF there is no shift occurrence id provided, then the server will attempt to apply the updates to all series.
+    // IF the optional shift occurrence id is provided, then one of two paths are available: 
+    // 2) If the updates sent to the server have a value provided for the shiftOccurrenceUpdates property, then
+    // the server expects that the provided updates should be applied only to the corresponding shift occurrence.
+    // 3) If the updates do not contain shiftOccurrenceUpdates, it must contain replacedProperties and/or
+    // positionUpdates at the shift series level. Since a shift occurrence id is provided, the server applies
+    // the shift series updates to all series moving forward beginning at the series generated for the shift, cloning
+    // and generating a new shift beginning at the specified occurrence, if necessary.
     async editAllShifts() {
-        console.log('EDIT ALL SHIFTS...');
         const updatesForServer: ShiftUpdates = {
             shiftSeriesUpdates: {
                 replacedProperties: {},
                 positionUpdates: {
-                    addedItems: [],
-                    removedItems: [],
-                    itemUpdates: []
-                },
-                shiftOccurrenceUpdates: {
                     addedItems: [],
                     removedItems: [],
                     itemUpdates: []
@@ -74,27 +77,17 @@ export default class EditShiftStore implements IEditShiftStore {
 
         mergeEditShiftUpdatesForBulkShifts(updatesForServer, this.updates, this.newPositionIds);
 
-        console.log('MAKING EDIT SHIFT API CALL...');
-        console.log(`UPDATES FOR SERVER: ${JSON.stringify(updatesForServer)}`);
         const updatedShift = await api().editShift(this.shiftContext(this.shiftId), updatesForServer);
-        console.log(`UPDATED SHIFT: ${JSON.stringify(updatedShift)}`);
-        // TODO: Backend not returning proper shift yet
-        // shiftStore().updateOrAddShift(updatedShift);
+        shiftStore().updateOrAddShift(updatedShift);
 
         this.newPositionIds.clear();
     }
 
     async editThisAndFutureShifts() {
-        console.log('EDIT ALL SHIFTS...');
         const updatesForServer: ShiftUpdates = {
             shiftSeriesUpdates: {
                 replacedProperties: {},
                 positionUpdates: {
-                    addedItems: [],
-                    removedItems: [],
-                    itemUpdates: []
-                },
-                shiftOccurrenceUpdates: {
                     addedItems: [],
                     removedItems: [],
                     itemUpdates: []
@@ -103,42 +96,31 @@ export default class EditShiftStore implements IEditShiftStore {
         }
 
         mergeEditShiftUpdatesForBulkShifts(updatesForServer, this.updates, this.newPositionIds);
-
-        console.log('MAKING EDIT SHIFT API CALL...');
-        console.log(`UPDATES FOR SERVER: ${JSON.stringify(updatesForServer)}`);
-        const updatedShift = await api().editShift(this.shiftContext(this.shiftId), updatesForServer);
-        console.log(`UPDATED SHIFT: ${JSON.stringify(updatedShift)}`);
-        // TODO: Backend not returning proper shift yet
-        // shiftStore().updateOrAddShift(updatedShift);
+        const updatedShift = await api().editShift(this.shiftContext(this.shiftId), updatesForServer, this.shiftOccurrenceId);
+        shiftStore().updateOrAddShift(updatedShift);
 
         this.newPositionIds.clear();
     }
 
     async editShiftOccurrence() {
-        console.log('EDIT SHIFT OCCURRENCE...');
         const updatesForServer: ShiftUpdates = {
             shiftSeriesUpdates: {
-                replacedProperties: {},
-                positionUpdates: {
-                    addedItems: [],
-                    removedItems: [],
-                    itemUpdates: []
-                },
-                shiftOccurrenceUpdates: {
-                    addedItems: [],
-                    removedItems: [],
-                    itemUpdates: []
+                shiftOccurrenceUpdate: {
+                    id: '',
+                    replacedProperties: {},
+                    positionUpdates: {
+                        addedItems: [],
+                        removedItems: [],
+                        itemUpdates: []
+                    }
                 }
             }
         }
         
-        mergeEditShiftUpdatesForShiftOccurrence(this.shiftOccurrenceId, this.shiftSeries, updatesForServer, this.updates, this.newPositionIds);
+        mergeEditShiftUpdatesForShiftOccurrence(this.shiftOccurrenceId, updatesForServer, this.updates, this.newPositionIds);
 
-        console.log('MAKING EDIT SHIFT API CALL...');
-        console.log(`UPDATES FOR SERVER: ${JSON.stringify(updatesForServer)}`);
-        const updatedShift = await api().editShift(this.shiftContext(this.shiftId), updatesForServer);
-        // TODO: Backend not returning proper shift yet
-        // shiftStore().updateOrAddShift(updatedShift);
+        const updatedShift = await api().editShift(this.shiftContext(this.shiftId), updatesForServer, this.shiftOccurrenceId);
+        shiftStore().updateOrAddShift(updatedShift);
 
         this.newPositionIds.clear();
     }
@@ -146,7 +128,7 @@ export default class EditShiftStore implements IEditShiftStore {
     loadShift(shiftOccurrenceId: string) {
         this.clear()
         this.shiftOccurrenceId = shiftOccurrenceId;
-        this.shiftId = shiftStore().getShiftIdFromShiftOccurrenceId(shiftOccurrenceId);
+        this.shiftId = getShiftIdFromShiftOccurrenceId(shiftOccurrenceId);
     }
 
     clear() {
@@ -164,21 +146,6 @@ export default class EditShiftStore implements IEditShiftStore {
         this.newPositionIds.clear();
     }
 
-    get shift(): Shift {
-        // console.log('editShiftStore::get#Shift...')
-        return shiftStore().shifts.get(this.shiftId)
-    }
-
-    get shiftSeries(): ShiftSeries {
-        // console.log('editShiftStore::get#ShiftSeries...')
-        return shiftStore().getShiftSeriesFromShiftOccurrenceId(this.shiftOccurrenceId);
-    }
-
-    get shiftOccurrence(): ShiftOccurrence {
-        // console.log('editShiftStore::get#ShiftOccurrence...')
-        return shiftStore().getShiftOccurrence(this.shiftOccurrenceId);
-    }
-
     /*
     get shiftOccurrences(): { [occurenceId: string]: ShiftOccurrence } {
         const cpy: { [occurenceId: string]: ShiftOccurrence } = JSON.parse(JSON.stringify(this.shift.occurrenceDiffs));
@@ -194,20 +161,28 @@ export default class EditShiftStore implements IEditShiftStore {
     }
     */
 
-    // computed getters that update whenever the underlying shift changes or the diffs 
-    // generated by the components in this form change.
     canUpdateSingleOccurrence() {
-        // TODO: If any property is edited such that it cannot be applied to other shifts,
+        // If any property is edited such that it cannot be applied to other shifts,
         // this flag should be set to false
-        // Conditions:
-        // No changes to the recurrence value
+        // Conditions: No changes to the recurrence value
+        // return !this.editToRecurrence;
         return !this.updates.shiftSeriesUpdates.replacedProperties.recurrence;;
     }
 
-    // replaced properties...
-    // - sets update the store's diff
-    // - gets return the value from the store's diff or defaults to the showing what the
-    // base request has
+    // computed getters that update whenever the underlying shift changes or the diffs 
+    // generated by the components in this form change.
+    get shift(): Shift {
+        return shiftStore().shifts.get(this.shiftId)
+    }
+
+    get shiftSeries(): ShiftSeries {
+        return shiftStore().getShiftSeriesFromShiftOccurrenceId(this.shiftOccurrenceId)[1];
+    }
+
+    get shiftOccurrence(): ShiftOccurrence {
+        return shiftStore().getShiftOccurrence(this.shiftOccurrenceId);
+    }
+
     get title() {
         // Check if we have a replacement value for the title property.
         // Return the replacement value if it exists, otherwise return the current
@@ -218,8 +193,7 @@ export default class EditShiftStore implements IEditShiftStore {
     }
 
     set title(val: string) {
-        // TODO: Check if value is equal to current shift occurrence value.
-
+        // TODO: Should we check if value is equal to current shift occurrence value?
         // Set the new value on the shift series update object.
         this.updates.shiftSeriesUpdates.replacedProperties.title = val;
     }
@@ -234,7 +208,7 @@ export default class EditShiftStore implements IEditShiftStore {
     }
 
     set description(val: string) {
-        // TODO: Check if value is equal to current shift occurrence value.
+        // TODO: Should we check if value is equal to current shift occurrence value?
 
         // Set the new value on the shift series update object.
         this.updates.shiftSeriesUpdates.replacedProperties.description = val;
@@ -274,23 +248,20 @@ export default class EditShiftStore implements IEditShiftStore {
     }
 
     set dateTimeRange(val: DateTimeRange) {
-        // TODO: Check if all values are equal to the current shift occurrence's values and if so, remove from edits.
-        // 1. Remove from this.updates.shiftSeriesUpdates.replacedProperties.dateTimeRange
-        // 2. Set this.updates.shiftSeriesUpdates.replacedProperties.recurrence values to this.shiftOccurrence.dateTimeRange values.
+        // TODO: Should we check if value is equal to current shift occurrence value?
 
         // We don't know yet if this change will be applied to a single shift occurrence or the shift definition.
-        // So, if we have a change to the recurrence already, then add this edit to the recurrence edit
+        // But, if we have a change to the recurrence already, then we know these edits will apply to a bulk edit.
+        // We can add this edit to the recurrence edit, and skip updating the dateTimeRange (else statement).
         if (this.updates.shiftSeriesUpdates.replacedProperties.recurrence) {
             this.updates.shiftSeriesUpdates.replacedProperties.recurrence.startDate = val.startDate;
             this.updates.shiftSeriesUpdates.replacedProperties.recurrence.endDate = val.endDate;
             this.updates.shiftSeriesUpdates.replacedProperties.recurrence.startTime = val.startTime;
             this.updates.shiftSeriesUpdates.replacedProperties.recurrence.endTime = val.endTime;
-            console.log(`New date time range value (recurrence): ${JSON.stringify(this.updates.shiftSeriesUpdates.replacedProperties.recurrence)}`);
         }
 
-        // Also add this edit to the dateTimeRange in the shiftSeriesUpdates object
+        // Add this edit to the dateTimeRange in the shiftSeriesUpdates object
         this.updates.shiftSeriesUpdates.replacedProperties.dateTimeRange = val;
-        console.log(`New date time range value (date time only): ${JSON.stringify(this.updates.shiftSeriesUpdates.replacedProperties.dateTimeRange)}`);
     }
 
     get recurringTimeConstraints() {
@@ -328,8 +299,6 @@ export default class EditShiftStore implements IEditShiftStore {
                 endTime: this.shiftOccurrence.dateTimeRange.endTime
             } 
         }
-
-        console.log(`New recurring time constraints value: ${this.updates.shiftSeriesUpdates.replacedProperties.recurrence}`);
     }
 
     // validations

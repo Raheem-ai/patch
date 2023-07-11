@@ -1,4 +1,4 @@
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig, MinShift, Shift, WithoutDates, ShiftUpdates, ShiftSeries } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
 import { getSchema } from "@tsed/mongoose";
@@ -12,7 +12,7 @@ import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
-import { applyUpdateToRequest } from "common/utils";
+import { applyUpdateToRequest, applyUpdateToShift } from "common/utils";
 import { writeFile } from "fs/promises";
 import { Collections } from "./dbConfig";
 import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
@@ -1631,6 +1631,16 @@ export class DBManager {
         })
     }
 
+    async editShift(shift: string | ShiftDoc, shiftUpdates: ShiftUpdates, shiftOccurrenceId?: string) {
+        const resolvedShift = await this.resolveShift(shift);
+        applyUpdateToShift(resolvedShift, shiftUpdates, shiftOccurrenceId, uuid.v1());
+
+        // Let the db know that the series within this shift have been edited in some way
+        // and the modified value should be stored.
+        resolvedShift.markModified('series');
+        return await resolvedShift.save()
+    }
+
     getShifts(query: FilterQuery<HelpRequestModel>) {
         return this.shifts.find(query);
     }
@@ -1665,7 +1675,11 @@ export class DBManager {
             .sort({ createdAt: 'asc' });
     }
 
-    // HELPERS
+    async deleteAllShifts() {
+        const oldShifts = await this.getShifts({});
+        console.log('deleting old shifts')
+        await this.bulkDelete(this.shifts, oldShifts);
+    }
 
     findByIds<M extends Model<any>, D=DocFromModel<M>>(model: M, ids: string[]): Query<D[], D> {
         return model.find({ _id: { $in: ids } });

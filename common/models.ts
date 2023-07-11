@@ -394,10 +394,11 @@ export type ShiftOccurrence = {
     positions: Position[]
 }
 
+// TODO: Is there a way to make only id & shift Id required properties?
 export type ShiftOccurrenceDiff = {
-    [key in keyof ShiftOccurrence]: key extends 'dateTimeRange'
-        ? Partial<ShiftOccurrence[key]>
-        : ShiftOccurrence[key]
+    [key in keyof ShiftOccurrence]?: key extends 'dateTimeRange'
+                                        ? Partial<ShiftOccurrence[key]>
+                                        : ShiftOccurrence[key]
 }
 
 // TODO: Define using Shift type somehow?
@@ -414,13 +415,13 @@ export type Shift = {
     series: ShiftSeries[];
 }
 
-export type MinShiftSeries = AtLeast<ShiftSeries, 'startDate' | 'title' | 'description' | 'positions' | 'recurrence'>
+export type MinShiftSeries = AtLeast<ShiftSeries, 'id' | 'startDate' | 'title' | 'description' | 'positions' | 'recurrence'>
 
 export type ShiftSeries = {
     startDate: Date
 
     // PATCH defined fields
-    displayId: string
+    id: string
     title: string
     description: string
     positions: Position[]
@@ -428,15 +429,14 @@ export type ShiftSeries = {
 
     // Series diffs that occur within the recurrence projection.
     // When deleted, remove diffs from map AND add ID to deletedOccurrences.
-    // TODO: occurreneDiffs -> seriesDiffs
-    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrenceDiff }
+    projectedDiffs: { [id: string]: ShiftOccurrenceDiff }
 
     // Diffs that exist outside of the recurrence projection.
     // When deleted, simply remove the diffs. Do not add to deletedOccurrences.
-    // detachedDiffs: { [occurenceId: string]: ShiftOccurrence }
+    detachedDiffs: { [id: string]: ShiftOccurrenceDiff }
 
     // Tracks occurrences in the recurrence series that a user deleted.
-    // deletedSeriesOccurrences: string[]
+    deletedOccurrenceIds: string[]
 }
 
 // TODO: Apply this type to arrays in case the objects it’s holding also has dates
@@ -445,11 +445,9 @@ export type WithoutDates<T> = {
         ? T[key]
         : T[key] extends Date
             ? string 
-            : T[key] extends Array<ShiftSeries>
-                ? Array<WithoutDates<ShiftSeries>>
-                : T[key] extends Array<any>
-                    ? T[key]
-                    : WithoutDates<T[key]>
+            : T[key] extends Array<infer U>
+                ? Array<WithoutDates<U>>
+                : WithoutDates<T[key]>
 }
 
 export enum TeamFilter {
@@ -1589,6 +1587,9 @@ export type RecurringTimePeriod = ({
 export type RecurringTimeConstraints = {
     every?: RecurringTimePeriod
     until?: {
+        // TODO: Implicitly the time portion of the end date should be end time of the series' DateTimeRange.
+        // If a series is split, then its end time should be updated to be the
+        // the beginning of the first shift occurrence in the very next series.
         date: Date,
         // TODO: Fix typo spelling
         repititions: null
@@ -1597,8 +1598,7 @@ export type RecurringTimeConstraints = {
         date: null,
         repititions: number
     }
-
-    // TODO: consider a third option where both?
+    // TODO: consider a third option where both date and repititions can be non-null.
 }
 
 export type RecurringDateTimeRange = RecurringTimeConstraints & DateTimeRange;
@@ -2029,14 +2029,20 @@ export type ShiftOccurrenceSetUpdate = ArrayItemUpdate<ShiftOccurrenceUpdate>
 export type ReplaceableShiftSeriesProps = Pick<ShiftSeries, 'title' | 'description' | 'recurrence'>
 
 export type ShiftSeriesUpdate = {
-    replacedProperties: {
+    // All properties are optional, because as edits are transferred from the EditShiftSeriesUpdate
+    // to this update type for the server, a user will indicate whether the provided form values are
+    // for a shift series or a single shift occurrence. From there, we will know where to apply
+    // the edits.
+    replacedProperties?: {
         [key in keyof ReplaceableShiftSeriesProps]?: ShiftSeries[key]
     },
-    positionUpdates: PositionSetUpdate,
-    shiftOccurrenceUpdates: ShiftOccurrenceSetUpdate
-}
+    positionUpdates?: PositionSetUpdate,
 
-export type ShiftSeriesSetUpdate = ArrayItemUpdate<ShiftSeriesUpdate>
+    // As of now, when editing a shift, a user can only possibly edit a single shift occurrence
+    // at a time. So instead of storing these updates as a collection of ShiftOccurrenceUpdate edits,
+    // we can store just a single ShiftOccurrenceUpdate representing one set of form edits.
+    shiftOccurrenceUpdate?: ShiftOccurrenceUpdate
+}
 
 export type EditShiftSeriesUpdates = {
     replacedProperties: {

@@ -45,10 +45,10 @@ class RecurringDateTimeRangeSchema implements RecurringDateTimeRange {
 }
 
 @Schema()
-class ShiftOccurrenceSchema  implements ShiftOccurrence {
+class ShiftOccurrenceDiffSchema  implements ShiftOccurrenceDiff {
     @Required() id: string;
     @Required() shiftId: string;
-    @Required() @Property(ChatSchema) chat: Chat;
+    @Property(ChatSchema) chat: Chat;
     @Property(DateTimeRangeSchema) dateTimeRange: DateTimeRange;
     @Property() title: string;
     @Property() description: string;
@@ -61,7 +61,7 @@ class ShiftSeriesSchema implements ShiftSeries {
     startDate: Date;
 
     @Property()
-    displayId: string;
+    id: string;
 
     @Property()
     title: string;
@@ -75,11 +75,15 @@ class ShiftSeriesSchema implements ShiftSeries {
     @Property(RecurringDateTimeRangeSchema)
     recurrence: RecurringDateTimeRange;
 
-    @ObjectOf(ShiftOccurrenceSchema)
-    occurrenceDiffs: { [occurenceId: string]: ShiftOccurrence; };
-}
+    @ObjectOf(ShiftOccurrenceDiffSchema)
+    projectedDiffs: { [id: string]: ShiftOccurrenceDiff; };
 
-// type ShiftOccurrenceDiff = Record<string, ShiftOccurrenceSchema>;
+    @ObjectOf(ShiftOccurrenceDiffSchema)
+    detachedDiffs: { [id: string]: ShiftOccurrenceDiff; };
+
+    @Property()
+    deletedOccurrenceIds: string[];
+}
 
 // timestamps are handled by db
 @Model({ 

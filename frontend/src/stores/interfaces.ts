@@ -289,7 +289,7 @@ export namespace ICreateShiftStore {
 
 export interface ICreateShiftStore extends ITempShiftStore, CreateShiftData {
     createShift: () => Promise<WithoutDates<Shift>>;
-    initializeStartDate: (date?: Date) => Promise<void>;
+    initializeStartDate: (date?: Date) => void;
     startDate: Date;
     defaultShiftDateTime: { startDate: Date, endDate: Date }
 }
@@ -326,18 +326,15 @@ export interface IShiftStore extends IBaseStore {
     currentShiftOccurrence: ShiftOccurrence
     currentShiftOccurrenceId: string
 
-    setFilter(filter: ShiftsFilter): Promise<void>
     setDaysFilter(daysFilter: CalendarDaysFilter): Promise<void>
     setNeedsPeopleFilter(needsPeopleFilter: ShiftNeedsPeopleFilter): Promise<void>
     setRolesFilter(rolesFilter: ShiftsRolesFilter): Promise<void>
-    initializeDateRange(dateRange: DateWindow): Promise<void>
+    initializeDateRange(dateRange: DateWindow): void
     addFutureWeekToDateRange(): Promise<void>
     addPreviousWeekToDateRange(): Promise<void>
     getShifts(shiftIds?: string[]): Promise<void>
-    getShift(shiftId: string): Promise<void>
-    getShiftIdFromShiftOccurrenceId(shiftOccurrenceId: string): string
     getShiftOccurrence(shiftOccurrenceId: string): ShiftOccurrence
-    getShiftSeriesFromShiftOccurrenceId(shiftOccurrenceId: string): ShiftSeries
+    getShiftSeriesFromShiftOccurrenceId(shiftOccurrenceId: string): [number, ShiftSeries]
     getShiftStatus(shiftOccurrence: ShiftOccurrence): ShiftStatus
     updateOrAddShift(updatedShift: WithoutDates<Shift>): void
     setCurrentShiftOccurrence(shift: ShiftOccurrence): void;

@@ -26,7 +26,7 @@ const ShiftOccurrenceCard = observer(({
     style,
     onPress
 } : Props) => {
-    const shiftSeries = shiftStore().getShiftSeriesFromShiftOccurrenceId(occurrenceId);
+    const [seriesIdx, shiftSeries] = shiftStore().getShiftSeriesFromShiftOccurrenceId(occurrenceId);
     const shiftOccurrence = shiftStore().getShiftOccurrence(occurrenceId);
 
     // Compare if the end date + end time of the shift is after the current moment in time.

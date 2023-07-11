@@ -5,6 +5,7 @@ import { OrgContext } from '../../../common/api';
 import { api } from '../services/interfaces';
 import { DefaultRoleIds, MinShift, MinShiftSeries, Position, RecurringDateTimeRange, Shift, ShiftSeries, WithoutDates } from '../../../common/models';
 import moment from 'moment';
+import * as uuid from 'uuid';
 
 
 @Store(ICreateShiftStore)
@@ -13,8 +14,7 @@ export default class CreateShiftStore implements ICreateShiftStore  {
     description: string = ''
     positions: Position[] = []
 
-    // TODO: How do we want to initialize this value?
-    // I update the value in createShift.componentDidMount but it still throws if not set here.
+    // We update the value in initializeStartDate but it still throws if not set here.
     startDate: Date = moment().toDate();
     recurrence: RecurringDateTimeRange = this.defaultShiftDateTime
 
@@ -68,13 +68,11 @@ export default class CreateShiftStore implements ICreateShiftStore  {
         const defaultStartTime = moment(new Date(0)).hours(hours).minutes(minutes).seconds(0).milliseconds(0).toDate();
         const defaultEndTime = moment(defaultStartTime).add(1, 'hours').toDate();
 
-        // Set the default start date according to the class's start date.
+        // Set the default start date according to the stores's start date (initialized when the form was opened).
         // Set the default end date based on the start date, start time, and duration of the shift.
-        // TODO: End date calculation feels hacky, but how else to compute the end date than to set start date + start time + shift duration
-        // since neither start time or start date alone contain the info needed?
         const duration = defaultEndTime.getTime() - defaultStartTime.getTime();
         const defaultStartDate = moment(this.startDate).hours(0).minutes(0).seconds(0).milliseconds(0).toDate();
-        const defaultEndDate = moment(defaultStartDate).hours(hours).minutes(minutes).add(duration, 'milliseconds').hours(0).minutes(0).toDate();
+        const defaultEndDate = moment(defaultStartDate).hours(hours).minutes(minutes).add(duration, 'milliseconds').hours(0).minutes(0).seconds(0).milliseconds(0).toDate();
 
         return {
             startDate: defaultStartDate,
@@ -84,7 +82,9 @@ export default class CreateShiftStore implements ICreateShiftStore  {
         }
     }
 
-    async initializeStartDate(date?: Date): Promise<void> {
+    // NOTE: This function needs to be called by any consumer before
+    // we open the bottomDrawerStore with the create shift form.
+    initializeStartDate(date?: Date) {
         if (date) {
             this.startDate = date;
         } else {
@@ -96,6 +96,7 @@ export default class CreateShiftStore implements ICreateShiftStore  {
 
     async createShift(): Promise<WithoutDates<Shift>> {
         const shiftSeries: MinShiftSeries = {
+            id: uuid.v1(),
             startDate: this.recurrence.startDate,
             title: this.title,
             description: this.description,
@@ -116,8 +117,7 @@ export default class CreateShiftStore implements ICreateShiftStore  {
         this.title = '';
         this.description = '';
         this.positions = [];
-        // TODO: Setting value to null causes crash when the form is closed/cancelled.
-        // this.recurrence = null;
+        this.initializeStartDate();
     }
    
 }
