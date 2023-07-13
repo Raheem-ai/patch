@@ -135,3 +135,119 @@ ssh-keygen -t ed25519 -C "what's this key for?"
 # TODO: not sure how to rotate this infra level key programatically but that's okay for now
 
 ```
+
+
+# Deployment Scenarios [WIP]
+TLDR; can't have any breaking changes on the backend without releasing a back compat version first OR booting everyone to the newest version
+
+NOTE: appstore webhooks don't exist to know when a new version is available in the store
+
+NOTE: might need to lock serverside versions with the native app version they went out with 
+so we never have an older app version looking at a newer serverside version, make dynamicConfig something publicly accessable so all app versions
+can force upgrading if needed, and update dynamic config when we depricate older app versions
+    - challenges:
+        - having dynamic config accessable to all app versions while routing all other api calls to the right version specific serverside deployment
+
+then deployed versions would look like
+
+TERMINOLOGY: 
+- Base Version: the native version of the front end that non breaking changes to either the frontend/backend 
+will be applied to
+- Runtime Version: the version in time that an app is using which could be N iterations of non breaking changes to
+the front/backend...runtime versions are always tied to a Base Bersion
+
+ASSUMPTIONS: any breaking backend change will be accompanied by a front end change 
+
+NOTE: redo this with the following syntax 
+F(xn) = base version x, runtime version n for the front
+B(xn) = base version x, runtime version n for the back
+- ... = iterations of runtime versions on a base version (concurrent backend versions running at the same time)
+F(xn)' = a breaking change from the backend caused the front end to need to be redeployed
+B(xn)' = a breaking change from the frontend caused the backend to need to be redeployed
+<!-- X' = it had a non breaking change
+'X = a breaking change from the other one caused it to need to be redeployed -->
+
+1) Non-native frontend change
+- F(a1) B(a1) -> F(a2) B(a1)
+
+2) Native frontend change
+- F(a1) B(a1)
+- F(b1) B(b1)
+
+3) Backcompat backend change
+- F(a1) B(a1) -> F(a1) B(a2)
+
+4) Breaking backend change
+- F(a1) B(a1)
+- F(b1) B(b1)
+
+5) 1 + 3 + 2 + 4 + 1
+ - F(a1) B(a1) -> F(a2) B(a1) -> F(a2) B(a2)
+ - F(b1) B(b1)'
+ - F(c1)' B(c1) -> F(c2)' B(c1)
+
+<!--  -->
+
+1) Non-native frontend change
+- front(A) back(A) -> front(A') back(A)
+
+2) Native frontend change
+- front(A) back(A)
+- front(B) back(B)
+
+3) Backcompat backend change
+- front(A) back(A) -> front(A) back(A')
+
+4) Breaking backend change
+- front(A) back(A)
+- front(B) back(B)
+
+NOTE: ^^^I actually think this one might be able to just deploy the new backend with the corresponding non
+breaking changes to the frontend...except their would be a time period where people haven't closed and reopened the app to get the latest from the front end so someone using the frontend when we deploy could have the backend break their experience
+
+5) 1 + 3 + 2 + 4 + 1
+ - front(A) back(A) -> front(A') back(A) -> front(A') back(A')
+ - front(B') back(B')
+ - front(C') back(C') -> front(C'') back(C')
+
+ NOTE: this means breaking backend changes cause frontend to be rebuilt
+
+## Frontend changes (EX. changes to a string, color, etc)
+    - regular deployment
+        - deploy backend
+        - deploy frontend
+        - switch traffic to new backend 
+
+## Breaking backend changes + frontend changes (EX. moving store to use diffs)
+    - regular deployment of back compat backend version + frontend changes
+    - users will automatically be updated to newest frontend when they reopen app
+    - use analytics to know when everyone is using the latest version
+    - remove back compat code
+
+## Native frontend changes (EX. new ui that needed a native lib) (`dynamicConfig.appVersion.requiresUpdate == false`)
+    - Create new Expo Build + upload to app stores
+    - Deploy
+        - Do first deployment to frontend (will be tied to new native version so no one will see it yet)
+        - Do deployment of backend (exposed to everyone but not a problem since there is nothing breaking)
+    - Release new versions to app stores
+    - run `dynamicConfig:update` to Tell people there is a new version out so they can be prompted to update from the app store (update DynamicConfig + send event on pubsub)
+
+## Breaking backend changes + Native Frontend changes (EX. switching to E2EE branch) (`dynamicConfig.appVersion.requiresUpdate == true`)
+    - Create new Expo Build + upload to app stores
+    - Deploy
+        - Do first deployment to frontend (will be tied to new native version so no one will see it yet)
+        - Do deployment of backend (don't switch traffic yet so old verions still work)
+    - Release new versions to app stores
+    - run `dynamicConfig:update` to Tell people there is a new version out that is required so they can be prompted to force update from the app store (update DynamicConfig + send event on pubsub)
+    - switch traffic to service the newest version everyone has to onboard to
+
+## Failure points
+    - users on front(A) and back(A)
+    - release non-breaking front(B)
+        - ex. update scroll wheel input to use different native lib
+        - some users on front(A) back(A)
+        - some users on front(B) back(A)
+    - release breaking back(B) with front(B')
+        - ex. upgrade mongoose version on backend so db semantics (and thus api responses) slightly change
+        - some users on front(A) back(B) [BROKEN]
+        - some users on front(B') back(B)
