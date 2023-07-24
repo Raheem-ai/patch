@@ -195,17 +195,15 @@ export class APIClient implements IAPIService {
         return accessToken;
     }
 
-    // user scoped apis
-
-    async getDynamicConfig(ctx: TokenContext) {
+    async getDynamicConfig() {
         const url = `${apiHost}${API.client.getDynamicConfig()}`;
         
-        const config = (await this.tryGet<DynamicConfig>(url, { 
-            headers: this.userScopeAuthHeaders(ctx) 
-        })).data
+        const config = (await this.tryGet<DynamicConfig>(url, {})).data
 
         return config
     }
+
+    // user scoped apis
 
     async getSecrets(ctx: TokenContext): Promise<AppSecrets> {
         const url = `${apiHost}${API.client.getSecrets()}`;

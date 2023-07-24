@@ -89,6 +89,7 @@ export interface IApiClient {
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
     sendResetCode: (email: string, baseUrl: string) => Promise<void>
     signInWithCode: (code: string) => Promise<AuthTokens>
+    getDynamicConfig: () => Promise<DynamicConfig>
 
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -98,7 +99,6 @@ export interface IApiClient {
     createOrg: Authenticated<(org: MinOrg) => Promise<{ user: Me, org: Organization }>>
     getSecrets: Authenticated<() => Promise<AppSecrets>>
     deleteMyAccount: Authenticated<() => Promise<void>>
-    getDynamicConfig: Authenticated<() => Promise<DynamicConfig>>
 
     updatePassword: Authenticated<(password: string, resetCode?: string) => Promise<void>>
 

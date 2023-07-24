@@ -1,6 +1,6 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
-import { createRequestStore, dynamicConfigStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
+import { appUpdateStore, createRequestStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
 import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/models';
 import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
@@ -36,7 +36,7 @@ export default class UpdateStore implements IUpdateStore {
         await userStore().init()
         await organizationStore().init()
         await requestStore().init()
-        await dynamicConfigStore().init()
+        await appUpdateStore().init()
     }
 
     // TODO: put this in common
@@ -53,7 +53,7 @@ export default class UpdateStore implements IUpdateStore {
             // handle one off special cases
             if (packet.event == PatchEventType.SystemDynamicConfigUpdated) {
                 // TODO: should this be debounced like the rest?!?!
-                await dynamicConfigStore().update();
+                await appUpdateStore().updateDynamicConfig()
                 return
             }
 

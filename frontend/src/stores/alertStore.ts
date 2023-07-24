@@ -70,8 +70,9 @@ export default class AlertStore implements IAlertStore {
         }, this.defaultToastTime)
     }
     
-    showPrompt(config: PromptConfig) {
+    showPrompt(config: Omit<PromptConfig, 'unauthenticated'>, unauthenticated?: boolean) {
         this.prompt = config;
+        this.prompt.unauthenticated = unauthenticated;
     }
 
     hidePrompt() {

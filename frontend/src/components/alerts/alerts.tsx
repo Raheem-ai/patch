@@ -91,9 +91,12 @@ export const Alerts = observer(() => {
         return null
     }
 
-    // don't show alerts on unauthenticated views, unless explicitely instructed to, or when the header is open
+    // don't show alerts/prompts on unauthenticated views, unless explicitely instructed to, or when the header is open
     // need to do this here because this sits as a sibling of the navigator in App.tsx
-    if ((!userStore().signedIn && !alertStore().toast?.unauthenticated) || headerStore().isOpen) {
+    const toastShouldntShow = !userStore().signedIn && alertStore().toast && !alertStore().toast.unauthenticated
+    const promptShouldntShow = !userStore().signedIn && alertStore().prompt && !alertStore().prompt.unauthenticated
+    
+    if (toastShouldntShow || promptShouldntShow || headerStore().isOpen) {
         return null
     }
 
