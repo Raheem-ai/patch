@@ -11,6 +11,12 @@
       },
       "expoCli": "6.2.1"
     },
+    "prod-simulator": {
+      "extends": "prod",
+      "ios": {
+        "simulator": true
+      }
+    },
     "staging": {
       "extends": "prod",
       "distribution": "internal",
