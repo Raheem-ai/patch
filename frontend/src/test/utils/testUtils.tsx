@@ -66,6 +66,14 @@ const firstAidSkillText = DefaultAttributeCategories[1].attributes[2].name;
 const cprTrainingText = DefaultAttributeCategories[2].attributes[0].name;
 
 // App boot helper functions
+
+/**
+ * NOTE: this gets called multiple times in tests but because 
+ * 1. we aren't currently unbinding/rebinging stores so they are all using the same singletons
+ * 2. this also means any init() code that isn't retriggered by a reactive (mobx) trigger will only run once
+ * since the init() returns the same promise every time
+ * 
+ */
 export async function mockBoot() {
     const mockedBoot = boot as jest.MaybeMocked<typeof boot>;
     const mockedHideAsync = hideAsync as jest.MaybeMocked<typeof hideAsync>;
@@ -253,7 +261,6 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
     const getOrgMetadataMock = jest.spyOn(APIClient.prototype, 'getOrgMetadata').mockResolvedValue(MockOrgMetadata());
     const getOrgSecretsMock = jest.spyOn(APIClient.prototype, 'getSecrets').mockResolvedValue(MockSecrets());
     const getRequestsMock = jest.spyOn(APIClient.prototype, 'getRequests').mockResolvedValue(MockRequests());
-    const getDynamicConfigMock = jest.spyOn(APIClient.prototype, 'getDynamicConfig').mockResolvedValue(MockDynamicConfig());
 
     // Submit the form
     await act(async () => {
@@ -313,14 +320,6 @@ export async function successfulLinkSignUpOrJoin<Experience extends LinkExperien
                 orgId: MockOrgMetadata().id
             },
             []
-        )
-    })
-
-    await waitFor(() => {
-        expect(getDynamicConfigMock).toHaveBeenCalledWith(
-            {
-                token: MockAuthTokens().accessToken,
-            }
         )
     })
 

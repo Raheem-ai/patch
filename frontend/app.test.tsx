@@ -27,32 +27,32 @@ jest.mock('expo-constants', () => {
 jest.spyOn(ExpoLocation, 'getForegroundPermissionsAsync').mockImplementation(async () => {
     return {
         status: ExpoLocation.PermissionStatus.GRANTED
-    }
+    } as PermissionResponse
 })
 
 jest.spyOn(ExpoLocation, 'getBackgroundPermissionsAsync').mockImplementation(async () => {
     return {
         status: ExpoLocation.PermissionStatus.GRANTED
-    }
+    } as PermissionResponse
 })
 
 jest.spyOn(ExpoLocation, 'requestForegroundPermissionsAsync').mockImplementation(async () => {
     return {
         status: ExpoLocation.PermissionStatus.GRANTED
-    }
+    } as PermissionResponse
 })
 
 jest.spyOn(ExpoLocation, 'requestBackgroundPermissionsAsync').mockImplementation(async () => {
     return {
         status: ExpoLocation.PermissionStatus.GRANTED
-    }
+    } as PermissionResponse
 })
 
 import App from './App';
 import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockActiveRequests, MockAuthTokens, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
+import { MockActiveRequests, MockAuthTokens, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
 import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -62,10 +62,14 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, DefaultRoles, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, DynamicConfig, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
+import { PermissionResponse } from 'expo-location';
+import { GetByQuery } from '@testing-library/react-native/build/queries/makeQueries';
+import { TextMatch, TextMatchOptions } from '@testing-library/react-native/build/matches';
+import { CommonQueryOptions } from '@testing-library/react-native/build/queries/options';
 
 // // TODO: maybe these need to be put into the beforeEach so all mocks can be safely reset each time
 jest.mock('./src/boot')
@@ -110,17 +114,37 @@ describe('Boot Scenarios', () => {
         expect(hideAsync).not.toHaveBeenCalled();
     });
 
-    test('Hides the Splash Screen and shows the landing page after stores load', async () => {
-        const { getByTestId, toJSON } = await testUtils.mockBoot();
+    describe('On successfull bootup', () => {
+        let getByTestId: GetByQuery<TextMatch, CommonQueryOptions & TextMatchOptions>;
+        let getDynamicConfigMock: jest.SpyInstance<Promise<DynamicConfig>, []>;
 
-        expect(hideAsync).toHaveBeenCalled();
+        beforeAll(async () => {
+            // TODO: grab the mock functions that need to happen during startup with no alternative trigger here
+            // and add a specific test in this describe for initialization logic for that
 
-        // expect(toJSON()).toMatchSnapshot();
+            getDynamicConfigMock = jest.spyOn(APIClient.prototype, 'getDynamicConfig').mockResolvedValue(MockDynamicConfig())
 
-        // TODO: reenable when we use the landing screen again
-        // await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
-        await waitFor(() => getByTestId(TestIds.signIn.submit))
-    });
+            const result = await testUtils.mockBoot();
+
+            getByTestId = result.getByTestId
+        })
+
+        test('Hides the Splash Screen and shows the landing page after stores load', async () => {
+            expect(hideAsync).toHaveBeenCalled();
+
+            // expect(toJSON()).toMatchSnapshot();
+
+            // TODO: reenable when we use the landing screen again
+            // await waitFor(() => getByTestId(TestIds.landingScreen.signInButton))
+            await waitFor(() => getByTestId(TestIds.signIn.submit))
+        });
+
+        test('Gets the dynamic config on boot', async () => {
+            await waitFor(() => {
+                expect(getDynamicConfigMock).toHaveBeenCalled()
+            })
+        });
+    }) 
 })
 
 describe('Join or Sign Up from Invitation Scenarios', () => {

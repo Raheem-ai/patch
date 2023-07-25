@@ -22,6 +22,10 @@ export default class UpdateDynamicConfig extends Command {
             options: enumVariants(EnvironmentId)
         }),
     }
+
+    expoVersionFormat(baseVersion: string, versionCode: string) {
+        return `${baseVersion}(${versionCode})`
+    }
   
     async run() {
         try {
@@ -37,7 +41,7 @@ export default class UpdateDynamicConfig extends Command {
 
             const frontEndBuildConfigPath = resolve(rootDir, '../../../../../../../frontend/version.js');
 
-            const { VERSION, ANDROID_VERSION_CODE, REQUIRES_UPDATE } = require(frontEndBuildConfigPath);
+            const { VERSION, ANDROID_VERSION_CODE, IOS_VERSION_CODE, REQUIRES_UPDATE } = require(frontEndBuildConfigPath);
 
             const connString = config.MONGO_CONNECTION_STRING.get().connection_string;
 
@@ -46,14 +50,17 @@ export default class UpdateDynamicConfig extends Command {
 
             const dynamicConfig = await dbManager.getDynamicConfig()
 
+            const iosVersion = this.expoVersionFormat(VERSION, IOS_VERSION_CODE);
+            const androidVersion = this.expoVersionFormat(VERSION, ANDROID_VERSION_CODE)
+
             if (dynamicConfig) {
                 const copy = dynamicConfig.toJSON();
 
                 // if this version hasn't already been added
-                if (copy.appVersion.every((conf) => conf.latestIOS != VERSION)) {
+                if (copy.appVersion.every((conf) => conf.latestIOS != iosVersion)) {
                     copy.appVersion.push({
-                        latestIOS: VERSION,
-                        latestAndroid: `${VERSION}(${ANDROID_VERSION_CODE})`,
+                        latestIOS: iosVersion,
+                        latestAndroid: androidVersion,
                         requiresUpdate: REQUIRES_UPDATE,
                     })
     
@@ -65,8 +72,8 @@ export default class UpdateDynamicConfig extends Command {
                 await dbManager.upsertDynamicConfig({
                     appVersion: [
                         {
-                            latestIOS: VERSION,
-                            latestAndroid: `${VERSION}(${ANDROID_VERSION_CODE})`,
+                            latestIOS: iosVersion,
+                        latestAndroid: androidVersion,
                             requiresUpdate: REQUIRES_UPDATE,
                         }
                     ]

@@ -312,10 +312,7 @@ export class UsersController implements APIController<
     }
 
     @Get(API.server.getDynamicConfig())
-    @Authenticate()
-    async getDynamicConfig(
-        @User() user: UserDoc
-    ) {
+    async getDynamicConfig() {
         return this.db.getDynamicConfig()
     }
 

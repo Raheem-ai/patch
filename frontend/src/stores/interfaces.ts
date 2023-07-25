@@ -489,7 +489,8 @@ type PromptAction = {
 export type PromptConfig = {
     title: string,
     message: string | ((textStyling: TextStyle) => JSX.Element), 
-    actions: [PromptAction] | [PromptAction, PromptAction]
+    actions: [PromptAction] | [PromptAction, PromptAction],
+    unauthenticated?: boolean, // outlet to allow callers to force the prompt to show even if the user isnt signed in
 }
 
 export type ToastConfig = {
@@ -508,7 +509,7 @@ export interface IAlertStore extends IBaseStore {
     toastSuccess(message: string, unauthenticated?: boolean): void;
     toastError(message: string, unauthenticated?: boolean): void;
 
-    showPrompt(config: PromptConfig): void
+    showPrompt(config: Omit<PromptConfig, 'unauthenticated'>, unauthenticated?: boolean): void
     hidePrompt(): void
     hideToast(): void
     hideAlerts(): void
@@ -621,8 +622,9 @@ export namespace IAppUpdateStore {
     export const id = Symbol('IAppUpdateStore');
 }
 
-export interface IAppUpdateStore extends IBaseStore {
+export interface IAppUpdateStore extends IBaseStore, DynamicConfig {
     waitingForReload: boolean
+    updateDynamicConfig(): Promise<void>
 }
 
 export namespace IFormStore {
@@ -636,14 +638,6 @@ export interface IFormStore extends IBaseStore {
     increaseDepth(): void
     decreaseDepth(): void
     clearDepth(): void
-}
-
-export namespace IDynamicConfigStore {
-    export const id = Symbol('IDynamicConfigStore');
-}
-
-export interface IDynamicConfigStore extends IBaseStore, DynamicConfig {
-    update(): Promise<void>
 }
 
 export const userStore = () => getStore<IUserStore>(IUserStore);
@@ -673,7 +667,6 @@ export const organizationSettingsStore = () => getStore<IOrganizationSettingsSto
 export const appUpdateStore = () => getStore<IAppUpdateStore>(IAppUpdateStore);
 export const formStore = () => getStore<IFormStore>(IFormStore);
 export const connectionStore = () => getStore<IConnectionStore>(IConnectionStore);
-export const dynamicConfigStore = () => getStore<IDynamicConfigStore>(IDynamicConfigStore);
 
 export const AllStores = [
     IUserStore,
@@ -703,5 +696,4 @@ export const AllStores = [
     IAppUpdateStore,
     IFormStore,
     IConnectionStore,
-    IDynamicConfigStore
 ]

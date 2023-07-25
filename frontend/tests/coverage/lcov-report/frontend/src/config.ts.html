@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -81,16 +81,39 @@
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
-<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -98,9 +121,21 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">import Constants from 'expo-constants'
 import * as Updates from 'expo-updates';
+&nbsp;
+/**
+ * TODO: more tightly define what should be defined
+ * - in app.config.js (build time config tied to apps nativeVersion)
+ * - here (runtime config tied to specific deployment of apps nativeVersion) 
+ * - dynamicConfig (runtime config that always reflects db but has to be loaded on startup)
+ * 
+ * also, should dynamicConfig be something that is publicly accessable?...otherwise we can only surface it AFTER signing in
+ * */ 
 &nbsp;
 const extra = Constants.manifest?.extra // build with no updates yet
     || <span class="branch-1 cbranch-no" title="branch not covered" >Constants.manifest2?.extra.expoClient.extra;</span> // once first update is deployed
@@ -109,22 +144,26 @@ export const apiHost = extra.apiHost;
 export const sentryDSN = extra.sentryDSN;
 export const appEnv = extra.appEnv;
 export const backendEnv = extra.backendEnv;
+&nbsp;
 export const linkBaseUrl = extra.linkBaseUrl;
 export const termsOfServiceVersion = extra.termsOfServiceVersion;
 export const termsOfServiceLink = extra.termsOfServiceLink;
 &nbsp;
-export const appVersion = Updates.runtimeVersion;
+export const appRuntimeVersion = Updates.runtimeVersion;
 &nbsp;
 export const inProdApp = appEnv == 'prod'
 export const inStagingApp = appEnv == 'staging'
-export const inDevApp = appEnv == 'dev'</pre></td></tr></table></pre>
+export const inDevApp = appEnv == 'dev'
+&nbsp;
+export const iosAppStoreURL = 'https://apps.apple.com/us/app/patch-mobile-crisis-response/id1592219338'
+export const androidAppStoreURL = 'https://play.google.com/store/apps/details?id=ai.raheem.patch'</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-09T19:39:24.422Z
+                at 2023-07-25T18:36:01.814Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

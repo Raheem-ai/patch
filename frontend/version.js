@@ -14,6 +14,8 @@
 exports.VERSION = `1.0.2`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
 exports.ANDROID_VERSION_CODE = 13
+// NOTE: this never needs to change
+exports.IOS_VERSION_CODE = "1"
 /**
  * This only is referring to if their is a native update tied to a feature that requires you to 
  * update from the app store. Over the air updates will happen automatically but building this in 

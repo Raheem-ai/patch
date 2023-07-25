@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.08% </span>
+                <span class="strong">68.6% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>59/83</span>
+                <span class='fraction'>59/86</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">39.58% </span>
+                <span class="strong">38.77% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>38/96</span>
+                <span class='fraction'>38/98</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">58.53% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>24/40</span>
+                <span class='fraction'>24/41</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.08% </span>
+                <span class="strong">68.6% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>59/83</span>
+                <span class='fraction'>59/86</span>
             </div>
         
             
@@ -305,7 +305,15 @@
 <a name='L240'></a><a href='#L240'>240</a>
 <a name='L241'></a><a href='#L241'>241</a>
 <a name='L242'></a><a href='#L242'>242</a>
-<a name='L243'></a><a href='#L243'>243</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -545,12 +553,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IEditUserStore, IUserStore, userStore } from './interfaces';
-import { Me, ProtectedUser } from '../../../common/models';
+import { CategorizedItem, CategorizedItemUpdates, Me, ProtectedUser } from '../../../common/models';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
 import { PhoneNumberRegex } from '../../../common/constants';
@@ -637,7 +653,7 @@ export default class EditUserStore implements IEditUserStore {
         this._bio = val
     }
 &nbsp;
-    get roles() { 
+    get roles(): string[] { 
         return this._roles == null ? <span class="branch-0 cbranch-no" title="branch not covered" >[] </span>: this._roles;
     }
 &nbsp;
@@ -645,7 +661,7 @@ export default class EditUserStore implements IEditUserStore {
         this._roles = val
     }
 &nbsp;
-    get attributes() { 
+    get attributes(): CategorizedItem[] { 
         return this._attributes == null ? <span class="branch-0 cbranch-no" title="branch not covered" >[] </span>: this._attributes;
     }
 &nbsp;
@@ -789,6 +805,14 @@ export default class EditUserStore implements IEditUserStore {
             attributes: (!canEditAttributes || this._attributes == null) ? <span class="branch-0 cbranch-no" title="branch not covered" >undefined </span>: this.attributes
         })
     }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    on</span>RoleDeletedUpdate(roleId: string) {
+        const idx = <span class="cstat-no" title="statement not covered" >this.roles.indexOf(roleId);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (idx != -1) {</span>
+<span class="cstat-no" title="statement not covered" >            this.roles.splice(idx, 1)</span>
+        }
+    }
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -796,7 +820,7 @@ export default class EditUserStore implements IEditUserStore {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-09T19:39:24.422Z
+                at 2023-07-25T18:36:01.814Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
