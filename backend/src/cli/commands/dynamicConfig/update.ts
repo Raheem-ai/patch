@@ -19,7 +19,8 @@ export default class UpdateDynamicConfig extends Command {
             char: 'e', 
             required: true,
             description: 'Target enviroment ',
-            options: enumVariants(EnvironmentId)
+            // only allow this for prod and testing on staging
+            options: enumVariants(EnvironmentId).filter(v => v !== EnvironmentId[EnvironmentId.dev] && v !== EnvironmentId[EnvironmentId.preProd])
         }),
     }
 
@@ -53,6 +54,11 @@ export default class UpdateDynamicConfig extends Command {
             const iosVersion = this.expoVersionFormat(VERSION, IOS_VERSION_CODE);
             const androidVersion = this.expoVersionFormat(VERSION, ANDROID_VERSION_CODE)
 
+            // TODO: change this to 
+            // 1) add testing field based on if this is for pre-prod testing
+            // 2) update the previously (pre-prod or prod) appversion in place
+            //    ie. pre-prod gets promoted to prod AND/OR breaking backend change requires
+            //    users to update their front end version to match the backend
             if (dynamicConfig) {
                 const copy = dynamicConfig.toJSON();
 
@@ -73,7 +79,7 @@ export default class UpdateDynamicConfig extends Command {
                     appVersion: [
                         {
                             latestIOS: iosVersion,
-                        latestAndroid: androidVersion,
+                            latestAndroid: androidVersion,
                             requiresUpdate: REQUIRES_UPDATE,
                         }
                     ]

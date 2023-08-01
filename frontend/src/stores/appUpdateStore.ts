@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction, when } from 'mobx';
+import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import {  Store } from './meta';
 import { alertStore, IAppUpdateStore, PromptConfig } from './interfaces';
 import * as Updates from 'expo-updates';
@@ -19,7 +19,8 @@ export default class AppUpdateStore implements IAppUpdateStore {
     appVersion: DynamicAppVersionConfig[] = [{
         latestIOS: '',
         latestAndroid: '',
-        requiresUpdate: false
+        requiresUpdate: false,
+        testing: false
     }]
 
     @persistent() lastAppVersionPrompt = '' 
@@ -31,28 +32,83 @@ export default class AppUpdateStore implements IAppUpdateStore {
     }
 
     async init() {
-        await this.checkForOverTheAirUpdates();
         await alertStore().init()
-        await this.checkForNewerAppVersions()
+        await this.checkForOverTheAirUpdates()
+
+        // get the latest config before setting up 
+        // reactions as they will run immediately
+        await api().init()
+        await this.updateDynamicConfig()
+        
+        await this.setupAppVersionChecks()
     }
 
-    get currentAppVersionConfig() {
-        return this.appVersion[this.appVersion.length - 1]
+    get prodAppVersions() {
+        return this.appVersion.filter((appVersion) => !appVersion.testing)
     }
 
-    get currentAppVersion() {
-        return this.normalizedVersion(this.currentAppVersionConfig)
+    get latestProdAppVersionConfig() {
+        return this.prodAppVersions[this.prodAppVersions.length - 1] || null
     }
 
-    async checkForNewerAppVersions() {
+    get latestProdAppVersion() {
+        return this.normalizedVersion(this.latestProdAppVersionConfig)
+    }
 
-        const needToUpdate = () => {
-            return this.currentAppVersion && this.currentAppVersion != appRuntimeVersion
+    get currentVersionConfigIdx() {
+        return this.appVersion.findIndex(v => this.normalizedVersion(v) == appRuntimeVersion)
+    }
+
+    get currentVersionConfig () {
+        return this.currentVersionConfigIdx != -1 
+            ? this.appVersion[this.currentVersionConfigIdx]
+            : null
+    }
+
+    get newerVersionIsRequired() {
+        if (this.currentVersionConfig) {
+            // for every version after this one, return true if any are required and not a preprod build 
+            // logic is inverted because we have to use every()
+
+            const newerVersions = this.prodAppVersions.slice(this.currentVersionConfigIdx + 1)
+            const onlyTestingOrOptional = newerVersions.every((version) => version.testing || !version.requiresUpdate)
+            
+            return !onlyTestingOrOptional
+        } else {
+            return false
+        }
+    }
+
+    async setupAppVersionChecks() {
+
+        const couldUpdate = () => {
+            const notOnLatestProdVersion = this.latestProdAppVersion && this.latestProdAppVersion != appRuntimeVersion;
+            
+            const notOnPreProdVersion = this.currentVersionConfig && !this.currentVersionConfig.testing;
+
+            return notOnLatestProdVersion && notOnPreProdVersion && !this.newerVersionIsRequired
         }
 
-        when(needToUpdate, this.tryPromptForUpdate)
+        when(couldUpdate, this.promptForOptionalUpdate)
 
-        await this.updateDynamicConfig()
+        const needToForceUpdate = () => {
+            return this.newerVersionIsRequired
+        }
+
+        when(needToForceUpdate, this.promptForRequiredUpdate)
+
+        const calculateApiTag = () => {
+            return this.currentVersionConfig?.testing
+                ? 'preprod'
+                : ''
+        }
+
+        const updateApiUrl = (apiTag) => {
+            api().pointTo(apiTag)
+        }
+
+        //TODO: should be keeping to dispose here?
+        reaction(calculateApiTag, updateApiUrl)
     }
 
     async checkForOverTheAirUpdates() {
@@ -70,8 +126,6 @@ export default class AppUpdateStore implements IAppUpdateStore {
             // TODO: this doesn't seem to be working for some reason
             Updates.addListener(async (event) => {
                 if (event.type == Updates.UpdateEventType.UPDATE_AVAILABLE) {
-                    await alertStore().init()
-
                     const updatePrompt: PromptConfig = {
                         title: STRINGS.APP_UPDATES.prompt.title,
                         message: STRINGS.APP_UPDATES.prompt.message,
@@ -96,58 +150,19 @@ export default class AppUpdateStore implements IAppUpdateStore {
         }
     }
 
-    normalizedVersion(config: DynamicAppVersionConfig) {
-        return isIos
-            ? config.latestIOS
-            : config.latestAndroid
+    normalizedVersion(config: DynamicAppVersionConfig | null) {
+        return !!config
+            ? isIos
+                ? config.latestIOS
+                : config.latestAndroid
+            : null
     }
 
     registerVersionPrompt = () => {
         this.lastAppVersionPrompt = new Date().toISOString();
     }
 
-    tryPromptForUpdate = () => {
-        /**
-         * right now this will run whenever you reopen the app and see 
-         * you have an old version or whenever the appVersion config
-         * dynamiclaly changes and this store updates
-         */
-
-        // check if any of the versions after the currently installed version required an update
-        let updateRequiredInFutureVersion = false;
-
-        for (let i = this.appVersion.length - 1; i >= 0; i--) {
-            const config = this.appVersion[i];
-
-            if (appRuntimeVersion == this.normalizedVersion(config)) {
-                break;
-            } else if (config.requiresUpdate) {
-                updateRequiredInFutureVersion = true;
-                break;
-            }
-        }
-
-        if (updateRequiredInFutureVersion) {
-            this.promptForRequiredUpdate()
-        } else {
-            // if you have already answered the prompt, it will remind you next time you sign in after X time period
-
-            const now = new Date();
-            
-            const lastPrompt = this.lastAppVersionPrompt 
-                ? new Date(this.lastAppVersionPrompt)
-                : now
-
-            const waitTime = moment(now).diff(lastPrompt) 
-            const waitedLongEnough = waitTime > this.timeBeforeNextPromptInMs;
-
-
-            if (!this.lastAppVersionPrompt || waitedLongEnough)
-                this.promptForOptionalUpdate()
-        }
-    }
-
-    promptForRequiredUpdate() {
+    promptForRequiredUpdate = () => {
         this.registerVersionPrompt()
 
         alertStore().showPrompt({
@@ -167,7 +182,22 @@ export default class AppUpdateStore implements IAppUpdateStore {
         }, true)
     }
 
-    promptForOptionalUpdate() {
+    promptForOptionalUpdate = () => {
+        // if you have already answered the prompt, it will remind you next time you sign in after X time period
+        const now = new Date();
+            
+        const lastPrompt = this.lastAppVersionPrompt 
+            ? new Date(this.lastAppVersionPrompt)
+            : now
+
+        const waitTime = moment(now).diff(lastPrompt) 
+        const waitedLongEnough = waitTime > this.timeBeforeNextPromptInMs;
+
+
+        if (this.lastAppVersionPrompt && !waitedLongEnough) {
+            return
+        }
+
         this.registerVersionPrompt()
 
         alertStore().showPrompt({
@@ -193,12 +223,69 @@ export default class AppUpdateStore implements IAppUpdateStore {
     }
 
     async updateDynamicConfig(): Promise<void> {
-        await api().init()
-        const config = await api().getDynamicConfig();
+        // const config = await api().getDynamicConfig();
 
+        // runInAction(() => {
+        //     this.appVersion = config.appVersion
+        // })
+        
         runInAction(() => {
-            this.appVersion = config.appVersion
+            this.appVersion = [
+                {
+                    latestIOS: appRuntimeVersion,
+                    latestAndroid: appRuntimeVersion,
+                    requiresUpdate: false,
+                    testing: false
+                },
+                {
+                    latestIOS: 'ios',
+                    latestAndroid: 'android',
+                    requiresUpdate: false,
+                    testing: false
+                }
+            ]
         })
+
+        // setTimeout(() => {
+        //     runInAction(() => {
+        //         console.log('toggling required in place')
+
+        //         this.appVersion = [
+        //             {
+        //                 latestIOS: appRuntimeVersion,
+        //                 latestAndroid: appRuntimeVersion,
+        //                 requiresUpdate: false,
+        //                 testing: false
+        //             },
+        //             {
+        //                 latestIOS: 'ios',
+        //                 latestAndroid: 'android',
+        //                 requiresUpdate: true,
+        //                 testing: false
+        //             }
+        //         ]
+        //     })
+        // }, 5000)
+
+        // setInterval(() => {
+        //     runInAction(() => {
+        //         console.log('toggling testing in place')
+        //         this.appVersion = [
+        //             {
+        //                 latestIOS: appRuntimeVersion,
+        //                 latestAndroid: appRuntimeVersion,
+        //                 requiresUpdate: false,
+        //                 testing: !this.appVersion[0].testing
+        //             },
+        //             {
+        //                 latestIOS: 'ios',
+        //                 latestAndroid: 'android',
+        //                 requiresUpdate: true,
+        //                 testing: false
+        //             }
+        //         ]
+        //     })
+        // }, 5000)
     }
 
     clear() {

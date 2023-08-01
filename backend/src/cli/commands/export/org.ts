@@ -20,7 +20,8 @@ export default class ExportOrg extends Command {
             char: 'e', 
             required: true,
             description: 'Target enviroment ',
-            options: enumVariants(EnvironmentId)
+            // only allow this for prod and testing on staging
+            options: enumVariants(EnvironmentId).filter(v => v !== EnvironmentId[EnvironmentId.dev] && v !== EnvironmentId[EnvironmentId.preProd])
         }),
     }
   
