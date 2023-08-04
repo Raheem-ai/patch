@@ -24,6 +24,7 @@ export default class UpdateDynamicConfig extends Command {
         }),
     }
 
+    // TODO: put into common
     expoVersionFormat(baseVersion: string, versionCode: string) {
         return `${baseVersion}(${versionCode})`
     }
