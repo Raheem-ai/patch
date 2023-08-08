@@ -106,9 +106,11 @@ export default class UpdateDynamicConfig extends Command {
             const { flags } = await this.parse(UpdateDynamicConfig)
 
             if (!flags.newNativeVersion && !flags.approve) {
-                return this.error('Either the --newNativeVersion or the --approve flag is required.', {
+                this.error('Either the --newNativeVersion or the --approve flag is required.', {
                     code: '1'
                 });
+
+                return
               } 
 
             // trySetupLocalEnv(envId)
