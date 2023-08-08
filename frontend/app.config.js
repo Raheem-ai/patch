@@ -88,11 +88,14 @@ if (inEASBuild) { // running eas build on ci server
 	if (!ENV) {
 		throw 'Missing _ENVIRONMENT env variable'
 	}
+
+	// treat preprod as prod for apihost and secrets
+	const easEnv = ENV == 'preprod' ? 'prod' : ENV
 	
 	// make sure api is pointing to the right environment
-	resolveApiHost(ENV)
+	resolveApiHost(easEnv)
 
-	resolveSecrets(ENV)
+	resolveSecrets(easEnv)
 
 } else if (!!DEV_ENV) { // running expo start locally against an env
 
@@ -107,19 +110,23 @@ if (inEASBuild) { // running eas build on ci server
 } else if (!!UPDATE_ENVIRONMENT) {
 	// running eas update locally or otherwise
 
+	// use prod env settings for preprod
+	const localEnv = UPDATE_ENVIRONMENT == 'preprod' ? 'prod' : UPDATE_ENVIRONMENT
+
 	// try and load secrets from local .env files if they exist
 	try {
-		loadLocalEnv(UPDATE_ENVIRONMENT)
+		// use prod env for preprod
+		loadLocalEnv(localEnv)
 	} catch (e) {
 
 	}
 	
 	// make sure api is pointing to the right environment
-	resolveApiHost(UPDATE_ENVIRONMENT)
+	resolveApiHost(localEnv)
 
 	// resolve secrets either pulled from local .env
 	// or provided by env
-	resolveSecrets(UPDATE_ENVIRONMENT)
+	resolveSecrets(localEnv)
 } else {
 	// throw `This file shouldn't be used without providing either _ENVIRONMENT, _DEV_ENVIRONMENT, or _UPDATE_ENV env variable`
 }
@@ -131,9 +138,11 @@ function appName() {
 
 	return env == 'prod'
 		? 'patch'
-		: env == 'staging'
-			? 'patch (staging)'
-			: 'patch (dev)'
+		: env == 'preprod' 
+			? 'patch (preprod)'
+			: env == 'staging'
+				? 'patch (staging)'
+				: 'patch (dev)'
 }
 
 function appId() {
@@ -141,9 +150,11 @@ function appId() {
 
 	return env == 'prod'
 		? 'ai.raheem.patch'
-		: env == 'staging'
-			? 'ai.raheem.patch.staging'
-			: 'ai.raheem.patch.dev'
+		: env == 'preprod'
+			? 'ai.raheem.patch.preprod'
+			: env == 'staging'
+				? 'ai.raheem.patch.staging'
+				: 'ai.raheem.patch.dev'
 }
 
 function appEnv() {
@@ -174,7 +185,7 @@ function branchConfig() {
 		// as it is used in a config plugin which apparently does it's validation 
 		// before being on the build server -_-...real value gets set in the build
 		"apiKey": BRANCH_KEY || 'FAKE',
-		"appDomain": env == 'prod'
+		"appDomain": env == 'prod' // TODO: this won't work for preprod because of the appId
 			? "hla1z.app.link"
 			: "hla1z.test-app.link",
 		"exhaustiveAppDomains": env == 'prod'

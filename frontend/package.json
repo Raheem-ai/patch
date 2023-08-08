@@ -17,6 +17,7 @@
     "update:prod": "_UPDATE_ENVIRONMENT=prod eas update --branch prod",
     "update:staging:ci": "EAS_NO_VCS=1 _UPDATE_ENVIRONMENT=staging eas update --branch $_ENVIRONMENT --non-interactive --message $COMMIT_SHA",
     "update:prod:ci": "EAS_NO_VCS=1 _UPDATE_ENVIRONMENT=prod eas update --branch $_ENVIRONMENT --non-interactive --message $_RELEASE_ID",
+    "update:preprod:ci": "EAS_NO_VCS=1 _UPDATE_ENVIRONMENT=preprod eas update --branch $_ENVIRONMENT --non-interactive --message $_RELEASE_ID",
     "doctor": "_DEV_ENVIRONMENT=staging expo-cli doctor",
     "test": "jest",
     "postinstall": "node ./eas_build/preInstall.mjs",

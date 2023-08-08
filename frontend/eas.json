@@ -11,6 +11,14 @@
       },
       "expoCli": "6.2.1"
     },
+    "preprod": {
+      "extends": "prod",
+      "channel": "preprod",
+      "distribution": "internal",
+      "env": {
+        "_ENVIRONMENT": "preprod"
+      }
+    },
     "prod-simulator": {
       "extends": "prod",
       "ios": {

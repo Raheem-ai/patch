@@ -1,12 +1,8 @@
-- requiresUpdate: true
-  nativeIOSVersion: 1.0.2(1)
-  nativeAndroidVersion: 1.0.2(13)
-  commit: 3dcfd049622123c1be6426fa01192f4b27a192bc
-  timestamp: '2023-08-02T21:16:45.705Z'
 - requiresUpdate: false
   nativeIOSVersion: 1.0.2(1)
   nativeAndroidVersion: 1.0.2(13)
-  commit: ee8c216fb4ac8fdd1893d121009205059df78a67
+  nativeChanges: false
+  commit: ee8c216f
   timestamp: '2023-08-04T06:29:26.053Z'
   updates:
     - made dynamic config an unauthenticated api so we can call on startup
