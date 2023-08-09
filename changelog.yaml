@@ -9,3 +9,10 @@
     - >-
       prompts for optional/required version updates now happen before you get
       off of splash screen
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 4dc5d39c
+  timestamp: '2023-08-09T20:29:32.910Z'
+  updates: []
+  nativeChanges: false
