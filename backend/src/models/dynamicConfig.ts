@@ -9,6 +9,7 @@ class DynamicAppVersionConfigSchema implements DynamicAppVersionConfig {
     @Property() latestIOS: string
     @Property() latestAndroid: string
     @Property() requiresUpdate: boolean
+    @Property() testing: boolean
 }
 
 // timestamps are handled by db

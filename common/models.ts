@@ -11,7 +11,8 @@ export interface AuthTokens {
 export type DynamicAppVersionConfig = {
     latestIOS: string,
     latestAndroid: string,
-    requiresUpdate: boolean
+    requiresUpdate: boolean,
+    testing: boolean
 }
 
 export type DynamicConfig = {

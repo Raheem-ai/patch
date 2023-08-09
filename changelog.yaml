@@ -1,0 +1,11 @@
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  nativeChanges: false
+  commit: ee8c216f
+  timestamp: '2023-08-04T06:29:26.053Z'
+  updates:
+    - made dynamic config an unauthenticated api so we can call on startup
+    - >-
+      prompts for optional/required version updates now happen before you get
+      off of splash screen

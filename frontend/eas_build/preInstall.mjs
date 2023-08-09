@@ -20,7 +20,7 @@ if (inEASBuild) {
     if (PLATFORM == 'android') {
         let key = googleFCMKey;
 
-        key += ENV == 'prod'
+        key += (ENV == 'prod' || ENV == 'preprod')
             ? prodSecretSuffix
             : ENV == 'staging'
                 ? stagingSecretSuffix
