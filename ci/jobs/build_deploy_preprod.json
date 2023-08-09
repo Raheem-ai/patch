@@ -1,14 +1,3 @@
-/**
-TODO:
-- switch on native changes
-    - if native changes
-        - appversion logic
-        - push OTA updates for preprod and prod
-    - if none
-        - push OTA updates to JUST preprod
-*/
-
-
 {
     "timeout": "3600s",
     "steps": [
