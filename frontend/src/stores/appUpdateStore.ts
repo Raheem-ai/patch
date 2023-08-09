@@ -223,69 +223,11 @@ export default class AppUpdateStore implements IAppUpdateStore {
     }
 
     async updateDynamicConfig(): Promise<void> {
-        // const config = await api().getDynamicConfig();
+        const config = await api().getDynamicConfig();
 
-        // runInAction(() => {
-        //     this.appVersion = config.appVersion
-        // })
-        
         runInAction(() => {
-            this.appVersion = [
-                {
-                    latestIOS: appRuntimeVersion,
-                    latestAndroid: appRuntimeVersion,
-                    requiresUpdate: false,
-                    testing: false
-                },
-                {
-                    latestIOS: 'ios',
-                    latestAndroid: 'android',
-                    requiresUpdate: false,
-                    testing: false
-                }
-            ]
+            this.appVersion = config.appVersion
         })
-
-        // setTimeout(() => {
-        //     runInAction(() => {
-        //         console.log('toggling required in place')
-
-        //         this.appVersion = [
-        //             {
-        //                 latestIOS: appRuntimeVersion,
-        //                 latestAndroid: appRuntimeVersion,
-        //                 requiresUpdate: false,
-        //                 testing: false
-        //             },
-        //             {
-        //                 latestIOS: 'ios',
-        //                 latestAndroid: 'android',
-        //                 requiresUpdate: true,
-        //                 testing: false
-        //             }
-        //         ]
-        //     })
-        // }, 5000)
-
-        // setInterval(() => {
-        //     runInAction(() => {
-        //         console.log('toggling testing in place')
-        //         this.appVersion = [
-        //             {
-        //                 latestIOS: appRuntimeVersion,
-        //                 latestAndroid: appRuntimeVersion,
-        //                 requiresUpdate: false,
-        //                 testing: !this.appVersion[0].testing
-        //             },
-        //             {
-        //                 latestIOS: 'ios',
-        //                 latestAndroid: 'android',
-        //                 requiresUpdate: true,
-        //                 testing: false
-        //             }
-        //         ]
-        //     })
-        // }, 5000)
     }
 
     clear() {
