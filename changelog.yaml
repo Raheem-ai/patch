@@ -9,3 +9,31 @@
     - >-
       prompts for optional/required version updates now happen before you get
       off of splash screen
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 4dc5d39c
+  timestamp: '2023-08-09T20:18:54.002Z'
+  updates:
+    - >-
+      Adding `infra release:create`, `infra ci:hasNativeChanges`, `infra
+      release:approve`, and `infra ci:createExpoBuild` commands
+    - Added preprod build deploy def
+    - >-
+      Updating `backend dynamicConfig:update` to work with new preprod to prod
+      deployment flow
+  nativeChanges: false
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 4dc5d39c
+  timestamp: '2023-08-09T20:19:57.115Z'
+  updates:
+    - >-
+      Adding `infra release:create`, `infra ci:hasNativeChanges`, `infra
+      release:approve`, and `infra ci:createExpoBuild` commands
+    - Added preprod build deploy def
+    - >-
+      Updating `backend dynamicConfig:update` to work with new preprod to prod
+      deployment flow
+  nativeChanges: false
