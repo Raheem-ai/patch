@@ -34,7 +34,8 @@ The infra project sits in the root of the project it is embedded in. It expects 
 As a one off step, you need to generate the dev (local) config for the backend to consume 
 (You will need to re-run this whenever you add/update a secret/config in infra)
 ```sh
-# from `backend/` 
+# from `backend/`
+> yarn run build
 > yarn node infra/bin/run config:generate -e dev  
 ```
 
