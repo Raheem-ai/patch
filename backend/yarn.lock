@@ -7284,6 +7284,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csv-stringify@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "csv-stringify@npm:6.4.0"
+  checksum: 4d68c34a8f9ec52ec7b2da8a67c2c4b658431f4ba8f816a5e9b4664dc09ec37e5cf65a41dae13500488d38bd8b416b1dc179aad8275ba54e7b1735e21bbf2830
+  languageName: node
+  linkType: hard
+
 "currently-unhandled@npm:^0.4.1":
   version: 0.4.1
   resolution: "currently-unhandled@npm:0.4.1"
@@ -11314,12 +11321,14 @@ __metadata:
     netlify-cli: ^3.29.2
     nyc: ^14.1.1
     oclif: ^1.17.0
+    read-yaml-file: ^2.1.0
     save: ^2.4.0
     ts-node: ^9.0.0
     tsc: ^1.20150623.0
     tslib: ^1.14.1
     twilio: ^3.71.3
     typescript: ^4.1.0
+    write-yaml-file: ^5.0.0
   bin:
     infra: ./bin/run
   languageName: unknown
@@ -16125,6 +16134,7 @@ __metadata:
     compression: ^1.7.4
     connect-mongo: ^4.5.0
     cookie-parser: ^1.4.5
+    csv-stringify: ^6.4.0
     dotenv: ^10.0.0
     expo-server-sdk: ^3.6.0
     express: ^4.17.1
@@ -17074,6 +17084,16 @@ __metadata:
     parse-json: ^5.0.0
     type-fest: ^0.6.0
   checksum: eb696e60528b29aebe10e499ba93f44991908c57d70f2d26f369e46b8b9afc208ef11b4ba64f67630f31df8b6872129e0a8933c8c53b7b4daf0eace536901222
+  languageName: node
+  linkType: hard
+
+"read-yaml-file@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "read-yaml-file@npm:2.1.0"
+  dependencies:
+    js-yaml: ^4.0.0
+    strip-bom: ^4.0.0
+  checksum: 52765eb183e79466f51eebeb19b933cc0f0e907052d062d67300b97e79910064a24b370cdb0b5dd8b05afff3d0ec57282670fd9070dc608e13b11820ac79183d
   languageName: node
   linkType: hard
 
@@ -18155,6 +18175,13 @@ __metadata:
   version: 3.0.7
   resolution: "signal-exit@npm:3.0.7"
   checksum: a2f098f247adc367dffc27845853e9959b9e88b01cb301658cfe4194352d8d2bb32e18467c786a7fe15f1d44b233ea35633d076d5e737870b7139949d1ab6318
+  languageName: node
+  linkType: hard
+
+"signal-exit@npm:^4.0.1":
+  version: 4.1.0
+  resolution: "signal-exit@npm:4.1.0"
+  checksum: 64c757b498cb8629ffa5f75485340594d2f8189e9b08700e69199069c8e3070fb3e255f7ab873c05dc0b3cec412aea7402e10a5990cb6a050bd33ba062a6c549
   languageName: node
   linkType: hard
 
@@ -20776,6 +20803,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"write-file-atomic@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "write-file-atomic@npm:5.0.1"
+  dependencies:
+    imurmurhash: ^0.1.4
+    signal-exit: ^4.0.1
+  checksum: 8dbb0e2512c2f72ccc20ccedab9986c7d02d04039ed6e8780c987dc4940b793339c50172a1008eed7747001bfacc0ca47562668a069a7506c46c77d7ba3926a9
+  languageName: node
+  linkType: hard
+
 "write-json-file@npm:^4.1.1":
   version: 4.3.0
   resolution: "write-json-file@npm:4.3.0"
@@ -20787,6 +20824,16 @@ __metadata:
     sort-keys: ^4.0.0
     write-file-atomic: ^3.0.0
   checksum: 33908c591923dc273e6574e7c0e2df157acfcf498e3a87c5615ced006a465c4058877df6abce6fc1acd2844fa3cf4518ace4a34d5d82ab28bcf896317ba1db6f
+  languageName: node
+  linkType: hard
+
+"write-yaml-file@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "write-yaml-file@npm:5.0.0"
+  dependencies:
+    js-yaml: ^4.1.0
+    write-file-atomic: ^5.0.1
+  checksum: 7d3e2a44ef3c17e86b8a973f741effb22b9798d4bbca1bff682757bb9be4e2c357d98d74be32df84a9b75602043dd76540c39e90b71d297b6233d6cf4db0739e
   languageName: node
   linkType: hard
 

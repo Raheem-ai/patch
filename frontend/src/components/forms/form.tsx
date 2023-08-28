@@ -19,6 +19,7 @@ export type FormProps = {
     headerLabel?: () => string,
     onExpand?(): void,
     onBack?(): void,
+    // TODO: remove this...it is vestigial
     submit?: {
         label: string,
         handler: () => Promise<void>

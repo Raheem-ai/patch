@@ -45,6 +45,10 @@
             "args": [
                 "ci/backend/build_preprod.sh"
             ],
+            "volumes": [{
+                "name": "ssh",
+                "path": "/root/.ssh"
+            }],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
                 "SHORT_SHA=$SHORT_SHA"
