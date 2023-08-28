@@ -61,6 +61,8 @@ COPY ci ./ci
 
 COPY .git /app/.git
 
+COPY changelog.yaml /app/changelog.yaml
+
 # /app/backend
 WORKDIR backend
 
