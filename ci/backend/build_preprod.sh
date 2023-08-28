@@ -8,7 +8,7 @@ TAG=$(git describe $SHORT_SHA --tags)
 echo echo $TAG | cut -f3 -d-
 TARGET_BUILD=$(echo $TAG | cut -f3 -d-)
 
-TMP_IMAGE=gcr.io/$PROJECT_ID/patch-rc:$TARGET_BUILD
+TMP_IMAGE=gcr.io/raheem-org-dev/patch-rc:$TARGET_BUILD
 PREPROD_IMAGE=gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA
 LATEST_PREPROD_IMAGE=gcr.io/$PROJECT_ID/patch-rel-pre:latest
 
