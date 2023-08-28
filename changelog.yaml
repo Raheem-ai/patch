@@ -16,3 +16,13 @@
   timestamp: '2023-08-09T20:29:32.910Z'
   updates: []
   nativeChanges: false
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 99a2129
+  timestamp: '2023-08-28T21:16:13.278Z'
+  updates:
+    - >-
+      command to export org stats vs raw data + possible fix to the release
+      build job
+  nativeChanges: false
