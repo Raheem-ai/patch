@@ -119,7 +119,7 @@
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
                 "SHORT_SHA=$SHORT_SHA",
-                "_SERVICE=$_SERVICE"
+                "_SERVICE=patch-api"
             ]
         },
         {
