@@ -73,7 +73,7 @@
             "entrypoint": "node",
             "args": [
                 "/app/backend/infra/bin/run",
-                "ci:createBuild",
+                "ci:createExpoBuild",
                 "$SHORT_SHA"
             ],
             "volumes": [{
@@ -102,7 +102,8 @@
                 "/app/ci/backend/run_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=prod"
+                "_ENVIRONMENT=prod",
+                "BUILD_CONFIG_FILE=/workspace/build_config.env"
             ]
         },
         {
@@ -129,7 +130,8 @@
                 "/app/ci/backend/revert_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=prod"
+                "_ENVIRONMENT=prod",
+                "BUILD_CONFIG_FILE=/workspace/build_config.env"
             ]
         },
         {

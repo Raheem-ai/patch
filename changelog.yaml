@@ -20,7 +20,7 @@
   nativeIOSVersion: 1.0.2(1)
   nativeAndroidVersion: 1.0.2(13)
   commit: 99a2129
-  timestamp: '2023-08-28T22:44:18.546Z'
+  timestamp: '2023-08-29T17:29:27.448Z'
   updates:
     - >-
       command to export org stats vs raw data + possible fix to the release
