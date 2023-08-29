@@ -71,6 +71,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
             "entrypoint": "node",
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
             "args": [
                 "/app/backend/infra/bin/run",
                 "ci:createExpoBuild",
