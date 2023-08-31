@@ -74,8 +74,7 @@
             "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
             "args": [
                 "/app/backend/infra/bin/run",
-                "ci:createExpoBuild",
-                "$SHORT_SHA"
+                "ci:createExpoBuild"
             ],
             "volumes": [{
                 "name": "ssh",
