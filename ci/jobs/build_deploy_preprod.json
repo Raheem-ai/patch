@@ -135,9 +135,18 @@
             ]
         },
         {
+            "name": "gcr.io/cloud-builders/git",
+            "secretEnv": ["GOOGLE_APPLICATION_CREDENTIALS"],
+            "entrypoint": "bash",
+            "args": [
+                "-c",
+                "echo \"$$GOOGLE_APPLICATION_CREDENTIALS\" >> /workspace/google-adc\n"
+            ]
+        },
+        {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
             "entrypoint": "bash",
-            "secretEnv": ["MONGO_CREDS", "GOOGLE_APPLICATION_CREDENTIALS"],
+            "secretEnv": ["MONGO_CREDS"],
             "args": [
                 "/app/ci/frontend/update_dynamic_config_preprod.sh"
             ],
@@ -146,7 +155,8 @@
                 "path": "/root/.ssh"
             }],
             "env": [
-                "SHORT_SHA=$SHORT_SHA"
+                "SHORT_SHA=$SHORT_SHA",
+                "GOOGLE_APPLICATION_CREDENTIALS=/workspace/google-adc"
             ]
         },
         {
