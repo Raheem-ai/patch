@@ -71,10 +71,10 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
             "entrypoint": "node",
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
             "args": [
                 "/app/backend/infra/bin/run",
-                "ci:createBuild",
-                "$SHORT_SHA"
+                "ci:createExpoBuild"
             ],
             "volumes": [{
                 "name": "ssh",
@@ -102,7 +102,8 @@
                 "/app/ci/backend/run_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=prod"
+                "_ENVIRONMENT=prod",
+                "BUILD_CONFIG_FILE=/workspace/build_config.env"
             ]
         },
         {
@@ -118,7 +119,7 @@
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
                 "SHORT_SHA=$SHORT_SHA",
-                "_SERVICE=$_SERVICE"
+                "_SERVICE=patch-api"
             ]
         },
         {
@@ -129,7 +130,17 @@
                 "/app/ci/backend/revert_migrations.sh"
             ],
             "env": [ 
-                "_ENVIRONMENT=prod"
+                "_ENVIRONMENT=prod",
+                "BUILD_CONFIG_FILE=/workspace/build_config.env"
+            ]
+        },
+        {
+            "name": "gcr.io/cloud-builders/git",
+            "secretEnv": ["GOOGLE_APPLICATION_CREDENTIALS"],
+            "entrypoint": "bash",
+            "args": [
+                "-c",
+                "echo \"$$GOOGLE_APPLICATION_CREDENTIALS\" >> /workspace/google-adc\n"
             ]
         },
         {
@@ -144,7 +155,8 @@
                 "path": "/root/.ssh"
             }],
             "env": [
-                "SHORT_SHA=$SHORT_SHA"
+                "SHORT_SHA=$SHORT_SHA",
+                "GOOGLE_APPLICATION_CREDENTIALS=/workspace/google-adc"
             ]
         },
         {
@@ -207,6 +219,10 @@
             {
                 "versionName": "projects/$PROJECT_ID/secrets/google-fcm/versions/latest",
                 "env": "GOOGLE_FCM_CREDS"
+            },
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/google-adc/versions/latest",
+                "env": "GOOGLE_APPLICATION_CREDENTIALS"
             }
         ] 
     }

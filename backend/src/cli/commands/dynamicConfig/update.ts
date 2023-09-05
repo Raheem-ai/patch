@@ -128,12 +128,15 @@ export default class UpdateDynamicConfig extends Command {
             await config.MONGO.init(EnvironmentId.prod)
             const connString = config.MONGO_CONNECTION_STRING.get().connection_string;
             
+            console.log('Creating DBManager')
             const dbManager = await DBManager.fromConnectionString(connString);
             
             // this will need trySetupLocalGCPCredentials() i think???
             // might not because it's in the same project on GCP
+            console.log('Creating PubSubManager')
             const pubSubManager = await PubSubManager.create();
 
+            console.log('Getting dynamicConfig')
             const dynamicConfig = await dbManager.getDynamicConfig()
 
             const iosVersion = expoVersionFormat(VERSION, IOS_VERSION_CODE);

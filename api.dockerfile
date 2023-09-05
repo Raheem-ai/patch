@@ -61,8 +61,17 @@ COPY ci ./ci
 
 COPY .git /app/.git
 
+COPY changelog.yaml /app/changelog.yaml
+
 # /app/backend
 WORKDIR backend
+
+# setup backend cli
+RUN mkdir bin
+
+COPY backend/cli.js ./bin/run
+
+RUN chmod 755 ./bin/run
 
 # Build locally with > docker build -f api.dockerfile .
 # Run locally with > docker run --rm -it --env-file ./backend/env/.env.local <imageId>
