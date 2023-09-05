@@ -137,7 +137,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
             "entrypoint": "bash",
-            "secretEnv": ["MONGO_CREDS"],
+            "secretEnv": ["MONGO_CREDS", "GOOGLE_APPLICATION_CREDENTIALS"],
             "args": [
                 "/app/ci/frontend/update_dynamic_config_preprod.sh"
             ],
@@ -209,6 +209,10 @@
             {
                 "versionName": "projects/$PROJECT_ID/secrets/google-fcm/versions/latest",
                 "env": "GOOGLE_FCM_CREDS"
+            },
+            {
+                "versionName": "projects/$PROJECT_ID/secrets/google-adc/versions/latest",
+                "env": "GOOGLE_APPLICATION_CREDENTIALS"
             }
         ] 
     }
