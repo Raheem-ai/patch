@@ -6,6 +6,7 @@ import { LandingPageNavigationProp, routerNames, ScreenProps, Colors } from "../
 import logo from '../../assets/logo.png';
 import { navigateTo } from "../navigation";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 type Props = {
     navigation: LandingPageNavigationProp;
@@ -19,20 +20,20 @@ const LandingPage = observer(({ navigation }: Props) => {
                 <Image source={logo} style={{ width: 232, height: 73 }} /> 
             </View>
             <View style={[styles.captionContainer, {marginBottom: 200}]}>
-                <Text style={styles.captionText}>The dispatch system for community crisis care</Text>
+                <SelectableText style={styles.captionText}>The dispatch system for community crisis care</SelectableText>
             </View>
             <Pressable 
                 onPress={() => navigateTo(routerNames.signIn)}
                 testID={TestIds.landingScreen.signInButton}
             >
                 <View style={styles.captionContainer}>
-                    <Text style={styles.signInText}>Sign in</Text>
+                    <SelectableText style={styles.signInText}>Sign in</SelectableText>
                 </View>
             </Pressable>
             {/*
             <Pressable onPress={() => navigateTo(routerNames.joinOrganization)}>
                 <View style={styles.captionContainer}>
-                    <Text style={styles.invitationCodeText}>Enter invitation code</Text>
+                    <SelectableText style={styles.invitationCodeText}>Enter invitation code</SelectableText>
                 </View>
             </Pressable>
             */}

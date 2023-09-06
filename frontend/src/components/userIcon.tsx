@@ -5,6 +5,7 @@ import { Colors, ICONS } from '../types';
 import {parseFullName} from 'parse-full-name';
 import { userStore } from '../stores/interfaces';
 import { observer } from 'mobx-react';
+import SelectableText from './helpers/selectableText';
 
 type UserIconProps = {
     userId?: string,
@@ -61,10 +62,10 @@ const UserIcon = observer(({
                 style
             ]}
         >
-            <Text style={[
+            <SelectableText style={[
                 { color: styles.userIcon.color },
                 large ? { fontSize: styles.large.fontSize } : null
-            ]}>{initials}</Text>
+            ]}>{initials}</SelectableText>
         </View>
     )
 })

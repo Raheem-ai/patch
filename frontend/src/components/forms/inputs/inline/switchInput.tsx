@@ -5,11 +5,12 @@ import { Text } from "react-native-paper";
 import { unwrap } from "../../../../../../common/utils";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
+import SelectableText from "../../../helpers/selectableText";
 
 const SwitchInput = observer(({ config }: SectionInlineViewProps<'Switch'>) => {
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[ styles.label, { flex: 1 }, config.disabled ? styles.disabled : null ]}>{unwrap(config.props.label)}</Text>
+            <SelectableText style={[ styles.label, { flex: 1 }, config.disabled ? styles.disabled : null ]}>{unwrap(config.props.label)}</SelectableText>
             <Switch 
                 style={{ marginHorizontal: 20 }}
                 trackColor={{

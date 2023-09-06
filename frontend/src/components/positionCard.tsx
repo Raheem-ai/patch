@@ -9,6 +9,7 @@ import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";
 import { Colors, ICONS } from "../types";
 import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 type PositionCardProps = { 
     testID: string,
@@ -71,11 +72,11 @@ const PositionCard = observer(({
     return (
         <Pressable testID={wrappedTestID} onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
             <View style={{ flex: 1 }}>
-                <Text testID={TestIds.positionCard.roleText(wrappedTestID)} style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
+                <SelectableText testID={TestIds.positionCard.roleText(wrappedTestID)} style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</SelectableText>
                 <View style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}>
                     { 
                         attrNames.map((attr, idx) => {
-                            return <Text testID={TestIds.positionCard.attrText(wrappedTestID, idx)} key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</Text>
+                            return <SelectableText testID={TestIds.positionCard.attrText(wrappedTestID, idx)} key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</SelectableText>
                         }) 
                     }
                 </View>

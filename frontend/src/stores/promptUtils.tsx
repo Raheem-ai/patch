@@ -5,6 +5,7 @@ import { IconButton, Text } from "react-native-paper";
 import STRINGS from "../../../common/strings";
 import { Colors, ICONS } from "../types";
 import { PromptConfig } from "./interfaces";
+import SelectableText from "../components/helpers/selectableText";
 
 
 export function termsOfServicePrompt(
@@ -17,16 +18,16 @@ export function termsOfServicePrompt(
         message: (textStyle) => {
             return (
                 <>
-                    <Text style={textStyle}>
+                    <SelectableText style={textStyle}>
                         { STRINGS.ACCOUNT.termsOfServiceDialogMessage() }
-                    </Text>
+                    </SelectableText>
                     <Pressable onPress={onLinkPressed} style={{ flexDirection: 'row', marginTop: 12, alignItems: 'center' }}>
                         <IconButton
                             style={{ alignSelf: 'center', margin: 0 , width: 20}}
                             icon={ICONS.linkOut} 
                             color={Colors.primary.alpha}
                             size={20} />
-                        <Text style={[ 
+                        <SelectableText style={[ 
                             textStyle, 
                             { 
                                 textDecorationLine: 'underline', 
@@ -36,7 +37,7 @@ export function termsOfServicePrompt(
                             } 
                         ]}>
                             { STRINGS.ACCOUNT.termsOfServiceDialogLink() }
-                        </Text>
+                        </SelectableText>
                     </Pressable>
                 </>
             )

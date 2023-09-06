@@ -1,9 +1,10 @@
 import React, { useState } from "react"
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
-import { IconButton, Text } from "react-native-paper";
+import { IconButton, Text, TextInput } from "react-native-paper";
 import { Colors, ICONS, globalStyles } from "../types";
 import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 export type ListHeaderOptionConfig<T = any> = {
     chosenOption: T,
@@ -38,7 +39,7 @@ const ListHeader = (props: ListHeaderProps) => {
         return (
             <Pressable testID={TestIds.listHeader.toggleHeader} onPress={toggleHeader}>
                 <View style={[styles.headerContainer, isOpen ? props.openHeaderStyles : props.closedHeaderStyles]}>
-                    <Text style={[styles.headerLabel, isOpen ? styles.openHeaderLabel : null ]}>{label}</Text>
+                    <SelectableText style={[styles.headerLabel, isOpen ? styles.openHeaderLabel : null ]}>{label}</SelectableText>
                     <IconButton 
                         style={styles.toggleHeaderButton}
                         size={36}
@@ -62,9 +63,9 @@ const ListHeader = (props: ListHeaderProps) => {
 
                     return isChosen 
                         ? <View style={[styles.optionContainer, styles.chosenOptionContainer]}>
-                            <Text testID={TestIds.listHeader.chosenOption(i, label)} style={[styles.option, styles.chosenOption]}>{label}</Text>
+                            <SelectableText testID={TestIds.listHeader.chosenOption(i, label)} style={[styles.option, styles.chosenOption]}>{label}</SelectableText>
                         </View>
-                        : <Text testID={TestIds.listHeader.option(i, label)} onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</Text>
+                        : <SelectableText testID={TestIds.listHeader.option(i, label)} onPress={chooseMe} style={[styles.option, styles.optionContainer]}>{label}</SelectableText>
                 })
             }
         </View>
@@ -94,7 +95,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderBottomColor: Colors.borders.filter,
         borderBottomWidth: 1,
-        borderStyle: "solid"
+        borderStyle: "solid",
+
     },
     toggleHeaderButton: {
         alignSelf: 'center',

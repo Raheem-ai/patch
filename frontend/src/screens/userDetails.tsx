@@ -9,6 +9,7 @@ import { linkingStore, requestStore, userStore, manageAttributesStore, organizat
 import { Colors, ICONS, ScreenProps } from "../types";
 import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 
 type Props = ScreenProps<'UserDetails'>;
@@ -52,17 +53,17 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                         size={styles.profilePhotoIcon.width} />
                 </View> */}
                 <View style={styles.nameContainer}>
-                    <Text style={styles.nameText}>{userStore().currentUser.name}</Text>
+                    <SelectableText style={styles.nameText}>{userStore().currentUser.name}</SelectableText>
                 </View>
                 <View style={pronounsText ? styles.detailsContainer : styles.hideContainer}>
-                    <Text style={[styles.detailsText, pronounsText ? [styles.detailsContainer, styles.pronounsText] : styles.hideContainer]}>
+                    <SelectableText style={[styles.detailsText, pronounsText ? [styles.detailsContainer, styles.pronounsText] : styles.hideContainer]}>
                         {pronounsText}
-                    </Text>                
+                    </SelectableText>                
                 </View>
                 <View style={bioText ? styles.detailsContainer : styles.hideContainer}>
-                        <Text style={[styles.detailsText, bioText ? [styles.detailsContainer, {marginTop: 16}] : styles.hideContainer]}>
+                        <SelectableText style={[styles.detailsText, bioText ? [styles.detailsContainer, {marginTop: 16}] : styles.hideContainer]}>
                             {bioText}
-                        </Text>
+                        </SelectableText>
                 </View>
                 {/* Only show contact buttons if we have contact information */}
                 { userStore().currentUser.phone || userStore().currentUser.email
@@ -92,7 +93,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
             </View>
             <View style={!(userRoles.length || userAttributes.length) ? styles.hideContainer : styles.metadataContainer}>
                 <View style={!userAttributes.length ? styles.hideContainer : styles.attributesContainer}>
-                    <Text style={styles.labelText}>Attributes:</Text> 
+                    <SelectableText style={styles.labelText}>Attributes:</SelectableText> 
                     <Tags 
                         centered
                         tags={userAttributes.map(attr => attr.name)}  
@@ -102,8 +103,8 @@ const UserDetails = observer(({ navigation, route }: Props) => {
                 </View>
                 <View style={!userRoles.length ? styles.hideContainer : [styles.rolesContainer, userAttributes.length && {marginTop: 24}]}>
                     <View>
-                        <Text style={[styles.labelText, {marginBottom: 4}]}>Roles:</Text>
-                        <Text style={styles.rolesText}>{userRoles}</Text>
+                        <SelectableText style={[styles.labelText, {marginBottom: 4}]}>Roles:</SelectableText>
+                        <SelectableText style={styles.rolesText}>{userRoles}</SelectableText>
                     </View>
                 </View>
             </View>
@@ -119,7 +120,7 @@ const UserDetails = observer(({ navigation, route }: Props) => {
         return <View style={styles.currentResponseSection}>
             <View style={styles.currentResponseLabelContainer}>
                 <View style={styles.currentResponseIndicator}></View>
-                <Text style={styles.currentResponseText}>Responding</Text>
+                <SelectableText style={styles.currentResponseText}>Responding</SelectableText>
             </View>
             {
                 requestStore().currentUserActiveRequests.map(r => {

@@ -14,6 +14,7 @@ import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
 import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 type PositionDetailsCardProps = { 
     // TODO(Shifts): right now this allways comes from request but will need to be generalized for 
@@ -219,17 +220,17 @@ const PositionDetailsCard = observer(({
                                 <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}>
                                     <UserIcon userId={details.userId} style={{marginTop: 2, flexGrow: 0}}/>
                                     <View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}>
-                                        <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
+                                        <SelectableText style={{ fontWeight: 'bold' }}>{details.name}</SelectableText>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {
                                                 details.attributes.map((attr, i) => {
                                                     const addDelim = i < details.attributes.length - 1;
                                                     return addDelim 
                                                         ? <>
-                                                            <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
-                                                            <Text style={styles.visualDelim}>{STRINGS.visualDelim}</Text>
+                                                            <SelectableText key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</SelectableText>
+                                                            <SelectableText style={styles.visualDelim}>{STRINGS.visualDelim}</SelectableText>
                                                         </>
-                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>                                                        
+                                                        : <SelectableText key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</SelectableText>                                                        
                                                 })
                                             }
                                         </View>

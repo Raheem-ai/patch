@@ -6,6 +6,7 @@ import { unwrap } from "../../../../../common/utils"
 import { BottomDrawerHandleHeight, bottomDrawerStore, nativeEventStore } from "../../../stores/interfaces"
 import TestIds from "../../../test/ids"
 import { Colors, ICONS } from "../../../types"
+import SelectableText from "../../helpers/selectableText"
 
 export type BackButtonHeaderProps = { 
     /**
@@ -146,7 +147,7 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
 
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ fontSize: 18 }} >{headerLabel}</Text>
+                <SelectableText style={{ fontSize: 18 }} >{headerLabel}</SelectableText>
                 {
                     this.props.labelDecoration 
                         ? <IconButton
@@ -199,9 +200,9 @@ export default class BackButtonHeader extends React.Component<BackButtonHeaderPr
         return (
             <Pressable onPress={this.toggleExpanded} style={styles.minimizedLabelContainer}>
                 { this.expandHideButton() }
-                <Text style={styles.minimizedLabel}>
+                <SelectableText style={styles.minimizedLabel}>
                     {(this.props.bottomDrawerView as BottomDrawerConfig)?.minimizeLabel}
-                </Text>
+                </SelectableText>
             </Pressable>
         )
     }
