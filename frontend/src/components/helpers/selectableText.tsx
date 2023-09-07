@@ -10,11 +10,11 @@ export type SelectableTextProps = TextProps;
 const SelectableText = (props: SelectableTextProps) => { 
 
     return(<Text 
-        {...props}
-        selectable={true}
-        style={props.style}
-        testID={props.testID}>
-        {props.children}
+            {...props}
+            selectable={true}
+            style={props.style}
+            testID={props.testID}>
+            {props.children}
         </Text>);
 }
 
