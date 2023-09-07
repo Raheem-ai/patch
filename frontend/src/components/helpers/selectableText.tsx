@@ -10,10 +10,17 @@ export type SelectableTextProps = TextProps;
 const SelectableText = (props: SelectableTextProps) => { 
 
     return(<Text 
+<<<<<<< HEAD
         {...props}
         selectable={true}
         style={props.style}
         testID={props.testID}>
+=======
+            {...props}
+            selectable={true}
+            style={props.style}
+            testID={props.testID}>
+>>>>>>> indenting requested lines
             {props.children}
         </Text>);
 }
