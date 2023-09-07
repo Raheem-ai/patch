@@ -14,6 +14,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/back
 import { BottomDrawerViewVisualArea } from "../../helpers/visualArea"
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../../listHeader"
 import ResponderRow from "../../responderRow"
+import SelectableText from "../../helpers/selectableText"
 
 const dimensions = Dimensions.get('screen');
 
@@ -121,7 +122,7 @@ export default class AssignResponders extends React.Component {
         return (
             <View style={[styles.responderActions, this.state.isScrolled && styles.responderActionsScrolled]}>
                 <View style={styles.selectAllRow}>
-                    <Text style={styles.responderCountText}>{STRINGS.nPeople(dispatchStore().assignableResponders.length)}</Text>
+                    <SelectableText style={styles.responderCountText}>{STRINGS.nPeople(dispatchStore().assignableResponders.length)}</SelectableText>
                     <Pressable style={styles.selectAllContainer} onPress={this.toggleSelectAll}>
                         <IconButton
                             testID={TestIds.assignResponders.toggleSelectAllBtn}
@@ -129,11 +130,11 @@ export default class AssignResponders extends React.Component {
                             icon={dispatchStore().selectAll ? ICONS.selectedSmall : ICONS.unselectedSmall}
                             color={dispatchStore().selectAll ? styles.selectedSelectAllIcon.color : styles.selectAllIcon.color}
                             size={styles.selectAllIcon.width} />
-                        <Text testID={TestIds.assignResponders.toggleSelectAllText} style={styles.selectAllText}>{selectAllText}</Text>
+                        <SelectableText testID={TestIds.assignResponders.toggleSelectAllText} style={styles.selectAllText}>{selectAllText}</SelectableText>
                     </Pressable>
                 </View>
                 {/* <View style={styles.includeOffDutyRow}>
-                    <Text style={styles.includeOffDutyText}>{`Include off-duty`}</Text>
+                    <SelectableText style={styles.includeOffDutyText}>{`Include off-duty`}</SelectableText>
                         <Switch
                             value={dispatchStore().includeOffDuty} 
                             onValueChange={() => dispatchStore().toggleIncludeOffDuty()} 

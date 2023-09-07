@@ -12,6 +12,7 @@ import { observer } from "mobx-react";
 import { URLS } from "../constants"
 import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 type Props = ScreenProps<'UserHomePage'>;
 
@@ -114,7 +115,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     const defaultText = () => { 
 
         return !requestStore().myActiveRequests.length
-            ? <Text style={{marginTop: 24, fontSize: 16}}>Welcome to Patch!</Text>    
+            ? <SelectableText style={{marginTop: 24, fontSize: 16}}>Welcome to Patch!</SelectableText>    
             : null
     }
 
@@ -125,7 +126,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
                 <View style={styles.currentResponseSection}>
                     <View style={styles.currentResponseLabelContainer}>
                         <View style={styles.currentResponseIndicator}></View>
-                        <Text style={styles.currentResponseText}>Currently responding</Text>
+                        <SelectableText style={styles.currentResponseText}>Currently responding</SelectableText>
                     </View>
                 </View>
                 {
@@ -142,7 +143,7 @@ const UserHomePage = observer(({ navigation, route }: Props) => {
     return (
         <ScrollView testID={TestIds.home.screen}>
             <View  style={{ padding: 20 }}>
-                <Text testID={TestIds.userHome.welcomeLabel} style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</Text>
+                <SelectableText testID={TestIds.userHome.welcomeLabel} style={{ fontSize: 24, fontWeight: '800', marginTop: 24 }}>{`Hi, ${firstName}.`}</SelectableText>
                 {defaultText()}
                 {currentResponse()}
             </View>

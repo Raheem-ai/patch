@@ -8,6 +8,7 @@ import { organizationStore } from "../../../../stores/interfaces"
 import TestIds from "../../../../test/ids"
 import Tags from "../../../tags"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleList'>) => {
     const onPress = () => {
@@ -23,7 +24,7 @@ const RoleListLabel = observer(({ config, expand }: SectionLabelViewProps<'RoleL
     if (!config.val() || !config.val().length) {
         return (
             <Pressable testID={wrappedTestID} onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</SelectableText>
             </Pressable>
         )
     }

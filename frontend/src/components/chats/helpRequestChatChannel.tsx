@@ -12,6 +12,7 @@ import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
 import TestIds from "../../test/ids";
 import { resolveErrorMessage } from "../../errors";
+import SelectableText from "../helpers/selectableText";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -55,7 +56,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                             <View style={[styles.messageRow, isMe ? styles.myMessageRow : null]}>
                                 <UserIcon userId={message.userId} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/>
                                 <View style={[styles.messageBubble, isMe ? styles.myMessageBubble : null, { maxWidth: bubbleWidth }]}>
-                                    <Text style={styles.messageText}>{message.message}</Text>
+                                    <SelectableText style={styles.messageText}>{message.message}</SelectableText>
                                 </View>
                             </View>
                         )
@@ -152,7 +153,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
                                     onPress={reopenRequest}/>
-                                : <Text style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</Text>
+                                : <SelectableText style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</SelectableText>
                             }
                     </View>
                 </View>

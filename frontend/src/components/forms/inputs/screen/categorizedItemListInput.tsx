@@ -18,6 +18,7 @@ import { Colors, ICONS, globalStyles } from '../../../../types';
 import { nativeEventStore } from "../../../../stores/interfaces"
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea"
 import TestIds from "../../../../test/ids"
+import SelectableText from "../../../helpers/selectableText"
 
 type Props = SectionScreenViewProps<'CategorizedItemList'> 
 
@@ -199,11 +200,11 @@ const CategorizedItemListInput = ({
                                         testID={TestIds.inputs.categorizedItemList.searchResultN(wrappedTestID, idx)}
                                         sentry-label={TestIds.inputs.categorizedItemList.searchResultN(wrappedTestID, idx)}
                                     > 
-                                        <Text style={{ fontSize, color: '#7F7C7F'}}>
+                                        <SelectableText style={{ fontSize, color: '#7F7C7F'}}>
                                             {reactStringReplace(itemName, re, (match, i) => (
-                                                <Text testID={TestIds.inputs.categorizedItemList.searchResultMatchTextN(wrappedTestID, idx)} style={{ color: Colors.text.default, fontWeight: '700' }}>{match}</Text>
+                                                <SelectableText testID={TestIds.inputs.categorizedItemList.searchResultMatchTextN(wrappedTestID, idx)} style={{ color: Colors.text.default, fontWeight: '700' }}>{match}</SelectableText>
                                             ))}
-                                        </Text>
+                                        </SelectableText>
                                     </Pressable>
                                 )
                             })

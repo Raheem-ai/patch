@@ -11,6 +11,7 @@ import { Colors } from "../../../../types"
 import PositionCard from "../../../positionCard"
 import UserIcon from "../../../userIcon"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Positions'>) => {
     const onPlaceholderPress = () => {
@@ -24,7 +25,7 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
     if (!config.val() || !config.val().length) {
         return (
             <Pressable testID={config.testID} onPress={onPlaceholderPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</SelectableText>
             </Pressable>
         )
     }
@@ -50,7 +51,7 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
                 })
             }
             <Pressable testID={config.testID} onPress={onPlaceholderPress} style={{ paddingVertical: 20 }}>
-                <Text style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position)}</Text>
+                <SelectableText style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position)}</SelectableText>
             </Pressable>
         </View>
     )

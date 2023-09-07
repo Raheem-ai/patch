@@ -7,6 +7,7 @@ import { unwrap } from "../../../../../../common/utils"
 import STRINGS from "../../../../../../common/strings"
 import { resolvePermissionGroups } from "../../../../../../common/utils/permissionUtils"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const DefaultPlaceholder = STRINGS.SETTINGS.setPermissions
 
@@ -23,7 +24,7 @@ const PermissionGroupListLabel = observer(({ config, expand }: SectionLabelViewP
     if (!config.val() || !config.val().length) {
         return (
             <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel) || DefaultPlaceholder}</Text>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel) || DefaultPlaceholder}</SelectableText>
             </Pressable>
         )
     }
@@ -38,7 +39,7 @@ const PermissionGroupListLabel = observer(({ config, expand }: SectionLabelViewP
                 Array.from(resolvedGroups.values()).map(group => {
                     return (
                         <View style={styles.row}>
-                            <Text style={styles.label}>{PermissionGroupMetadata[group].name}</Text>
+                            <SelectableText style={styles.label}>{PermissionGroupMetadata[group].name}</SelectableText>
                         </View>
                     )
                 })
