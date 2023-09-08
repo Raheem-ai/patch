@@ -23,6 +23,8 @@ export namespace IAPIService {
 
 export interface IAPIService extends IBaseService, ClientSideApi<'me' | 'setOnDutyStatus'> {
     refreshToken: string
+    apiHost: string
+    pointTo(tag: string): void
 }
 
 

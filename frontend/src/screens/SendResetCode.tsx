@@ -13,6 +13,7 @@ import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 import { isEmailValid } from '../../../common/utils/validationUtils';
 import { linkBaseUrl } from '../config';
 import TestIds from '../test/ids';
+import SelectableText from '../components/helpers/selectableText';
 
 export default function ForgotPasswordForm() {
     const [email, setEmail] = useState('');
@@ -53,12 +54,12 @@ export default function ForgotPasswordForm() {
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
-                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.forgotPassword}</Text>
+                            <SelectableText style={styles.titleText}>{STRINGS.PAGE_TITLES.forgotPassword}</SelectableText>
                         </View>
                         <View style={styles.captionContainer}>
-                            <Text style={styles.captionText}>
-                                <Text>{STRINGS.PAGE_TITLES.forgotPasswordSubtitle}</Text>
-                            </Text>
+                            <SelectableText style={styles.captionText}>
+                                <SelectableText>{STRINGS.PAGE_TITLES.forgotPasswordSubtitle}</SelectableText>
+                            </SelectableText>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
@@ -73,7 +74,7 @@ export default function ForgotPasswordForm() {
                         </View>
                         <View style={styles.bottomContainer}>
                             <Button testID={TestIds.sendResetCode.sendLink} uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={sendCode}>{STRINGS.ACCOUNT.forgotPasswordButton}</Button>
-                            <Text testID={TestIds.sendResetCode.cancel} onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</Text>
+                            <SelectableText testID={TestIds.sendResetCode.cancel} onPress={navigationRef.current.goBack} style={styles.cancelLink}>Cancel</SelectableText>
                         </View>
                     </ScrollView>
                 </Pressable>

@@ -13,6 +13,7 @@ import { HeaderHeight, headerIconContainerSize, headerIconSize, headerIconPaddin
 import { unwrap } from '../../../../common/utils';
 import TestIds from '../../test/ids';
 import STRINGS from '../../../../common/strings';
+import SelectableText from '../helpers/selectableText';
 
 type Props = StackHeaderProps & {};
 
@@ -112,7 +113,7 @@ const Header = observer((props: Props) => {
         const connectionAnnouncement = () => {
             return (
                 <Animated.View style={[styles.anouncementContainer, { height: headerStore().announcementHeight }]}>
-                    <Text style={styles.anouncementContainerText}>{STRINGS.connectionUnreliable()}</Text>
+                    <SelectableText style={styles.anouncementContainerText}>{STRINGS.connectionUnreliable()}</SelectableText>
                 </Animated.View>
             )
         }
@@ -146,7 +147,7 @@ const Header = observer((props: Props) => {
                             : null
                         }
                         <View style={[styles.titleContainer, leftActions.length ? null : { paddingLeft: 24 }]}>
-                            <Text style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</Text>
+                            <SelectableText style={title.length <= 16 ? styles.title : styles.titleLong} numberOfLines={1}>{title}</SelectableText>
                         </View>
 
                         <View style={styles.rightIconContainer}>
@@ -197,7 +198,7 @@ const Header = observer((props: Props) => {
 
         const option = (opt: MainMenuOption) => {
             return (
-                <Text 
+                <SelectableText 
                     testID={opt.testId}
                     key={opt.name} 
                     style={[
@@ -205,7 +206,7 @@ const Header = observer((props: Props) => {
                         opt.disabled ? styles.disabledMainMenuText : null
                     ]} 
                     onPress={onPress(opt)}
-                >{opt.name}</Text>
+                >{opt.name}</SelectableText>
             )
         }
 
@@ -236,7 +237,7 @@ const Header = observer((props: Props) => {
 
         return (
             <View style={styles.subMenuOptions}>
-                {SubMenuOptions.map(opt => <Text key={opt.name} testID={opt.testId} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</Text>)}
+                {SubMenuOptions.map(opt => <SelectableText key={opt.name} testID={opt.testId} style={[styles.subMenuText, opt.disabled ? styles.disabledSubMenuText : null]} onPress={onPress(opt)}>{opt.name}</SelectableText>)}
             </View>
         )
     }
@@ -248,7 +249,7 @@ const Header = observer((props: Props) => {
                     <IconButton testID={TestIds.header.open.close} icon={ICONS.navCancel} size={headerIconSize} color={Colors.icons.lightReversed} onPress={closeHeader}/>
                 </View>
                 <View style={styles.onDutySwitchContainer}>
-                    <Text testID={TestIds.header.open.onDutyText} style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</Text>
+                    <SelectableText testID={TestIds.header.open.onDutyText} style={[styles.onDutyText, userStore().isOnDuty ? {} : styles.offDutyText]}>{userStore().isOnDuty ? 'Available' : 'Unavailable'}</SelectableText>
                     <Switch
                         testID={TestIds.header.open.toggleDuty}
                         value={userStore().isOnDuty} 

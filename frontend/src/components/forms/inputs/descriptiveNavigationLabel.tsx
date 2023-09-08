@@ -3,6 +3,7 @@ import { Pressable } from "react-native";
 import { Text } from "react-native-paper";
 import { SectionNavigationLabelViewProps } from "../types";
 import { Colors } from "../../../types";
+import SelectableText from "../../helpers/selectableText";
 
 type DescriptiveNavigationLabelProps = SectionNavigationLabelViewProps & { 
     name: string, 
@@ -22,8 +23,8 @@ const DescriptiveNavigationLabel = ({
         : 14;
 
     const text = () => {
-        const labelText = <Text style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}>{name}</Text>;
-        const descriptionText = <Text style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}>{description}</Text>;
+        const labelText = <SelectableText style={{ color: Colors.text.forms.fieldLabel , fontSize: 16 }}>{name}</SelectableText>;
+        const descriptionText = <SelectableText style={{ color: Colors.text.forms.fieldDescription , fontSize: descriptionFontSize }}>{description}</SelectableText>;
 
         if (!description) {
             return labelText
@@ -37,7 +38,7 @@ const DescriptiveNavigationLabel = ({
         } else {
             return <>
                 {/* need to add the margin bottom here when they are stacked */}
-                <Text style={{ fontSize: 16, marginBottom: 6 }}>{name}</Text>
+                <SelectableText style={{ fontSize: 16, marginBottom: 6 }}>{name}</SelectableText>
                 {descriptionText}
             </>
         }

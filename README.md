@@ -251,3 +251,54 @@ breaking changes to the frontend...except their would be a time period where peo
         - ex. upgrade mongoose version on backend so db semantics (and thus api responses) slightly change
         - some users on front(A) back(B) [BROKEN]
         - some users on front(B') back(B)
+
+
+## End Result Process
+1) CLI steps...release:create
+- make sure your local branch is up to date with staging (should run this only when the latest staging has the changes we want to run)
+- update required field in repo
+    - in `version.js`
+- create release commit with changelog (yaml file that includes fields for required, nativeVersion, and nativeChanges)...nativeChanges will come from prompt/param
+- push the commit to origin with tag `rel-pre-<commit>`
+    - wait for manual merge to kick off webhook (IN PROD GCP PROJECT)
+- use cloud build webhook to
+    <!-- - merge staging into master -->
+    - Build docker container with front/back
+        - actually already have this from the rc commit....use cache but need to get use this code cuz other parts need newest version config + release info
+        - tag + push image w/ `patch-rel-pre-<commit>`
+    - if nativeChanges, 
+        <!-- - add a 'testing' tag to the commit into master -->
+        - create new PreProd/Prod builds (should this be a separate job so 1. it can run async and 2. we can call it adhoc off a commit in master for consistency)
+    - Deploy backend to PreProd url
+    - if nativeChanges
+        - Add new dynamic AppVersion config entry with 'testing' flag
+        - Push first OTA updates to PreProd/Prod builds
+    - if !nativeChanges 
+        - push OTA updates to PreProd channel
+
+2) Manual steps
+- if nativeChanges
+    - test new PreProd/Prod builds
+    - submit Prod build to app stores
+    - wait for BOTH iOS and Android app stores to approve the build
+- if !nativeChanges 
+    - test PreProd build
+
+3) CLI steps release:approve
+- have prompt to make sure we're looking at the right commit...prev: "appVersion config entry (do we need this to cleanup old PreProd builds that failed testing?)"
+- promote PreProd backend to Prod
+- retag + push image to `patch-rel-<commit>`
+- merge release commit to master with tag `rel-<commit>`
+- if nativeChanges
+    - update existing dynamic AppVersion config 'testing' field to false
+- if !nativeChanges 
+    - push OTA updates to Prod
+    - update existing dynamic AppVersion config 'required' field
+        - ***only update from false to true***
+- remove older dynamic AppVersion config entries that still have a testing flag and aren't the current build we're trying to promote
+
+NOTE: 
+    - Feature branches should be squashed before they go into staging and 
+        - have their commit message be a list of changes (to be included in the changelog) where each line starts with '- '
+    - Release creation branches should not be squashed when they merge into staging
+    - Release approval branches should not be squashed when they merge into master

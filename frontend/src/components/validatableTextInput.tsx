@@ -4,6 +4,7 @@ import { TextInput as PaperTextInput } from 'react-native-paper';
 import { TextInputProps } from "react-native-paper/lib/typescript/components/TextInput/TextInput";
 import { Colors, ICONS } from "../types";
 import STRINGS from "../../../common/strings";
+import SelectableText from "./helpers/selectableText";
 
 type Props = {
     testID: string
@@ -50,7 +51,7 @@ const ValidatableTextInput = ( props: Props) => {
                 onChangeText={(s: string) => props.onChangeText?.(s)}
                 onSubmitEditing={(e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => props.onSubmitEditing?.(e)}
             />
-            {props.errorText?.length == 0 ? null : <Text style={styles.errorMessage}>{props.errorText}</Text>}
+            {props.errorText?.length == 0 ? null : <SelectableText style={styles.errorMessage}>{props.errorText}</SelectableText>}
         </View>
     )
 }

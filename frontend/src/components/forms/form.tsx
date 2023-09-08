@@ -11,6 +11,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { wrapScrollView } from "react-native-scroll-into-view";
 import { createStackNavigator, StackScreenProps } from "@react-navigation/stack";
 import { NavigationContainer, NavigationState } from "@react-navigation/native";
+import SelectableText from "../helpers/selectableText";
 
 const Stack = createStackNavigator();
 
@@ -19,6 +20,7 @@ export type FormProps = {
     headerLabel?: () => string,
     onExpand?(): void,
     onBack?(): void,
+    // TODO: remove this...it is vestigial
     submit?: {
         label: string,
         handler: () => Promise<void>
@@ -324,10 +326,10 @@ export default class Form extends React.Component<FormProps> {
                     justifyContent: 'center',
                     padding: 20
                 }}>
-                    <Text style={{
+                    <SelectableText style={{
                         fontSize: 24,
                         fontWeight: 'bold',
-                    }}>{this.props.headerLabel()}</Text>
+                    }}>{this.props.headerLabel()}</SelectableText>
                 </View>
                 : null
         }
@@ -566,7 +568,7 @@ const DefaultSection = observer((props: {
                         </View>
                         : null
                     }
-                    <Text style={[styles.label, { flex: 1 }]}>{preview}</Text>
+                    <SelectableText style={[styles.label, { flex: 1 }]}>{preview}</SelectableText>
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30, marginLeft: 20 }}
@@ -601,7 +603,7 @@ const DefaultSection = observer((props: {
                         </View>
                         : null
                     }
-                    <Text style={[styles.label, styles.placeholder]}>{placeHolder || ''}</Text>
+                    <SelectableText style={[styles.label, styles.placeholder]}>{placeHolder || ''}</SelectableText>
                     { !props.inputConfig.disabled
                         ? <IconButton
                             style={{ flex: 0, height: 30, width: 30 }}
@@ -810,7 +812,7 @@ const NavigationSection = observer((props: {
                         ? <View style={{ flex: 1 }}>
                             { props.inputConfig.label({ expand: resolvedExpand, testID: props.inputConfig.testID }) }
                         </View>
-                        : <Text style={[styles.label, { flex: 1 }]}>{props.inputConfig.label}</Text>
+                        : <SelectableText style={[styles.label, { flex: 1 }]}>{props.inputConfig.label}</SelectableText>
                 }
                 { !props.inputConfig.disabled
                     ? <IconButton

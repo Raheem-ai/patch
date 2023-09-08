@@ -1,0 +1,28 @@
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  nativeChanges: false
+  commit: ee8c216
+  timestamp: '2023-08-04T06:29:26.053Z'
+  updates:
+    - made dynamic config an unauthenticated api so we can call on startup
+    - >-
+      prompts for optional/required version updates now happen before you get
+      off of splash screen
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 4dc5d39
+  timestamp: '2023-08-09T20:29:32.910Z'
+  updates: []
+  nativeChanges: false
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 99a2129
+  timestamp: '2023-09-05T15:51:26.094Z'
+  updates:
+    - >-
+      command to export org stats vs raw data + possible fix to the release
+      build job
+  nativeChanges: true

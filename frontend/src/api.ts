@@ -17,6 +17,8 @@ export class APIClient implements IAPIService {
     
     // TODO: move accessToken here?
 
+    private apiTag = '';
+
     @securelyPersistent()
     refreshToken: string = null;
 
@@ -26,6 +28,21 @@ export class APIClient implements IAPIService {
 
     clear() {
         this.refreshToken = null;
+    }
+
+    pointTo(tag: string) {
+        this.apiTag = tag
+    }
+
+    get apiHost() {
+        if (this.apiTag) {
+            // Google gloud run uses tags to allow you to hit a specific revision with traffic
+            // https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration#tags
+            const parts = apiHost.split('//')
+            return `${parts[0]}//${this.apiTag}---${parts[1]}`
+        }
+
+        return apiHost
     }
 
     private async tryPost<T>(url: string, body: any, config: AxiosRequestConfig) {
@@ -136,7 +153,7 @@ export class APIClient implements IAPIService {
     
     // unauthorized apis
     async signIn(credentials: BasicCredentials): Promise<AuthTokens> {
-        const url = `${apiHost}${API.client.signIn()}`;
+        const url = `${this.apiHost}${API.client.signIn()}`;
 
         const tokens = (await axios.post<AuthTokens>(url, { credentials })).data
 
@@ -148,7 +165,7 @@ export class APIClient implements IAPIService {
     }
 
     async signInWithCode(code: string): Promise<AuthTokens> {
-        const url = `${apiHost}${API.client.signInWithCode()}`;
+        const url = `${this.apiHost}${API.client.signInWithCode()}`;
 
         const tokens = (await axios.post<AuthTokens>(url, { code })).data
 
@@ -160,7 +177,7 @@ export class APIClient implements IAPIService {
     }
 
     async signUp(user: MinUser): Promise<AuthTokens> {
-        const url = `${apiHost}${API.client.signUp()}`;
+        const url = `${this.apiHost}${API.client.signUp()}`;
 
         const tokens = (await axios.post<AuthTokens>(url, { user })).data
 
@@ -172,7 +189,7 @@ export class APIClient implements IAPIService {
     }
 
     async signUpThroughOrg(orgId: string, pendingId: string, user: MinUser): Promise<AuthTokens> {
-        const url = `${apiHost}${API.client.signUpThroughOrg()}`;
+        const url = `${this.apiHost}${API.client.signUpThroughOrg()}`;
 
         const tokens = (await axios.post<AuthTokens>(url, { 
             orgId, 
@@ -188,7 +205,7 @@ export class APIClient implements IAPIService {
     }
 
     async refreshAuth(refreshToken: string): Promise<string> {
-        const url = `${apiHost}${API.client.refreshAuth()}`;
+        const url = `${this.apiHost}${API.client.refreshAuth()}`;
 
         const accessToken = (await axios.post<string>(url, { refreshToken })).data
 
@@ -196,7 +213,7 @@ export class APIClient implements IAPIService {
     }
 
     async getDynamicConfig() {
-        const url = `${apiHost}${API.client.getDynamicConfig()}`;
+        const url = `${this.apiHost}${API.client.getDynamicConfig()}`;
         
         const config = (await this.tryGet<DynamicConfig>(url, {})).data
 
@@ -206,7 +223,7 @@ export class APIClient implements IAPIService {
     // user scoped apis
 
     async getSecrets(ctx: TokenContext): Promise<AppSecrets> {
-        const url = `${apiHost}${API.client.getSecrets()}`;
+        const url = `${this.apiHost}${API.client.getSecrets()}`;
 
         const secrets = (await this.tryGet<AppSecrets>(url, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -216,7 +233,7 @@ export class APIClient implements IAPIService {
     }
 
     async me(ctx: TokenContext): Promise<ClientSideFormat<Me>> {
-        const url = `${apiHost}${API.client.me()}`;
+        const url = `${this.apiHost}${API.client.me()}`;
 
         const user = (await this.tryPost<ClientSideFormat<Me>>(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -226,7 +243,7 @@ export class APIClient implements IAPIService {
     }
 
     async deleteMyAccount(ctx: TokenContext): Promise<void> {
-        const url = `${apiHost}${API.client.deleteMyAccount()}`;
+        const url = `${this.apiHost}${API.client.deleteMyAccount()}`;
 
         await this.tryPost<void>(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -234,7 +251,7 @@ export class APIClient implements IAPIService {
     }
 
     async editMe(ctx: OrgContext, me: Partial<Me>, protectedUser?: Partial<AdminEditableUser>): Promise<ClientSideFormat<Me>> {
-        const url = `${apiHost}${API.client.editMe()}`;
+        const url = `${this.apiHost}${API.client.editMe()}`;
 
         return (await this.tryPost<ClientSideFormat<Me>>(url, {
             me,
@@ -245,7 +262,7 @@ export class APIClient implements IAPIService {
     }
 
     async signOut(ctx: TokenContext) {
-        const url = `${apiHost}${API.client.signOut()}`;
+        const url = `${this.apiHost}${API.client.signOut()}`;
 
         await this.tryPost(url, {}, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -253,7 +270,7 @@ export class APIClient implements IAPIService {
     }
 
     async updatePassword(ctx: TokenContext, password: string, resetCode?: string): Promise<void> {
-        const url = `${apiHost}${API.client.updatePassword()}`;
+        const url = `${this.apiHost}${API.client.updatePassword()}`;
 
         await this.tryPost(url, {password: password, resetCode: resetCode ? resetCode : null}, {
             headers: this.userScopeAuthHeaders(ctx),
@@ -261,12 +278,12 @@ export class APIClient implements IAPIService {
     }
 
     async sendResetCode(email: string, baseUrl: string): Promise<void> {
-        const url = `${apiHost}${API.client.sendResetCode()}`;
+        const url = `${this.apiHost}${API.client.sendResetCode()}`;
         await axios.post<void>(url, { email, baseUrl }, {});
     }
 
     async reportLocation(ctx: TokenContext, locations: Location[]) {
-        const url = `${apiHost}${API.client.reportLocation()}`;
+        const url = `${this.apiHost}${API.client.reportLocation()}`;
 
         await this.tryPost<User>(url, {            
             locations
@@ -276,7 +293,7 @@ export class APIClient implements IAPIService {
     }
 
     async reportPushToken(ctx: TokenContext, token: string) {
-        const url = `${apiHost}${API.client.reportPushToken()}`;
+        const url = `${this.apiHost}${API.client.reportPushToken()}`;
 
         await this.tryPost<void>(url, {            
             token
@@ -286,7 +303,7 @@ export class APIClient implements IAPIService {
     }
 
     async createOrg(ctx: TokenContext, org: MinOrg) {
-        const url = `${apiHost}${API.client.createOrg()}`;
+        const url = `${this.apiHost}${API.client.createOrg()}`;
 
         return (await this.tryPost<{ user: User, org: Organization }>(url, {            
             org
@@ -298,14 +315,14 @@ export class APIClient implements IAPIService {
     // org scoped apis
 
     async getOrgMetadata(ctx: OrgContext): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.getOrgMetadata()}`;
+        const url = `${this.apiHost}${API.client.getOrgMetadata()}`;
         return (await this.tryGet<OrganizationMetadata>(url, {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
 
     async editOrgMetadata(ctx: OrgContext, orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.editOrgMetadata()}`;
+        const url = `${this.apiHost}${API.client.editOrgMetadata()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, { orgUpdates } ,{
             headers: this.orgScopeAuthHeaders(ctx)
@@ -313,7 +330,7 @@ export class APIClient implements IAPIService {
     }
 
     async editRole(ctx: OrgContext, roleUpdates: AtLeast<Role, 'id'>): Promise<Role> {
-        const url = `${apiHost}${API.client.editRole()}`;
+        const url = `${this.apiHost}${API.client.editRole()}`;
 
         return (await this.tryPost<Role>(url, { roleUpdates } ,{
             headers: this.orgScopeAuthHeaders(ctx)
@@ -321,7 +338,7 @@ export class APIClient implements IAPIService {
     }
 
     async deleteRoles(ctx: OrgContext, roleIds: string[]): Promise<{ updatedUserIds: string[], updatedRequestIds: string[] }> {
-        const url = `${apiHost}${API.client.deleteRoles()}`;
+        const url = `${this.apiHost}${API.client.deleteRoles()}`;
 
         return (await this.tryPost<{ updatedUserIds: string[], updatedRequestIds: string[] }>(url, { roleIds } ,{
             headers: this.orgScopeAuthHeaders(ctx)
@@ -329,7 +346,7 @@ export class APIClient implements IAPIService {
     }
 
     async createNewRole(ctx: OrgContext, role: MinRole): Promise<Role> {
-        const url = `${apiHost}${API.client.createNewRole()}`;
+        const url = `${this.apiHost}${API.client.createNewRole()}`;
 
         return (await this.tryPost<Role>(url, {
             role
@@ -339,7 +356,7 @@ export class APIClient implements IAPIService {
     }
     
     async updateAttributes(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.updateAttributes()}`;
+        const url = `${this.apiHost}${API.client.updateAttributes()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, {
             updates
@@ -349,7 +366,7 @@ export class APIClient implements IAPIService {
     }
 
     async updateTags(ctx: OrgContext, updates: CategorizedItemUpdates): Promise<OrganizationMetadata> {
-        const url = `${apiHost}${API.client.updateTags()}`;
+        const url = `${this.apiHost}${API.client.updateTags()}`;
 
         return (await this.tryPost<OrganizationMetadata>(url, {
             updates
@@ -359,7 +376,7 @@ export class APIClient implements IAPIService {
     }
 
     async broadcastRequest(ctx: OrgContext, requestId: string, to: string[]) {
-        const url = `${apiHost}${API.client.broadcastRequest()}`;
+        const url = `${this.apiHost}${API.client.broadcastRequest()}`;
 
         await this.tryPost<void>(url, {
             requestId,
@@ -370,7 +387,7 @@ export class APIClient implements IAPIService {
     }
 
     async notifyRespondersAboutRequest(ctx: OrgContext, requestId: string, to: string[]) {
-        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
+        const url = `${this.apiHost}${API.client.notifyRespondersAboutRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -381,7 +398,7 @@ export class APIClient implements IAPIService {
     }
 
     async ackRequestNotification(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
+        const url = `${this.apiHost}${API.client.notifyRespondersAboutRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId
@@ -391,7 +408,7 @@ export class APIClient implements IAPIService {
     }
 
     async setOnDutyStatus(ctx: OrgContext, onDuty: boolean) {
-        const url = `${apiHost}${API.client.setOnDutyStatus()}`;
+        const url = `${this.apiHost}${API.client.setOnDutyStatus()}`;
 
         return (await this.tryPost<ClientSideFormat<Me>>(url, {
             onDuty
@@ -401,7 +418,7 @@ export class APIClient implements IAPIService {
     }
 
     async ackRequestsToJoinNotification(ctx: OrgContext, requestId: string, joinRequests: { userId: string, positionId: string }[]) {
-        const url = `${apiHost}${API.client.ackRequestsToJoinNotification()}`;
+        const url = `${this.apiHost}${API.client.ackRequestsToJoinNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -412,7 +429,7 @@ export class APIClient implements IAPIService {
     }
 
     async confirmRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
-        const url = `${apiHost}${API.client.confirmRequestToJoinRequest()}`;
+        const url = `${this.apiHost}${API.client.confirmRequestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -424,7 +441,7 @@ export class APIClient implements IAPIService {
     }
 
     async declineRequestToJoinRequest(ctx: OrgContext, requestId: string, userId: string, positionId: string) {
-        const url = `${apiHost}${API.client.declineRequestToJoinRequest()}`;
+        const url = `${this.apiHost}${API.client.declineRequestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId, 
@@ -436,7 +453,7 @@ export class APIClient implements IAPIService {
     }
 
     async joinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.joinRequest()}`;
+        const url = `${this.apiHost}${API.client.joinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -447,7 +464,7 @@ export class APIClient implements IAPIService {
     }
 
     async requestToJoinRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.requestToJoinRequest()}`;
+        const url = `${this.apiHost}${API.client.requestToJoinRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -458,7 +475,7 @@ export class APIClient implements IAPIService {
     }
 
     async leaveRequest(ctx: OrgContext, requestId: string, positionId: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.leaveRequest()}`;
+        const url = `${this.apiHost}${API.client.leaveRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -469,7 +486,7 @@ export class APIClient implements IAPIService {
     }
 
     async removeUserFromRequest(ctx: OrgContext, userId: string, requestId: string, positionId: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.removeUserFromRequest()}`;
+        const url = `${this.apiHost}${API.client.removeUserFromRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId,
@@ -481,7 +498,7 @@ export class APIClient implements IAPIService {
     }
     
     async inviteUserToOrg(ctx: OrgContext, email: string, phone: string, roleIds: string[], attributes: CategorizedItem[], baseUrl: string) {
-        const url = `${apiHost}${API.client.inviteUserToOrg()}`;
+        const url = `${this.apiHost}${API.client.inviteUserToOrg()}`;
 
         return (await this.tryPost<PendingUser>(url, {
             email,
@@ -495,7 +512,7 @@ export class APIClient implements IAPIService {
     }
 
     async editUser(ctx: OrgContext, userId: string, user: Partial<AdminEditableUser>): Promise<ClientSideFormat<ProtectedUser>> {
-        const url = `${apiHost}${API.client.editUser()}`;
+        const url = `${this.apiHost}${API.client.editUser()}`;
 
         return (await this.tryPost<ClientSideFormat<ProtectedUser>>(url, {
             user,
@@ -506,7 +523,7 @@ export class APIClient implements IAPIService {
     }
 
     async addUserToOrg(ctx: OrgContext, userId: string, roles: UserRole[]) {
-        const url = `${apiHost}${API.client.addUserToOrg()}`;
+        const url = `${this.apiHost}${API.client.addUserToOrg()}`;
 
         return (await this.tryPost<{ user: User, org: Organization }>(url, {
             userId,
@@ -517,7 +534,7 @@ export class APIClient implements IAPIService {
     }
 
     async removeUserFromOrg(ctx: OrgContext, userId: string) {
-        const url = `${apiHost}${API.client.removeUserFromOrg()}`;
+        const url = `${this.apiHost}${API.client.removeUserFromOrg()}`;
 
         return (await this.tryPost<{ user: User, org: Organization }>(url, {
             userId
@@ -527,7 +544,7 @@ export class APIClient implements IAPIService {
     }
 
     async addUserRoles(ctx: OrgContext, userId: string, roles: UserRole[]) {
-        const url = `${apiHost}${API.client.addUserRoles()}`;
+        const url = `${this.apiHost}${API.client.addUserRoles()}`;
 
         return (await this.tryPost<User>(url, {
             userId,
@@ -538,7 +555,7 @@ export class APIClient implements IAPIService {
     }
 
     async addRolesToUser(ctx: OrgContext, userId: string, roles: string[]) {
-        const url = `${apiHost}${API.client.addRolesToUser()}`;
+        const url = `${this.apiHost}${API.client.addRolesToUser()}`;
 
         return (await this.tryPost<User>(url, {
             userId,
@@ -550,7 +567,7 @@ export class APIClient implements IAPIService {
 
 
     async getTeamMembers(ctx: OrgContext, userIds?: string[]): Promise<TeamMemberMetadata> {
-        const url = `${apiHost}${API.client.getTeamMembers()}`;
+        const url = `${this.apiHost}${API.client.getTeamMembers()}`;
 
         return (await this.tryPost<TeamMemberMetadata>(url, {
             userIds
@@ -562,7 +579,7 @@ export class APIClient implements IAPIService {
 
 
     async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.createNewRequest()}`;
+        const url = `${this.apiHost}${API.client.createNewRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             request
@@ -572,7 +589,7 @@ export class APIClient implements IAPIService {
     }
 
     async getRequests(ctx: OrgContext, requestIds?: string[]): Promise<HelpRequest[]> {
-        const url = `${apiHost}${API.client.getRequests()}`;
+        const url = `${this.apiHost}${API.client.getRequests()}`;
 
         return (await this.tryPost<HelpRequest[]>(url, {
             requestIds
@@ -582,7 +599,7 @@ export class APIClient implements IAPIService {
     }
 
     async getRequest(ctx: OrgContext, requestId: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.getRequest()}`;
+        const url = `${this.apiHost}${API.client.getRequest()}`;
 
         return (await this.tryGet<HelpRequest>(url, {
             headers: this.requestScopeAuthHeaders({ ...ctx, requestId })
@@ -590,7 +607,7 @@ export class APIClient implements IAPIService {
     }
 
     async editRequest(ctx: OrgContext, requestUpdates: AtLeast<HelpRequest, 'id'>): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.editRequest()}`;
+        const url = `${this.apiHost}${API.client.editRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, { requestUpdates } ,{
             headers: this.requestScopeAuthHeaders({ ...ctx, requestId: requestUpdates.id })
@@ -598,7 +615,7 @@ export class APIClient implements IAPIService {
     }
 
     async editRequestV2(ctx: RequestContext, requestUpdates: RequestUpdates): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.editRequestV2()}`;
+        const url = `${this.apiHost}${API.client.editRequestV2()}`;
 
         return (await this.tryPost<HelpRequest>(url, { requestUpdates } ,{
             headers: this.requestScopeAuthHeaders(ctx)
@@ -606,7 +623,7 @@ export class APIClient implements IAPIService {
     }
 
     async sendChatMessage(ctx: RequestContext, message: string): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.sendChatMessage()}`;
+        const url = `${this.apiHost}${API.client.sendChatMessage()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             message
@@ -616,7 +633,7 @@ export class APIClient implements IAPIService {
     }
 
     async setRequestStatus(ctx: RequestContext, status: ResponderRequestStatuses): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.setRequestStatus()}`;
+        const url = `${this.apiHost}${API.client.setRequestStatus()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             status
@@ -626,7 +643,7 @@ export class APIClient implements IAPIService {
     }
 
     async resetRequestStatus(ctx: RequestContext): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.resetRequestStatus()}`;
+        const url = `${this.apiHost}${API.client.resetRequestStatus()}`;
 
         return (await this.tryPost<HelpRequest>(url, {}, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -634,7 +651,7 @@ export class APIClient implements IAPIService {
     }
 
     async reopenRequest(ctx: RequestContext): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.reopenRequest()}`;
+        const url = `${this.apiHost}${API.client.reopenRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {}, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -642,7 +659,7 @@ export class APIClient implements IAPIService {
     }
 
     async closeRequest(ctx: RequestContext): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.closeRequest()}`;
+        const url = `${this.apiHost}${API.client.closeRequest()}`;
 
         return (await this.tryPost<HelpRequest>(url, {}, {
             headers: this.requestScopeAuthHeaders(ctx)
@@ -650,7 +667,7 @@ export class APIClient implements IAPIService {
     }
 
     async updateRequestChatReceipt(ctx: RequestContext, lastMessageId: number): Promise<HelpRequest> {
-        const url = `${apiHost}${API.client.updateRequestChatReceipt()}`;
+        const url = `${this.apiHost}${API.client.updateRequestChatReceipt()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             lastMessageId

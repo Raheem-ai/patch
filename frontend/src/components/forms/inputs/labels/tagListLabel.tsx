@@ -5,6 +5,7 @@ import { Text } from "react-native-paper"
 import { unwrap } from "../../../../../../common/utils"
 import Tags from "../../../tags"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagList' | 'NestedTagList'>) => {
 
@@ -19,7 +20,7 @@ const TagListLabel = observer(({ config, expand }: SectionLabelViewProps<'TagLis
     if (!config.val() || !config.val().length) {
         return (
             <Pressable onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</SelectableText>
             </Pressable>
         )
     }

@@ -7,6 +7,7 @@ import STRINGS from '../../../common/strings';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { IUserStore } from '../stores/interfaces';
 import { navigateTo } from '../navigation';
+import SelectableText from '../components/helpers/selectableText';
 
 type Props = ScreenProps<'SignUp'>;
 
@@ -26,7 +27,7 @@ export default function SignUpForm({ navigation }: Props) {
 
     return(
         <View style={styles.container}>
-            <Text style={styles.title}>Create your account</Text>
+            <SelectableText style={styles.title}>Create your account</SelectableText>
             <TextInput style={styles.spacing} mode="outlined" label={STRINGS.INTERFACE.firstname} value={firstName} onChangeText={firstName => setFirstName(firstName)}/>
             <TextInput style={styles.spacing} mode="outlined"label={STRINGS.INTERFACE.lastname} value={lastName} onChangeText={lastName => setLastName(lastName)}/>
             <TextInput style={styles.spacing} mode="outlined"label={STRINGS.INTERFACE.email} value={email} onChangeText={email => setEmail(email)}/>

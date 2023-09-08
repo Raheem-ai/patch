@@ -19,6 +19,7 @@ import { navigateTo } from "../navigation";
 import UpdatePasswordForm from "./UpdatePassword";
 import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 type Props = ScreenProps<'Settings'>;
 
@@ -281,7 +282,7 @@ const Settings = ({ navigation, route }: Props) => {
                                 color={Colors.icons.dark}
                                 size={20} 
                                 style={styles.headerIcon} />
-                            <Text style={styles.headerText}>{'Personal'}</Text>
+                            <SelectableText style={styles.headerText}>{'Personal'}</SelectableText>
                         </View>
                         <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
@@ -294,7 +295,7 @@ const Settings = ({ navigation, route }: Props) => {
                                         color={Colors.icons.dark}
                                         size={20} 
                                         style={styles.headerIcon} />
-                                    <Text style={styles.headerText}>{'Organization'}</Text>
+                                    <SelectableText style={styles.headerText}>{'Organization'}</SelectableText>
                                 </View>
                                 <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                                     { params.renderInputs([orgSettings])}

@@ -7,6 +7,7 @@ import { HeaderAnnouncementHeight, HeaderHeight, TabbedScreenHeaderHeight } from
 import { alertStore, connectionStore, headerStore, IAlertStore, userStore } from "../../stores/interfaces";
 import TestIds from "../../test/ids";
 import { Colors, ICONS } from "../../types";
+import SelectableText from "../helpers/selectableText";
 
 export const Alerts = observer(() => {
     const alertsToShow = !!alertStore().prompt || !!alertStore().toast;
@@ -20,7 +21,7 @@ export const Alerts = observer(() => {
 
         const promptMessage = typeof msg == 'function'
             ? msg(styles.promptMessageLabel)
-            : <Text testID={TestIds.alerts.prompt} style={styles.promptMessageLabel}>{msg}</Text>
+            : <SelectableText testID={TestIds.alerts.prompt} style={styles.promptMessageLabel}>{msg}</SelectableText>
 
         return (
             <> 
@@ -30,7 +31,7 @@ export const Alerts = observer(() => {
                     top: alertStore().alertTop 
                 }]}>
                     <View style={[styles.promptTitleContainer]}>
-                        <Text style={styles.promptTitleLabel}>{alertStore().prompt.title}</Text>
+                        <SelectableText style={styles.promptTitleLabel}>{alertStore().prompt.title}</SelectableText>
                     </View>
                     <ScrollView showsVerticalScrollIndicator={false}>
                         { promptMessage }
@@ -54,11 +55,11 @@ export const Alerts = observer(() => {
                                                 paddingRight: 12, }
                                             : null]}>
                                         <Pressable onPress={onPress}>
-                                            <Text testID={a.testID ? a.testID : null} style={[
+                                            <SelectableText testID={a.testID ? a.testID : null} style={[
                                                 styles.promptActionLabel, 
                                                 a.confirming 
                                                     ? styles.promptConfirmActionLabel 
-                                                    : null]}>{a.label}</Text>
+                                                    : null]}>{a.label}</SelectableText>
                                         </Pressable>
                                     </View>
                                 )
@@ -80,7 +81,7 @@ export const Alerts = observer(() => {
             }]}>
                <Pressable style={[{height: '100%', width: '100%'}]} onPress={() => alertStore().hideToast()}>
                     <ScrollView>
-                        <Text testID={TestIds.alerts.toast} style={styles.toastText}>{alertStore().toast.message}</Text>
+                        <SelectableText testID={TestIds.alerts.toast} style={styles.toastText}>{alertStore().toast.message}</SelectableText>
                     </ScrollView>
                 </Pressable>
             </Animated.View>

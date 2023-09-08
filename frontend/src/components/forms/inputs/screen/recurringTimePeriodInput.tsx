@@ -14,6 +14,7 @@ import moment from 'moment'
 import { alertStore } from "../../../../stores/interfaces";
 import { ICONS } from "../../../../types";
 import TestIds from "../../../../test/ids";
+import SelectableText from "../../../helpers/selectableText";
 
 type RecurringTimePeriodInputProps = SectionScreenViewProps<'RecurringTimePeriod'>;
 
@@ -475,7 +476,7 @@ const Row = ({  selected, label, onPress }: {
 }) => {
     return (
         <Pressable style={styles.section} onPress={onPress}>
-            <Text style={[styles.label, selected ? styles.selectedLabel : null]}>{label}</Text>
+            <SelectableText style={[styles.label, selected ? styles.selectedLabel : null]}>{label}</SelectableText>
             { selected 
                 ? <IconButton
                     icon={ICONS.selectListItem} 
@@ -496,7 +497,7 @@ const DayPicker = ({ days, toggleDay }: { days: number[], toggleDay: (number) =>
 
                 return (
                     <Pressable onPress={() => toggleDay(o.value)} style={[styles.dayPickerOption, selected ? styles.dayPickerOptionSelected : null]}>
-                        <Text style={styles.dayPickerOptionLabel}>{o.label}</Text>
+                        <SelectableText style={styles.dayPickerOptionLabel}>{o.label}</SelectableText>
                     </Pressable>
                 )
             })
