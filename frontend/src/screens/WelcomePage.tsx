@@ -6,6 +6,7 @@ import { routerNames, SignInNavigationProp } from "../types";
 import { navigateTo } from "../navigation";
 import PatchButton from "../components/patchButton";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 // IMPORTANT NOTE: what should the type of navigation be when there are multiple routes?
 type Props = {
@@ -15,7 +16,7 @@ type Props = {
 export default function WelcomePage({ navigation }: Props) {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Welcome to Patch by Raheem!</Text>
+            <SelectableText style={styles.title}>Welcome to Patch by Raheem!</SelectableText>
             <View style={styles.fitToText}>
                 <PatchButton 
                     testID={TestIds.welcome.goToSignIn}

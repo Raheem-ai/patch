@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native'
 import { IconButton, Text } from 'react-native-paper';
 import TestIds from '../test/ids';
 import { Colors, ICONS } from '../types';
+import SelectableText from './helpers/selectableText';
 
 type Props = {
     testID: string,
@@ -48,7 +49,7 @@ export default function Tags(props: Props) {
                             ]}
                             key={t}
                         >
-                            <Text style={[
+                            <SelectableText style={[
                                 styles.tagText, 
                                 { color: props.dark 
                                     ? props.disabled 
@@ -59,7 +60,7 @@ export default function Tags(props: Props) {
                                         : styles.light.color 
                                 },
                                 props.tagTextStyle
-                            ]}>{t}</Text>
+                            ]}>{t}</SelectableText>
                             {   
                                 props.onTagDeleted 
                                     ? <IconButton

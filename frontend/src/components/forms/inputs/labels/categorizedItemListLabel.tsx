@@ -7,6 +7,7 @@ import { unwrap } from "../../../../../../common/utils"
 import TestIds from "../../../../test/ids"
 import Tags from "../../../tags"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewProps<'CategorizedItemList'>) => {
 
@@ -23,7 +24,7 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
     if (!config.val() || !config.val().length) {
         return (
             <Pressable testID={wrappedTestID} onPress={onPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</SelectableText>
             </Pressable>
         )
     }
@@ -63,7 +64,7 @@ const CategorizedItemListLabel = observer(({ config, expand }: SectionLabelViewP
 
                     return (
                         <View style={{ paddingTop: 20, paddingBottom: isLast ? (20 - 6) : 0 }}>
-                            <Text style={{ color: '#999' }}>{categoryName}</Text>
+                            <SelectableText style={{ color: '#999' }}>{categoryName}</SelectableText>
                             <Tags 
                                 testID={tagTestID}
                                 disabled={config.disabled}
