@@ -26,3 +26,10 @@
       command to export org stats vs raw data + possible fix to the release
       build job
   nativeChanges: true
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.2(1)
+  nativeAndroidVersion: 1.0.2(13)
+  commit: 464b838
+  timestamp: '2023-09-08T18:36:06.830Z'
+  updates: []
+  nativeChanges: false
