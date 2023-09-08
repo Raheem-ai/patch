@@ -259,15 +259,16 @@ breaking changes to the frontend...except their would be a time period where peo
 - update required field in repo
     - in `version.js`
 - create release commit with changelog (yaml file that includes fields for required, nativeVersion, and nativeChanges)...nativeChanges will come from prompt/param
-- push the commit to origin with tag `rel-staging-<commit>`
-    - wait for manual merge to kick off webhook
+- push the commit to origin with tag `rel-pre-<commit>`
+    - wait for manual merge to kick off webhook (IN PROD GCP PROJECT)
 - use cloud build webhook to
     <!-- - merge staging into master -->
+    - Build docker container with front/back
+        - actually already have this from the rc commit....use cache but need to get use this code cuz other parts need newest version config + release info
+        - tag + push image w/ `patch-rel-pre-<commit>`
     - if nativeChanges, 
         <!-- - add a 'testing' tag to the commit into master -->
         - create new PreProd/Prod builds (should this be a separate job so 1. it can run async and 2. we can call it adhoc off a commit in master for consistency)
-    - Build docker container with front/back
-        - actually already have this from the rc commit
     - Deploy backend to PreProd url
     - if nativeChanges
         - Add new dynamic AppVersion config entry with 'testing' flag
@@ -286,6 +287,7 @@ breaking changes to the frontend...except their would be a time period where peo
 3) CLI steps release:approve
 - have prompt to make sure we're looking at the right commit...prev: "appVersion config entry (do we need this to cleanup old PreProd builds that failed testing?)"
 - promote PreProd backend to Prod
+- retag + push image to `patch-rel-<commit>`
 - merge release commit to master with tag `rel-<commit>`
 - if nativeChanges
     - update existing dynamic AppVersion config 'testing' field to false
@@ -294,3 +296,9 @@ breaking changes to the frontend...except their would be a time period where peo
     - update existing dynamic AppVersion config 'required' field
         - ***only update from false to true***
 - remove older dynamic AppVersion config entries that still have a testing flag and aren't the current build we're trying to promote
+
+NOTE: 
+    - Feature branches should be squashed before they go into staging and 
+        - have their commit message be a list of changes (to be included in the changelog) where each line starts with '- '
+    - Release creation branches should not be squashed when they merge into staging
+    - Release approval branches should not be squashed when they merge into master
