@@ -232,13 +232,15 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @User() user: UserDoc,
         @Required() @BodyParams('requestId') requestId: string
     ) {
+        
+        await this.db.deleteRequest(orgId, requestId);
 
         await this.pubSub.sys(PatchEventType.RequestDeleted, { 
             requestId: requestId,
             orgId 
         });
 
-        return this.db.deleteRequest(requestId, orgId, user.id);
+        return this.db.deleteRequest(requestId, orgId);
 
     }
 
