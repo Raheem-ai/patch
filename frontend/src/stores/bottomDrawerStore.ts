@@ -237,6 +237,12 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
     get activeRequestShouldShow() {
         const onDisabledRoute = this.disabledActiveRequestRoutes.includes(navigationStore().currentRoute)
         
+        const currentRequest = requestStore().currentRequest;
+
+        if(!currentRequest){
+            return false;
+        }
+
         const onActiveRequestDetails = navigationStore().currentRoute == routerNames.helpRequestDetails 
             && requestStore().currentRequest.id == requestStore().activeRequest.id;
 

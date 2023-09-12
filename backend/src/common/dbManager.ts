@@ -1609,11 +1609,11 @@ export class DBManager {
         const req = await this.fullHelpRequest(reqDoc);
 
 
-        await this.requests.findByIdAndDelete(requestId);
+        // await this.requests.findByIdAndDelete(requestId);
 
         // save both
         return this.transaction(async (session) => {
-            await reqDoc.save;
+            await reqDoc.delete;
         }, session)
 
         // remove the entry in the requests map under the request key
