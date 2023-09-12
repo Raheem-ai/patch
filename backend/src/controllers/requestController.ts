@@ -240,7 +240,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
             orgId 
         });
 
-        return this.db.deleteRequest(requestId, orgId);
+        // return this.db.deleteRequest(requestId, orgId);
 
     }
 
