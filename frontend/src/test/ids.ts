@@ -307,6 +307,7 @@ const TestIds = {
     },
     editRequest: {
         form: 'editRequestForm',
+        deleteRequest: 'editRequestForm::delete',
         inputs: {
             description: 'editRequestForm::description',
             type: 'editRequestForm::type',

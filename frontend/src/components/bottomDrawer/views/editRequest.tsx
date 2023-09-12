@@ -1,12 +1,12 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore } from "../../../stores/interfaces";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore, userStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
+import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, StyleSheet } from "react-native";
 import { observable, runInAction } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
@@ -15,12 +15,19 @@ import STRINGS from "../../../../../common/strings";
 import { ICONS } from "../../../types";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
+import PatchButton from "../../patchButton";
+import { iHaveAllPermissions } from "../../../utils";
+import { navigationRef } from "../../../navigation";
 
 type Props = {}
 
 @observer
 class EditHelpRequest extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
+
+    get canDeleteRequest(){
+        return iHaveAllPermissions([PatchPermissions.RoleAdmin]);
+    }
 
     static onShow() {
         editRequestStore().loadRequest(requestStore().currentRequest.id);
@@ -33,6 +40,44 @@ class EditHelpRequest extends React.Component<Props> {
     setRef = (formRef: Form) => {
         runInAction(() => {
             this.formInstance.set(formRef)
+        })
+    }
+
+    deleteRequest = async () => {
+        try {
+
+            const reqToDelete = requestStore().currentRequest;
+            bottomDrawerStore().startSubmitting();
+
+            await requestStore().deleteRequest(reqToDelete.id);
+
+            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
+
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        } finally {
+            bottomDrawerStore().endSubmitting();
+        }
+
+        bottomDrawerStore().hide()
+        navigationRef.current?.goBack();
+    }
+
+    promptToDeleteRequest = () => {
+        alertStore().showPrompt({
+            title:  STRINGS.REQUESTS.deleteRequestTitle,
+            message: STRINGS.REQUESTS.deleteRequestDialog,
+            actions: [
+                {
+                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
+                    onPress: () => {}
+                },
+                {   
+                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
+                    onPress: this.deleteRequest,
+                    confirming: true
+                }
+            ]
         })
     }
 
@@ -87,6 +132,18 @@ class EditHelpRequest extends React.Component<Props> {
                     <View style={{ paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(inputs()) }
+                        { this.canDeleteRequest
+                        ?   <View style={styles.actionButtonsContainer}>
+                            <PatchButton 
+                                testID={TestIds.editRequest.deleteRequest}
+                                mode='text'
+                                style={ styles.actionButton }
+                                label={STRINGS.REQUESTS.deleteRequest}
+                                onPress={this.promptToDeleteRequest}
+                             />
+                        </View>
+                        : null
+                        }
                     </View>
                 </ScrollView>
             </KeyboardAwareArea>
@@ -320,5 +377,19 @@ class EditHelpRequest extends React.Component<Props> {
         return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
+
+const styles = StyleSheet.create({
+    actionButtonsContainer: {
+        display: "flex",
+        flexDirection: "column",
+        alignContent: 'flex-start',
+        margin: 20,
+        marginTop: 8,
+        marginBottom: 36,
+    },
+    actionButton: {
+        paddingVertical: 16,
+    }
+})
 
 export default EditHelpRequest

@@ -148,6 +148,7 @@ export interface IApiClient {
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
+    deleteRequest: AuthenticatedWithOrg<(requestId: string) => Promise<void>>
     // getResources: () => string
 }
 
@@ -275,6 +276,9 @@ type ApiRoutes = {
         },
         closeRequest: () => {
             return '/closeRequest'
+        },
+        deleteRequest: () => {
+            return '/deleteRequest'
         },
         setOnDutyStatus: () => {
             return '/setOnDutyStatus'
@@ -498,6 +502,9 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
+        },
+        deleteRequest: () => {
+            return `${this.base}${this.namespaces.request}${this.server.deleteRequest()}`
         }
     }
 }
