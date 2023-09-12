@@ -686,4 +686,12 @@ export default class RequestStore implements IRequestStore {
             [updatedReq.id]: updatedReq
         })
     }
+
+    async deleteRequest(requestId: string) {
+        const request = await api().deleteRequest(this.orgContext(), requestId);
+        
+        runInAction(() => {
+            this.currentRequestId = null;
+        })
+    }
 }

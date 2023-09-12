@@ -259,6 +259,8 @@ export interface IRequestStore extends IBaseStore {
     ackRequestsToJoinNotification(requestId: string): Promise<void>
     joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
     ackRequestNotification(requestId: string): Promise<void>
+
+    deleteRequest: (requestId: string) => Promise<void>
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
