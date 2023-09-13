@@ -592,11 +592,11 @@ export class APIClient implements IAPIService {
 
         const url = `${this.apiHost}${API.client.deleteRequest()}`;
 
-        await this.tryPost<HelpRequest>(url, {
+        return (await this.tryPost<{ request: HelpRequest, org: Organization }>(url, {
             requestId
         }, {
             headers: this.orgScopeAuthHeaders(ctx)
-        })
+        })).data
 
     }
 

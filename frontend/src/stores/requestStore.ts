@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -8,7 +8,6 @@ import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
 import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
 import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
-import { routerNames } from '../types';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -689,14 +688,11 @@ export default class RequestStore implements IRequestStore {
     }
 
     async deleteRequest(requestId: string) {
-
-        this.requests.delete(requestId);
-        await api().deleteRequest(this.orgContext(), requestId);
-
-        await navigationStore().navigateToSync(routerNames.helpRequestList)
-
-        // runInAction(() => {
-        //     this.currentRequestId = null;
-        // })
+        const { request } = await api().deleteRequest(this.orgContext(), requestId);
+        
+        runInAction(() => {
+            this.requests.set(request.id, request);
+            this.currentRequestId = null;
+        })
     }
 }
