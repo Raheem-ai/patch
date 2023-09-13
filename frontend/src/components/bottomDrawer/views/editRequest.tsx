@@ -43,45 +43,6 @@ class EditHelpRequest extends React.Component<Props> {
         })
     }
 
-    deleteRequest = async () => {
-        try {
-
-            const reqToDelete = requestStore().currentRequest;
-            bottomDrawerStore().startSubmitting();
-
-            await requestStore().deleteRequest(reqToDelete.id);
-
-            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
-
-            navigationRef.current?.goBack();
-
-            bottomDrawerStore().hide();
-
-        } catch (e) {
-            alertStore().toastError(resolveErrorMessage(e));
-        } finally {
-            bottomDrawerStore().endSubmitting();
-        }
-    }
-
-    promptToDeleteRequest = () => {
-        alertStore().showPrompt({
-            title:  STRINGS.REQUESTS.deleteRequestTitle,
-            message: STRINGS.REQUESTS.deleteRequestDialog,
-            actions: [
-                {
-                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
-                    onPress: () => {}
-                },
-                {   
-                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
-                    onPress: this.deleteRequest,
-                    confirming: true
-                }
-            ]
-        })
-    }
-
     formHomeScreen = observer(({
         renderHeader,
         renderInputs,
@@ -374,10 +335,52 @@ class EditHelpRequest extends React.Component<Props> {
         }
     }
 
+    deleteRequest = async () => {
+        try {
+
+            const reqToDelete = requestStore().currentRequest;
+            
+            bottomDrawerStore().startSubmitting();
+
+            await requestStore().deleteRequest(reqToDelete.id);
+
+            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
+
+            bottomDrawerStore().hide();
+
+            navigationRef.current?.goBack();
+
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        } finally {
+            bottomDrawerStore().endSubmitting();
+        }
+    }
+
+    promptToDeleteRequest = () => {
+        alertStore().showPrompt({
+            title:  STRINGS.REQUESTS.deleteRequestTitle,
+            message: STRINGS.REQUESTS.deleteRequestDialog,
+            actions: [
+                {
+                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
+                    onPress: () => {}
+                },
+                {   
+                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
+                    onPress: this.deleteRequest,
+                    confirming: true
+                }
+            ]
+        })
+    }
+
     render() {
         return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
+
+
 
 const styles = StyleSheet.create({
     actionButtonsContainer: {
