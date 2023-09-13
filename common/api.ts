@@ -148,7 +148,7 @@ export interface IApiClient {
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
-    deleteRequest: AuthenticatedWithOrg<(requestId: string) => Promise<void>>
+    deleteRequest: AuthenticatedWithOrg<(requestId: string) => Promise<HelpRequest>>
     // getResources: () => string
 }
 

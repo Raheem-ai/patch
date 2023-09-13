@@ -53,15 +53,14 @@ class EditHelpRequest extends React.Component<Props> {
 
             alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
 
-            navigationRef.current?.goBack();
-
-            bottomDrawerStore().hide();
-
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
         } finally {
             bottomDrawerStore().endSubmitting();
         }
+
+        bottomDrawerStore().hide()
+        navigationRef.current?.goBack();
     }
 
     promptToDeleteRequest = () => {

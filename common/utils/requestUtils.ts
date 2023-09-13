@@ -179,10 +179,5 @@ export function usersAssociatedWithRequest(req: Pick<HelpRequest, 'dispatcherId'
 }
 
 export function userOnRequest(userId: string, req: Pick<HelpRequest, 'positions'>) {
-    if(req){
-        return req.positions.some(pos => pos.joinedUsers.includes(userId))
-    } else{
-        return false;
-    }
-        
+    return req.positions.some(pos => pos.joinedUsers.includes(userId))
 }
