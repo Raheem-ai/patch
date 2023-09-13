@@ -1601,17 +1601,19 @@ export class DBManager {
 
     async deleteRequest(requestId: string, orgId: string, session?: ClientSession) {
 
+
         const org = await this.resolveOrganization(orgId);
 
         const reqDoc = await this.resolveRequest(requestId);
 
+        const req = await this.fullHelpRequest(reqDoc);
 
-        await this.requests.findByIdAndDelete(requestId);
+
+        // await this.requests.findByIdAndDelete(requestId);
 
         // save both
         return this.transaction(async (session) => {
-            await org.save();
-            await reqDoc.save;
+            await reqDoc.delete;
         }, session)
 
         // remove the entry in the requests map under the request key
