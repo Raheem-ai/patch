@@ -12,6 +12,7 @@ export const navigationRef = React.createRef<NavigationContainerRef<RootStackPar
 // any of the routes that don't take params
 export function navigateTo<Route extends keyof RootStackParamList>(name: Route, params?: RootStackParamList[Route]) {
   const shouldPush = navigationRef.current?.getCurrentRoute().name == name;
+  //console.log("SHOULD PUSH", shouldPush);
 
   if (shouldPush) {
     const pushAction = StackActions.push(name, params);
