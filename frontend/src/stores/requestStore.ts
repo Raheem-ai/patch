@@ -695,28 +695,18 @@ export default class RequestStore implements IRequestStore {
 
         await api().deleteRequest(this.orgContext(), requestId);
 
-        // navigationRef.current?.goBack();
         await navigationStore().navigateToSync(routerNames.helpRequestList);
 
-            //when(
-                //() => navigationStore().currentRoute != routerNames.helpRequestDetails, 
-                //async () => {
-                     console.log("after go back");
-                //     await bottomDrawerStore().hideSync();
-                // }
-            //);
-
-            bottomDrawerStore().endSubmitting();
-
-            await bottomDrawerStore().hideSync(); 
+        console.log("after go back");
         
-            runInAction(() => {
-                console.log("inside run in action");
-                this.currentRequestId = null;
-                this.requests.delete(requestId);
-            });
+        bottomDrawerStore().endSubmitting();
 
-
-        return (()=>{});
+        await bottomDrawerStore().hideSync(); 
+    
+        runInAction(() => {
+            console.log("inside run in action");
+            this.currentRequestId = null;
+            this.requests.delete(requestId);
+        });
     }
 }
