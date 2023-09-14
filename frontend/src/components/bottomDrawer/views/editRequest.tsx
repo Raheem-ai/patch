@@ -347,20 +347,14 @@ class EditHelpRequest extends React.Component<Props> {
             console.log("start of delete sequence"); 
 
             const reqToDelete = requestStore().currentRequest;
-            
-            //bottomDrawerStore().startSubmitting();
 
             await requestStore().deleteRequest(reqToDelete.id);
-
 
             alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
 
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
-        }
-        // } finally {
-        //     bottomDrawerStore().endSubmitting();
-        // }
+        } 
     }
 
     promptToDeleteRequest = () => {
