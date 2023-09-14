@@ -15,7 +15,7 @@ import { api } from '../services/interfaces';
 export default class AppUpdateStore implements IAppUpdateStore {
     waitingForReload = false
 
-    @persistent()
+    //@persistent()
     appVersion: DynamicAppVersionConfig[] = [{
         latestIOS: '',
         latestAndroid: '',

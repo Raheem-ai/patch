@@ -1,5 +1,5 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore, userStore } from "../../../stores/interfaces";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore, userStore, navigationStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
@@ -7,19 +7,25 @@ import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, Reques
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ScrollView, View, StyleSheet } from "react-native";
-import { observable, runInAction } from "mobx";
+import { observable, runInAction, when } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
-import { ICONS } from "../../../types";
+import { ICONS, routerNames } from "../../../types";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
 import PatchButton from "../../patchButton";
 import { iHaveAllPermissions } from "../../../utils";
 import { navigationRef } from "../../../navigation";
+import { useIsFocused } from "@react-navigation/native";
 
 type Props = {}
+
+// function isFocused() {
+//     const isFocused = useIsFocused();
+//     return isFocused; 
+// }
 
 @observer
 class EditHelpRequest extends React.Component<Props> {
@@ -40,44 +46,6 @@ class EditHelpRequest extends React.Component<Props> {
     setRef = (formRef: Form) => {
         runInAction(() => {
             this.formInstance.set(formRef)
-        })
-    }
-
-    deleteRequest = async () => {
-        try {
-
-            const reqToDelete = requestStore().currentRequest;
-            bottomDrawerStore().startSubmitting();
-
-            await requestStore().deleteRequest(reqToDelete.id);
-
-            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
-
-        } catch (e) {
-            alertStore().toastError(resolveErrorMessage(e));
-        } finally {
-            bottomDrawerStore().endSubmitting();
-        }
-
-        bottomDrawerStore().hide()
-        navigationRef.current?.goBack();
-    }
-
-    promptToDeleteRequest = () => {
-        alertStore().showPrompt({
-            title:  STRINGS.REQUESTS.deleteRequestTitle,
-            message: STRINGS.REQUESTS.deleteRequestDialog,
-            actions: [
-                {
-                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
-                    onPress: () => {}
-                },
-                {   
-                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
-                    onPress: this.deleteRequest,
-                    confirming: true
-                }
-            ]
         })
     }
 
@@ -373,10 +341,52 @@ class EditHelpRequest extends React.Component<Props> {
         }
     }
 
+    deleteRequest = async () => {
+        try {
+            
+            console.log("start of delete sequence"); 
+
+            const reqToDelete = requestStore().currentRequest;
+            
+            //bottomDrawerStore().startSubmitting();
+
+            await requestStore().deleteRequest(reqToDelete.id);
+
+
+            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
+
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        }
+        // } finally {
+        //     bottomDrawerStore().endSubmitting();
+        // }
+    }
+
+    promptToDeleteRequest = () => {
+        alertStore().showPrompt({
+            title:  STRINGS.REQUESTS.deleteRequestTitle,
+            message: STRINGS.REQUESTS.deleteRequestDialog,
+            actions: [
+                {
+                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
+                    onPress: () => {}
+                },
+                {   
+                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
+                    onPress: this.deleteRequest,
+                    confirming: true
+                }
+            ]
+        })
+    }
+
     render() {
         return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
+
+
 
 const styles = StyleSheet.create({
     actionButtonsContainer: {

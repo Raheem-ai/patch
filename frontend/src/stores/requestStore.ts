@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { bottomDrawerStore, IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -8,6 +8,8 @@ import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
 import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
 import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
+import { navigationRef } from '../navigation';
+import { routerNames } from '../types';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -688,10 +690,35 @@ export default class RequestStore implements IRequestStore {
     }
 
     async deleteRequest(requestId: string) {
-        const request = await api().deleteRequest(this.orgContext(), requestId);
+
+        bottomDrawerStore().startSubmitting();
+
+        await api().deleteRequest(this.orgContext(), requestId);
+
+        // navigationRef.current?.goBack();
+        await navigationStore().navigateToSync(routerNames.helpRequestList);
+
+            //when(
+                //() => navigationStore().currentRoute != routerNames.helpRequestDetails, 
+                //async () => {
+                     console.log("after go back");
+                //     await bottomDrawerStore().hideSync();
+                // }
+            //);
+
+            bottomDrawerStore().endSubmitting();
+
+            await bottomDrawerStore().hideSync(); 
         
-        runInAction(() => {
-            this.currentRequestId = null;
-        })
+        setTimeout(() => {
+            runInAction(() => {
+                console.log("inside run in action");
+                this.currentRequestId = null;
+                this.requests.delete(requestId);
+            });
+        }, 0)
+
+
+        return (()=>{});
     }
 }
