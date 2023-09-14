@@ -710,13 +710,11 @@ export default class RequestStore implements IRequestStore {
 
             await bottomDrawerStore().hideSync(); 
         
-        setTimeout(() => {
             runInAction(() => {
                 console.log("inside run in action");
                 this.currentRequestId = null;
                 this.requests.delete(requestId);
             });
-        }, 0)
 
 
         return (()=>{});
