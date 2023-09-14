@@ -11,6 +11,9 @@ const STRINGS = {
     emailAddresses: {
         help: `help@getpatch.org`,
     },
+    urls: {
+        patchSite: `getpatch.org`,
+    },
     connectionUnreliable: () => `Unreliable internet ${STRINGS.visualDelim} Limited functionality`,
     cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
     ELEMENTS: {
@@ -225,6 +228,7 @@ const STRINGS = {
         noMessages: '...',
     },
     ACCOUNT: {
+        howToGetAccount: `Learn more at ${STRINGS.urls.patchSite}.`,
         inviteTitle: `Invite to team`,
         profileTitle: 'Profile',
         profileTitleMine: 'My profile',
