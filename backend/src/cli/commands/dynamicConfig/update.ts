@@ -94,9 +94,25 @@ export default class UpdateDynamicConfig extends Command {
             });
         }
 
+        // cleanup old app versions that failed testing so were never promoted
+        const cleanedAppVersions = dynamicConfig.appVersion.filter((verionConfig) => {
+            const isCurrentRelease = verionConfig.latestIOS == conf.latestIOS
+
+            return isCurrentRelease || !verionConfig.testing
+        })
+
+        const cleanupRequired = cleanedAppVersions.length != dynamicConfig.appVersion.length
+
+        if (cleanupRequired) {
+            dynamicConfig.appVersion = cleanedAppVersions
+        }
+
+        if (cleanupRequired || shouldNotify) {
+            await dbManager.upsertDynamicConfig(dynamicConfig)
+        }
+
         if (shouldNotify) {
             // save and notify users that the version config was updated
-            await dbManager.upsertDynamicConfig(dynamicConfig)
             await pubSubManager.sys(PatchEventType.SystemDynamicConfigUpdated, {})
         }
     }
@@ -131,8 +147,7 @@ export default class UpdateDynamicConfig extends Command {
             console.log('Creating DBManager')
             const dbManager = await DBManager.fromConnectionString(connString);
             
-            // this will need trySetupLocalGCPCredentials() i think???
-            // might not because it's in the same project on GCP
+            // this will need probably need trySetupLocalGCPCredentials() to run locally i think???
             console.log('Creating PubSubManager')
             const pubSubManager = await PubSubManager.create();
 

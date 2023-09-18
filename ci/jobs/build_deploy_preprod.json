@@ -51,17 +51,17 @@
             }],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
-                "SHORT_SHA=$SHORT_SHA"
+                "TARGET_COMMIT=$_TARGET_COMMIT"
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "node",
             "args": [
                 "/app/backend/infra/bin/run",
                 "ci:hasNativeChanges",
                 "-c",
-                "$SHORT_SHA"
+                "$_TARGET_COMMIT"
             ],
             "volumes": [{
                 "name": "ssh",
@@ -69,7 +69,7 @@
             }]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "node",
             "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
             "args": [
@@ -85,7 +85,7 @@
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
             "args": [
                 "/app/ci/backend/generate_release_config.sh"
@@ -95,7 +95,7 @@
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
             "secretEnv": ["MONGO_CREDS"],
             "args": [
@@ -118,12 +118,12 @@
             }],
             "env": [
                 "PROJECT_ID=$PROJECT_ID",
-                "SHORT_SHA=$SHORT_SHA",
+                "TARGET_COMMIT=$_TARGET_COMMIT",
                 "_SERVICE=patch-api"
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
             "secretEnv": ["MONGO_CREDS"],
             "args": [
@@ -144,7 +144,7 @@
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
             "secretEnv": ["MONGO_CREDS"],
             "args": [
@@ -155,12 +155,11 @@
                 "path": "/root/.ssh"
             }],
             "env": [
-                "SHORT_SHA=$SHORT_SHA",
                 "GOOGLE_APPLICATION_CREDENTIALS=/workspace/google-adc"
             ]
         },
         {
-            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$SHORT_SHA",
+            "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
             "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
             "args": [
@@ -172,7 +171,7 @@
             }],
             "env": [
                 "_ENVIRONMENT=preprod",
-                "_RELEASE_ID=$SHORT_SHA"
+                "_RELEASE_ID=$_TARGET_COMMIT"
             ]
         },
         {

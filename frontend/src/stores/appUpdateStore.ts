@@ -38,7 +38,15 @@ export default class AppUpdateStore implements IAppUpdateStore {
         // get the latest config before setting up 
         // reactions as they will run immediately
         await api().init()
-        await this.updateDynamicConfig()
+
+        // TODO: remove this try catch after the first deployment 
+        // with the change of dynamic config 
+        try {
+            await this.updateDynamicConfig()
+        } catch (e) {
+            api().pointTo('preprod')
+            await this.updateDynamicConfig()
+        }
         
         await this.setupAppVersionChecks()
     }
