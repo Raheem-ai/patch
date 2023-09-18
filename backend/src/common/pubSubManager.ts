@@ -1,4 +1,5 @@
-import { PubSub, Topic, Subscription } from '@google-cloud/pubsub';
+import { PubSub, Topic, Subscription, ClientConfig } from '@google-cloud/pubsub';
+import assert from 'assert';
 import { PatchEventPacket, PatchEventParams, PatchEventType } from "common/models";
 
 enum PatchEventTopics {
@@ -17,6 +18,8 @@ const PubSubConfig: PatchPubSubConfig = {
     [PatchEventSubscriptions.UIUpdateEvents]: PatchEventTopics.System
 }
 
+// assert(process.env.PUBSUB_EMULATOR_HOST);
+
 export class PubSubManager {
 
     static async create() {
@@ -25,6 +28,9 @@ export class PubSubManager {
 
         return manager
     }
+
+    
+    // options = { apiEndpoint: "localhost:8085" };
 
     client = new PubSub();
 
@@ -85,6 +91,7 @@ export class PubSubManager {
             params
         };
 
+        console.log("about to publish message");
         const [messageId] = await this.sysPub.publishMessage({ json: packet })
 
         return messageId

@@ -87,6 +87,10 @@ export class RequestEditedHandler extends SilentNotificationHandlerDefinition<Pa
 
 }
 
+export class RequestDeletedHandler extends SilentNotificationHandlerDefinition<PatchEventType.RequestDeleted> {
+
+}
+
 export class OrganizationEditedHandler extends SilentNotificationHandlerDefinition<PatchEventType.OrganizationEdited> {
 
 }
@@ -240,25 +244,27 @@ export interface NotificationResponseDefinition<T extends PatchEventType = any> 
 export const NotificationHandlers: { [type in NotificationEventType]: NotificationHandlerDefinition<type> } = {
     [PatchEventType.UserForceLogout]: new ForcedLogoutHandler(),
     [PatchEventType.RequestRespondersNotified]: new RequestRespondersNotifiedHandler(),
-    [PatchEventType.RequestRespondersNotificationAck]: new RequestRespondersNotificationAckHandler(), 
-    [PatchEventType.RequestRespondersJoined]: new RequestRespondersJoinedHandler(), 
-    [PatchEventType.RequestRespondersLeft]: new RequestRespondersLeftHandler(), 
-    [PatchEventType.RequestRespondersAccepted]: new RequestRespondersAcceptedHandler(), 
-    [PatchEventType.RequestRespondersDeclined]: new RequestRespondersDeclinedHandler(), 
-    [PatchEventType.RequestRespondersRemoved]: new RequestRespondersRemovedHandler(), 
-    [PatchEventType.RequestRespondersRequestToJoin]: new RequestRespondersRequestToJoinHandler(), 
+    [PatchEventType.RequestRespondersNotificationAck]: new RequestRespondersNotificationAckHandler(),
+    [PatchEventType.RequestRespondersJoined]: new RequestRespondersJoinedHandler(),
+    [PatchEventType.RequestRespondersLeft]: new RequestRespondersLeftHandler(),
+    [PatchEventType.RequestRespondersAccepted]: new RequestRespondersAcceptedHandler(),
+    [PatchEventType.RequestRespondersDeclined]: new RequestRespondersDeclinedHandler(),
+    [PatchEventType.RequestRespondersRemoved]: new RequestRespondersRemovedHandler(),
+    [PatchEventType.RequestRespondersRequestToJoin]: new RequestRespondersRequestToJoinHandler(),
     [PatchEventType.RequestChatNewMessage]: new RequestChatNewMessageHandler(),
     [PatchEventType.UserEdited]: new UserEditedHandler(),
-    [PatchEventType.UserOnDuty]: new UserOnDutyHandler(),    
-    [PatchEventType.UserOffDuty]: new UserOffDutyHandler(),    
-    [PatchEventType.UserChangedRolesInOrg]: new UserChangedRolesInOrgHandler(),    
-    [PatchEventType.UserAddedToOrg]: new UserAddedToOrgHandler(),    
-    [PatchEventType.RequestCreated]: new RequestCreatedHandler(),    
-    [PatchEventType.RequestEdited]: new RequestEditedHandler(),    
+    [PatchEventType.UserOnDuty]: new UserOnDutyHandler(),
+    [PatchEventType.UserOffDuty]: new UserOffDutyHandler(),
+    [PatchEventType.UserChangedRolesInOrg]: new UserChangedRolesInOrgHandler(),
+    [PatchEventType.UserAddedToOrg]: new UserAddedToOrgHandler(),
+    [PatchEventType.RequestCreated]: new RequestCreatedHandler(),
+    [PatchEventType.RequestEdited]: new RequestEditedHandler(),
+    [PatchEventType.RequestDeleted]: new RequestDeletedHandler(),
     [PatchEventType.OrganizationEdited]: new OrganizationEditedHandler(),
     [PatchEventType.OrganizationTagsUpdated]: new OrganizationTagsUpdatedHandler(),
     [PatchEventType.OrganizationAttributesUpdated]: new OrganizationAttributesUpdatedHandler(),
     [PatchEventType.OrganizationRoleCreated]: new OrganizationRoleCreatedHandler(),
     [PatchEventType.OrganizationRoleEdited]: new OrganizationRoleEditedHandler(),
     [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler(),
+    [PatchEventType.SystemDynamicConfigUpdated]: undefined
 }

@@ -1228,7 +1228,6 @@ export type OrgEventType = PatchEventType.OrganizationEdited
     | PatchEventType.OrganizationDeleted
     | PatchEventType.OrganizationRoleCreated
     | PatchEventType.OrganizationRoleEdited
-    | PatchEventType.OrganizationRoleDeleted
     | PatchEventType.OrganizationAttributesUpdated
     | PatchEventType.OrganizationTagsUpdated
 
@@ -1244,6 +1243,7 @@ export type SilentNotificationEventType = PatchEventType.UserForceLogout
     | PatchEventType.UserAddedToOrg
     | PatchEventType.RequestCreated
     | PatchEventType.RequestEdited
+    | PatchEventType.RequestDeleted
     | PatchEventType.OrganizationEdited
     | PatchEventType.OrganizationTagsUpdated
     | PatchEventType.OrganizationAttributesUpdated
