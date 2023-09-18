@@ -217,7 +217,7 @@ const visualArea = function(Component: (props) => JSX.Element) {
       </VisualArea>
     )
   }
-} 
+}
 
 const styles = StyleSheet.create({
   modalView: {
