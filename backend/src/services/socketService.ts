@@ -88,7 +88,8 @@ export class MySocketService {
     }
 
     async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) {
-            switch (event) {
+        console.log("before socket service switch case");    
+        switch (event) {
             // case PatchEventType.UserCreated:
             // case PatchEventType.UserDeleted: // TODO: How should we handle this?
             //         // noop
@@ -115,13 +116,16 @@ export class MySocketService {
                 await this.handleUserAddedToOrg(params as PatchEventParams[PatchEventType.UserAddedToOrg])
                 break;
             // TODO: case PatchEventType.UserRemovedFromOrg:
+            // update Users In Org
             case PatchEventType.RequestCreated:
                 await this.handleRequestCreated(params as PatchEventParams[PatchEventType.RequestCreated])
                 break;
             case PatchEventType.RequestEdited:
                 await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
-            // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestDeleted:
+                await this.handleRequestDeleted(params as PatchEventParams[PatchEventType.RequestDeleted])
+                break;
             case PatchEventType.RequestRespondersRequestToJoin: 
                 await this.handleRequestRespondersRequestToJoin(params as PatchEventParams[PatchEventType.RequestRespondersRequestToJoin])
                 break;
@@ -575,11 +579,17 @@ export class MySocketService {
     }
 
     async handleRequestCreated(payload: PatchEventParams[PatchEventType.RequestCreated]) {
+        console.log("IN HANDLE REQUEST CREATED");
         await this.updateUsersInOrg(PatchEventType.RequestCreated, payload, payload.orgId, notificationLabel(PatchEventType.RequestCreated))
     }
 
     async handleRequestEdited(payload: PatchEventParams[PatchEventType.RequestEdited]) {
         await this.updateUsersInOrg(PatchEventType.RequestEdited, payload, payload.orgId, notificationLabel(PatchEventType.RequestEdited))
+    }
+
+    async handleRequestDeleted(payload: PatchEventParams[PatchEventType.RequestDeleted]) {
+        console.log("IN HANDLE REQUEST DELETED")
+        await this.updateUsersInOrg(PatchEventType.RequestDeleted, payload, payload.orgId, notificationLabel(PatchEventType.RequestDeleted))
     }
 
     async handleUserEdited(payload: PatchEventParams[PatchEventType.UserEdited]) {
@@ -653,6 +663,8 @@ export class MySocketService {
         orgId: string,
         body: string
     ) {
+        console.log("in update users in org");
+
         const org = await this.db.resolveOrganization(orgId)
         const fullOrg = await this.db.fullOrganization(org)
         const usersInOrg = await this.usersInOrg(fullOrg)

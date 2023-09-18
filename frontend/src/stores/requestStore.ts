@@ -696,8 +696,6 @@ export default class RequestStore implements IRequestStore {
         await api().deleteRequest(this.orgContext(), requestId);
 
         await navigationStore().navigateToSync(routerNames.helpRequestList);
-
-        console.log("after go back");
         
         bottomDrawerStore().endSubmitting();
 
@@ -708,5 +706,25 @@ export default class RequestStore implements IRequestStore {
             this.currentRequestId = null;
             this.requests.delete(requestId);
         });
+    }
+
+    async onRequestDeletedUpdate(requestId: string) {
+        
+        
+        // if user is on the request details page, hide the drawer
+        if(bottomDrawerStore().expanded){
+            await bottomDrawerStore().hideSync(); 
+        } 
+        
+        // if user is on request details, go to request list
+        if (navigationStore().currentRoute === routerNames.helpRequestDetails){
+            navigationStore().navigateToSync(routerNames.helpRequestList);
+        }
+
+        runInAction(() => {
+            this.currentRequestId = null;
+            this.requests.delete(requestId);
+        });
+        
     }
 }

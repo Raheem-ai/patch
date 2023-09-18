@@ -125,6 +125,11 @@ export default class UpdateStore implements IUpdateStore {
         newUserStore().onRoleDeletedUpdate(roleId)
     }
 
+    onRequestDeleted(requestId: string){
+        requestStore().onRequestDeletedUpdate(requestId);
+        // almost same logic for when it does the delete itself
+    }
+
     pendingRequestUpdate = async (packet: PatchEventPacket<IndividualRequestEventType>): Promise<void> => {
         const reqId = packet.params.requestId;
 
@@ -136,6 +141,7 @@ export default class UpdateStore implements IUpdateStore {
         console.log('waiting for pending request update')
         await when(() => !this.reqState.specificIds.size)
     }
+    
 
     updateRequests = stateFullMemoDebounce(async (
         requestIds: string[],

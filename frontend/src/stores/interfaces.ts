@@ -261,6 +261,7 @@ export interface IRequestStore extends IBaseStore {
     ackRequestNotification(requestId: string): Promise<void>
 
     deleteRequest: (requestId: string) => void
+    onRequestDeletedUpdate(requestId: string): void
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
