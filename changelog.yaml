@@ -33,3 +33,10 @@
   timestamp: '2023-09-08T18:36:06.830Z'
   updates: []
   nativeChanges: false
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.3(1)
+  nativeAndroidVersion: 1.0.3(14)
+  commit: 06552d0
+  timestamp: '2023-09-19T19:02:33.494Z'
+  updates: []
+  nativeChanges: true
