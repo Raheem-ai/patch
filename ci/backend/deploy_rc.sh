@@ -1,3 +1,19 @@
+tagBranch() {
+    # making sure we are honoring the ssh_config by using the host 'patch'
+    echo git remote set-url origin "patch:Raheem-ai/patch.git"
+    git remote set-url origin "patch:Raheem-ai/patch.git"
+
+    # set user info for git log 
+    git config --global user.email "${_CI_EMAIL}" && git config --global user.name "${_CI_USERNAME}"
+
+    # tag current commit with rc-$SHORT_SHA
+    git tag -a rc-$SHORT_SHA -m "Patch Release Candidate $SHORT_SHA" $SHORT_SHA || echo tagging failed
+
+    # push tag
+    git push origin rc-$SHORT_SHA
+}
+
+
 if test -f "/workspace/should_deploy_backend";
 then
     echo "# deploying new service revision"
