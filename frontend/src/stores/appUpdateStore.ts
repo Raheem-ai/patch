@@ -15,7 +15,8 @@ import { api } from '../services/interfaces';
 export default class AppUpdateStore implements IAppUpdateStore {
     waitingForReload = false
 
-    //@persistent()
+    // helpd with fixing synchronization issue for delete request
+    // @persistent()
     appVersion: DynamicAppVersionConfig[] = [{
         latestIOS: '',
         latestAndroid: '',

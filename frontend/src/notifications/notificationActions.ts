@@ -265,6 +265,5 @@ export const NotificationHandlers: { [type in NotificationEventType]: Notificati
     [PatchEventType.OrganizationAttributesUpdated]: new OrganizationAttributesUpdatedHandler(),
     [PatchEventType.OrganizationRoleCreated]: new OrganizationRoleCreatedHandler(),
     [PatchEventType.OrganizationRoleEdited]: new OrganizationRoleEditedHandler(),
-    [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler(),
-    [PatchEventType.SystemDynamicConfigUpdated]: undefined
+    [PatchEventType.OrganizationRoleDeleted]: new OrganizationRoleDeletedHandler()
 }

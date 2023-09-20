@@ -27,22 +27,13 @@ export class PubSubManager {
         return manager
     }
 
-    options = { apiEndpoint: "127.0.0.1:8085",
-                servicePath: "127.0.0.1:8085",
-                port: 8085 };
-
-    client = new PubSub(this.options);
-
-    // client = new PubSub();
+    client = new PubSub();
 
     topics: Map<PatchEventTopics, Topic> = new Map()
 
     subscriptions: Map<PatchEventSubscriptions, Subscription> = new Map()
 
     async init() {
-
-        // assert(process.env.PUBSUB_PROJECT_ID);
-        // console.log(process.env.PUBSUB_PROJECT_ID);
 
         const allTopics = await this.client.getTopics();
         const allSubs = await this.client.getSubscriptions();
@@ -66,9 +57,6 @@ export class PubSubManager {
             }
         }))
 
-        console.log("topics:");
-        console.log(this.topics);
-
         await Promise.all(Array.from(targetSubs).map(async (s) => {
             const existingSubscription = allSubs[0].find(sub => sub.name.split('/').pop() == s)
 
@@ -81,9 +69,6 @@ export class PubSubManager {
                 this.subscriptions.set(s, res[0])
             }
         }))
-
-        // console.log(this.subscriptions);
-        // console.log('PubSub initialized')
     }
 
     get sysPub() {
