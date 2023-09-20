@@ -228,7 +228,7 @@ const STRINGS = {
         noMessages: '...',
     },
     ACCOUNT: {
-        howToGetAccount: `Learn more at ${STRINGS.urls.patchSite}.`,
+        howToGetAccount: () => `Learn more at ${STRINGS.urls.patchSite}.`,
         inviteTitle: `Invite to team`,
         profileTitle: 'Profile',
         profileTitleMine: 'My profile',
