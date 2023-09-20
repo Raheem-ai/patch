@@ -149,21 +149,7 @@ function App() {
                 {/* <GlobalErrorBoundary> */}
                   <GestureHandlerRootView style={{ flex: 1 }}>
                     { statusBar() }
-                    <Stack.Navigator screenListeners={{
-                        transitionEnd: (e) => {
-                          console.log("TRANSITION END");
-                          console.log(e);
-                        },
-                        focus: (e) => {
-                          console.log("FOCUS");
-                          console.log(e);
-                        },
-                        blur: (e) => {
-                          console.log("BLUR");
-                          console.log(e);
-                        }
-                         
-                    }} screenOptions={{ header, headerMode: 'float', gestureEnabled: false }} initialRouteName={initialRoute}>
+                    <Stack.Navigator screenOptions={{ header, headerMode: 'float', gestureEnabled: false }} initialRouteName={initialRoute}>
                         {/* <Stack.Screen name={routerNames.landing} component={LandingPage} /> */}
                         <Stack.Screen name={routerNames.landing} component={SignInForm} />
                         <Stack.Screen name={routerNames.signIn} component={SignInForm} />

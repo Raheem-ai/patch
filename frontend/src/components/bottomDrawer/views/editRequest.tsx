@@ -343,8 +343,6 @@ class EditHelpRequest extends React.Component<Props> {
 
     deleteRequest = async () => {
         try {
-            
-            console.log("start of delete sequence"); 
 
             const reqToDelete = requestStore().currentRequest;
 

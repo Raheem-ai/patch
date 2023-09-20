@@ -233,10 +233,12 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @Required() @BodyParams('requestId') requestId: string
     ) {
 
-        console.log("about to do a delete request pubsub");
+        const deleterId = String(user.id); 
+
         await this.pubSub.sys(PatchEventType.RequestDeleted, { 
             requestId: requestId,
-            orgId 
+            orgId, 
+            deleterId
         });
 
         return this.db.deleteRequest(requestId, orgId, user.id);

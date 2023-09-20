@@ -15,7 +15,6 @@ const HelpRequestList = observer(({ navigation, route }: Props) => {
     const allFilters = allEnumValues<HelpRequestFilter>(HelpRequestFilter);
     const allSortBys = allEnumValues<HelpRequestSortBy>(HelpRequestSortBy)
 
-    console.log("HELP REQUEST LIST");
     const [isScrolled, setIsScrolled] = useState(false);
 
     const headerProps: ListHeaderProps = {

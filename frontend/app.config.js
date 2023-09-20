@@ -18,7 +18,7 @@ import {
 } from './version'
 
 // NOTE: put your ngrok url here for development
-let apiHost = ''
+let apiHost = 'https://0d11-136-27-52-36.ngrok.io'
 
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 

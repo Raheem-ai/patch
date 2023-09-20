@@ -1309,7 +1309,8 @@ export type PatchEventParams = {
     }, 
     [PatchEventType.RequestDeleted]: {
         orgId:string,
-        requestId: string
+        requestId: string,
+        deleterId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {
         // orgId: string,
