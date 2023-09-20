@@ -702,7 +702,6 @@ export default class RequestStore implements IRequestStore {
         await bottomDrawerStore().hideSync(); 
     
         runInAction(() => {
-            console.log("inside run in action");
             this.currentRequestId = null;
             this.requests.delete(requestId);
         });
@@ -710,21 +709,19 @@ export default class RequestStore implements IRequestStore {
 
     async onRequestDeletedUpdate(requestId: string) {
         
-        
-        // if user is on the request details page, hide the drawer
-        if(bottomDrawerStore().expanded){
-            await bottomDrawerStore().hideSync(); 
-        } 
-        
-        // if user is on request details, go to request list
-        if (navigationStore().currentRoute === routerNames.helpRequestDetails){
-            navigationStore().navigateToSync(routerNames.helpRequestList);
+        if(this.currentRequest){
+            if(this.currentRequest.id === requestId){
+                if(bottomDrawerStore().showing){
+                    await bottomDrawerStore().hideSync();
+                }
+                if(navigationStore().currentRoute === routerNames.helpRequestDetails){
+                    await navigationStore().navigateToSync(routerNames.helpRequestList);
+                }
+            }
         }
 
         runInAction(() => {
-            this.currentRequestId = null;
             this.requests.delete(requestId);
         });
-        
-    }
+    } 
 }

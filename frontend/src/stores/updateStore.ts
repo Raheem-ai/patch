@@ -115,6 +115,11 @@ export default class UpdateStore implements IUpdateStore {
         if (this.isEvent(packet, PatchEventType.OrganizationRoleDeleted)) {
             this.onRoleDeleted(packet.params.roleId)
         }
+
+        if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
+            console.log("in cached stores onroledeleted");
+            this.onRequestDeleted(packet.params.requestId)
+        }
     }
 
     onRoleDeleted(roleId: string) {

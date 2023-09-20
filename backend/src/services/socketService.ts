@@ -579,7 +579,6 @@ export class MySocketService {
     }
 
     async handleRequestCreated(payload: PatchEventParams[PatchEventType.RequestCreated]) {
-        console.log("IN HANDLE REQUEST CREATED");
         await this.updateUsersInOrg(PatchEventType.RequestCreated, payload, payload.orgId, notificationLabel(PatchEventType.RequestCreated))
     }
 
@@ -588,8 +587,7 @@ export class MySocketService {
     }
 
     async handleRequestDeleted(payload: PatchEventParams[PatchEventType.RequestDeleted]) {
-        console.log("IN HANDLE REQUEST DELETED")
-        await this.updateUsersInOrg(PatchEventType.RequestDeleted, payload, payload.orgId, notificationLabel(PatchEventType.RequestDeleted))
+        await this.updateUsersInOrg(PatchEventType.RequestDeleted, payload, payload.orgId, notificationLabel(PatchEventType.RequestDeleted), [payload.deleterId])
     }
 
     async handleUserEdited(payload: PatchEventParams[PatchEventType.UserEdited]) {
@@ -661,13 +659,16 @@ export class MySocketService {
         event: Event,
         params: PatchEventParams[Event],
         orgId: string,
-        body: string
+        body: string,
+        toExclude?: string[]
     ) {
-        console.log("in update users in org");
-
         const org = await this.db.resolveOrganization(orgId)
         const fullOrg = await this.db.fullOrganization(org)
         const usersInOrg = await this.usersInOrg(fullOrg)
+
+        for (const userToExclude of (toExclude || [])) {
+            usersInOrg.delete(userToExclude)
+        }
 
         const configs: SendConfig[] = [];
 

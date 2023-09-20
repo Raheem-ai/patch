@@ -71,7 +71,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return null;
     }
 
-    console.log("About to call user on request");
     const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
     const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
     const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
