@@ -57,6 +57,7 @@ export default class UpdateDynamicConfig extends Command {
         }
     }
 
+    // TODO: something is wrong here...old dynamic configs are getting deleted
     async approveRelease(
         conf: Omit<DynamicAppVersionConfig, 'testing'>,
         dbManager: DBManager,
@@ -94,6 +95,7 @@ export default class UpdateDynamicConfig extends Command {
             });
         }
 
+        // TODO: I think this is the culprit
         // cleanup old app versions that failed testing so were never promoted
         const cleanedAppVersions = dynamicConfig.appVersion.filter((verionConfig) => {
             const isCurrentRelease = verionConfig.latestIOS == conf.latestIOS
@@ -108,6 +110,7 @@ export default class UpdateDynamicConfig extends Command {
         }
 
         if (cleanupRequired || shouldNotify) {
+            console.log(`saving dynamicConfig: ${dynamicConfig}`)
             await dbManager.upsertDynamicConfig(dynamicConfig)
         }
 

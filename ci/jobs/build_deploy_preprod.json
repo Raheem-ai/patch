@@ -71,7 +71,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "node",
-            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD, GOOGLE_FCM_CREDS_PREPROD"],
             "args": [
                 "/app/backend/infra/bin/run",
                 "ci:createExpoBuild"
@@ -80,9 +80,7 @@
                 "name": "ssh",
                 "path": "/root/.ssh"
             }],
-            "env": [ 
-                "_ENVIRONMENT=$_ENVIRONMENT"
-            ]
+            "env": []
         },
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
@@ -161,7 +159,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
-            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD, GOOGLE_FCM_CREDS_PREPROD"],
             "args": [
                 "/app/ci/frontend/publish_preprod.sh"
             ],
@@ -216,8 +214,11 @@
                 "env": "EXPO_TOKEN"
             },
             {
-                "versionName": "projects/$PROJECT_ID/secrets/google-fcm/versions/latest",
-                "env": "GOOGLE_FCM_CREDS"
+                "versionName": "projects/$PROJECT_ID/secrets/google-fcm-prod/versions/latest",
+                "env": "GOOGLE_FCM_CREDS_PROD"
+            },{
+                "versionName": "projects/$PROJECT_ID/secrets/google-fcm-preprod/versions/latest",
+                "env": "GOOGLE_FCM_CREDS_PREPROD"
             },
             {
                 "versionName": "projects/$PROJECT_ID/secrets/google-adc/versions/latest",
