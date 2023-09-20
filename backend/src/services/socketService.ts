@@ -87,8 +87,7 @@ export class MySocketService {
         console.log(`Socket disconnected ${socket.id}`)
     }
 
-    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) {
-        console.log("before socket service switch case");    
+    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) { 
         switch (event) {
             // case PatchEventType.UserCreated:
             // case PatchEventType.UserDeleted: // TODO: How should we handle this?
@@ -116,7 +115,6 @@ export class MySocketService {
                 await this.handleUserAddedToOrg(params as PatchEventParams[PatchEventType.UserAddedToOrg])
                 break;
             // TODO: case PatchEventType.UserRemovedFromOrg:
-            // update Users In Org
             case PatchEventType.RequestCreated:
                 await this.handleRequestCreated(params as PatchEventParams[PatchEventType.RequestCreated])
                 break;

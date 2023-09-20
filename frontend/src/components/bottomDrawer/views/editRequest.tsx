@@ -22,11 +22,6 @@ import { useIsFocused } from "@react-navigation/native";
 
 type Props = {}
 
-// function isFocused() {
-//     const isFocused = useIsFocused();
-//     return isFocused; 
-// }
-
 @observer
 class EditHelpRequest extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
@@ -342,13 +337,18 @@ class EditHelpRequest extends React.Component<Props> {
     }
 
     deleteRequest = async () => {
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            organizationStore().metadata.requestPrefix, 
+            requestStore().currentRequest.displayId
+        )
+
         try {
 
             const reqToDelete = requestStore().currentRequest;
 
             await requestStore().deleteRequest(reqToDelete.id);
 
-            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqToDelete.displayId));
+            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
 
         } catch (e) {
             alertStore().toastError(resolveErrorMessage(e));
@@ -356,6 +356,11 @@ class EditHelpRequest extends React.Component<Props> {
     }
 
     promptToDeleteRequest = () => {
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            organizationStore().metadata.requestPrefix, 
+            requestStore().currentRequest.displayId
+        )
+
         alertStore().showPrompt({
             title:  STRINGS.REQUESTS.deleteRequestTitle,
             message: STRINGS.REQUESTS.deleteRequestDialog,
@@ -365,7 +370,7 @@ class EditHelpRequest extends React.Component<Props> {
                     onPress: () => {}
                 },
                 {   
-                    label: STRINGS.REQUESTS.deleteRequestOptionYes(requestStore().currentRequest.displayId),
+                    label: STRINGS.REQUESTS.deleteRequestOptionYes(reqName),
                     onPress: this.deleteRequest,
                     confirming: true
                 }
@@ -377,8 +382,6 @@ class EditHelpRequest extends React.Component<Props> {
         return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
-
-
 
 const styles = StyleSheet.create({
     actionButtonsContainer: {

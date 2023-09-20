@@ -1228,6 +1228,7 @@ export type OrgEventType = PatchEventType.OrganizationEdited
     | PatchEventType.OrganizationDeleted
     | PatchEventType.OrganizationRoleCreated
     | PatchEventType.OrganizationRoleEdited
+    | PatchEventType.OrganizationRoleDeleted
     | PatchEventType.OrganizationAttributesUpdated
     | PatchEventType.OrganizationTagsUpdated
 

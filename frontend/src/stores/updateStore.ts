@@ -146,7 +146,6 @@ export default class UpdateStore implements IUpdateStore {
         console.log('waiting for pending request update')
         await when(() => !this.reqState.specificIds.size)
     }
-    
 
     updateRequests = stateFullMemoDebounce(async (
         requestIds: string[],
