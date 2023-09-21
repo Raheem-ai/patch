@@ -12,6 +12,7 @@ exports.inEASUpdate = !!process.env._UPDATE_ENVIRONMENT
 // suffixes for differentiating env specific secrets in eas
 // (they don't provide this natively le sigh)
 exports.prodSecretSuffix = '_PROD'
+exports.preProdSecretSuffix = '_PREPROD'
 exports.stagingSecretSuffix = '_STAGING'
 exports.devSecretSuffix = '_DEV'
 
