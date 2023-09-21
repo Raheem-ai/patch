@@ -48,3 +48,14 @@
   updates:
     - updating infra scripts
   nativeChanges: false
+- requiresUpdate: false
+  nativeIOSVersion: 1.0.4(1)
+  nativeAndroidVersion: 1.0.4(15)
+  commit: 9fec008
+  timestamp: '2023-09-21T21:31:56.725Z'
+  updates:
+    - updating readme with yarn build step
+    - infra work separate preprod and prod fcm credentials
+    - Update invitation sent message
+    - Update strings.ts with logged out link to site
+  nativeChanges: true
