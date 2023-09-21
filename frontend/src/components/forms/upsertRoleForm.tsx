@@ -14,6 +14,7 @@ import { iHaveAllPermissions } from "../../utils"
 import KeyboardAwareArea from "../helpers/keyboardAwareArea"
 import STRINGS from "../../../../common/strings"
 import TestIds from "../../test/ids"
+import SelectableText from "../helpers/selectableText"
 
 type UpsertRoleFormProps = {
     testID: string,
@@ -144,7 +145,7 @@ const UpsertRoleForm = ({
                         <BackButtonHeader {...headerProps} />
                         { isAdminRole 
                             ? <View style={{ paddingLeft: 60, padding: 20, borderStyle: 'solid', borderBottomColor: '#ccc', borderBottomWidth: 1 }}>
-                                <Text style={{ fontSize: 16 }}>{STRINGS.SETTINGS.cannotDeleteRole(STRINGS.SETTINGS.roleAdmin)}</Text>
+                                <SelectableText style={{ fontSize: 16 }}>{STRINGS.SETTINGS.cannotDeleteRole(STRINGS.SETTINGS.roleAdmin)}</SelectableText>
                             </View>
                             : null
                         }

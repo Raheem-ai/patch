@@ -3,6 +3,7 @@ import { Button } from 'react-native-paper';
 import * as React from 'react';
 import { InvitationSuccessfulProp, routerNames } from '../types';
 import { navigateTo } from '../navigation';
+import SelectableText from '../components/helpers/selectableText';
 
 type Props = {
     navigation: InvitationSuccessfulProp;
@@ -12,16 +13,16 @@ export default function InvitationSuccessfulPage( { navigation } : Props) {
     return(
         <View style={styles.container}>
             <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>Invitation successful</Text>
+                <SelectableText style={styles.titleText}>Invitation successful</SelectableText>
             </View>
             <View style={styles.captionContainer}>
-                <Text style={styles.captionText}>
-                    <Text>Ready to join </Text>
-                    <Text style={{color: '#76599A'}}>Community Response Team?</Text>
-                </Text>
+                <SelectableText style={styles.captionText}>
+                    <SelectableText>Ready to join </SelectableText>
+                    <SelectableText style={{color: '#76599A'}}>Community Response Team?</SelectableText>
+                </SelectableText>
             </View>
             <View style={[styles.captionContainer, {marginBottom: 120}]}>
-                <Text style={styles.captionText}>If you already havea a PATCH account, sign in. Otherwise, create an account.</Text>
+                <SelectableText style={styles.captionText}>If you already havea a PATCH account, sign in. Otherwise, create an account.</SelectableText>
             </View>
 
             <View style={styles.bottomContainer}>

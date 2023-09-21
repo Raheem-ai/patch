@@ -10,6 +10,7 @@ import TestIds from "../../../../test/ids";
 import { ICONS } from "../../../../types";
 import { SectionScreenViewProps } from "../../types";
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader";
+import SelectableText from "../../../helpers/selectableText";
 
 /**
  * Note: for this to work visually, all groups that are forced must be directly under the group that forces them
@@ -169,12 +170,12 @@ export default class PermissionGroupListInput extends React.Component<SectionScr
 
                                                     {/* make the top align with the icons */}
                                                     <View style={[{ flex: 1, marginVertical: verticlePadding }]}>
-                                                        <Text style={[ styles.name, isSelected || isForced ? styles.selectedName : null ]}>
+                                                        <SelectableText style={[ styles.name, isSelected || isForced ? styles.selectedName : null ]}>
                                                             { metadata.name }
-                                                        </Text>
-                                                        <Text style={styles.description}>
+                                                        </SelectableText>
+                                                        <SelectableText style={styles.description}>
                                                             { metadata.description }
-                                                        </Text>
+                                                        </SelectableText>
                                                     </View>
                                                     <View style={styles.selectedIconContainer}>
                                                         <IconButton

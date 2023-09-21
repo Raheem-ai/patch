@@ -57,6 +57,7 @@ export default class UpdateDynamicConfig extends Command {
         }
     }
 
+    // TODO: something is wrong here...old dynamic configs are getting deleted
     async approveRelease(
         conf: Omit<DynamicAppVersionConfig, 'testing'>,
         dbManager: DBManager,
@@ -94,9 +95,27 @@ export default class UpdateDynamicConfig extends Command {
             });
         }
 
+        // TODO: I think this is the culprit
+        // cleanup old app versions that failed testing so were never promoted
+        const cleanedAppVersions = dynamicConfig.appVersion.filter((verionConfig) => {
+            const isCurrentRelease = verionConfig.latestIOS == conf.latestIOS
+
+            return isCurrentRelease || !verionConfig.testing
+        })
+
+        const cleanupRequired = cleanedAppVersions.length != dynamicConfig.appVersion.length
+
+        if (cleanupRequired) {
+            dynamicConfig.appVersion = cleanedAppVersions
+        }
+
+        if (cleanupRequired || shouldNotify) {
+            console.log(`saving dynamicConfig: ${dynamicConfig}`)
+            await dbManager.upsertDynamicConfig(dynamicConfig)
+        }
+
         if (shouldNotify) {
             // save and notify users that the version config was updated
-            await dbManager.upsertDynamicConfig(dynamicConfig)
             await pubSubManager.sys(PatchEventType.SystemDynamicConfigUpdated, {})
         }
     }
@@ -128,12 +147,14 @@ export default class UpdateDynamicConfig extends Command {
             await config.MONGO.init(EnvironmentId.prod)
             const connString = config.MONGO_CONNECTION_STRING.get().connection_string;
             
+            console.log('Creating DBManager')
             const dbManager = await DBManager.fromConnectionString(connString);
             
-            // this will need trySetupLocalGCPCredentials() i think???
-            // might not because it's in the same project on GCP
+            // this will need probably need trySetupLocalGCPCredentials() to run locally i think???
+            console.log('Creating PubSubManager')
             const pubSubManager = await PubSubManager.create();
 
+            console.log('Getting dynamicConfig')
             const dynamicConfig = await dbManager.getDynamicConfig()
 
             const iosVersion = expoVersionFormat(VERSION, IOS_VERSION_CODE);

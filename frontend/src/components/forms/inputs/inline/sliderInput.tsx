@@ -8,6 +8,7 @@ import STRINGS from "../../../../../../common/strings";
 import TestIds from "../../../../test/ids";
 import { Colors } from "../../../../types";
 import { SectionInlineViewProps } from "../../types";
+import SelectableText from "../../../helpers/selectableText";
 
 const MORE = -1;
 
@@ -458,7 +459,7 @@ class SliderInput extends React.Component<SectionInlineViewProps<'Slider'>>{
         return (
             <View style={{ marginRight: 20 }}>    
                 <View style={{ paddingTop: 20 }}>
-                    <Text testID={TestIds.inputs.slider.previewLabel(this.props.config.testID)} style={[styles.label]}>{label}</Text>
+                    <SelectableText testID={TestIds.inputs.slider.previewLabel(this.props.config.testID)} style={[styles.label]}>{label}</SelectableText>
                 </View>
                 <View testID={this.props.config.testID} onLayout={this.onLayout} style={{ marginHorizontal: shim }}>
                     {
@@ -562,7 +563,7 @@ function Knob({
             <Animated.View
                 style={[styles.knob, positionStyles]}
                 >
-                <Text style={{ color: styles.knob.color }}>{label}</Text>
+                <SelectableText style={{ color: styles.knob.color }}>{label}</SelectableText>
                 {
                     isExact && onTop
                         ? exactKnobDecorations()
