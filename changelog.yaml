@@ -60,3 +60,11 @@
     - Update invitation sent message
     - Update strings.ts with logged out link to site
   nativeChanges: true
+- requiresUpdate: true
+  nativeIOSVersion: 1.0.4(1)
+  nativeAndroidVersion: 1.0.4(15)
+  commit: 7ee5d79
+  timestamp: '2023-09-22T22:15:24.967Z'
+  updates:
+    - updating create/approve scripts
+  nativeChanges: false
