@@ -11,9 +11,9 @@
  * a new build because of native code changes or build time native 
  * config changes
  */
-exports.VERSION = `1.0.3`
+exports.VERSION = `1.0.4`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
-exports.ANDROID_VERSION_CODE = 14
+exports.ANDROID_VERSION_CODE = 15
 // NOTE: this never needs to change
 exports.IOS_VERSION_CODE = "1"
 /**
@@ -31,5 +31,5 @@ exports.IOS_VERSION_CODE = "1"
  * Update2: includes net new features that are useful but don't affect the rest of the app if they aren't there
  * REQUIRES_UPDATE = false
  */
-exports.REQUIRES_UPDATE = false // note: this changes the manual deployment steps...if true, should use a different
+exports.REQUIRES_UPDATE = true // note: this changes the manual deployment steps...if true, should use a different
 // build def that doesn't automatically switch traffic over
