@@ -43,6 +43,7 @@ if (inEASBuild) {
     // TODO: do setup for locally
 
     console.log('inEASUpdate: ')
+    const UPDATE_ENV = process.env._UPDATE_ENVIRONMENT
 
     let key = googleFCMKey;
 
@@ -52,9 +53,9 @@ if (inEASBuild) {
     // staging is the only environment that needs this secret 
     // in the non-prod GCP project so it doesn't need to differentieate
     // prod/preprod have different app identifiers but also live in the same GCP project
-    key += ENV == 'prod'
+    key += UPDATE_ENV == 'prod'
         ? prodSecretSuffix
-        : ENV == 'preprod'
+        : UPDATE_ENV == 'preprod'
             ? preProdSecretSuffix
             : '';
 
