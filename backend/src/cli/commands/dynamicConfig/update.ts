@@ -37,8 +37,10 @@ export default class UpdateDynamicConfig extends Command {
             }
         }
 
+        const dupVersion = dynamicConfig.appVersion.find((c) => c.latestIOS == conf.latestIOS);
+
         // Make sure the new version isn't in here yet
-        if (dynamicConfig.appVersion.every((c) => c.latestIOS != conf.latestIOS)) {
+        if (!dupVersion) {
             
             dynamicConfig.appVersion.push({
                 latestIOS: conf.latestIOS,
@@ -49,6 +51,14 @@ export default class UpdateDynamicConfig extends Command {
 
             await dbManager.upsertDynamicConfig(dynamicConfig)
             
+        } else if (dupVersion.testing) {
+            // overwrite the failed test version in place
+            dupVersion.latestIOS = conf.latestIOS
+            dupVersion.latestAndroid = conf.latestAndroid
+            dupVersion.requiresUpdate = conf.requiresUpdate
+
+            await dbManager.upsertDynamicConfig(dynamicConfig)
+
         } else {
             // this shouldn't happen
             this.error(`The target Version ${versionFromExpoFormat(conf.latestIOS)} already exists in the dynamicConfig. Please make sure to update 'version.js' before starting the release preprod deployment flow`, {
@@ -57,6 +67,7 @@ export default class UpdateDynamicConfig extends Command {
         }
     }
 
+    // TODO: something is wrong here...old dynamic configs are getting deleted
     async approveRelease(
         conf: Omit<DynamicAppVersionConfig, 'testing'>,
         dbManager: DBManager,
@@ -94,6 +105,7 @@ export default class UpdateDynamicConfig extends Command {
             });
         }
 
+        // TODO: I think this is the culprit
         // cleanup old app versions that failed testing so were never promoted
         const cleanedAppVersions = dynamicConfig.appVersion.filter((verionConfig) => {
             const isCurrentRelease = verionConfig.latestIOS == conf.latestIOS
@@ -108,6 +120,7 @@ export default class UpdateDynamicConfig extends Command {
         }
 
         if (cleanupRequired || shouldNotify) {
+            console.log(`saving dynamicConfig: ${dynamicConfig}`)
             await dbManager.upsertDynamicConfig(dynamicConfig)
         }
 
