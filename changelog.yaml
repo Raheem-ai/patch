@@ -48,3 +48,15 @@
   updates:
     - updating infra scripts
   nativeChanges: false
+- requiresUpdate: true
+  nativeIOSVersion: 1.0.4(1)
+  nativeAndroidVersion: 1.0.4(15)
+  commit: 0b0ed5c
+  timestamp: '2023-09-22T19:51:55.031Z'
+  updates:
+    - Handling dup dynamic config versions when previous preprod testing failed
+    - updating readme with yarn build step
+    - infra work separate preprod and prod fcm credentials
+    - Update invitation sent message
+    - Update strings.ts with logged out link to site
+  nativeChanges: true
