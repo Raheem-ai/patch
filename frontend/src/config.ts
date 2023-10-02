@@ -25,6 +25,7 @@ export const termsOfServiceLink = extra.termsOfServiceLink;
 export const appRuntimeVersion = Updates.runtimeVersion;
 
 export const inProdApp = appEnv == 'prod'
+export const inPreProdApp = appEnv == 'preprod'
 export const inStagingApp = appEnv == 'staging'
 export const inDevApp = appEnv == 'dev'
 
