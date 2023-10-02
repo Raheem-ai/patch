@@ -260,7 +260,7 @@ export interface IRequestStore extends IBaseStore {
     joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
     ackRequestNotification(requestId: string): Promise<void>
 
-    deleteRequest: (requestId: string) => void
+    deleteRequest: (requestId: string) => Promise<() => void>
     onRequestDeletedUpdate(requestId: string): void
 }
 
@@ -345,7 +345,7 @@ export interface IBottomDrawerStore extends IBaseStore {
     contentHeightChange(): Promise<void>
     show(view: BottomDrawerView, expanded?: boolean): void;
     hideSync(): Promise<void>
-    hide(): Promise<void>// should this take an optional callback?
+    hide(): Promise<void>
     expand(): void
     minimize(): void
     startSubmitting(): void

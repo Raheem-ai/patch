@@ -61,7 +61,7 @@ export default class UpdateStore implements IUpdateStore {
             // if it does, update all the stores that keep local caches of affected data
             // (ie. edit stores) before updating SSOT stores that we use to validate 
             // logic + pull display data from (ie. organizationStore)
-            this.updateCachedStores(packet)
+            await this.updateCachedStores(packet)
 
             if (isIndividualRequestEventPacket(packet)) {
                 await this.updateRequests([packet.params.requestId], packet.event)
@@ -108,7 +108,7 @@ export default class UpdateStore implements IUpdateStore {
         }
     }
 
-    updateCachedStores(packet: PatchEventPacket) {
+    async updateCachedStores(packet: PatchEventPacket) {
         // NOTE: each one of these cases should also get called by the store that initiates the event
         // so the initiator has their ui update as if it came from an update
 
@@ -117,8 +117,7 @@ export default class UpdateStore implements IUpdateStore {
         }
 
         if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
-            console.log("in cached stores onroledeleted");
-            this.onRequestDeleted(packet.params.requestId)
+            await this.onRequestDeleted(packet.params.requestId)
         }
     }
 
@@ -130,8 +129,8 @@ export default class UpdateStore implements IUpdateStore {
         newUserStore().onRoleDeletedUpdate(roleId)
     }
 
-    onRequestDeleted(requestId: string){
-        requestStore().onRequestDeletedUpdate(requestId);
+    async onRequestDeleted(requestId: string){
+        await requestStore().onRequestDeletedUpdate(requestId);
         // almost same logic for when it does the delete itself
     }
 

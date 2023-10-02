@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { bottomDrawerStore, IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { bottomDrawerStore, BottomDrawerView, IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -691,32 +691,22 @@ export default class RequestStore implements IRequestStore {
 
     async deleteRequest(requestId: string) {
 
-        bottomDrawerStore().startSubmitting();
-
         await api().deleteRequest(this.orgContext(), requestId);
 
-        await navigationStore().navigateToSync(routerNames.helpRequestList);
-        
-        bottomDrawerStore().endSubmitting();
-
-        await bottomDrawerStore().hideSync(); 
-    
-        runInAction(() => {
+        return (() => {runInAction(() => {
             this.currentRequestId = null;
             this.requests.delete(requestId);
-        });
+        })});
     }
 
     async onRequestDeletedUpdate(requestId: string) {
         
-        if(this.currentRequest){
-            if(this.currentRequest.id === requestId){
-                if(bottomDrawerStore().showing){
-                    await bottomDrawerStore().hideSync();
-                }
-                if(navigationStore().currentRoute === routerNames.helpRequestDetails){
-                    await navigationStore().navigateToSync(routerNames.helpRequestList);
-                }
+        if(this.currentRequest?.id === requestId){ 
+            if(bottomDrawerStore().showing && bottomDrawerStore().viewId == BottomDrawerView.editRequest){
+                await bottomDrawerStore().hideSync();
+            }
+            if(navigationStore().currentRoute === routerNames.helpRequestDetails){
+                await navigationStore().navigateToSync(routerNames.helpRequestList);
             }
         }
 

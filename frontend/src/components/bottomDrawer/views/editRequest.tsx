@@ -96,16 +96,16 @@ class EditHelpRequest extends React.Component<Props> {
                         { renderHeader() }
                         { renderInputs(inputs()) }
                         { this.canDeleteRequest
-                        ?   <View style={styles.actionButtonsContainer}>
-                            <PatchButton 
-                                testID={TestIds.editRequest.deleteRequest}
-                                mode='text'
-                                style={ styles.actionButton }
-                                label={STRINGS.REQUESTS.deleteRequest}
-                                onPress={this.promptToDeleteRequest}
-                             />
-                        </View>
-                        : null
+                            ? <View style={styles.actionButtonsContainer}>
+                                <PatchButton 
+                                    testID={TestIds.editRequest.deleteRequest}
+                                    mode='text'
+                                    style={ styles.actionButton }
+                                    label={STRINGS.REQUESTS.deleteRequest}
+                                    onPress={this.promptToDeleteRequest}
+                                />
+                            </View>
+                            : null
                         }
                     </View>
                 </ScrollView>
@@ -346,7 +346,17 @@ class EditHelpRequest extends React.Component<Props> {
 
             const reqToDelete = requestStore().currentRequest;
 
-            await requestStore().deleteRequest(reqToDelete.id);
+            bottomDrawerStore().startSubmitting();
+
+            const deleteInMemory = await requestStore().deleteRequest(reqToDelete.id);
+
+            await navigationStore().navigateToSync(routerNames.helpRequestList);
+        
+            bottomDrawerStore().endSubmitting();
+
+            await bottomDrawerStore().hideSync(); 
+
+            deleteInMemory();
 
             alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
 

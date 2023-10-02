@@ -1,5 +1,4 @@
 import { PubSub, Topic, Subscription, ClientConfig } from '@google-cloud/pubsub';
-import assert from 'assert';
 import { PatchEventPacket, PatchEventParams, PatchEventType } from "common/models";
 
 enum PatchEventTopics {

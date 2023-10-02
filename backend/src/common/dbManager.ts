@@ -1599,9 +1599,8 @@ export class DBManager {
         return await request.save();
     }
 
-    async deleteRequest(requestId: string, orgId: string,  userId: string) {
+    async deleteRequest(requestId: string) {
         // remove the entry in the requests map under the request key
-
         return this.transaction(async (session) => {
             await this.requests.findByIdAndDelete(requestId);
         })
