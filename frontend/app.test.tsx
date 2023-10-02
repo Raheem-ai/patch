@@ -1063,5 +1063,65 @@ describe('Signed in Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.createdRequestSuccess(reqName));
         await act(async() => fireEvent(toastTextComponent, 'press'));
-    }, 10000)
+        }, 10000)
+    
+    test('Delete request', async () => {
+        console.log('Delete request run...');
+        const {
+            getByTestId,
+            queryByTestId,
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Open Edit Request form
+        const editRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.editRequest));
+        await act(async () => {
+            fireEvent(editRequestButton, 'press');
+        })
+
+        // Delete Request
+        const deleteRequestButton = await waitFor(() => getByTestId(TestIds.requestCard('deleteRequest', requests[0].id)));
+        await act(async () => {
+            fireEvent(deleteRequestButton, 'press');
+        })
+
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            MockOrgMetadata().requestPrefix, 
+            requests[0].displayId
+        )
+
+        const deleteDialogToast = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(deleteDialogToast).toHaveTextContent(STRINGS.REQUESTS.deleteRequestDialog);
+
+        // Press 'Yes' for 'Are you sure?'
+        const confirmDeleteButton = await waitFor(() => getByTestId(TestIds.requestCard('confirmDeleteRequest', requests[0].id)));
+        await act(async () => {
+            fireEvent(confirmDeleteButton, 'press');
+        })
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+        }, 10000)    
 })
