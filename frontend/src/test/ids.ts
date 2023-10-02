@@ -43,10 +43,12 @@ const TestIds = {
             profile: 'header::profile',
             settings: 'header::settings',
             helpAndInfo: 'header::helpAndInfo',
-            signOut: 'header::signOut'
+            signOut: 'header::signOut',
+            helpRequestDetails: 'header::helpRequestDetails'
         },
         actions: {
             createRequest: 'headerActionsCreateRequest',
+            editRequest: 'headerActionsEditRequest',
             editProfile: 'headerActionsEditProfile',
             addTeamMember: 'headerActionsAddTeamMember',
             goToHelpRequestList: 'headerActionsGoToHelpRequestList',
