@@ -233,7 +233,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         @Required() @BodyParams('requestId') requestId: string
     ) {
 
-        const deleterId = String(user.id); 
+        const deleterId = user.id; 
 
         await this.pubSub.sys(PatchEventType.RequestDeleted, { 
             requestId: requestId,
@@ -241,7 +241,7 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
             deleterId
         });
 
-        return this.db.deleteRequest(requestId, orgId, user.id);
+        return this.db.deleteRequest(requestId);
 
     }
 
