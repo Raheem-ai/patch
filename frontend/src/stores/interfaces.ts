@@ -259,6 +259,9 @@ export interface IRequestStore extends IBaseStore {
     ackRequestsToJoinNotification(requestId: string): Promise<void>
     joinRequestIsUnseen(userId: string, requestId: string, positionId: string): boolean
     ackRequestNotification(requestId: string): Promise<void>
+
+    deleteRequest: (requestId: string) => Promise<() => void>
+    onRequestDeletedUpdate(requestId: string): void
 }
 
 export type EditOrganizationData = Pick<OrganizationMetadata, 'name' | 'roleDefinitions' | 'attributeCategories' | 'tagCategories'>
@@ -341,7 +344,8 @@ export interface IBottomDrawerStore extends IBaseStore {
     
     contentHeightChange(): Promise<void>
     show(view: BottomDrawerView, expanded?: boolean): void;
-    hide(): void// should this take an optional callback?
+    hideSync(): Promise<void>
+    hide(): Promise<void>
     expand(): void
     minimize(): void
     startSubmitting(): void

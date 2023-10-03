@@ -1244,6 +1244,7 @@ export type SilentNotificationEventType = PatchEventType.UserForceLogout
     | PatchEventType.UserAddedToOrg
     | PatchEventType.RequestCreated
     | PatchEventType.RequestEdited
+    | PatchEventType.RequestDeleted
     | PatchEventType.OrganizationEdited
     | PatchEventType.OrganizationTagsUpdated
     | PatchEventType.OrganizationAttributesUpdated
@@ -1309,7 +1310,8 @@ export type PatchEventParams = {
     }, 
     [PatchEventType.RequestDeleted]: {
         orgId:string,
-        requestId: string
+        requestId: string,
+        deleterId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {
         // orgId: string,

@@ -588,6 +588,16 @@ export class APIClient implements IAPIService {
         })).data
     }
 
+    async deleteRequest(ctx: OrgContext, requestId: string): Promise<void> {
+
+        const url = `${this.apiHost}${API.client.deleteRequest()}`;
+
+        await this.tryPost<void>(url, { requestId }, {
+            headers: this.orgScopeAuthHeaders(ctx),
+        })
+
+    }
+
     async getRequests(ctx: OrgContext, requestIds?: string[]): Promise<HelpRequest[]> {
         const url = `${this.apiHost}${API.client.getRequests()}`;
 

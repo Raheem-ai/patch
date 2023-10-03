@@ -41,10 +41,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const [initialTab, setInitialTab] = useState(RequestDetailsTabs.Overview);
 
-    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
-    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
-    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
-
     useEffect(() => {
         (async () => {
             const params = route.params;
@@ -70,6 +66,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             await requestStore().ackRequestNotification(request().id)
         })();
     }, []);
+
+    if(!request()){
+        return null;
+    }
+
+    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
+    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
     const notesSection = () => {
         const notes = requestStore().currentRequest.notes;

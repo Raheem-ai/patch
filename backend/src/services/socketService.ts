@@ -87,8 +87,8 @@ export class MySocketService {
         console.log(`Socket disconnected ${socket.id}`)
     }
 
-    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) {
-            switch (event) {
+    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) { 
+        switch (event) {
             // case PatchEventType.UserCreated:
             // case PatchEventType.UserDeleted: // TODO: How should we handle this?
             //         // noop
@@ -121,7 +121,9 @@ export class MySocketService {
             case PatchEventType.RequestEdited:
                 await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
-            // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestDeleted:
+                await this.handleRequestDeleted(params as PatchEventParams[PatchEventType.RequestDeleted])
+                break;
             case PatchEventType.RequestRespondersRequestToJoin: 
                 await this.handleRequestRespondersRequestToJoin(params as PatchEventParams[PatchEventType.RequestRespondersRequestToJoin])
                 break;
@@ -582,6 +584,10 @@ export class MySocketService {
         await this.updateUsersInOrg(PatchEventType.RequestEdited, payload, payload.orgId, notificationLabel(PatchEventType.RequestEdited))
     }
 
+    async handleRequestDeleted(payload: PatchEventParams[PatchEventType.RequestDeleted]) {
+        await this.updateUsersInOrg(PatchEventType.RequestDeleted, payload, payload.orgId, notificationLabel(PatchEventType.RequestDeleted), [payload.deleterId])
+    }
+
     async handleUserEdited(payload: PatchEventParams[PatchEventType.UserEdited]) {
         await this.updateUsersInOrg(PatchEventType.UserEdited, payload, payload.orgId, notificationLabel(PatchEventType.UserEdited))
     }
@@ -651,11 +657,16 @@ export class MySocketService {
         event: Event,
         params: PatchEventParams[Event],
         orgId: string,
-        body: string
+        body: string,
+        toExclude?: string[]
     ) {
         const org = await this.db.resolveOrganization(orgId)
         const fullOrg = await this.db.fullOrganization(org)
         const usersInOrg = await this.usersInOrg(fullOrg)
+
+        for (const userToExclude of (toExclude || [])) {
+            usersInOrg.delete(userToExclude)
+        }
 
         const configs: SendConfig[] = [];
 
