@@ -236,12 +236,12 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         const deleterId = user.id; 
 
         await this.pubSub.sys(PatchEventType.RequestDeleted, { 
-            requestId: requestId,
-            orgId, 
+            requestId,
+            orgId,
             deleterId
         });
 
-        return this.db.deleteRequest(requestId);
+        await this.db.deleteRequest(requestId);
 
     }
 
