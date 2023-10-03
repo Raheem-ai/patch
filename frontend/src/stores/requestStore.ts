@@ -705,13 +705,19 @@ export default class RequestStore implements IRequestStore {
             if(bottomDrawerStore().showing && bottomDrawerStore().viewId == BottomDrawerView.editRequest){
                 await bottomDrawerStore().hideSync();
             }
+
             if(navigationStore().currentRoute === routerNames.helpRequestDetails){
                 await navigationStore().navigateToSync(routerNames.helpRequestList);
             }
-        }
 
-        runInAction(() => {
-            this.requests.delete(requestId);
-        });
-    } 
+            runInAction(() => {
+                this.currentRequestId = null;
+                this.requests.delete(requestId);
+            });
+        } else {
+            runInAction(() => {
+                this.requests.delete(requestId);
+            });
+        }
+    }
 }
