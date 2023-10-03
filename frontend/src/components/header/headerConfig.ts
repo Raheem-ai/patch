@@ -128,6 +128,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
                 {
+                    testId: TestIds.header.actions.editRequest,
                     icon: ICONS.edit,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.editRequest, true);
