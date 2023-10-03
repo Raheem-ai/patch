@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, runInAction, set, when } from 'mobx';
 import { Store } from './meta';
-import { IRequestStore, IUserStore, manageAttributesStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
+import { bottomDrawerStore, BottomDrawerView, IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
 import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
 import { api } from '../services/interfaces';
@@ -8,6 +8,8 @@ import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
 import { usersAssociatedWithRequest } from '../../../common/utils/requestUtils';
 import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
+import { navigationRef } from '../navigation';
+import { routerNames } from '../types';
 
 @Store(IRequestStore)
 export default class RequestStore implements IRequestStore {
@@ -685,5 +687,37 @@ export default class RequestStore implements IRequestStore {
         this.requests.merge({
             [updatedReq.id]: updatedReq
         })
+    }
+
+    async deleteRequest(requestId: string) {
+
+        await api().deleteRequest(this.orgContext(), requestId);
+
+        return (() => {runInAction(() => {
+            this.currentRequestId = null;
+            this.requests.delete(requestId);
+        })});
+    }
+
+    async onRequestDeletedUpdate(requestId: string) {
+        
+        if(this.currentRequest?.id === requestId){ 
+            if(bottomDrawerStore().showing && bottomDrawerStore().viewId == BottomDrawerView.editRequest){
+                await bottomDrawerStore().hideSync();
+            }
+
+            if(navigationStore().currentRoute === routerNames.helpRequestDetails){
+                await navigationStore().navigateToSync(routerNames.helpRequestList);
+            }
+
+            runInAction(() => {
+                this.currentRequestId = null;
+                this.requests.delete(requestId);
+            });
+        } else {
+            runInAction(() => {
+                this.requests.delete(requestId);
+            });
+        }
     }
 }

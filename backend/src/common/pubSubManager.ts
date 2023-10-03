@@ -1,4 +1,4 @@
-import { PubSub, Topic, Subscription } from '@google-cloud/pubsub';
+import { PubSub, Topic, Subscription, ClientConfig } from '@google-cloud/pubsub';
 import { PatchEventPacket, PatchEventParams, PatchEventType } from "common/models";
 
 enum PatchEventTopics {
@@ -33,6 +33,7 @@ export class PubSubManager {
     subscriptions: Map<PatchEventSubscriptions, Subscription> = new Map()
 
     async init() {
+
         const allTopics = await this.client.getTopics();
         const allSubs = await this.client.getSubscriptions();
 
@@ -67,8 +68,6 @@ export class PubSubManager {
                 this.subscriptions.set(s, res[0])
             }
         }))
-
-        console.log('PubSub initialized')
     }
 
     get sysPub() {

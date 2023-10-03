@@ -1599,6 +1599,11 @@ export class DBManager {
         return await request.save();
     }
 
+    async deleteRequest(requestId: string) {
+        // remove the entry in the requests map under the request key
+        await this.requests.findByIdAndDelete(requestId);
+    }
+
     // HELPERS
 
     findByIds<M extends Model<any>, D=DocFromModel<M>>(model: M, ids: string[]): Query<D[], D> {

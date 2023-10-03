@@ -17,6 +17,7 @@ const NotificationLabelMap = {
     [PatchEventType.UserChangedRolesInOrg]: () => '',
     [PatchEventType.UserAddedToOrg]: () => '',
     [PatchEventType.RequestCreated]: () => '',
+    [PatchEventType.RequestDeleted]: () => '',
     [PatchEventType.RequestEdited]: () => '',
     [PatchEventType.OrganizationEdited]: () => '',
     [PatchEventType.OrganizationTagsUpdated]: () => '',
