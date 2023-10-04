@@ -52,8 +52,8 @@ import App from './App';
 import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockActiveRequests, MockAuthTokens, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore, requestStore, updateStore, userStore } from './src/stores/interfaces';
+import { MockActiveRequests, MockAuthTokens, MockDeleteEventPacket, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
+import { headerStore, navigationStore, updateStore, userStore } from './src/stores/interfaces';
 import { PatchEventType, PatchEventPacket, PatchEventParams} from '../common/models';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -1162,19 +1162,8 @@ describe('Deleted Request Scenarios', () => {
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
 
-        // set up mock request packet
-        const mockParams = {
-            requestId: requests[0].id,
-            orgId: MockOrgMetadata().id, 
-            deleterId: MockUsers()[0].id
-        } as PatchEventParams[PatchEventType.RequestDeleted]
-
-        const mockEventPacket = {
-            event: PatchEventType.RequestDeleted,
-            params: mockParams
-        } as PatchEventPacket<PatchEventType.RequestDeleted>
-
-         // Simulate another user deleting the request
+        // Simulate another user deleting the request
+        const mockEventPacket = MockDeleteEventPacket(requests[0].id);
         await updateStore().updateCachedStores(mockEventPacket)
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
@@ -1215,19 +1204,8 @@ describe('Deleted Request Scenarios', () => {
             fireEvent(editRequestButton, 'click');
         })
 
-        // set up mock request packet
-        const mockParams = {
-            requestId: requests[0].id,
-            orgId: MockOrgMetadata().id, 
-            deleterId: MockUsers()[0].id
-        } as PatchEventParams[PatchEventType.RequestDeleted]
-
-        const mockEventPacket = {
-            event: PatchEventType.RequestDeleted,
-            params: mockParams
-        } as PatchEventPacket<PatchEventType.RequestDeleted>
-
          // Simulate another user deleting the request
+        const mockEventPacket = MockDeleteEventPacket(requests[0].id);
         await updateStore().updateCachedStores(mockEventPacket)
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);

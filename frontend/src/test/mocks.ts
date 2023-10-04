@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig, PatchEventPacket, PatchEventType, PatchEventParams } from "../../../common/models";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -283,4 +283,20 @@ export function MockTeamMemberMetadata(): TeamMemberMetadata {
         removedOrgMembers: [],
         deletedUsers: []
     }
+}
+
+export function MockDeleteEventPacket(requestId: string) : PatchEventPacket<PatchEventType.RequestDeleted> {
+
+    const mockParams = {
+        requestId: requestId,
+        orgId: MockOrgMetadata().id, 
+        deleterId: MockUsers()[0].id
+    } as PatchEventParams[PatchEventType.RequestDeleted]
+
+    const mockEventPacket = {
+        event: PatchEventType.RequestDeleted,
+        params: mockParams
+    } as PatchEventPacket<PatchEventType.RequestDeleted>
+
+    return mockEventPacket;
 }
