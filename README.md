@@ -42,7 +42,7 @@ As a one off step, you need to generate the dev (local) config for the backend t
 Once you have generated `backend/env/.env.dev`, there are 5 commands that need to be run in different shells to simulate an environment locally
 
 
-Start ngrok to get a public url for your local dev server
+Start ngrok to get a public url for your local dev server (keep in mind the free version expires after 2 hours so if things get weird you may need to restart it)
 ```sh
 # from anywhere
 $> ngrok http 9000
@@ -51,7 +51,7 @@ $> ngrok http 9000
 Start mock GCP PubSub instance for backend events -> ui updates
 ```sh
 # from anywhere
-$> docker run --rm -it -p 8681:8681 gcr.io/google.com/cloudsdktool/cloud-sdk gcloud beta emulators pubsub start --project=fake
+$> - docker run --rm -it -p 8085:8085 gcr.io/google.com/cloudsdktool/cloud-sdk gcloud beta emulators pubsub start --project=fake —host-port=0.0.0.0:8085
 ```
 
 Start mock redis instance (for socket.io websocket adapter to use)
@@ -60,9 +60,11 @@ Start mock redis instance (for socket.io websocket adapter to use)
 $> docker run --rm -it -p 6379:6379 redis
 ```
 
-Start backend 
+Start backend and set gcloud environment variables to connect to the emulator
 ```sh
 # from `backend/`
+$> yarn install
+$> $(gcloud beta emulators pubsub env-init)
 $> yarn run dev
 ```
 
@@ -73,12 +75,16 @@ $> yarn install
 $> yarn run dev
 ``` 
 
-## Testing locally on a phone
+## Testing locally on a phone (first time setup)
 - spin up dev environment
 - copy the https url that ngrok outputs (in the form of `https://<hash>.ngrok.io`) and change the initial value of `apiHost` in `frontend/app.config.js` (*Don't check in changes to the initialization of apiHost*)
 - download [expo go app](https://expo.dev/client)
-- create account?
-- scan qr code produced by `$> expo start --no-https` and follow the link
+- create account or sign in to existing account that has access to Raheem builds
+- if using an iphone, register device with a provisioning account then scan QR code for internal dev build on expo
+- make sure developer mode is enabled in settings
+- if using an android, install internal build binaries directly onto phone
+- scan qr code produced by `$> expo start --no-https` (or `$> yarn dev build` from /frontend) and follow the link
+- notes: make sure your phone and computer are using the same wifi, if the QR code doesn't work then you may need to enter the URL manually
 
 ## Build/Deployment
 
