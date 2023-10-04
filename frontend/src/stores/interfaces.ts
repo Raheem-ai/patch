@@ -538,7 +538,8 @@ export interface IUpdateStore extends IBaseStore {
     // NOTE: this method is only called by the store that does the delete or internally when responding to an update
     // then the update store notifies the other affected stores...don't need it for tags/attributes because they are 
     // are purely optional and get filtered out anyway
-    onRoleDeleted(roleId: string): void   
+    onRoleDeleted(roleId: string): void
+    updateCachedStores(packet: PatchEventPacket): Promise<void> 
 }
 
 export namespace IUpsertRoleStore {
