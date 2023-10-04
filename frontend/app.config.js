@@ -12,7 +12,7 @@ import {
 } from './eas_build/constants';
 
 // NOTE: put your ngrok url here for development
-let apiHost = ''
+let apiHost = 'https://preprod---patch-api-wiwa2devva-uc.a.run.app'
 
 /**
  * ONLY NEEDED FOR BUILD TIME
@@ -63,6 +63,8 @@ function resolveApiHost(env) {
 		: env == 'prod'
 			? prodApiHost
 			: apiHost || stagingApiHost // for dev let defined local url override but fallback to staging
+
+	console.log(apiHost)
 }
 
 function resolveSecrets(env) {

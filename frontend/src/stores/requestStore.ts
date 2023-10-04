@@ -561,7 +561,10 @@ export default class RequestStore implements IRequestStore {
             return
         }
 
-        const usersLastMessageId = chat.userReceipts[userStore().user.id];
+        console.log(request.id, request.displayId)
+        console.log(chat)
+
+        const usersLastMessageId = chat.userReceipts?.[userStore().user.id];
         const userHasSeenChat = !!usersLastMessageId;
         const userHasUnreadMessages = !userHasSeenChat || chat.lastMessageId > usersLastMessageId
 

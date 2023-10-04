@@ -29,6 +29,7 @@ export class APIClient implements IAPIService {
     }
 
     private async tryPost<T>(url: string, body: any, config: AxiosRequestConfig) {
+        console.log(url)
         try {
             return await axios.post<T>(url, body, config);
         } catch (e) {
