@@ -2,7 +2,7 @@ import { makeAutoObservable, reaction, runInAction, when } from 'mobx';
 import {  Store } from './meta';
 import { alertStore, IAppUpdateStore, PromptConfig } from './interfaces';
 import * as Updates from 'expo-updates';
-import { androidAppStoreURL, appRuntimeVersion, inDevApp, iosAppStoreURL } from '../config';
+import { androidAppStoreURL, appRuntimeVersion, inDevApp, inPreProdApp, iosAppStoreURL } from '../config';
 import STRINGS from '../../../common/strings';
 import { persistent } from '../meta';
 import { DynamicAppVersionConfig, DynamicConfig } from '../../models';
@@ -105,8 +105,12 @@ export default class AppUpdateStore implements IAppUpdateStore {
 
         when(needToForceUpdate, this.promptForRequiredUpdate)
 
+        // New app builds with new versions that havent been approved will point
+        // to preprod until they get through app store approval and we run our own 
+        // approve command to update the dynamic config to point to prod
         const calculateApiTag = () => {
-            return this.currentVersionConfig?.testing
+            // testing reactive objects first so they are always considered
+            return this.currentVersionConfig?.testing || inPreProdApp
                 ? 'preprod'
                 : ''
         }

@@ -71,7 +71,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "node",
-            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD, GOOGLE_FCM_CREDS_PREPROD"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD", "GOOGLE_FCM_CREDS_PREPROD"],
             "args": [
                 "/app/backend/infra/bin/run",
                 "ci:createExpoBuild"
@@ -159,7 +159,7 @@
         {
             "name": "gcr.io/$PROJECT_ID/patch-rel-pre:$_TARGET_COMMIT",
             "entrypoint": "bash",
-            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD, GOOGLE_FCM_CREDS_PREPROD"],
+            "secretEnv": ["EXPO_TOKEN", "GOOGLE_MAPS", "SENTRY_CREDS", "BRANCH_CREDS", "GOOGLE_FCM_CREDS_PROD", "GOOGLE_FCM_CREDS_PREPROD"],
             "args": [
                 "/app/ci/frontend/publish_preprod.sh"
             ],

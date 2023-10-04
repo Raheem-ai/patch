@@ -23,7 +23,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.request)
-export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest'> {
+export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest' | 'deleteRequest'> {
     @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: find a better place to inject this so it is instantiated
@@ -223,6 +223,26 @@ export class RequestController implements APIController<'createNewRequest' | 'ge
         });
 
         return this.db.fullHelpRequest(res)
+    }
+
+    @Post(API.server.deleteRequest())
+    @RequireAllPermissions([PatchPermissions.RemoveFromOrg])
+    async deleteRequest(
+        @OrgId() orgId: string,
+        @User() user: UserDoc,
+        @Required() @BodyParams('requestId') requestId: string
+    ) {
+
+        const deleterId = user.id; 
+
+        await this.pubSub.sys(PatchEventType.RequestDeleted, { 
+            requestId,
+            orgId,
+            deleterId
+        });
+
+        await this.db.deleteRequest(requestId);
+
     }
 
     async _setRequestStatus(
