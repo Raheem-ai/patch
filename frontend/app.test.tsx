@@ -53,7 +53,7 @@ import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
 import { MockActiveRequests, MockAuthTokens, MockDeleteEventPacket, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore, updateStore, userStore } from './src/stores/interfaces';
+import { bottomDrawerStore, headerStore, navigationStore, requestStore, updateStore, userStore } from './src/stores/interfaces';
 import { PatchEventType, PatchEventPacket, PatchEventParams} from '../common/models';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
@@ -1075,7 +1075,6 @@ describe('Deleted Request Scenarios', () => {
     })
 
     test('Current user deletes request', async () => {
-        console.log('Delete request run...');
         const {
             getByTestId,
         } = await testUtils.mockSignIn()
@@ -1097,7 +1096,8 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        const requestID = requests[0].id;
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requestID)));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -1132,12 +1132,17 @@ describe('Deleted Request Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
         await act(async() => fireEvent(toastTextComponent, 'press'));
-        }, 10000)
+
+        expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
+        expect(bottomDrawerStore().expanded === false);
+        expect(requestCard).not.toBeOnTheScreen();
+
+    }, 10000)
         
     test('Different user deletes request, current user has request open', async () => {
-        console.log('Delete request run...');
         const {
             getByTestId,
+            queryByTestId
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -1164,14 +1169,14 @@ describe('Deleted Request Scenarios', () => {
 
         // Simulate another user deleting the request
         const mockEventPacket = MockDeleteEventPacket(requests[0].id);
-        await updateStore().updateCachedStores(mockEventPacket)
+        await act(() => updateStore().onEvent(mockEventPacket));
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
+        expect(requestCard).not.toBeOnTheScreen();
 
-        }, 10000)
+    }, 10000)
 
     test('Different user deletes request, current user is editing request', async () => {
-        console.log('Delete request run...');
         const {
             getByTestId,
         } = await testUtils.mockSignIn()
@@ -1204,10 +1209,13 @@ describe('Deleted Request Scenarios', () => {
             fireEvent(editRequestButton, 'click');
         })
 
-         // Simulate another user deleting the request
+        // Simulate another user deleting the request
         const mockEventPacket = MockDeleteEventPacket(requests[0].id);
-        await updateStore().updateCachedStores(mockEventPacket)
+        await act(() => updateStore().onEvent(mockEventPacket));
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
-        }, 10000)
-    })
+        expect(bottomDrawerStore().expanded === false);
+        expect(requestCard).not.toBeOnTheScreen();    
+    }, 10000)
+        
+})
