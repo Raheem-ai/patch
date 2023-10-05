@@ -1077,6 +1077,7 @@ describe('Deleted Request Scenarios', () => {
     test('Current user deletes request', async () => {
         const {
             getByTestId,
+            queryByTestId
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -1096,8 +1097,8 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestID = requests[0].id;
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requestID)));
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
+        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -1135,7 +1136,8 @@ describe('Deleted Request Scenarios', () => {
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
         expect(bottomDrawerStore().expanded === false);
-        expect(requestCard).not.toBeOnTheScreen();
+        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+        
 
     }, 10000)
         
@@ -1162,7 +1164,8 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -1172,13 +1175,15 @@ describe('Deleted Request Scenarios', () => {
         await act(() => updateStore().onEvent(mockEventPacket));
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
-        expect(requestCard).not.toBeOnTheScreen();
+        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+        
 
     }, 10000)
 
     test('Different user deletes request, current user is editing request', async () => {
         const {
             getByTestId,
+            queryByTestId
         } = await testUtils.mockSignIn()
 
         // After sign in, app should reroute user to the userHomePage
@@ -1198,7 +1203,8 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -1215,7 +1221,8 @@ describe('Deleted Request Scenarios', () => {
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
         expect(bottomDrawerStore().expanded === false);
-        expect(requestCard).not.toBeOnTheScreen();    
+        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+    
     }, 10000)
         
 })
