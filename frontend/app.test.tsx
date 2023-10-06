@@ -1097,8 +1097,9 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
-        const requestCard = await waitFor(() => getByTestId(TestIds.requestCard(TestIds.requestList.screen, requests[0].id)));
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
@@ -1136,7 +1137,7 @@ describe('Deleted Request Scenarios', () => {
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
         expect(bottomDrawerStore().expanded === false);
-        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+        expect(queryByTestId(requestTestID)).toEqual(null);
         
 
     }, 10000)
@@ -1164,18 +1165,19 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
         const requestCard = await waitFor(() => getByTestId(requestTestID));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
         await waitFor(() => getByTestId(TestIds.requestDetails.overview));
 
         // Simulate another user deleting the request
-        const mockEventPacket = MockDeleteEventPacket(requests[0].id);
+        const mockEventPacket = MockDeleteEventPacket(requestID);
         await act(() => updateStore().onEvent(mockEventPacket));
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
-        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+        expect(queryByTestId(requestTestID)).toEqual(null);
         
 
     }, 10000)
@@ -1203,7 +1205,8 @@ describe('Deleted Request Scenarios', () => {
 
         // Navigate to Request Details screen for first active request
         const requests = MockActiveRequests();
-        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requests[0].id);
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
         const requestCard = await waitFor(() => getByTestId(requestTestID));
         await act(async () => fireEvent(requestCard, 'press'));
         await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
@@ -1216,12 +1219,12 @@ describe('Deleted Request Scenarios', () => {
         })
 
         // Simulate another user deleting the request
-        const mockEventPacket = MockDeleteEventPacket(requests[0].id);
+        const mockEventPacket = MockDeleteEventPacket(requestID);
         await act(() => updateStore().onEvent(mockEventPacket));
 
         expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
         expect(bottomDrawerStore().expanded === false);
-        expect(queryByTestId(TestIds.requestCard(TestIds.requestList.screen, requestTestID))).toEqual(null);
+        expect(queryByTestId(requestTestID)).toEqual(null);
     
     }, 10000)
         
