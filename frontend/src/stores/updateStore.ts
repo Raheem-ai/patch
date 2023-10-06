@@ -57,6 +57,11 @@ export default class UpdateStore implements IUpdateStore {
                 return
             }
 
+            if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
+                await this.onRequestDeleted(packet.params.requestId)
+                return
+            }
+
             // check to see if the update will cause cached stores to be out of sync with single source of truth stores
             // if it does, update all the stores that keep local caches of affected data
             // (ie. edit stores) before updating SSOT stores that we use to validate 
@@ -114,10 +119,6 @@ export default class UpdateStore implements IUpdateStore {
 
         if (this.isEvent(packet, PatchEventType.OrganizationRoleDeleted)) {
             this.onRoleDeleted(packet.params.roleId)
-        }
-
-        if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
-            await this.onRequestDeleted(packet.params.requestId)
         }
     }
 
