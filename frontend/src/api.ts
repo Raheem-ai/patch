@@ -29,7 +29,6 @@ export class APIClient implements IAPIService {
     }
 
     private async tryPost<T>(url: string, body: any, config: AxiosRequestConfig) {
-        console.log(url)
         try {
             return await axios.post<T>(url, body, config);
         } catch (e) {
@@ -374,7 +373,7 @@ export class APIClient implements IAPIService {
     }
 
     async ackRequestNotification(ctx: OrgContext, requestId: string) {
-        const url = `${apiHost}${API.client.notifyRespondersAboutRequest()}`;
+        const url = `${apiHost}${API.client.ackRequestNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId

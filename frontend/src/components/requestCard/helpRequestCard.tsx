@@ -141,43 +141,57 @@ const HelpRequestCard = observer(({
         const unAssignedResponders = [];
         const assignedResponders = [];
 
-        // figure out how many open spots there are
-        // show an icon if there are any
-        if (unfilledSpotsForRequest > 0) {
+        if (unfilledSpotsForRequest == 1) {
+            // show empty user icon if there is a single open spot
+            const userIconStyle = dark ? styles.onlyUnAssignedResponderIconDark : styles.onlyUnAssignedResponderIcon;
+
+            unAssignedResponders.push(<UserIcon 
+                style={userIconStyle}
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>
+            );
+
+            unAssignedResponders.push(<Text 
+                style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>
+            )
+        } else if (unfilledSpotsForRequest > 1) { 
+            // show a stack and count if there are more than one
             unAssignedResponders.push(<UserIcon 
                 style={ dark ? styles.unAssignedResponderIconDark : styles.unAssignedResponderIcon }
-                emptyIconColor={styles.unAssignedResponderIcon.color}/>);
-            // show a stack and count if there are more than one
-            if (unfilledSpotsForRequest > 1) {
-                unAssignedResponders.push(<IconButton
-                    style={[ styles.empty, dark && styles.emptyDark ]}
-                    icon={ICONS.responder} 
-                    color={Colors.nocolor}
-                    size={12} />);
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
-            } else {
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
-            }
-        } 
+                emptyIconColor={styles.unAssignedResponderIcon.color}/>
+            );
+            
+            unAssignedResponders.push(<IconButton
+                style={[ styles.empty, dark && styles.emptyDark ]}
+                icon={ICONS.responder} 
+                color={Colors.nocolor}
+                size={12} />
+            );
+
+            unAssignedResponders.push(<Text 
+                style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>
+            )        
+        }
 
         // figure out how many people have joined
         // show an icon for each, up to a maximum
         const maxJoinedToShow = 4;
-        let i:number = 0;
+        let i = 0;
+        
         joinedResponders.forEach((userId) => {
-            const responder = userStore().users.get(userId); 
             if(i < maxJoinedToShow) {
                 assignedResponders.push(
                     <View style={{zIndex: 0-i}}>
-                        <UserIcon userId={responder.id} style={ 
+                        <UserIcon userId={userId} style={ 
                             i < (joinedResponders.size - 1) && (i < maxJoinedToShow - 1) 
                                 ? dark
                                     ? styles.assignedResponderIconDark
                                     : styles.assignedResponderIcon 
                                 : styles.assignedResponderIconLast } />
-                    </View>)}
+                    </View>)
+            }
             i++;
         });
+
         if (joinedResponders.size > maxJoinedToShow) {
             // if there are more who have joined than we're showing
             // show a "stack" icon...
@@ -201,9 +215,6 @@ const HelpRequestCard = observer(({
         const label = typeof potentialLabel == 'string'
             ? potentialLabel
             : potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(u => u.id)));
-
-
-        console.log(request.chat?.userReceipts)
 
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
             && (!request.chat.userReceipts?.[userStore().user.id] 
@@ -384,6 +395,12 @@ const styles = StyleSheet.create({
     darkUnreadMessageNotifier: {
         borderColor: '#444144',
     },
+    onlyUnAssignedResponderIcon: {
+        color: Colors.icons.dark,
+        backgroundColor: '#F3F1F3',
+        borderWidth: 1,
+        marginRight: RESPONDER_SPACING_BASIC,
+    },
     unAssignedResponderIcon: {
         color: Colors.icons.dark,
         backgroundColor: '#F3F1F3',
@@ -391,6 +408,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginRight: RESPONDER_SPACING_BASIC,
     }, 
+    onlyUnAssignedResponderIconDark: {
+        color: '#444144',
+        backgroundColor: '#CCCACC',
+        borderWidth: 1,
+        marginRight: RESPONDER_SPACING_BASIC,
+    },
     unAssignedResponderIconDark: {
         color: '#444144',
         backgroundColor: '#CCCACC',

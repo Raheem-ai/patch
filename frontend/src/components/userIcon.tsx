@@ -8,7 +8,7 @@ import { observer } from 'mobx-react';
 
 type UserIconProps = {
     userId?: string,
-    style?: ViewStyle,
+    style?: StyleProp<ViewStyle>,
     large?: boolean
     emptyIconColor?: string
 }
@@ -23,13 +23,15 @@ const UserIcon = observer(({
     const user = userStore().users.get(userId);
 
     if (!user) {
-        if (style?.backgroundColor && !style.borderColor) {
-            style.borderColor = style.backgroundColor
+        const resolvedStyle = StyleSheet.flatten(style)
+
+        if (resolvedStyle?.backgroundColor && !resolvedStyle.borderColor) {
+            resolvedStyle.borderColor = resolvedStyle.backgroundColor
         }
 
         return (
             <IconButton
-                style={[styles.empty, style]}
+                style={[styles.empty, resolvedStyle]}
                 icon={ICONS.responder} 
                 color={emptyIconColor || styles.empty.color}
                 size={16} />
