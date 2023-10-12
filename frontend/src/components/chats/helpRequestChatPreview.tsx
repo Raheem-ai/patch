@@ -2,7 +2,7 @@ import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text, IconButton } from "react-native-paper";
-import { HelpRequest, RequestDetailsTabs } from "../../../../common/models";
+import { HelpRequest, RequestDetailsTabs } from "../../../../common/front";
 
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";

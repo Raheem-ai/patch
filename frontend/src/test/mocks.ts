@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig, PatchEventPacket, PatchEventType, PatchEventParams } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig, PatchEventPacket, PatchEventType, PatchEventParams } from "../../../common/front";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -16,7 +16,8 @@ export function MockDynamicConfig(): DynamicConfig {
             {
                 latestIOS: '',
                 latestAndroid: '',
-                requiresUpdate: false
+                requiresUpdate: false,
+                testing: false
             }
         ]
     }

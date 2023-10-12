@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
+import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/front";
 import { resolveErrorMessage } from "../errors";
 import { alertStore, manageAttributesStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ICONS } from "../types";

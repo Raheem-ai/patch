@@ -1,12 +1,12 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IEditUserStore, IUserStore, userStore } from './interfaces';
-import { CategorizedItem, CategorizedItemUpdates, Me, ProtectedUser } from '../../../common/models';
+import { CategorizedItem, CategorizedItemUpdates, Me, ProtectedUser } from '../../../common/front';
 import { persistent } from '../meta';
 import { ClientSideFormat } from '../../../common/api';
 import { PhoneNumberRegex } from '../../../common/constants';
 import { iHaveAllPermissions } from "../utils";
-import { PatchPermissions } from "../../../common/models";
+import { PatchPermissions } from "../../../common/front";
 
 @Store(IEditUserStore)
 export default class EditUserStore implements IEditUserStore {

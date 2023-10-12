@@ -2,7 +2,7 @@ import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { PatchPermissions, RequestStatus } from "../../../../common/models";
+import { PatchPermissions, RequestStatus } from "../../../../common/front";
 import { alertStore, bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
@@ -21,6 +21,8 @@ type Props =  {
 const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
     const request = requestStore().currentRequest;
     const chat = request.chat;
+
+    console.log(JSON.stringify(chat, null, 4))
 
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);

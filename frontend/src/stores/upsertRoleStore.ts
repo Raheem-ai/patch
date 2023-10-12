@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx"
 import { OrgContext } from "../../../common/api"
-import { Role } from "../../../common/models"
+import { Role } from "../../../common/front"
 import { api } from "../services/interfaces"
 import { editRequestStore, IUpsertRoleStore, organizationStore, requestStore, updateStore, userStore } from "./interfaces"
 import { Store } from "./meta"

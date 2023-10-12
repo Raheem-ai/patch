@@ -21,7 +21,7 @@ export namespace IAPIService {
     export const id = Symbol('IAPIService');
 }
 
-export interface IAPIService extends IBaseService, ClientSideApi<'me' | 'setOnDutyStatus'> {
+export interface IAPIService extends IBaseService, ClientSideApi {
     refreshToken: string
     apiHost: string
     pointTo(tag: string): void

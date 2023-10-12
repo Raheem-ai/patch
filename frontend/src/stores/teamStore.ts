@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { Store } from './meta';
 import { ITeamStore, userStore } from './interfaces';
 import { ClientSideFormat } from '../../../common/api';
-import { ProtectedUser, TeamFilter, TeamSortBy } from '../../../common/models';
+import { ProtectedUser, TeamFilter, TeamSortBy } from '../../../common/front';
 import { persistent } from '../meta';
 import {parseFullName} from 'parse-full-name';
 

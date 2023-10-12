@@ -6,7 +6,7 @@ import { AppState, Dimensions, Linking } from 'react-native';
 import boot from '../../../src/boot';
 import Branch, { BranchSubscriptionEvent } from 'react-native-branch';
 import { hideAsync } from 'expo-splash-screen';
-import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategories, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestPriority, RequestPriorityToLabelMap, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/models';
+import { DefaultAttributeCategories, DefaultAttributeCategoryIds, DefaultRoles, DefaultTagCategories, DefaultTagCategoryIds, HelpRequest, LinkExperience, LinkParams, MinUser, RequestPriority, RequestPriorityToLabelMap, RequestType, RequestTypeCategory, RequestTypeToLabelMap } from '../../../../common/front';
 import { MockAuthTokens, MockDynamicConfig, MockOrgMetadata, MockRequests, MockSecrets, MockTeamMemberMetadata, MockUsers } from '../../../src/test/mocks';
 import TestIds from '../../../src/test/ids';
 import { linkingStore, navigationStore, userStore } from '../../stores/interfaces';

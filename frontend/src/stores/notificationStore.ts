@@ -5,7 +5,7 @@ import {Notification, NotificationResponse} from 'expo-notifications';
 import { PermissionStatus } from "expo-modules-core";
 import { Platform } from "react-native";
 import { INotificationStore, navigationStore, notificationStore, requestStore, updateStore, userStore } from "./interfaces";
-import { NotificationEventType, PatchEventPacket, PatchEventType, PatchNotification } from "../../../common/models";
+import { NotificationEventType, PatchEventPacket, PatchEventType, PatchNotification } from "../../../common/front";
 import { notificationLabel } from "../../../common/utils/notificationUtils";
 import { NotificationHandlerDefinition, NotificationHandlers, NotificationResponseDefinition } from "../notifications/notificationActions";
 import * as TaskManager from 'expo-task-manager';

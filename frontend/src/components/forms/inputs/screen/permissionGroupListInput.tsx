@@ -4,7 +4,7 @@ import React from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
-import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/models";
+import { PatchPermissionGroups, PermissionGroupMetadata } from "../../../../../../common/front";
 import { resolvePermissionGroups } from '../../../../../../common/utils/permissionUtils'
 import TestIds from "../../../../test/ids";
 import { ICONS } from "../../../../types";

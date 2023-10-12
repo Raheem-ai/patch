@@ -1,4 +1,4 @@
-import { NoisyNotificationEventType, NotificationEventType, PatchEventPacket, PatchEventType, SilentNotificationEventType } from "../../../common/models";
+import { NoisyNotificationEventType, NotificationEventType, PatchEventPacket, PatchEventType, SilentNotificationEventType } from "../../../common/front";
 import { Notification, NotificationAction } from 'expo-notifications';
 import { RootStackParamList, routerNames } from "../types";
 import { navigationStore, requestStore, updateStore, userStore } from "../stores/interfaces";

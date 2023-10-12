@@ -7,7 +7,7 @@ import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
 import { mergeArrayCollectionUpdates, unwrap } from "../../../../../../common/utils"
-import { DefaultRoleIds, Position, PositionSetUpdate, PositionUpdate } from "../../../../../../common/models"
+import { DefaultRoleIds, Position, PositionSetUpdate, PositionUpdate } from "../../../../../../common/front"
 import { manageAttributesStore, organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
