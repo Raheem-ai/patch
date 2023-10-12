@@ -4,7 +4,7 @@ import Form, { FormProps } from '../components/forms/form';
 import { ScreenProps } from "../types";
 import { Pressable, View } from "react-native";
 import { IObservableValue, observable } from "mobx";
-import { AddressableLocation, CategorizedItem, PatchPermissions, Position, RecurringDateTimeRange } from "../../../common/models";
+import { AddressableLocation, CategorizedItem, PatchPermissions, Position, RecurringDateTimeRange } from "../../../common/front";
 import { dateToDateString, dateToDayOfWeekString } from "../../../common/utils";
 import RecurringDateTimeRangeInputConfig from "../components/forms/inputs/compound/recurringDateTimeRange";
 import moment from 'moment'

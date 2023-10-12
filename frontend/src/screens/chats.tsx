@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import {StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { PatchPermissions } from "../../../common/models";
+import { PatchPermissions } from "../../../common/front";
 import HelpRequestChatPreview from "../components/chats/helpRequestChatPreview";
 import { requestStore } from "../stores/interfaces";
 import { ScreenProps, Colors } from "../types";

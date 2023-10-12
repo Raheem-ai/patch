@@ -6,7 +6,7 @@ import { IconButton, Text } from "react-native-paper";
 import { dateToDateString, dateToDateYearString, dateToTimeString } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
 import moment from 'moment'
-import { DateTimeRange } from "../../../../../../common/models";
+import { DateTimeRange } from "../../../../../../common/front";
 import { first, isNumber } from "lodash";
 import { useWhenParamsChange } from "../../../../hooks/useWhenParamsChange";
 // import CalendarPicker from 'react-native-calendar-picker';

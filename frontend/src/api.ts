@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig } from '../../common/models';
+import { User, Location, Me, Organization, UserRole, MinOrg, BasicCredentials, MinUser, ResponderRequestStatuses, HelpRequest, MinHelpRequest, ProtectedUser, AuthTokens, AppSecrets, PendingUser, OrganizationMetadata, Role, MinRole, CategorizedItemUpdates, AdminEditableUser, CategorizedItem, TeamMemberMetadata, RequestUpdates, DynamicConfig } from '../../common/front';
 import API, { ClientSideFormat, OrgContext, RequestContext, TokenContext } from '../../common/api';
 import { Service } from './services/meta';
 import { IAPIService } from './services/interfaces';
@@ -11,6 +11,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { AtLeast } from '../../common';
 import STRINGS from '../../common/strings';
 import { apiHost } from './config';
+
+console.log(apiHost)
 
 @Service(IAPIService)
 export class APIClient implements IAPIService {
@@ -398,7 +400,7 @@ export class APIClient implements IAPIService {
     }
 
     async ackRequestNotification(ctx: OrgContext, requestId: string) {
-        const url = `${this.apiHost}${API.client.notifyRespondersAboutRequest()}`;
+        const url = `${this.apiHost}${API.client.ackRequestNotification()}`;
 
         return (await this.tryPost<HelpRequest>(url, {
             requestId
@@ -575,8 +577,6 @@ export class APIClient implements IAPIService {
             headers: this.orgScopeAuthHeaders(ctx)
         })).data
     }
-
-
 
     async createNewRequest(ctx: OrgContext, request: MinHelpRequest): Promise<HelpRequest> {
         const url = `${this.apiHost}${API.client.createNewRequest()}`;

@@ -3,7 +3,7 @@ import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organiza
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
+import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/front";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ScrollView, View, StyleSheet } from "react-native";

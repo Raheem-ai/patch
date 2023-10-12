@@ -4,7 +4,7 @@ import { IDispatchStore, organizationStore, requestStore, userStore } from './in
 import { OrgContext } from '../../../common/api';
 import { persistent } from '../meta';
 import { api } from '../services/interfaces';
-import { DefaultRoleIds, EligibilityOption, StatusOption } from '../../../common/models';
+import { DefaultRoleIds, EligibilityOption, StatusOption } from '../../../common/front';
 import STRINGS  from '../../../common/strings';
 
 @Store(IDispatchStore)

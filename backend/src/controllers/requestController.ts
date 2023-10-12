@@ -23,7 +23,7 @@ export class ValidatedMinOrg implements MinOrg {
 
 
 @Controller(API.namespaces.request)
-export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest' | 'deleteRequest'> {
+export class RequestController implements APIController<'createNewRequest' | 'getRequests' | 'getRequest' | 'sendChatMessage' | 'setRequestStatus' | 'resetRequestStatus' | 'editRequest' | 'deleteRequest' | 'updateRequestChatReceipt'> {
     @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: find a better place to inject this so it is instantiated

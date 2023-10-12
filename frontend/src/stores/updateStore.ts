@@ -1,7 +1,7 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { appUpdateStore, createRequestStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/models';
+import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/front';
 import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 

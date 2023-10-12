@@ -1,4 +1,4 @@
-import { DefaultRoleIds, PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata } from "../../../../common/models"
+import { DefaultRoleIds, PatchPermissionGroups, PatchPermissions, PermissionGroupMetadata } from "../../../../common/front"
 import { allEnumValues } from "../../../../common/utils"
 import { alertStore, upsertRoleStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"

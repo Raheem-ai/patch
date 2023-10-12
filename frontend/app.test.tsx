@@ -62,7 +62,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, DefaultRoles, DynamicConfig, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, DynamicConfig, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/front';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';

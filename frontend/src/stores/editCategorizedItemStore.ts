@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { CategorizedItemUpdates, Category } from "../../../common/models";
+import { CategorizedItemUpdates, Category } from "../../../common/front";
 import { IEditCategorizedItemStore } from "./interfaces";
 import * as uuid from 'uuid';
 

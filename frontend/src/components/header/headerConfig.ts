@@ -1,4 +1,4 @@
-import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
+import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/front"
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editRequestStore, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import TestIds from "../../test/ids"

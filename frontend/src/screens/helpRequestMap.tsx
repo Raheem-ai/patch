@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, GestureResponderEvent, Pressable, StyleSheet, View } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { IconButton } from "react-native-paper";
-import { HelpRequest } from "../../../common/models";
+import { HelpRequest } from "../../../common/front";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import { ActiveRequestTabHeight, HeaderAnnouncementHeight, HeaderHeight } from "../constants";
 import { navigateTo } from "../navigation";

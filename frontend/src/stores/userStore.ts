@@ -1,5 +1,5 @@
 import { makeAutoObservable, ObservableMap, ObservableSet, runInAction } from 'mobx';
-import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/models';
+import { AuthTokens, EditableMe, Me, MinUser, AdminEditableUser, ProtectedUser, UserRole, CategorizedItem, User, BasicCredentials } from '../../../common/front';
 import { Store } from './meta';
 import { alertStore, appUpdateStore, IUserStore, navigationStore } from './interfaces';
 import { ClientSideFormat, OrgContext } from '../../../common/api';

@@ -2,7 +2,7 @@ import { autorun, makeAutoObservable, ObservableMap, ObservableSet, reaction, ru
 import { Store } from './meta';
 import { bottomDrawerStore, BottomDrawerView, IRequestStore, IUserStore, manageAttributesStore, navigationStore, organizationStore, PositionScopedMetadata, RequestMetadata, RequestScopedMetadata, userStore } from './interfaces';
 import { ClientSideFormat, OrgContext, RequestContext } from '../../../common/api';
-import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/models';
+import { CategorizedItem, DefaultRoleIds, HelpRequest, HelpRequestFilter, HelpRequestSortBy, PatchEventType, PatchPermissions, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, ResponderRequestStatuses, Role } from '../../../common/front';
 import { api } from '../services/interfaces';
 import { persistent, securelyPersistent } from '../meta';
 import { userHasAllPermissions } from '../utils';
@@ -358,6 +358,8 @@ export default class RequestStore implements IRequestStore {
         when(() => !userStore().signedIn, () => {
             when(() => userStore().signedIn, this.getRequestsAfterSignin)
         })
+
+        console.log(this.activeRequest)
     }
 
     clear() {

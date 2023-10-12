@@ -3,7 +3,7 @@ import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { IconButton, Text } from "react-native-paper"
-import { RecurringPeriod } from "../../../../../../common/models"
+import { RecurringPeriod } from "../../../../../../common/front"
 import { dateToEndDateLabel, dateToEndRepititionsLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../../common/utils"
 import { SectionLabelViewProps } from "../../types"
 import moment from 'moment'

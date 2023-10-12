@@ -46,7 +46,10 @@ export function Store({ id }: { id: Symbol }) {
                     if (oldInit) {
                         await oldInit.call(this);
                     }
-                })()
+                })().catch(e => {
+                    console.log(`Store "${id.toString()}" failed with ${e}`)
+                    throw e
+                })
 
                 return initPromise
             }

@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import React from "react";
 import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
+import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/front";
 import { assignedResponderBasedRequestStatus, positionStats } from "../../../common/utils/requestUtils";
 import { alertStore, requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
