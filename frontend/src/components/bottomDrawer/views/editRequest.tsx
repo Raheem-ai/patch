@@ -376,10 +376,12 @@ class EditHelpRequest extends React.Component<Props> {
             message: STRINGS.REQUESTS.deleteRequestDialog,
             actions: [
                 {
+                    testID: TestIds.editRequest.cancelDeleteRequest,
                     label: STRINGS.REQUESTS.deleteRequestOptionNo(),
                     onPress: () => {}
                 },
                 {   
+                    testID: TestIds.editRequest.confirmDeleteRequest,
                     label: STRINGS.REQUESTS.deleteRequestOptionYes(reqName),
                     onPress: this.deleteRequest,
                     confirming: true
