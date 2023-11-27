@@ -14,16 +14,16 @@ git clone --recurse-submodules https://github.com/Raheem-ai/patch.git
 
 ## Dependencies/Setup
 - [Docker](https://www.docker.com/products/docker-desktop)
-- [Node/NPM 16.9.1+](https://nodejs.org/en/download/)
+- [Node/NPM 18.17.1+](https://nodejs.org/en/download/)
 - [Expo cli](https://docs.expo.dev/)
 - [Ngrok](https://ngrok.com/download)
 - [Yarn](https://yarnpkg.com/getting-started/install) (just run the commands under "Install Corepack")
     then run 
     ```
     $> yarn set version berry
-    $> yarn install
+    $> yarn install // from /backend and /frontend and in the patch root
     ```
-- add provided env specific credentials for certain GCP apis in `$RAHEEM_INFRA_ROOT/config/raheem-<env>-adc.json`
+- add provided env specific credentials for certain GCP apis in `$RAHEEM_INFRA_ROOT/config/raheem-<env>-adc.json` (needs to be sent manually)
 
 ## Infra project
 A seperate github project that is pulled in as a git submodule, the infra project is a centralized abstraction around system level resources like secrets/config that tie into technical resources like a 3rd party api key or redis cache. It simultaneously handles the creation/update of config/secrets, automating dev ops tasks around their management via a CLI, and backend services consuming them in code. Because the project is brought in as a submodule, changes to infrastructure can be deployed in lockstep with the features that depend on them.
