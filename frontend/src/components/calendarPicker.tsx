@@ -37,7 +37,7 @@ const CalendarPicker = ({
 
     // note that minDate and maxDate have to be set
     // if they're not desired, set them far off :-/
-    const minDate=moment() // first of this month
+    const minDate=moment().date() // today
     const maxDate=moment().add(1, 'y').endOf('month') // a year from now (but go all the way to the end of the month)
 
     const [currentMonth, setCurrentMonth] = useState<number>(initialDate.getMonth());
