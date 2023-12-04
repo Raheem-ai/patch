@@ -3,7 +3,7 @@ import React from "react"
 import { Pressable, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { Text } from "react-native-paper"
-import { DefaultRoleIds } from "../../../../common/models"
+import { DefaultRoleIds } from "../../../../common/front"
 import { resolveErrorMessage } from "../../errors"
 import { alertStore, organizationStore, upsertRoleStore } from "../../stores/interfaces"
 import Form, { CustomFormHomeScreenProps } from "./form"
@@ -15,6 +15,7 @@ import { VisualArea } from '../helpers/visualArea'
 import STRINGS from "../../../../common/strings"
 import { Colors, ICONS } from "../../types"
 import TestIds from "../../test/ids"
+import SelectableText from "../helpers/selectableText"
 
 type ManageRolesFormProps = SectionNavigationScreenViewProps & {
     testID: string
@@ -73,7 +74,7 @@ const MangeRolesForm = ({ back, testID }: ManageRolesFormProps) => {
                         testID={TestIds.editRolesForm.navInputs.addRole(wrappedTestID)}
                         sentry-label={TestIds.editRolesForm.navInputs.addRole(wrappedTestID)}
                     >
-                        <Text style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())}</Text>
+                        <SelectableText style={{  fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addElement(STRINGS.ELEMENTS.role())}</SelectableText>
                     </Pressable>
                 )
             },
@@ -125,8 +126,8 @@ const MangeRolesForm = ({ back, testID }: ManageRolesFormProps) => {
                 <BackButtonHeader {...headerProps}/>
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
                     <View style={{ borderColor: '#ccc', borderBottomWidth: 1, paddingLeft: 60, padding: 20 }}>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{STRINGS.SETTINGS.rolesIntroA}</Text>
-                        <Text style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{STRINGS.SETTINGS.rolesIntroB}</Text>
+                        <SelectableText style={{ lineHeight: 24, fontSize: 16, color: '#666', marginBottom: 20 }}>{STRINGS.SETTINGS.rolesIntroA}</SelectableText>
+                        <SelectableText style={{ lineHeight: 24, fontSize: 16, color: '#666' }}>{STRINGS.SETTINGS.rolesIntroB}</SelectableText>
                     </View>
                     { renderInputs(inputs()) }
                 </ScrollView>

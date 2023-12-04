@@ -4,6 +4,7 @@ import { GestureResponderEvent, Pressable, StyleSheet, TextStyle, View } from "r
 import { IconButton, Text } from "react-native-paper";
 import TestIds from "../../../test/ids";
 import { ICONS, Colors } from "../../../types";
+import SelectableText from "../../helpers/selectableText";
 
 type CategoryRowProps = {
     testID: string,
@@ -66,7 +67,7 @@ const CategoryRow = observer(({
                 onPress={() => itemRowPressed?.(item.id)} 
                 style={styles.itemContainer}
             >
-                <Text style={[{ flex: 1, fontSize: 16 }, itemLabelStyle ? itemLabelStyle(item.id) : null]}>{item.name}</Text>
+                <SelectableText style={[{ flex: 1, fontSize: 16 }, itemLabelStyle ? itemLabelStyle(item.id) : null]}>{item.name}</SelectableText>
                 {
                     itemIcon 
                         ? itemIcon(id, item.id, itemRowTestID)
@@ -94,7 +95,7 @@ const CategoryRow = observer(({
                 <View style={styles.categoryLabelContainer}>
                     { categoryLabel
                         ? categoryLabel({ id, name, testID: TestIds.categoryRow.label(wrappedTestID) })
-                        : <Text style={[styles.categoryLabel, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name}</Text>
+                        : <SelectableText style={[styles.categoryLabel, categoryLabelStyle ? categoryLabelStyle(id) : null]}>{name}</SelectableText>
                     }   
                 </View>
                 {

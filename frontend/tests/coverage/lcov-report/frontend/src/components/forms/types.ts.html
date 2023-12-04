@@ -357,7 +357,37 @@
 <a name='L292'></a><a href='#L292'>292</a>
 <a name='L293'></a><a href='#L293'>293</a>
 <a name='L294'></a><a href='#L294'>294</a>
-<a name='L295'></a><a href='#L295'>295</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -653,7 +683,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ComponentType } from "react"
 import { KeyboardType, StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 &nbsp;
 export type Grouped&lt;T&gt; = T | T[];
@@ -693,11 +723,13 @@ export type ScreenFormInputOptions = {
         props: {
             maxChar?: number
         },
-        type: string
+        type: string,
+        diffType: void
     },
     'Map': {
         props: {},
-        type: AddressableLocation
+        type: AddressableLocation,
+        diffType: void
     },
     'RecurringTimePeriod': {
         props: {
@@ -706,18 +738,21 @@ export type ScreenFormInputOptions = {
             updateStartDatePromptMessage: (from: Date, to: Date) =&gt; string
             updateStartDatePromptTitle: (from: Date, to: Date) =&gt; string
         },
-        type: RecurringTimeConstraints
+        type: RecurringTimeConstraints,
+        diffType: void
     },
     'List': {
         props: InlineFormInputOptions['InlineList']['props'],
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'TagList': {
         props: ScreenFormInputOptions['List']['props'] &amp; {
             onTagDeleted?: (idx: number, val: any) =&gt; void
             dark?: boolean
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'NestedList': {
         props: ScreenFormInputOptions['List']['props'] &amp; {
@@ -725,20 +760,23 @@ export type ScreenFormInputOptions = {
             optionsFromCategory: (cat: any) =&gt; any[]
             categoryToLabel: (opt) =&gt; string
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'NestedTagList': {
         props: ScreenFormInputOptions['NestedList']['props'] &amp; {
             onTagDeleted?: (idx: number, val: any) =&gt; void
             dark?: boolean
         },
-        type: any[]
+        type: any[],
+        diffType: void
     },
     'PermissionGroupList': {
         props: {
             
         },
-        type: PatchPermissionGroups[]
+        type: PatchPermissionGroups[],
+        diffType: void
     },
     'CategorizedItemList': {
         props: {
@@ -758,7 +796,8 @@ export type ScreenFormInputOptions = {
             dark?: boolean
             setDefaultClosed?: boolean
         }, 
-        type: CategorizedItem[]
+        type: CategorizedItem[],
+        diffType: ArrayCollectionUpdate&lt;CategorizedItem&gt;
     }, 
     'RoleList': {
         props: {
@@ -767,13 +806,15 @@ export type ScreenFormInputOptions = {
             hideAnyone?: boolean
             onItemDeleted?: (idx: number, val: any) =&gt; void
         },
-        type: string[]
+        type: string[],
+        diffType: void
     },
     'Positions' : {
         props: {
             editPermissions: PatchPermissions[]
         },
-        type: Position[]
+        type: Position[],
+        diffType: PositionSetUpdates
     }
 }
 &nbsp;
@@ -865,11 +906,15 @@ export type InlineFormInputConfig&lt;Type extends InlineFormInputType = InlineFo
     props?: InlineFormInputOptions[Type]['props']
 } &amp; BaseFormInputConfig;
 &nbsp;
-export type ScreenFormInputConfig&lt;Type extends ScreenFormInputType = ScreenFormInputType, Val extends ScreenFormInputOptions[Type]['type'] = ScreenFormInputOptions[Type]['type']&gt; = {
+export type ScreenFormInputConfig&lt;
+    Type extends ScreenFormInputType = ScreenFormInputType, 
+    Val extends ScreenFormInputOptions[Type]['type'] = ScreenFormInputOptions[Type]['type'],
+    Diff extends ScreenFormInputOptions[Type]['diffType'] = ScreenFormInputOptions[Type]['diffType']
+&gt; = {
     /**
      *  for screen fields that hold their own temp internal state until you save 
      * */
-    onSave(val: Val): void
+    onSave(val: Val, diff: Diff): void
     onCancel?(): void
     val(): Val
 &nbsp;
@@ -952,7 +997,7 @@ export type FormInputViewMap = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-06T15:57:02.984Z
+                at 2023-07-25T18:36:01.814Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

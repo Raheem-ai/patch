@@ -10,7 +10,7 @@ import { APIController, OrgId } from ".";
 import { RequireAllPermissions } from "../middlewares/userRoleMiddleware";
 import { UserDoc, UserModel } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import Notifications from '../services/notifications';
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
@@ -26,7 +26,7 @@ export class ResponderController implements APIController<
 > {
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(Notifications) notifications: Notifications;
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
     @Inject(PubSubService) pubSub: PubSubService;    
     @Inject(MySocketService) socket: MySocketService;
 

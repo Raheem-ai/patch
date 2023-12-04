@@ -1,4 +1,5 @@
 import { minPasswordLength } from '../common/constants';
+import { DefaultRoleIds, DefaultRoles } from './models';
 
 type CaseAndNumber = {
     cap?: boolean,
@@ -9,6 +10,9 @@ const STRINGS = {
     // GLOBAL
     emailAddresses: {
         help: `help@getpatch.org`,
+    },
+    urls: {
+        patchSite: `getpatch.org`,
     },
     connectionUnreliable: () => `Unreliable internet ${STRINGS.visualDelim} Limited functionality`,
     cap: (str: string) => { return `${str[0].toUpperCase()}${str.substring(1)}` },
@@ -164,6 +168,11 @@ const STRINGS = {
         updatedRequestSuccess: (req: string) => `Successfully updated ${req}.`,
         createdRequestSuccess: (req: string) => `Successfully created ${req}.`,
         editRequestTitle: (prefix: string, requestName: string) => `Edit ${STRINGS.REQUESTS.requestDisplayName(prefix, requestName)}`,
+        deleteRequestTitle: `Permanently delete this request?`,
+        deleteRequestDialog: `All data connected with this request—including its description and channel—will be deleted permanently. Once deleted, a request can not be restored.`,
+        deleteRequestOptionNo: () => `${STRINGS.INTERFACE.cancel}`,
+        deleteRequestOptionYes: (req: string) => `Remove request ${req}`,
+        deleteRequestSuccess: (req: string) => `Request ${req} was successfully deleted.`,
         description: 'Description',
         callStart: 'Call start',
         callEnd: 'Call end',
@@ -176,6 +185,7 @@ const STRINGS = {
         tags: 'Tags',
         requestIsClosed: 'This request has been archived.',
         noRespondersDefined: `No responder positions have been defined for this request. Once defined, they will show up here and people will be able to join positions they're qualified for.`,
+        deleteRequest: `Delete Request`,
         NOTIFICATIONS: {
             notifyNPeople: (n: number, notShown?: number) => `Notify ${STRINGS.nPeople(n)}` + (notShown > 0 ? ` (${notShown} not shown)` : ``),
             nRespondersNotified: (n: number) => `${STRINGS.nResponders(n)} notified`,
@@ -224,6 +234,7 @@ const STRINGS = {
         noMessages: '...',
     },
     ACCOUNT: {
+        howToGetAccount: () => `Learn more at ${STRINGS.urls.patchSite}.`,
         inviteTitle: `Invite to team`,
         profileTitle: 'Profile',
         profileTitleMine: 'My profile',
@@ -256,7 +267,7 @@ const STRINGS = {
         roleRequired: `You must invite a user with at least one role.`,
         joinOrg: (orgName: string, link: string, existingUser: boolean) => `You have been invited to ${!existingUser ? 'sign up and ' : ''}join ${orgName} on the PATCH App! If you would like to accept this invite, make sure you have PATCH installed and then click the following link to join ${orgName}.\n${link}`,
         alreadyInOrg: (orgName: string) => `You are already a member of ${orgName}!`,
-        invitationSuccessful: (email: string, phone: string) => `Invitation sent to email ${email} and phone ${phone}.`,
+        invitationSuccessful: (email: string, phone: string) => `Invitation sent to phone number ${phone}.`,
         inviteNotFound: (userEmail: string, orgName: string) => `Invite for user with email ${userEmail} to join '${orgName}' not found`,
         twilioError: (msg: string) => `Twilio Error: ${msg}`,
         errorMessages: {
@@ -295,7 +306,7 @@ const STRINGS = {
         cannotDeleteRole: (roleName: string) => `The ${roleName} role cannot be deleted`,
         assignedToAll: ' (assigned to all members)',
         removeRoleDialogTitle: (roleName: string) =>`Remove ${roleName} role?`,
-        removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members.`,
+        removeRoleDialogText: (roleName: string) => `The ${roleName} role (and its permissions) will be removed from all team members. And all positions with this role will have their associated role changed to ${DefaultRoles.find(role => role.id == DefaultRoleIds.Anyone).name}.`,
         removeRoleDialogOptionNo: () => `${STRINGS.INTERFACE.cancel}`,
         removeRoleDialogOptionYes:  `Remove`, 
         errorMessages: {
@@ -318,6 +329,19 @@ const STRINGS = {
         fileTicketLabel: () => 'File a ticket',
         termsLabel: () => 'Terms of Use',
         privacyLabel: () => 'Privacy Policy',
+    }, 
+    DYNAMIC_CONFIG: {
+        requiredUpdatePrompt: {
+            title: 'Upgrade Patch',
+            message: 'A newer version of Patch has been released. Update to continue using the app',
+            updateNow: 'Okay'
+        },
+        optionalUpdatePrompt: {
+            title: 'New Patch version!',
+            message: 'A newer version of Patch has been released. Please update to use the latest functionality',
+            updateNow: 'Okay',
+            updateLater: 'Later'
+        }
     }
 }
 

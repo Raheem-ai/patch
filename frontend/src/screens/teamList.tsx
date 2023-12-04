@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useState } from "react";
 import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, View, Text } from "react-native";
-import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/models";
+import { ProtectedUser, TeamFilter, TeamSortBy } from "../../../common/front";
 import { allEnumValues } from "../../../common/utils";
 import ResponderRow from "../components/responderRow";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";

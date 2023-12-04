@@ -4,7 +4,7 @@ import { BadRequest, Forbidden, Unauthorized } from "@tsed/exceptions";
 import { Authenticate } from "@tsed/passport";
 import { PatchPermissions, UserRole } from "common/models";
 import API from "common/api";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import { HelpRequestDoc } from "../models/helpRequest";
 import { UserDoc } from "../models/user";
 import { User } from "../protocols/jwtProtocol";
@@ -15,7 +15,7 @@ const HelpRequestContextKey = 'helpRequest';
 
 @Middleware()
 export class RequestAccessMiddleware {
-  @Inject(DBManager) db: DBManager;
+  @Inject(DBManagerService) db: DBManagerService;
 
   async use(
       @Req() req: Req, 

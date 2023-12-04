@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
-import { IManageAttributesStore, organizationStore, userStore } from './interfaces';
+import { IManageAttributesStore, organizationStore, updateStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { Attribute, CategorizedItemUpdates, Category, PatchPermissions } from '../../../common/models';
+import { Attribute, CategorizedItemUpdates, Category, PatchPermissions } from '../../../common/front';
 import { OrgContext } from '../../../common/api';
 import EditCategorizedItemStore from './editCategorizedItemStore';
 

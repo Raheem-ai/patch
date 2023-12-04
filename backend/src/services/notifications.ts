@@ -10,7 +10,7 @@ import { Document } from "mongoose";
 import {Agenda, Every, Define} from "@tsed/agenda";
 import {Job} from "agenda";
 import { JobNames } from "../jobs";
-import { DBManager } from "./dbManager";
+import { DBManagerService } from "./dbManagerService";
 
 export type NotificationMetadata<T extends PatchEventType> = Omit<NotificationModel<T>, 'sent_count'>
 
@@ -19,7 +19,7 @@ export type NotificationMetadata<T extends PatchEventType> = Omit<NotificationMo
 export default class Notifications {
 
     @Inject(NotificationModel) notifications: MongooseModel<NotificationModel>;
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     // TODO: this should come from config
     // ((4) + (16) + (4^3) + (4^4) + (4^5))/ 60 ~ 23hrs...so try max 5 times over the course of a day or cleanup with 
@@ -149,7 +149,7 @@ export default class Notifications {
                 // but the typings have ticket/receipt errors having the same type so they may not all be transient
                 // will have to investigate when we can force failed tickets
                 default:
-                    await this.logUnknownTicketError(failure.toJSON())
+                    await this.logUnknownTicketError(failure.toJSON() as NotificationModel<any>)
                     transientErrors.push(failure);
             }
         }

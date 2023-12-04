@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { DebounceSettings } from 'lodash';
 import { runInAction } from 'mobx';
-import { AnyFunction } from '../../../common/models';
+import { AnyFunction } from '../../../common/front';
 import { unwrap } from '../../../common/utils';
 
 

@@ -4,6 +4,7 @@ import * as React from 'react';
 import { CreateAccountNavigationProp, ICONS, routerNames } from '../types';
 import { navigateTo } from '../navigation';
 import STRINGS from '../../../common/strings';
+import SelectableText from '../components/helpers/selectableText';
 
 type Props = {
     navigation: CreateAccountNavigationProp;
@@ -19,7 +20,7 @@ export default function CreateAccountForm( { navigation } : Props) {
         <Pressable onPress={Keyboard.dismiss} accessible={false}>
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleText}>Create an account</Text>
+                    <SelectableText style={styles.titleText}>Create an account</SelectableText>
                 </View>
                 <View style={styles.inputsContainer}>
                     <View style={styles.nameInputsContainer}>
@@ -55,7 +56,7 @@ export default function CreateAccountForm( { navigation } : Props) {
                 </View>
                 <View style={styles.bottomContainer}>
                     <Button uppercase={false} color={'#fff'} style={styles.createAccountButton}>{'Create account'}</Button>
-                    <Text style={styles.signInText} onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</Text>
+                    <SelectableText style={styles.signInText} onPress={() => navigateTo(routerNames.signIn)}>SIGN IN</SelectableText>
                 </View>
             </View>
         </Pressable>

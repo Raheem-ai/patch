@@ -2,12 +2,13 @@ import { observer } from "mobx-react";
 import React from "react";
 import { Dimensions, GestureResponderEvent, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/models";
+import { HelpRequest, RequestStatus, RequestStatusToLabelMap } from "../../../common/front";
 import { assignedResponderBasedRequestStatus, positionStats } from "../../../common/utils/requestUtils";
 import { alertStore, requestStore, userStore } from "../stores/interfaces";
 import PartiallyAssignedIcon from "./icons/partiallyAssignedIcon";
 import { ICONS } from "../types"
 import { resolveErrorMessage } from "../errors";
+import SelectableText from "./helpers/selectableText";
 
 export const RequestStatusToIconMap: { [key in RequestStatus]: string | ((onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => JSX.Element) } = {
     [RequestStatus.Unassigned]: (onPress: (event: GestureResponderEvent) => void, style?: StyleProp<ViewStyle>, large?: boolean, dark?: boolean) => {
@@ -256,7 +257,7 @@ export const StatusSelector = observer(({
                                         : {}
 
                                 return <View style={[{ width: width }, marginStyle]}>
-                                    <Text style={[{ color: (dark ? styles.darkStatusIcon : styles.statusIcon).borderColor, textAlign: 'center' }, request.status == s ? { fontWeight: 'bold' } : null ]}>{label}</Text>
+                                    <SelectableText style={[{ color: (dark ? styles.darkStatusIcon : styles.statusIcon).borderColor, textAlign: 'center' }, request.status == s ? { fontWeight: 'bold' } : null ]}>{label}</SelectableText>
                                 </View>
                             })
                         }

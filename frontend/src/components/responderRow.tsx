@@ -2,10 +2,11 @@ import React from "react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { HelpRequest, ProtectedUser, UserRole } from "../../../common/models";
+import { HelpRequest, ProtectedUser, UserRole } from "../../../common/front";
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import UserIcon from "./userIcon";
 import { Colors } from "../types";
+import SelectableText from "./helpers/selectableText";
 
 type Props = {
     testID: string,
@@ -30,7 +31,7 @@ const ResponderRow = ({ testID, responder, orgId, style, request, isSelected, on
             <View style={{ flex: 1, justifyContent: 'center' }}> 
                 <View>
                     <View style={styles.responderHeader}>
-                        <Text style={styles.responderLabel}>{responder.name}</Text>
+                        <SelectableText style={styles.responderLabel}>{responder.name}</SelectableText>
                     </View>
                 </View>
                 <View style={styles.skillTagsContainer}>
@@ -40,10 +41,10 @@ const ResponderRow = ({ testID, responder, orgId, style, request, isSelected, on
 
                             return addDelim 
                                 ? <>
-                                    <Text style={styles.skillDelim}>{attr.name}</Text>
-                                    <Text style={styles.skillDelim}>{'·'}</Text>
+                                    <SelectableText style={styles.skillDelim}>{attr.name}</SelectableText>
+                                    <SelectableText style={styles.skillDelim}>{'·'}</SelectableText>
                                 </>
-                                : <Text style={styles.skillDelim}>{attr.name}</Text>
+                                : <SelectableText style={styles.skillDelim}>{attr.name}</SelectableText>
 
                         })
                     }

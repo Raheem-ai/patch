@@ -5,7 +5,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from "socket.io-client";
 import { apiHost } from '../config';
 import { api } from '../services/interfaces';
-import { PatchNotification } from '../../../common/models';
+import { PatchNotification } from '../../../common/front';
 import { NotificationHandlers } from '../notifications/notificationActions';
 
 @Store(ISocketStore)

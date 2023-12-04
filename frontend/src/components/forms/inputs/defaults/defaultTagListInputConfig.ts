@@ -3,7 +3,7 @@ import { manageTagsStore } from "../../../../stores/interfaces";
 import { ScreenFormInputConfig } from "../../types";
 import STRINGS from "../../../../../../common/strings"
 
-type RequiredFields = 'onSave' | 'val' | 'isValid' | 'name'
+type RequiredFields = 'onSave' | 'val' | 'isValid' | 'name' | 'testID'
 type DisabledFields = 'type'
 
 type OverrideableConfig = Omit<ScreenFormInputConfig<'CategorizedItemList'>, RequiredFields | DisabledFields | 'props'>;

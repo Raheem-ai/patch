@@ -4,6 +4,7 @@ import * as React from 'react';
 import { JoinOrganizationNavigationProp, routerNames, Colors, ScreenProps } from '../types';
 import { navigateTo } from '../navigation';
 import STRINGS from '../../../common/strings';
+import SelectableText from '../components/helpers/selectableText';
 
 type Props = {
     navigation: JoinOrganizationNavigationProp;
@@ -16,7 +17,7 @@ export default function JoinOrganizationForm( { navigation } : Props) {
         <Pressable onPress={Keyboard.dismiss} accessible={false}>
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.titleText}>Join an organization</Text>
+                    <SelectableText style={styles.titleText}>Join an organization</SelectableText>
                 </View>
                 <View style={styles.inputsContainer}>
                     <TextInput

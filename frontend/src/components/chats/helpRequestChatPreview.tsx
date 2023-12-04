@@ -2,12 +2,13 @@ import React from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Text, IconButton } from "react-native-paper";
-import { HelpRequest, RequestDetailsTabs } from "../../../../common/models";
+import { HelpRequest, RequestDetailsTabs } from "../../../../common/front";
 
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { Colors, routerNames, ICONS } from "../../types";
 import STRINGS from "../../../../common/strings";
+import SelectableText from "../helpers/selectableText";
 
 type Props = {
     request: HelpRequest,
@@ -28,7 +29,7 @@ const HelpRequestChatPreview = observer(({
 
     const unreadIndicator = () => {
         const hasUnreadMessages = (request.chat && request.chat.messages.length)
-                                    && (!request.chat.userReceipts[userStore().user.id] 
+                                    && (!request.chat.userReceipts?.[userStore().user.id] 
                                     || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         return (
@@ -47,26 +48,26 @@ const HelpRequestChatPreview = observer(({
         const lastMessageUser = userStore().users.get(request.chat?.messages[request.chat.messages.length - 1].userId);
 
         const preview = (request.chat && request.chat.messages.length)
-                        ? <Text style={styles.detailText}>
-                            <Text style={styles.nameText}>
+                        ? <SelectableText style={styles.detailText}>
+                            <SelectableText style={styles.nameText}>
                                 { lastMessageUser 
                                     ? lastMessageUser.name + ': ' 
                                     : ''
                                 }
-                            </Text> 
+                            </SelectableText> 
                             { request.chat.messages[request.chat.messages.length - 1].message }
-                        </Text>
+                        </SelectableText>
                         : STRINGS.CHANNELS.noMessages;
 
         return (
             <View style={{flexDirection: 'column', flex: 1}}>
                 <View style={styles.headerRow}>
-                    <Text style={styles.idText}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</Text>
+                    <SelectableText style={styles.idText}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</SelectableText>
                 </View>
                 <View style={styles.detailsRow}>
-                    <Text style={styles.detailText} numberOfLines={3}>
+                    <SelectableText style={styles.detailText} numberOfLines={3}>
                         {preview}
-                    </Text>
+                    </SelectableText>
                 </View>
             </View>
         )

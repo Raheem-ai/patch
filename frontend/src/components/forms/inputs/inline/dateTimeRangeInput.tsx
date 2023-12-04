@@ -6,12 +6,13 @@ import { IconButton, Text } from "react-native-paper";
 import { dateToDateString, dateToDateYearString, dateToTimeString } from "../../../../../../common/utils";
 import { SectionInlineViewProps } from "../../types";
 import moment from 'moment'
-import { DateTimeRange } from "../../../../../../common/models";
+import { DateTimeRange } from "../../../../../../common/front";
 import { first, isNumber } from "lodash";
 import { useWhenParamsChange } from "../../../../hooks/useWhenParamsChange";
 // import CalendarPicker from 'react-native-calendar-picker';
 import WheelPicker from "../../../wheelPicker";
 import CalendarPicker from "../../../calendarPicker";
+import SelectableText from "../../../helpers/selectableText";
 
 enum TimeRangeSections {
     Start,
@@ -294,10 +295,10 @@ const Section = ({
         <View style={styles.section}>
             <View style={styles.sectionHeader}>
                 <Pressable onPress={() => toggleDayPicker(section)}>
-                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToDateString(date)}</Text>
+                    <SelectableText style={[styles.label, { lineHeight: 60 }]}>{dateToDateString(date)}</SelectableText>
                 </Pressable>
                 <Pressable onPress={() => toggleTimePicker(section)}>
-                    <Text style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(date)}</Text>
+                    <SelectableText style={[styles.label, { lineHeight: 60 }]}>{dateToTimeString(date)}</SelectableText>
                 </Pressable>
             </View>
             {

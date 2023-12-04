@@ -11,6 +11,7 @@ import ValidatableTextInput from '../components/validatableTextInput';
 import KeyboardAwareArea from '../components/helpers/keyboardAwareArea';
 import { isPasswordValid } from '../../../common/utils/validationUtils';
 import TestIds from '../test/ids';
+import SelectableText from '../components/helpers/selectableText';
 
 export default function UpdatePasswordForm() {
     const [password, setPassword] = useState('');
@@ -69,7 +70,7 @@ export default function UpdatePasswordForm() {
                 <Pressable onPress={Keyboard.dismiss} accessible={false} style={styles.container}>
                     <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContainer} keyboardShouldPersistTaps='always' keyboardDismissMode="none">
                         <View style={styles.titleContainer}>
-                            <Text style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePasswordFor(userStore().user.email)}</Text>
+                            <SelectableText style={styles.titleText}>{STRINGS.PAGE_TITLES.updatePasswordFor(userStore().user.email)}</SelectableText>
                         </View>
                         <View style={styles.inputsContainer}>
                             <ValidatableTextInput
@@ -84,7 +85,7 @@ export default function UpdatePasswordForm() {
                         </View>
                         <View style={styles.bottomContainer}>
                             <Button testID={TestIds.updatePassword.submit} uppercase={false} color={Colors.text.buttonLabelPrimary} style={styles.signInButton} onPress={updatePassword}>{STRINGS.ACCOUNT.updatePasswordButton}</Button>
-                            <Text testID={TestIds.updatePassword.cancel} onPress={cancel} style={styles.cancelLink}>Cancel</Text>
+                            <SelectableText testID={TestIds.updatePassword.cancel} onPress={cancel} style={styles.cancelLink}>Cancel</SelectableText>
                         </View>
                     </ScrollView>
                 </Pressable>

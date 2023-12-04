@@ -8,6 +8,7 @@ import { resolveErrorMessage } from '../errors';
 import { ScrollView } from 'react-native-gesture-handler';
 import STRINGS from '../../../common/strings';
 import TestIds from '../test/ids';
+import SelectableText from '../components/helpers/selectableText';
 
 type Props = {
     navigation: SignInNavigationProp;
@@ -43,7 +44,7 @@ export default function SignInForm( { navigation } : Props) {
                     keyboardDismissMode="none"
                 >
                     <View style={styles.titleContainer}>
-                        <Text style={styles.titleText}>Welcome to Patch!</Text>
+                        <SelectableText style={styles.titleText}>Welcome to Patch!</SelectableText>
                     </View>
                     <View style={styles.inputsContainer}>
                         <TextInput
@@ -84,8 +85,8 @@ export default function SignInForm( { navigation } : Props) {
                             style={styles.signInButton} 
                             onPress={signIn}
                         >{'Sign in'}</Button>
-                        <Text testID={TestIds.signIn.forgot} style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</Text>
-                        {/* <Text style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</Text> */}
+                        <SelectableText testID={TestIds.signIn.forgot} style={styles.forgotPasswordText} onPress={() => navigateTo(routerNames.sendResetCode)}>Forgot your password?</SelectableText>
+                        {/* <SelectableText style={styles.invitationCodeText} onPress={() => navigateTo(routerNames.joinOrganization)}>Enter invitation code</SelectableText> */}
                     </View>
                 </ScrollView>
             </Pressable>

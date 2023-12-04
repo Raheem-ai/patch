@@ -3,14 +3,19 @@ import React from "react";
 import { Pressable, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/models";
+import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/front";
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";
 import { Colors, ICONS } from "../types";
+import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 type PositionCardProps = { 
-    pos: Position,
+    testID: string,
+    // getting position like this because it could be coming from a store that is getting updated 
+    // or it could be from the position input label
+    positionHandle: () => Position
     edit?: {
         permissions: PatchPermissions[],
         handler: () => void
@@ -19,12 +24,14 @@ type PositionCardProps = {
     onlyMissingUsers?: boolean
 }
 
-const PositionCard = observer(({ 
-    pos,
+const PositionCard = observer(({
+    testID,
+    positionHandle,
     edit,
     containerStyle,
     onlyMissingUsers
 }: PositionCardProps) => {
+    const pos = positionHandle()
     const roleName = organizationStore().roles.get(pos.role).name
     
     const attrNames = pos.attributes.map(attr => {
@@ -60,15 +67,16 @@ const PositionCard = observer(({
     }
 
     const hasPermissions = iHaveAllPermissions(edit?.permissions || []);
+    const wrappedTestID = TestIds.positionCard.wrapper(testID);
 
     return (
-        <Pressable onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
+        <Pressable testID={wrappedTestID} onPress={edit?.handler} style={[{ flexDirection: 'row', paddingVertical: 20, borderBottomColor: Colors.borders.formFields, borderBottomWidth: 1 }, containerStyle]}>
             <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</Text>
+                <SelectableText testID={TestIds.positionCard.roleText(wrappedTestID)} style={{ fontSize: 16, fontWeight: 'bold' }}>{roleName}</SelectableText>
                 <View style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}>
                     { 
-                        attrNames.map(attr => {
-                            return <Text key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</Text>
+                        attrNames.map((attr, idx) => {
+                            return <SelectableText testID={TestIds.positionCard.attrText(wrappedTestID, idx)} key={attr} style={{ marginRight: 12, fontSize: 14, color: Colors.text.tertiary }}>{attr}</SelectableText>
                         }) 
                     }
                 </View>

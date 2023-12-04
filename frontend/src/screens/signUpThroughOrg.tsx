@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import React, { useEffect, useState,  } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Text, TextInput } from "react-native-paper";
-import { LinkExperience, LinkParams } from "../../../common/models";
+import { LinkExperience, LinkParams } from "../../../common/front";
 import STRINGS from "../../../common/strings";
 import Form, { FormProps } from "../components/forms/form";
 import BackButtonHeader, { BackButtonHeaderProps } from "../components/forms/inputs/backButtonHeader";
@@ -65,7 +65,7 @@ const SignUpThroughOrg = observer(({ navigation, route }: Props) => {
 
     const config: FormProps = {
         testID: TestIds.signUpThroughOrg.screen,
-        headerLabel: 'Add your name and a password to sign up', 
+        headerLabel: () => 'Add your name and a password to sign up', 
         inputs: [
             {
                 testID: TestIds.signUpThroughOrg.email,

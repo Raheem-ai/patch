@@ -48,7 +48,7 @@ import {
     IOrganizationSettingsStore,
     IAppUpdateStore,
     IFormStore,
-    IConnectionStore
+    IConnectionStore,
 } from './interfaces';
 import UpsertRoleStore from './upsertRoleStore';
 import ManageAttributesStore from './manageAttributesStore';

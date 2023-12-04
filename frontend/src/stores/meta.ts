@@ -6,7 +6,13 @@ import PersistentStorage, { persistentPropConfigKey } from "../meta/persistentSt
 export function getStore<T>({ id }: { id: symbol }): T {
     return container.get(id);
 }
-
+/**
+ * 
+ *  TODO: 
+ *  1) "tracing mode": automatically print start/end of store function calls with getters printing their values
+ *  2) easy way to test store logic with initial state, mocked store functions/getters, test actions (scenario), and post checks to what our data should be after test actions
+ *  
+ */
 export function Store({ id }: { id: Symbol }) {
     return function(ctr: new () => any) {
         
@@ -40,7 +46,10 @@ export function Store({ id }: { id: Symbol }) {
                     if (oldInit) {
                         await oldInit.call(this);
                     }
-                })()
+                })().catch(e => {
+                    console.log(`Store "${id.toString()}" failed with ${e}`)
+                    throw e
+                })
 
                 return initPromise
             }

@@ -20,7 +20,9 @@ import {
     CategorizedItemUpdates,
     AdminEditableUser,
     CategorizedItem,
-    TeamMemberMetadata
+    TeamMemberMetadata,
+    RequestUpdates,
+    DynamicConfig
 } from './models';
 
 // TODO: type makes sure param types match but doesn't enforce you pass anything but token
@@ -63,20 +65,30 @@ export type ServerSide<Req, User> = {
 // an object on the client
 type MapJson<T = Map<string | number, any>> = T extends Map<any, infer V> ? { [key: string]: V } : never;
 
+// TODO: wrap all references to requests on the frontend with this
 export type ClientSideFormat<T> = {
     [key in keyof T]: T[key] extends Map<any, any> 
         ? MapJson<T[key]>
-        : T[key]
+        : T[key] extends Object
+            ? ClientSideFormat<T[key]>
+            : T[key]
 }
  
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
 
-type ClientSide<T extends (...args: any) => Promise<any>> = (...args: Parameters<T>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+type ClientSideParams<T extends (...args: any) => any> = T extends (...args: infer P) => any ? ClientSideFormat<P> : never;
 
-export type ClientSideApi<ToChange extends keyof IApiClient> = {
-    [ api in keyof IApiClient ]: api extends ToChange
-        ? ClientSide<IApiClient[api]>
-        : IApiClient[api]
+type ClientSide<T extends (...args: any) => Promise<any>> = Parameters<T> extends []
+    // if no parameters, just wrap the output
+    ? () => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+    : Parameters<T>[0] extends TokenContext
+        // if uses an auth scheme, skip the auth parameter but wrap everything else
+        ? (auth: Parameters<T>[0], ...args: Rest<ClientSideParams<T>>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+        // default is to wrap everything
+        : (...args: ClientSideParams<T>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+
+export type ClientSideApi = {
+    [ api in keyof IApiClient ]: ClientSide<IApiClient[api]>
 }
 
 export interface IApiClient {
@@ -87,6 +99,7 @@ export interface IApiClient {
     signUpThroughOrg: (orgId: string, pendingId: string, user: MinUser) => Promise<AuthTokens>
     sendResetCode: (email: string, baseUrl: string) => Promise<void>
     signInWithCode: (code: string) => Promise<AuthTokens>
+    getDynamicConfig: () => Promise<DynamicConfig>
 
     // must be signed in
     signOut: Authenticated<() => Promise<void>>
@@ -104,7 +117,7 @@ export interface IApiClient {
     editOrgMetadata: AuthenticatedWithOrg<(orgUpdates: Partial<Pick<OrganizationMetadata, 'name' | 'requestPrefix'>>) => Promise<OrganizationMetadata>>
     editRole: AuthenticatedWithOrg<(roleUpdates: AtLeast<Role, 'id'>) => Promise<Role>>
     createNewRole: AuthenticatedWithOrg<(role: MinRole) => Promise<Role>>
-    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<OrganizationMetadata>>
+    deleteRoles: AuthenticatedWithOrg<(roleIds: string[]) => Promise<{ updatedUserIds: string[], updatedRequestIds: string[] }>>
     addRolesToUser: AuthenticatedWithOrg<(userId: string, roles: string[]) => Promise<ProtectedUser>>
     
     updateAttributes: AuthenticatedWithOrg<(updates: CategorizedItemUpdates) => Promise<OrganizationMetadata>>
@@ -138,12 +151,14 @@ export interface IApiClient {
     removeUserFromRequest: AuthenticatedWithOrg<(userId: string, requestId: string, positionId: string) => Promise<HelpRequest>>
     
     editRequest: AuthenticatedWithRequest<(requestUpdates: AtLeast<HelpRequest, 'id'>) => Promise<HelpRequest>>
+    editRequestV2: AuthenticatedWithRequest<(requestUpdates: RequestUpdates) => Promise<HelpRequest>>
     sendChatMessage: AuthenticatedWithRequest<(message: string) => Promise<HelpRequest>>
     updateRequestChatReceipt: AuthenticatedWithRequest<(lastMessageId: number) => Promise<HelpRequest>>
     setRequestStatus: AuthenticatedWithRequest<(status: ResponderRequestStatuses) => Promise<HelpRequest>>
     resetRequestStatus: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     closeRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
     reopenRequest: AuthenticatedWithRequest<() => Promise<HelpRequest>>
+    deleteRequest: AuthenticatedWithOrg<(requestId: string) => Promise<void>>
     // getResources: () => string
 }
 
@@ -251,6 +266,9 @@ type ApiRoutes = {
         editRequest: () => {
             return '/editRequest'
         },
+        editRequestV2: () => {
+            return '/editRequestV2'
+        },
         getTeamMembers: () => {
             return '/getTeamMembers'
         },
@@ -268,6 +286,9 @@ type ApiRoutes = {
         },
         closeRequest: () => {
             return '/closeRequest'
+        },
+        deleteRequest: () => {
+            return '/deleteRequest'
         },
         setOnDutyStatus: () => {
             return '/setOnDutyStatus'
@@ -317,10 +338,16 @@ type ApiRoutes = {
         signInWithCode: () => {
             return `/signInWithCode`
         },
+        getDynamicConfig: () => {
+            return `/getDynamicConfig`
+        },
     }
 
     client: ApiRoutes = {
         // users
+        getDynamicConfig: () => {
+            return `${this.base}${this.namespaces.users}${this.server.getDynamicConfig()}`
+        },
         signUp: () => {
             return `${this.base}${this.namespaces.users}${this.server.signUp()}`
         },
@@ -465,6 +492,9 @@ type ApiRoutes = {
         editRequest: () => {
             return `${this.base}${this.namespaces.request}${this.server.editRequest()}`
         },
+        editRequestV2: () => {
+            return `${this.base}${this.namespaces.request}${this.server.editRequestV2()}`
+        },
         sendChatMessage: () => {
             return `${this.base}${this.namespaces.request}${this.server.sendChatMessage()}`
         },
@@ -482,6 +512,9 @@ type ApiRoutes = {
         },
         updateRequestChatReceipt: () => {
             return `${this.base}${this.namespaces.request}${this.server.updateRequestChatReceipt()}`
+        },
+        deleteRequest: () => {
+            return `${this.base}${this.namespaces.request}${this.server.deleteRequest()}`
         }
     }
 }

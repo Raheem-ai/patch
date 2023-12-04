@@ -1,4 +1,4 @@
-import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap } from "../../../common/models";
+import { AppSecrets, AuthTokens, DefaultRoleIds, HelpRequest, TeamMemberMetadata, OrganizationMetadata, RequestStatus, User, DefaultRoles, DefaultAttributeCategoryIds, Delimiters, DefaultAttributeCategories, RequestStatusToLabelMap, DefaultTagCategories, DynamicConfig, PatchEventPacket, PatchEventType, PatchEventParams } from "../../../common/front";
 
 export function MockSecrets(): AppSecrets {
     return {
@@ -8,6 +8,19 @@ export function MockSecrets(): AppSecrets {
 
 export function MockActiveRequests(): HelpRequest[] {
     return MockRequests().filter(r => r.status != RequestStatus.Closed);
+}
+
+export function MockDynamicConfig(): DynamicConfig {
+    return {
+        appVersion: [
+            {
+                latestIOS: '',
+                latestAndroid: '',
+                requiresUpdate: false,
+                testing: false
+            }
+        ]
+    }
 }
 
 export function MockRequests(): HelpRequest[] {
@@ -204,7 +217,7 @@ export function MockOrgMetadata(): OrganizationMetadata {
         requestPrefix: 'MOCK',
         roleDefinitions: JSON.parse(JSON.stringify(DefaultRoles)),
         attributeCategories: JSON.parse(JSON.stringify(DefaultAttributeCategories)),
-        tagCategories: []
+        tagCategories: JSON.parse(JSON.stringify(DefaultTagCategories))
     }
 }
 
@@ -271,4 +284,20 @@ export function MockTeamMemberMetadata(): TeamMemberMetadata {
         removedOrgMembers: [],
         deletedUsers: []
     }
+}
+
+export function MockDeleteEventPacket(requestId: string) : PatchEventPacket<PatchEventType.RequestDeleted> {
+
+    const mockParams = {
+        requestId: requestId,
+        orgId: MockOrgMetadata().id, 
+        deleterId: MockUsers()[0].id
+    } as PatchEventParams[PatchEventType.RequestDeleted]
+
+    const mockEventPacket = {
+        event: PatchEventType.RequestDeleted,
+        params: mockParams
+    } as PatchEventPacket<PatchEventType.RequestDeleted>
+
+    return mockEventPacket;
 }

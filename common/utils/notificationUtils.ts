@@ -17,6 +17,7 @@ const NotificationLabelMap = {
     [PatchEventType.UserChangedRolesInOrg]: () => '',
     [PatchEventType.UserAddedToOrg]: () => '',
     [PatchEventType.RequestCreated]: () => '',
+    [PatchEventType.RequestDeleted]: () => '',
     [PatchEventType.RequestEdited]: () => '',
     [PatchEventType.OrganizationEdited]: () => '',
     [PatchEventType.OrganizationTagsUpdated]: () => '',
@@ -24,6 +25,7 @@ const NotificationLabelMap = {
     [PatchEventType.OrganizationRoleCreated]: () => '',
     [PatchEventType.OrganizationRoleEdited]: () => '',
     [PatchEventType.OrganizationRoleDeleted]: () => '',
+    [PatchEventType.SystemDynamicConfigUpdated]: () => '',
 
     // Noisy
     [PatchEventType.RequestChatNewMessage]: (requestName: string, senderName: string, prefix?: string) => {

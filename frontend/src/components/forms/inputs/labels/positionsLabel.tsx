@@ -3,7 +3,7 @@ import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { IconButton, Text } from "react-native-paper"
 import { ClientSideFormat } from "../../../../../../common/api"
-import { PatchPermissions, ProtectedUser } from "../../../../../../common/models"
+import { PatchPermissions, ProtectedUser } from "../../../../../../common/front"
 import STRINGS from "../../../../../../common/strings"
 import { unwrap } from "../../../../../../common/utils"
 import { manageAttributesStore, organizationStore, userStore } from "../../../../stores/interfaces"
@@ -11,9 +11,9 @@ import { Colors } from "../../../../types"
 import PositionCard from "../../../positionCard"
 import UserIcon from "../../../userIcon"
 import { SectionLabelViewProps } from "../../types"
+import SelectableText from "../../../helpers/selectableText"
 
 const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Positions'>) => {
-
     const onPlaceholderPress = () => {
         if (config.disabled) {
             return
@@ -24,8 +24,8 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
 
     if (!config.val() || !config.val().length) {
         return (
-            <Pressable onPress={onPlaceholderPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
-                <Text style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</Text>
+            <Pressable testID={config.testID} onPress={onPlaceholderPress} style={[styles.section, config.disabled ? styles.disabledSection : null]}>
+                <SelectableText style={[styles.label, styles.placeholder]}>{unwrap(config.placeholderLabel)}</SelectableText>
             </Pressable>
         )
     }
@@ -47,11 +47,11 @@ const PositionsLabel = observer(({ config, expand }: SectionLabelViewProps<'Posi
                         permissions: config.props.editPermissions
                     }
 
-                    return <PositionCard pos={pos} edit={editConfig}/>
+                    return <PositionCard testID={config.testID} positionHandle={() => pos} edit={editConfig}/>
                 })
             }
-            <Pressable onPress={onPlaceholderPress} style={{ paddingVertical: 20 }}>
-                <Text style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position)}</Text>
+            <Pressable testID={config.testID} onPress={onPlaceholderPress} style={{ paddingVertical: 20 }}>
+                <SelectableText style={{ fontSize: 14, fontWeight: 'bold', color: Colors.primary.alpha, textTransform:'uppercase' }}>{STRINGS.INTERFACE.addAnotherElement(STRINGS.ELEMENTS.position)}</SelectableText>
             </Pressable>
         </View>
     )

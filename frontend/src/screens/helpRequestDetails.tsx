@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, TextStyle, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ICONS, ScreenProps } from "../types";
-import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/front";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -16,7 +16,7 @@ import PositionDetailsCard from "../components/positionDetailsCard";
 import { iHaveAllPermissions, iHaveAnyPermissions } from "../utils";
 import { resolveErrorMessage } from "../errors";
 import RequestChatChannel from "../components/chats/helpRequestChatChannel";
-import MapView, { MapViewProps, Marker, MarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { MapViewProps, Marker, MapMarkerProps, PROVIDER_GOOGLE } from "react-native-maps";
 import Tags from "../components/tags";
 import Loader from "../components/loader";
 import { userOnRequest } from "../../../common/utils/requestUtils";
@@ -25,6 +25,7 @@ import { constants } from "buffer";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 const WrappedScrollView = wrapScrollView(ScrollView)
 
@@ -39,10 +40,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
     // const [requestIsOpen, setRequestIsOpen] = useState(currentRequestIsOpen());
 
     const [initialTab, setInitialTab] = useState(RequestDetailsTabs.Overview);
-
-    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
-    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
-    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
     useEffect(() => {
         (async () => {
@@ -70,12 +67,20 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         })();
     }, []);
 
+    if(!request()){
+        return null;
+    }
+
+    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
+    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
+
     const notesSection = () => {
         const notes = requestStore().currentRequest.notes;
         
         return (
             <View style={styles.notesSection}>
-                <Text testID={TestIds.requestDetails.notes} selectable={true}>{notes}</Text>
+                <SelectableText testID={TestIds.requestDetails.notes} selectable={true}>{notes}</SelectableText>
             </View>
         )
     }
@@ -93,7 +98,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return !!priorityLabel
             ? <View style={styles.priorityOuterSection}>
                     <View style={[styles.priorityInnerSection, { borderColor: priorityColor, borderWidth: 1 }]}>
-                        <Text style={{ color: priorityColor }}>{priorityLabel}</Text>
+                        <SelectableText style={{ color: priorityColor }}>{priorityLabel}</SelectableText>
                     </View>
                 </View>
             : null
@@ -116,7 +121,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                     icon={ICONS.mapMarker} 
                                     color={styles.detailsIcon.color}
                                     size={styles.detailsIcon.width} />
-                                <Text selectable={true} style={styles.metadataText}>{address}</Text>
+                                <SelectableText style={styles.metadataText}>{address}</SelectableText>
                             </View>
                         </Pressable>
                         : null
@@ -128,14 +133,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 icon={ICONS.timeCallStarted}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
-                            <Text selectable={true} style={styles.metadataText}>
+                            <SelectableText style={styles.metadataText}>
                                 {requestStore().currentRequest.callStartedAt // use user-set start time if it exists, else request creation time
                                     ? requestStore().currentRequest.callStartedAt
                                     : time }
                                 {requestStore().currentRequest.callEndedAt // add end time if it's been set
                                     ? ' - ' + requestStore().currentRequest.callEndedAt
                                     : '' }
-                            </Text>
+                            </SelectableText>
                         </View>
                 }
                 { 
@@ -146,11 +151,11 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                                 icon={ICONS.callerContactInfo}
                                 color={styles.detailsIcon.color}
                                 size={styles.detailsIcon.width} />
-                                <Text selectable={true} style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerName && requestStore().currentRequest.callerContactInfo 
+                                <SelectableText style={styles.metadataText}>{requestStore().currentRequest.callerName}{requestStore().currentRequest.callerName && requestStore().currentRequest.callerContactInfo 
                                     ? ' ' + STRINGS.visualDelim + ' '
                                     : null}
-                                    <Text>{requestStore().currentRequest.callerContactInfo}</Text>
-                                </Text>
+                                    <SelectableText>{requestStore().currentRequest.callerContactInfo}</SelectableText>
+                                </SelectableText>
                         </View>
                         : null
                 }
@@ -188,7 +193,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
         return types.length 
             ? <View style={styles.headerContainer}>
                 <View style={styles.typeLabelContainer}>
-                    <Text selectable={true} style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</Text>
+                    <SelectableText style={styles.typeLabel}>{types.join(` ${STRINGS.visualDelim} `)}</SelectableText>
                 </View>
             </View>
             : null
@@ -223,7 +228,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                 style: styles.mapView,
             }
 
-            const markerProps: MarkerProps = {
+            const markerProps: MapMarkerProps = {
                 coordinate: { 
                     latitude: locLat,
                     longitude: locLong,
@@ -489,7 +494,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             <View style={{ flexShrink: 1 }}>
                                 <Text>
                                     <Text>{`${userLabel} ${STRINGS.visualDelim} `}</Text>
-                                    <Text style={{ fontWeight: 'bold' }}>{positionName}</Text>
+                                    <SelectableText style={{ fontWeight: 'bold' }}>{positionName}</SelectableText>
                                 </Text>
                             </View>
                             { rightElem() }
@@ -515,8 +520,8 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     return (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                            <Text style={userLabelStyle}>{userLabel}</Text>
-                            <Text>{dateToTimeString(timestamp)}</Text>
+                            <SelectableText style={userLabelStyle}>{userLabel}</SelectableText>
+                            <SelectableText>{dateToTimeString(timestamp)}</SelectableText>
                         </View>
                     )
                 }
@@ -525,7 +530,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
                     const responseLabel = (text: string) => () => {
                         return <View style={{ flexGrow: 1 }}>
-                            <Text style={{ textAlign: 'right' }}>{text}</Text>
+                            <SelectableText style={{ textAlign: 'right' }}>{text}</SelectableText>
                         </View>
                     }
 
@@ -573,7 +578,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         pendingRequests.length + deniedRequests.length > 0
                             ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                                <Text style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</Text>
+                                <SelectableText style={{ fontWeight: 'bold', paddingBottom: 10}}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.asked}</SelectableText>
                                 { 
                                     pendingRequests.map(({ userId, positionName, positionId }) => {
                                         return positionScopedRow({
@@ -615,7 +620,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         joinedUsers.length > 0
                         ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                            <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.joined}</Text>
+                            <SelectableText style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.joined}</SelectableText>
                             { 
                                 joinedUsers.map(({ userId, positionName }) => {
                                     return positionScopedRow({
@@ -634,7 +639,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         viewedUsers.size > 0
                             ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</Text>
+                                <SelectableText style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.viewed}</SelectableText>
                                 { 
                                     Array.from(viewedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
                                 }
@@ -647,7 +652,7 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     return (
                         notifiedUsers.size > 0
                             ? <View style={{ padding: 20, borderTopColor: Colors.borders.filter, borderTopWidth: 1 }}>
-                                <Text style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</Text>
+                                <SelectableText style={{ fontWeight: 'bold', paddingBottom: 10 }}>{STRINGS.REQUESTS.NOTIFICATIONS.SECTIONS.sent}</SelectableText>
                                 { 
                                 
                                     Array.from(notifiedUsers.entries()).map(([userId, timestamp]) => requestScopedRow({ userId, timestamp }))
@@ -677,14 +682,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                             onPress={toggleTeamDetails}
                         >
                             <View>
-                                <Text style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</Text>
+                                <SelectableText style={{ fontWeight: 'bold', textTransform:'uppercase', }}>{notifiedLabel}</SelectableText>
                             </View>
                             { newLabel
                                 ? <View style={{ flex: 1 }}>
-                                    <Text style={{ 
+                                    <SelectableText style={{ 
                                         color: Colors.primary.alpha, 
                                         fontSize: 14
-                                    }}>{newLabel}</Text>
+                                    }}>{newLabel}</SelectableText>
                                 </View>
                                 : null
                             }
@@ -741,12 +746,12 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
                     request().positions.length > 0 
                         ? request().positions.map(pos => {
                             return (
-                                <PositionDetailsCard key={pos.id} requestId={request().id} pos={pos}/>
+                                <PositionDetailsCard key={pos.id} requestId={request().id} positionId={pos.id}/>
                             )
                         })
                         : <View style={{ padding: 20, paddingBottom: 0 }}>
-                            <Text style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>{ STRINGS.cap(STRINGS.ELEMENTS.responder(true)) }</Text>
-                            <Text style={{lineHeight: 18}}>{STRINGS.REQUESTS.noRespondersDefined}</Text>
+                            <SelectableText style={{lineHeight: 18, fontWeight: '700', textTransform: 'uppercase', marginBottom: 8}}>{ STRINGS.cap(STRINGS.ELEMENTS.responder(true)) }</SelectableText>
+                            <SelectableText style={{lineHeight: 18}}>{STRINGS.REQUESTS.noRespondersDefined}</SelectableText>
                             <View style={{ marginTop: 20 }}>{ editAction() }</View>
                         </View>
                 }

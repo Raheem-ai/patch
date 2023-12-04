@@ -10,7 +10,9 @@ export class UIUpdateService {
     @Inject(MySocketService) socketService: MySocketService;
     @Inject(PubSubService) pubSubService: PubSubService;
 
-    async $onInit() {
+    // runs after $onInit() so pubsub service dependency can initialize properly before we try to use it
+    async $afterInit() {
+        
         this.pubSubService.uiUpdateSub.on('message', async (msg: Message) => {
             msg.ack()
         

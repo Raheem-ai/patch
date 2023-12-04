@@ -1,10 +1,8 @@
-import { Inject, Service } from "@tsed/di";
-import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig } from "common/models";
+import { AdminEditableUser, Attribute, AttributeCategory, AttributeCategoryUpdates, AttributesMap, CategorizedItem, Chat, ChatMessage, DefaultRoleIds, DefaultRoles, DefaultAttributeCategories, DefaultTagCategories, HelpRequest, Me, MinAttribute, MinAttributeCategory, MinHelpRequest, MinRole, MinTag, MinTagCategory, MinUser, Organization, OrganizationMetadata, PatchEventType, PendingUser, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestType, Role, Tag, TagCategory, TagCategoryUpdates, User, UserOrgConfig, CategorizedItemUpdates, RequestUpdates, DynamicConfig } from "common/models";
 import { UserDoc, UserModel } from "../models/user";
 import { OrganizationDoc, OrganizationModel } from "../models/organization";
-import { Agenda } from "@tsed/agenda";
-import { MongooseService } from "@tsed/mongoose";
-import { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
+import { getSchema } from "@tsed/mongoose";
+import Mongoose, { ClientSession, Document, FilterQuery, Model, Query } from "mongoose";
 import { HelpRequestDoc, HelpRequestModel } from "../models/helpRequest";
 import randomColor from 'randomcolor';
 import * as uuid from 'uuid';
@@ -14,19 +12,40 @@ import { resolveRequestStatus } from "common/utils/requestUtils";
 import STRINGS from "common/strings";
 import { AuthCodeModel } from "../models/authCode";
 import { hash } from 'bcrypt';
+import { applyUpdateToRequest } from "common/utils";
+import { writeFile } from "fs/promises";
+import { Collections } from "./dbConfig";
+import { DynamicConfigDoc, DynamicConfigModel } from "../models/dynamicConfig";
+import { Agenda, Every } from "@tsed/agenda";
 
 type DocFromModel<T extends Model<any>> = T extends Model<infer Doc> ? Document & Doc : never;
 
-@Agenda()
-@Service()
-export class DBManager {
-    
-    @Inject(UserModel) users: Model<UserModel>;
-    @Inject(OrganizationModel) orgs: Model<OrganizationModel>;
-    @Inject(HelpRequestModel) requests: Model<HelpRequestModel>;
-    @Inject(AuthCodeModel) authCodes: Model<AuthCodeModel>;
+export class DBManager { 
 
-    @Inject(MongooseService) db: MongooseService;
+    static async fromConnectionString(mongoConnString: string, opts?: Mongoose.ConnectOptions) {
+        const conn = await Mongoose.createConnection(mongoConnString, opts || {})
+
+        const users = conn.model<UserModel>(UserModel.name, getSchema(UserModel), Collections.User)
+        const orgs = conn.model<OrganizationModel>(OrganizationModel.name, getSchema(OrganizationModel), Collections.Organization)
+        const requests = conn.model<HelpRequestModel>(HelpRequestModel.name, getSchema(HelpRequestModel), Collections.HelpRequest)
+        const authCodes = conn.model<AuthCodeModel>(AuthCodeModel.name, getSchema(AuthCodeModel), Collections.AuthCode)
+        const dynamicConfig = conn.model<DynamicConfigModel>(DynamicConfigModel.name, getSchema(DynamicConfigModel), Collections.DynamicConfig)
+
+        return new DBManager(conn, users, orgs, requests, authCodes, dynamicConfig)
+    }
+
+    constructor(
+        public connection: Mongoose.Connection,
+        public users: Model<UserModel>,
+        public orgs: Model<OrganizationModel>,
+        public requests: Model<HelpRequestModel>,
+        public authCodes: Model<AuthCodeModel>,
+        public dynamicConfig: Model<DynamicConfigModel>
+    ) { }
+
+    async closeConnection() {
+        await this.connection.close()
+    }
 
     // the 'me' api handles returning non-system props along with personal
     // ones so the user has access...everywhere else a user is 
@@ -86,16 +105,50 @@ export class DBManager {
         return pubUser;
     }
 
+    async getDynamicConfig(): Promise<DynamicConfigDoc> {
+        // singleton
+        return await this.dynamicConfig.findOne()
+    }
+
+    /**
+     * Should only be called by infra/cli not controllers
+     * 
+     */
+    async upsertDynamicConfig(update: Partial<DynamicConfig>) {
+        console.log('getting existing config')
+        let config = await this.getDynamicConfig()
+
+        if (!config) {
+
+            // create a new one using the update
+            config = new this.dynamicConfig(update)
+        }
+        
+        console.log('saving update')
+        for (const prop in update) {
+            config[prop] = update[prop]
+            // console.log('markModified:', prop)
+            // config.markModified(prop);
+        }
+
+        console.log(config.appVersion)
+        console.log(config)
+
+        return config.save()
+    }
+
     async protectedOrganization(org: OrganizationDoc): Promise<Organization> {
         const membersPopulated = org.populated('members');
         const removedMembersPopulated = org.populated('removedMembers');
 
         if (!membersPopulated) {
-            org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'members', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'members', select: this.privateUserProps() });
         }
 
         if (!removedMembersPopulated) {
-            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            // org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() }).execPopulate();
+            org = await org.populate({ path: 'removedMembers', select: this.privateUserProps() });
         }
 
         const jsonOrg = org.toJSON() as Organization;
@@ -110,7 +163,8 @@ export class DBManager {
     async fullOrganization(orgId: string | OrganizationDoc) {
         const org = await this.resolveOrganization(orgId);
         // TODO: I think this might be redundant with getOrganization's populate?
-        const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        // const populatedOrg = (await org.populate({ path: 'members' }).execPopulate())
+        const populatedOrg = await org.populate({ path: 'members' })
 
         return populatedOrg;
     }
@@ -293,11 +347,11 @@ export class DBManager {
         return await this.findById(this.users, id);
     }
 
-    async getProtectedUser(query: Partial<UserModel>): Promise<Document<ProtectedUser>> {
+    async getProtectedUser(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>> {
         return await this.users.findOne(query).select(this.privateUserProps());
     }
 
-    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<ProtectedUser>[]> {
+    async getProtectedUsers(query: Partial<UserModel>): Promise<Document<any, any, ProtectedUser>[]> {
         return await this.users.find(query).select(this.privateUserProps());
     }
 
@@ -473,7 +527,7 @@ export class DBManager {
             for (const prop in roleUpdates) {
                 org.roleDefinitions[roleIndex][prop] = roleUpdates[prop];
             }
-            org.markModified('roleDefinitions');
+            // org.markModified('roleDefinitions');
             return await org.save();
         }
 
@@ -499,11 +553,17 @@ export class DBManager {
         ];
     }
 
-    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<OrganizationDoc> {
+    async removeRolesFromOrganization(orgId: string, roleIds: string[]): Promise<{ 
+        updatedOrg: OrganizationDoc,
+        updatedRequests: HelpRequestDoc[],
+        updatedUsers: UserDoc[]
+    }> {
         const org = await this.resolveOrganization(orgId);
 
         return this.transaction(async (session) => {
             // Remove the role ID from users currently assigned this role.
+            const updatedUsers: UserDoc[] = []
+
             for (const member of org.members as UserModel[]) {
                 let userModified = false;
                 for (const id of roleIds) {
@@ -521,15 +581,58 @@ export class DBManager {
                     const user = await this.getUserById(member.id);
                     user.organizations[orgId].roleIds = member.organizations[orgId].roleIds;
                     user.markModified('organizations');
-                    await user.save({ session });
+                    updatedUsers.push(await user.save({ session }));
                 }
             }
 
+            // replace the role in all position definitions with Anyone
+            const updatedRequests = await this.removeRolesFromPositions(org, roleIds, session)
+
             // Now remove the roles from the org definition.
             org.roleDefinitions = org.roleDefinitions.filter(role => !roleIds.includes(role.id));
-            org.markModified('roleDefinitions');
-            return await org.save({ session });
+            // org.markModified('roleDefinitions');
+
+            return {
+                updatedOrg: await org.save({ session }),
+                updatedRequests,
+                updatedUsers
+            }
         })
+    }
+
+    async removeRolesFromPositions(org: OrganizationDoc, roleIds: string[], session: ClientSession): Promise<HelpRequestDoc[]> {
+        const allOrgRequests = await this.requests.find({
+            orgId: org.id
+        })
+
+        const requestsToUpdate = allOrgRequests.map(req => {
+            let updatedPositions = false;
+
+            for (const idx in req.positions) {
+                const pos = req.positions[idx];
+
+                if (roleIds.includes(pos.role)) {
+                    pos.role = DefaultRoleIds.Anyone
+                    updatedPositions = true
+                }
+            }
+
+            if (updatedPositions) {
+                return req
+            } else {
+                return null
+            }
+        }).filter(r => !!r)
+
+        const updatedRequests: HelpRequestDoc[] = []
+
+        for (const req of requestsToUpdate) {
+            // req.markModified('positions');
+            updatedRequests.push(await req.save({ session }));
+        }
+
+        return updatedRequests
+        // TODO(Shifts): Do the same thing for shift positions when we have them
     }
 
     async addRolesToUser(orgId: string, userId: string | UserDoc, roleIds: string[]) {
@@ -556,26 +659,6 @@ export class DBManager {
     }
 
     // Attributes
-    // TODO: delete
-    async addAttributeCategoryToOrganization(orgId: string, minCategory: MinAttributeCategory): Promise<[OrganizationDoc, AttributeCategory]> {
-        const org = await this.resolveOrganization(orgId)
-
-        if (this.checkForDupes(minCategory.name, org.attributeCategories)) {
-            throw STRINGS.SETTINGS.errorMessages.attributeCategoryExists(minCategory.name, orgId);
-        }
-
-        const newAttributeCategory: AttributeCategory = {
-            id: uuid.v1(),
-            name: minCategory.name,
-            attributes: minCategory.attributes ? minCategory.attributes : []
-        }
-
-        org.attributeCategories.push(newAttributeCategory);
-        return [
-            await org.save(),
-            newAttributeCategory
-        ];
-    }
 
     async addAttributeCategoriesToOrganization(orgId: string | OrganizationDoc, minCategories: MinAttributeCategory[]): Promise<[OrganizationDoc, AttributeCategory[]]> {
         const org = await this.resolveOrganization(orgId)
@@ -600,29 +683,6 @@ export class DBManager {
         return [org, newCategories]
     }
 
-    // TODO: delete
-    async editAttributeCategory(orgId: string, categoryUpdates: AttributeCategoryUpdates): Promise<[OrganizationDoc, AttributeCategory]> {
-        const org = await this.resolveOrganization(orgId);
-
-        if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.attributeCategories.filter(cat => cat.id != categoryUpdates.id))) {
-            throw STRINGS.SETTINGS.errorMessages.attributeCategoryExists(categoryUpdates.name, orgId);
-        }
-
-        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryUpdates.id);
-        if (categoryIndex >= 0) {
-            for (const prop in categoryUpdates) {
-                org.attributeCategories[categoryIndex][prop] = categoryUpdates[prop];
-            }
-            org.markModified('attributeCategories');
-            return [
-                await org.save(),
-                org.attributeCategories[categoryIndex]
-            ]
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryUpdates.id, orgId);
-    }
-
     async editAttributeCategories(orgId: string | OrganizationDoc, categoryUpdates: AttributeCategoryUpdates[]): Promise<[OrganizationDoc, AttributeCategory[]]> {
         const org = await this.resolveOrganization(orgId);
         const editedAttributeCategories = []
@@ -638,7 +698,7 @@ export class DBManager {
                 for (const prop in categoryUpdate) {
                     org.attributeCategories[categoryIndex][prop] = categoryUpdate[prop];
                 }
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
                 editedAttributeCategories.push(org.attributeCategories[categoryIndex])
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryUpdate.id, org.id));
@@ -648,73 +708,38 @@ export class DBManager {
         return [org, editedAttributeCategories]
     }
 
-    // TODO: delete
-    async removeAttributeCategory(orgId: string, categoryId: string): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
-
-        if (categoryIndex >= 0) {
-            return this.transaction(async (session) => {
-                for (let i = org.attributeCategories[categoryIndex].attributes.length - 1; i >= 0; i--) {
-                    // Removing the attribute from the attribute category itself.
-                    // Removing the attribute from users.
-                    await this.removeAttribute(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id, session);
-                }
-
-                // Remove the attribute category from the organization.
-                org.attributeCategories.splice(categoryIndex, 1);
-                org.markModified('attributeCategories');
-                return await org.save({ session });
-            })
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, orgId);
-    }
-
-    async removeAttributeCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
+    async removeAttributeCategoryFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedUsers: UserDoc[],
+    }> {
+        let org = await this.resolveOrganization(orgId);
+        const usersToSave = new Set<UserDoc>()
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
             for (let i = org.attributeCategories[categoryIndex].attributes.length - 1; i >= 0; i--) {
                 // Removing the attribute from the attribute category itself.
                 // Removing the attribute from users.
-                await this.removeAttributeWithSession(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id, session);
+                const { updatedOrg, updatedUsers } = await this.removeAttributeFromOrg(org, categoryId, org.attributeCategories[categoryIndex].attributes[i].id);
+                
+                org = updatedOrg
+                updatedUsers.forEach(user => usersToSave.add(user))
             }
 
             // Remove the attribute category from the organization.
             org.attributeCategories.splice(categoryIndex, 1);
-            org.markModified('attributeCategories');
-            return org
+            // org.markModified('attributeCategories');
+
+            return {
+                updatedOrg: org,
+                updatedUsers: Array.from(usersToSave.values())
+            }
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
-    }
-
-    // TODO: delete
-    async addAttributeToOrganization(orgId: string, categoryId: string, minAttribute: MinAttribute): Promise<[OrganizationDoc, Attribute]> {
-        const org = await this.resolveOrganization(orgId);
-        const newAttribute: Attribute = {
-            id: uuid.v1(),
-            name: minAttribute.name
-        }
-
-        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
-
-        if (categoryIndex >= 0) {
-            if (this.checkForDupes(newAttribute.name, org.attributeCategories[categoryIndex].attributes)) {
-                throw STRINGS.SETTINGS.errorMessages.attributeExistsInCategory(newAttribute.name, org.attributeCategories[categoryIndex].name, orgId); 
-            }
-
-            org.attributeCategories[categoryIndex].attributes.push(newAttribute);
-            org.markModified('attributeCategories');
-            return [
-                await org.save(),
-                newAttribute
-            ]
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
     }
 
     async addAttributesToOrganization(orgId: string | OrganizationDoc, categoryId: string, minAttributes: MinAttribute[]): Promise<[OrganizationDoc, Attribute[]]> {
@@ -735,7 +760,7 @@ export class DBManager {
                 }
 
                 org.attributeCategories[categoryIndex].attributes.push(newAttribute);
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
                 newAttributes.push(newAttribute)
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
@@ -767,7 +792,7 @@ export class DBManager {
                         categoryId,
                         ...org.attributeCategories[categoryIndex].attributes[attributeIndex]
                     })
-                    org.markModified('attributeCategories');
+                    // org.markModified('attributeCategories');
                 } else {
                     throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(update.id, categoryId, org.id));
                 }
@@ -779,65 +804,14 @@ export class DBManager {
         return [org, editedAttributes]
     }
 
-    // TODO: Should we just take a list of attributeIds and not worry about categoryId since we have to look through
-    // all the categories anyway to find the index (given ID)?
-    // TODO: Use API for removing attribute from user.
-    // TODO: delete !!!!!
-    async removeAttribute(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session?: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
-        if (categoryIndex >= 0) {
-            const attributeIndex = org.attributeCategories[categoryIndex].attributes.findIndex(attr => attr.id == attributeId);
-
-            // Remove the Attribute from the Attribute Category list.
-            if (attributeIndex >= 0) {
-                org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
-                org.markModified('attributeCategories');
-
-                // Create a map from user ID => attribute index (in the list of a user's attributes)
-                // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
-                const usersToSave: Map<UserDoc, number> = new Map();
-                (org.members as UserModel[]).forEach(member => {
-                    if (categoryId in member.organizations[org.id].attributes) {
-                        let attrIndex = member.organizations[org.id].attributes[categoryId].findIndex(attrId => attrId == attributeId);
-                        if (attrIndex >= 0) {
-                            usersToSave.set(member as UserDoc, attrIndex);
-                        }
-                    } else {
-                        throw `User has no attributes in Attribute Category ${categoryId} in organization ${orgId}`; // what does this actually mean?
-                    }
-                });
-
-                // Retrieve the users from the DB by ID, and update their attributeIds list.
-                const userIds = Array.from(usersToSave.keys());
-                if (session) {
-                    for (const [user, attrIndex] of usersToSave) {
-                        user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
-                        user.markModified('organizations');
-                        await user.save({ session });
-                    }
-                    return await org.save({ session });
-                } else {
-                    return this.transaction(async (newSession) => {
-                        for (const [user, attrIndex] of usersToSave) {
-                            user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
-                            user.markModified('organizations');
-                            await user.save({ session: newSession });
-                        }
-                        return await org.save({ session: newSession });
-                    })
-                }
-            }
-
-            throw STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(attributeId, categoryId, org.id);
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
-    }
-
-    // TODO: this can be sped up by returning the users to be saved by the caller...ie if more than one attribute is removed that a user 
-    // has, it will be saved for each attribute removal
-    async removeAttributeWithSession(orgId: string | OrganizationDoc, categoryId: string, attributeId: string, session: ClientSession): Promise<OrganizationDoc> {
+    async removeAttributeFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string, 
+        attributeId: string,
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedUsers: UserDoc[],
+    }> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.attributeCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
@@ -846,7 +820,7 @@ export class DBManager {
             if (attributeIndex >= 0) {
                 // Remove the Attribute from the Attribute Category list.
                 org.attributeCategories[categoryIndex].attributes.splice(attributeIndex, 1);
-                org.markModified('attributeCategories');
+                // org.markModified('attributeCategories');
 
                 // Create a map from user ID => attribute index (in the list of a user's attributes)
                 // When we get the UserDoc[] from the DB, we'll remove the attribute at the index.
@@ -863,44 +837,18 @@ export class DBManager {
                 // Retrieve the users from the DB by ID, and update their attributeIds list.
                 const userIds = Array.from(usersToSave.keys());
 
+                const updatedUsers: UserDoc[] = []
+
                 for (const [user, attrIndex] of usersToSave) {
                     user.organizations[org.id].attributes[categoryId].splice(usersToSave[user.id], 1);
                     user.markModified('organizations');
-                    await user.save({ session });
+                    updatedUsers.push(user);
                 }
 
-                // remove deleted attributes from positions that have them on them
-                const allOrgRequests = await this.requests.find({
-                    orgId: org.id
-                })
-
-                const requestsToUpdate = allOrgRequests.map(req => {
-                    let updatedPositions = false;
-
-                    for (const idx in req.positions) {
-                        const pos = req.positions[idx];
-
-                        const cleansedAttributes = pos.attributes.filter(a => !(a.categoryId == categoryId && a.itemId == attributeId))
-                        
-                        if (pos.attributes.length > cleansedAttributes.length) {
-                            pos.attributes = cleansedAttributes;
-                            updatedPositions = true;
-                        }
-                    }
-
-                    if (updatedPositions) {
-                        return req
-                    } else {
-                        return null
-                    }
-                }).filter(r => !!r)
-
-                for (const req of requestsToUpdate) {
-                    req.markModified('positions');
-                    await req.save({ session });
+                return {
+                    updatedOrg: org,
+                    updatedUsers
                 }
-
-                return org;
             }
 
             throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeInCategory(attributeId, categoryId, org.id));
@@ -909,47 +857,94 @@ export class DBManager {
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id));
     }
 
-    // TODO: remove?...or maybe move validation to updateUser()?
-    async addAttributesToUser(orgId: string | OrganizationDoc, userId: string | UserDoc, attributes: AttributesMap) {
-        const user = await this.resolveUser(userId);
-        const org = await this.resolveOrganization(orgId);
+    async deleteAttributes(
+        org: OrganizationDoc,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        attributesToDelete: CategorizedItemUpdates['deletedItems']
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedUsers: UserDoc[],
+        updatedRequests: HelpRequestDoc[]
+    }> {
+        const usersToSave = new Set<UserDoc>()
 
-        if (!user.organizations || !user.organizations[org.id]){
-            throw STRINGS.ACCOUNT.errorMessages.notInOrg;
-        }
-
-        // Validate attributes exist in the proper category.
-        for (const categoryId of Object.keys(attributes)) {
-            const category = org.attributeCategories.find(category => category.id == categoryId);
-            if (category) {
-                for (const attrId of attributes[categoryId]) {
-                    if (!category.attributes.some(attr => attr.id == attrId)) {
-                        throw STRINGS.SETTINGS.errorMessages.attributeNotInCategory(attrId, categoryId)
-                    }
-                }
-            } else {
-                throw STRINGS.SETTINGS.errorMessages.unknownAttributeCategory(categoryId, org.id);
-            }
-        }
-
-        await this.updateOrRemoveUsersOrgConfig(user, org.id, (orgConfig) => {
-            for (const categoryId of Object.keys(attributes)) {
-                // Add this category ID to the user's org config if it doesn't already exist.
-                if (!(categoryId in orgConfig.attributes)) {
-                    orgConfig.attributes[categoryId] = [];
-                }
-
-                // Initialize set with pre-existing attributes in this category.
-                const categoryAttributeSet = new Set(orgConfig.attributes[categoryId]);
-
-                // Add the new attributes to the set of attributes for this category.
-                attributes[categoryId].forEach(attrId => categoryAttributeSet.add(attrId));
-                orgConfig.attributes[categoryId] = Array.from(categoryAttributeSet)
-            }
-            return orgConfig;
+        const allOrgRequests = await this.requests.find({
+            orgId: org.id
         })
+            
+        // Delete Items (Attributes) from org/users
+        for (const categoryId in attributesToDelete) {
+            // deleting a category deletes its items
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
 
-        return await user.save();
+            const itemsToDelete = attributesToDelete[categoryId];
+
+            for (const itemId of itemsToDelete) {
+                const { updatedOrg, updatedUsers } = await this.removeAttributeFromOrg(org, categoryId, itemId)
+
+                org = updatedOrg;
+                updatedUsers.forEach(user => usersToSave.add(user))
+            }
+        }
+
+        // Delete Categories from org/users
+        for (const categoryToDelete of categoriesToDelete) {
+            const { updatedOrg, updatedUsers } = await this.removeAttributeCategoryFromOrg(org, categoryToDelete)
+
+            org = updatedOrg;
+            updatedUsers.forEach(user => usersToSave.add(user))
+        }
+
+        // Delete Items (Attributes) and Categories from positions
+        const requestsToSave = await this.removeAttributesFromPositions(allOrgRequests, categoriesToDelete, attributesToDelete)
+
+        return {
+            updatedOrg: org,
+            updatedRequests: requestsToSave,
+            updatedUsers: Array.from(usersToSave.values())
+        }
+    }
+
+    // TODO(Shifts): Do the same thing for shift positions when we have them
+    async removeAttributesFromPositions(
+        allOrgRequests: HelpRequestDoc[],
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        attributesToDelete: CategorizedItemUpdates['deletedItems'],
+    ): Promise<HelpRequestDoc[]> {
+
+        const requestsToUpdate = allOrgRequests.map(req => {
+            let updatedPositions = false;
+
+            for (const idx in req.positions) {
+                const pos = req.positions[idx];
+
+                const cleansedAttributes = pos.attributes.filter(a => {
+                    return !categoriesToDelete.includes(a.categoryId) && (!attributesToDelete[a.categoryId] || !attributesToDelete[a.categoryId].includes[a.itemId])
+                })
+                
+                if (pos.attributes.length > cleansedAttributes.length) {
+                    pos.attributes = cleansedAttributes;
+                    updatedPositions = true;
+                }
+            }
+
+            if (updatedPositions) {
+                return req
+            } else {
+                return null
+            }
+        }).filter(r => !!r)
+
+        const updatedRequests: HelpRequestDoc[] = []
+
+        for (const req of requestsToUpdate) {
+            // req.markModified('positions');
+            updatedRequests.push(req);
+        }
+
+        return updatedRequests
     }
 
     async removeAttributesFromUser(orgId: string, userId: string | UserDoc, attributes: AttributesMap) {
@@ -979,26 +974,6 @@ export class DBManager {
     }
 
     // Tags
-    // TODO: delete
-    async addTagCategoryToOrganization(orgId: string, minCategory: MinTagCategory): Promise<[OrganizationDoc, TagCategory]> {
-        const org = await this.resolveOrganization(orgId);
-
-        if (this.checkForDupes(minCategory.name, org.tagCategories)) {
-            throw `Already an Tag Category with the name "${minCategory.name}" in organization ${orgId}`;
-        }
-
-        const newTagCategory: TagCategory = {
-            id: uuid.v1(),
-            name: minCategory.name,
-            tags: minCategory.tags ? minCategory.tags : []
-        }
-
-        org.tagCategories.push(newTagCategory);
-        return [
-            await org.save(),
-            newTagCategory
-        ];
-    }
 
     async addTagCategoriesToOrganization(orgId: string | OrganizationDoc, minCategories: MinTagCategory[]): Promise<[OrganizationDoc, TagCategory[]]> {
         const org = await this.resolveOrganization(orgId);
@@ -1022,29 +997,6 @@ export class DBManager {
         return [org, newCategories]
     }
 
-    // TODO: delete
-    async editTagCategory(orgId: string, categoryUpdates: TagCategoryUpdates): Promise<[OrganizationDoc, TagCategory]> {
-        const org = await this.resolveOrganization(orgId);
-
-        if (categoryUpdates.name && this.checkForDupes(categoryUpdates.name, org.tagCategories.filter(cat => cat.id != categoryUpdates.id))) {
-            throw STRINGS.SETTINGS.errorMessages.tagCategoryExists(categoryUpdates.name, orgId);
-        }
-
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryUpdates.id);
-        if (categoryIndex >= 0) {
-            for (const prop in categoryUpdates) {
-                org.tagCategories[categoryIndex][prop] = categoryUpdates[prop];
-            }
-            org.markModified('tagCategories');
-            return [
-                await org.save(),
-                org.tagCategories[categoryIndex]
-            ]
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryUpdates.id, orgId);
-    }
-
     async editTagCategories(orgId: string | OrganizationDoc, categoryUpdates: TagCategoryUpdates[]): Promise<[OrganizationDoc, TagCategory[]]> {
         const org = await this.resolveOrganization(orgId);
         const editedTagCategories = []
@@ -1059,7 +1011,7 @@ export class DBManager {
                 for (const prop in categoryUpdate) {
                     org.tagCategories[categoryIndex][prop] = categoryUpdate[prop];
                 }
-                org.markModified('tagCategories');
+                // org.markModified('tagCategories');
                 editedTagCategories.push(org.tagCategories[categoryIndex])
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryUpdate.id, org.id));
@@ -1069,73 +1021,18 @@ export class DBManager {
         return [org, editedTagCategories]
     }
 
-    // TODO: delete
-    async removeTagCategory(orgId: string, categoryId: string): Promise<OrganizationDoc> {
+    async removeTagCategoryFromOrg(orgId: string | OrganizationDoc, categoryId: string): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
 
         if (categoryIndex >= 0) {
-            return this.transaction(async (session) => {
-                for (let i = org.tagCategories[categoryIndex].tags.length - 1; i >= 0; i--) {
-                    // Removing the tag from the tag category itself.
-                    // Removing the tag from help requests.
-                    // TODO: Do I need to get returned org here?
-                    await this.removeTag(org, categoryId, org.tagCategories[categoryIndex].tags[i].id, session);
-                }
-
-                // Remove the attribute category from the organization.
-                org.tagCategories.splice(categoryIndex, 1);
-                org.markModified('tagCategories');
-                return await org.save({ session });
-            })
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
-    }
-
-    async removeTagCategoryWithSession(orgId: string | OrganizationDoc, categoryId: string, session: ClientSession): Promise<OrganizationDoc> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-
-        if (categoryIndex >= 0) {
-            for (let i = org.tagCategories[categoryIndex].tags.length - 1; i >= 0; i--) {
-                // Removing the tag from the tag category itself.
-                // Removing the tag from help requests.
-                await this.removeTag(org, categoryId, org.tagCategories[categoryIndex].tags[i].id, session);
-            }
-
-            // Remove the attribute category from the organization.
+            // Remove the tag category from the organization.
             org.tagCategories.splice(categoryIndex, 1);
-            org.markModified('tagCategories');
+            // org.markModified('tagCategories');
             return org;
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
-    }
-
-    async addTagToOrganization(orgId: string, categoryId: string, minTag: MinTag): Promise<[OrganizationDoc, Tag]> {
-        const org = await this.resolveOrganization(orgId)
-        const newTag: Tag = {
-            id: uuid.v1(),
-            name: minTag.name
-        }
-
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-
-        if (categoryIndex >= 0) {
-            if (this.checkForDupes(newTag.name, org.tagCategories[categoryIndex].tags)) {
-                throw STRINGS.SETTINGS.errorMessages.tagExistsInCategory(newTag.name, org.tagCategories[categoryIndex].name, orgId);
-            }
-
-            org.tagCategories[categoryIndex].tags.push(newTag);
-            org.markModified('tagCategories');
-            return [
-                await org.save(),
-                newTag
-            ]
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
     async addTagsToOrganization(orgId: string | OrganizationDoc, categoryId: string, minTags: MinTag[]): Promise<[OrganizationDoc, Tag[]]> {
@@ -1156,7 +1053,7 @@ export class DBManager {
                 }
 
                 org.tagCategories[categoryIndex].tags.push(newTag);
-                org.markModified('tagCategories');
+                // org.markModified(`tagCategories.${categoryIndex}.tags`);
                 newTags.push(newTag)
             } else {
                 throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
@@ -1164,34 +1061,6 @@ export class DBManager {
         }
 
         return [org, newTags]
-    }
-
-    // TODO: delete
-    async editTag(orgId: string, categoryId: string, tagUpdates: AtLeast<Tag, 'id'>): Promise<[OrganizationDoc, Tag]> {
-        const org = await this.resolveOrganization(orgId);
-        const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-
-        if (categoryIndex >= 0) {
-            if (this.checkForDupes(tagUpdates.name, org.tagCategories[categoryIndex].tags.filter(tag => tag.id != tagUpdates.id))) {
-                throw STRINGS.SETTINGS.errorMessages.tagExistsInCategory(tagUpdates.name, org.tagCategories[categoryIndex].name, org.id);
-            }
-
-            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagUpdates.id);
-            if (tagIndex >= 0) {
-                for (const prop in tagUpdates) {
-                    org.tagCategories[categoryIndex].tags[tagIndex][prop] = tagUpdates[prop];
-                }
-                org.markModified('tagCategories');
-                return [
-                    await org.save(),
-                    org.tagCategories[categoryIndex].tags[tagIndex]
-                ]
-            }
-
-            throw STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagUpdates.id, categoryId, orgId);
-        }
-
-        throw STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, orgId);
     }
 
     async editTags(orgId: string | OrganizationDoc, tagUpdates: (AtLeast<Tag, 'id'> & { categoryId: string })[]): Promise<[OrganizationDoc, (Tag & { categoryId: string })[]]> {
@@ -1212,7 +1081,7 @@ export class DBManager {
                     for (const prop in update) {
                         org.tagCategories[categoryIndex].tags[tagIndex][prop] = update[prop];
                     }
-                    org.markModified('tagCategories');
+                    // org.markModified('tagCategories');
                     editedTags.push({
                         categoryId,
                         ...org.tagCategories[categoryIndex].tags[tagIndex]
@@ -1228,99 +1097,135 @@ export class DBManager {
         return [org, editedTags]
     }
 
-    // TODO: delete
-    async removeTag(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session?: ClientSession): Promise<OrganizationDoc> {
-        // const org = await this.resolveOrganization(orgId);
-        // const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
-        // if (categoryIndex >= 0) {
-        //     const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+    async deleteTags(
+        org: OrganizationDoc,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        tagsToDelete: CategorizedItemUpdates['deletedItems']
+    ): Promise<{
+        updatedOrg: OrganizationDoc,
+        updatedRequests: HelpRequestDoc[]
+    }> {
+        for (const categoryId in tagsToDelete) {
+            // deleting a category deletes its items
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
 
-        //     // Remove the Tag from the Tag Category list.
-        //     if (tagIndex >= 0) {
-        //         org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
-        //         org.markModified('tagCategories');
+            // delete individual tags in a category from the org
+            const itemsToDelete = tagsToDelete[categoryId];
 
-        //         // Remove the tag id from Help Requests that currently have this tag.
-        //         // TODO: Update mongo query to handle nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-        //         const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tags: categoryId });
-        //         for (let i = 0; i < requests.length; i++) {
-        //             let tagIndex = requests[i].tags[categoryId].findIndex(id => id == tagId);
-        //             if (tagIndex >= 0) {
-        //                 // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-        //                 requests[i].tags[categoryId].splice(tagIndex, 1);
-        //                 requests[i].markModified('tagIds');
-        //             }
-        //         }
+            org = await this.removeTagsFromOrg(org, categoryId, itemsToDelete)
+        }
 
-        //         if (session) {
-        //             // TODO: return all objects to be saved (requests and org)?
-        //             // This would introduce different return types based on the path...
-        //             // return [org, requests] vs. return or
-        //             for (const request of requests) {
-        //                 await request.save({ session });
-        //             }
+        // Delete whole tag categories from org
+        for (const categoryToDelete of categoriesToDelete) {
+            org = await this.removeTagCategoryFromOrg(org, categoryToDelete)
+        }
 
-        //             return await org.save({ session });
-        //         } else {
-        //             return this.transaction(async (newSession) => {
-        //                 for (const request of requests) {
-        //                     await request.save({ session: newSession });
-        //                 }
-        //                 return await org.save({ session: newSession });
-        //             })
-        //         }
-        //     }
+        const requestsToSave = await this.removeTagsFromRequests(org.id, categoriesToDelete, tagsToDelete)
 
-        //     throw `Unknown Tag ${tagId} in Tag Category ${categoryId} in organization ${orgId}`;
-        // }
-
-        // throw `Unknown Tag Category ${categoryId} in organization ${orgId}`;
-        return null;
+        return {
+            updatedOrg: org,
+            updatedRequests: requestsToSave
+        }
     }
 
-    // TODO: this can be sped up by returning the requests to be saved by the caller...ie if more than one attribute is removed that a request 
-    // has, it will be saved for each attribute removal
-    async removeTagWithSession(orgId: string | OrganizationDoc, categoryId: string, tagId: string, session: ClientSession): Promise<OrganizationDoc> {
+    async removeTagsFromOrg(
+        orgId: string | OrganizationDoc, 
+        categoryId: string, 
+        tagIds: string[]
+    ): Promise<OrganizationDoc> {
         const org = await this.resolveOrganization(orgId);
         const categoryIndex = org.tagCategories.findIndex(category => category.id == categoryId);
         if (categoryIndex >= 0) {
-            const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
+            for (const tagId of tagIds) {
+                const tagIndex = org.tagCategories[categoryIndex].tags.findIndex(tag => tag.id == tagId);
 
-            // Remove the Tag from the Tag Category list.
-            if (tagIndex >= 0) {
-                const [tag] = org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
-                org.markModified('tagCategories');
-
-                // Remove the tag id from Help Requests that currently have this tag.
-                // TODO: test mongo query handles nested tag ID. https://www.mongodb.com/docs/manual/tutorial/query-embedded-documents/
-                const item: CategorizedItem = {
-                    categoryId: categoryId,
-                    itemId: tag.id
+                // Remove the Tag from the Tag Category list.
+                if (tagIndex >= 0) {
+                    org.tagCategories[categoryIndex].tags.splice(tagIndex, 1);
+                    // org.markModified('tagCategories');
+                } else {
+                    throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
                 }
-
-                const requests: HelpRequestDoc[] = await this.getRequests({ orgId: org.id }).where({ tagHandles: item });
-                
-                for (let i = 0; i < requests.length; i++) {
-                    let tagIndex = requests[i].tagHandles.findIndex(handle => handle.itemId == tagId && handle.categoryId == categoryId);
-                    
-                    if (tagIndex >= 0) {
-                        // Remove the tag from the help request's list of tags, and add to the list of requests to save.
-                        requests[i].tagHandles.splice(tagIndex, 1);
-                        requests[i].markModified('tagHandles');
-                    }
-                }
-
-                for (const request of requests) {
-                    await request.save({ session });
-                }
-
-                return org;
             }
 
-            throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagInCategory(tagId, categoryId, org.id));
+            return org
         }
 
         throw new BadRequest(STRINGS.SETTINGS.errorMessages.unknownTagCategory(categoryId, org.id));
+    }
+
+    async removeTagsFromRequests(
+        orgId: string,
+        categoriesToDelete: CategorizedItemUpdates['deletedCategories'],
+        tagsToDelete: CategorizedItemUpdates['deletedItems'],
+    ): Promise<HelpRequestDoc[]> {
+
+        const updatedRequests = new Map<string, HelpRequestDoc>()
+
+        // Process requests affected by whole category deletes
+        const requestsFromCategoryDeletes = await this.getRequests({ orgId })
+            .where({ 
+                tagHandles: { 
+                    $elemMatch: {
+                        categoryId: { 
+                            $in: categoriesToDelete 
+                        }
+                    }
+                }
+            })
+
+        for (const req of requestsFromCategoryDeletes) {
+            // remove any tag with the matching categoryId
+            let tagIndex = req.tagHandles.findIndex(handle => categoriesToDelete.includes[handle.categoryId]);
+            
+            if (tagIndex >= 0) {
+                // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+               req.tagHandles.splice(tagIndex, 1);
+            //    req.markModified('tagHandles');
+
+               updatedRequests.set(req.id, req)
+            }
+        }
+
+        // Process requests affected by individual tag deletes
+        const tagsToDeleteSet = new Set<string>()
+
+        for (const categoryId in tagsToDelete) {
+            if (categoriesToDelete.includes(categoryId)) {
+                continue;
+            }
+
+            tagsToDelete[categoryId].forEach(tag => tagsToDeleteSet.add(tag))
+        }
+
+        const requestsFromItemDeletes = (await this.getRequests({ orgId })
+            .where({ 
+                tagHandles: { 
+                    $elemMatch: {
+                        itemId: { 
+                            // itemId's are pseudo unique...enough to scope a query by
+                            $in: Array.from(tagsToDeleteSet.values())
+                        }
+                    }
+                }
+                // reuse edited requests that overlap
+            })).map(req => updatedRequests.has(req.id) ? updatedRequests.get(req.id) : req)
+
+        for (const req of requestsFromItemDeletes) {
+            let tagIndex = req.tagHandles.findIndex(handle => tagsToDelete[handle.categoryId] && tagsToDelete[handle.categoryId].includes[handle.itemId]);
+            
+            if (tagIndex >= 0) {
+                // Remove the tag from the help request's list of tags, and add to the list of requests to save.
+               req.tagHandles.splice(tagIndex, 1);
+            //    req.markModified('tagHandles');
+
+               updatedRequests.set(req.id, req)
+            }
+        }
+
+        return Array.from(updatedRequests.values())
     }
 
     checkForDupes(name: string, collection: AtLeast<any, 'name'>[]) {
@@ -1394,6 +1299,14 @@ export class DBManager {
         return await req.save()
     }
 
+    async editRequestV2(helpRequest: string | HelpRequestDoc, requestUpdates: RequestUpdates) {
+        const req = await this.resolveRequest(helpRequest);
+
+        applyUpdateToRequest(req, requestUpdates)
+
+        return await req.save()
+    }
+
     getRequests(query: FilterQuery<HelpRequestModel>) {
         return this.requests.find(query);
     }
@@ -1415,7 +1328,7 @@ export class DBManager {
                 const chat = possibleChat|| {
                     id: `req:${helpRequest.id}`,
                     messages: [],
-                    userReceipts: {},
+                    userReceipts: new Map(),
                     lastMessageId: 0
                 };
 
@@ -1429,7 +1342,7 @@ export class DBManager {
                 chat.messages.push(chatMsg);
                 console.log(chat.messages.length)
 
-                chat.userReceipts[user.id] = chat.lastMessageId;
+                chat.userReceipts.set(user.id, chat.lastMessageId)
                 
                 return chat
             })
@@ -1439,16 +1352,29 @@ export class DBManager {
     }
 
     async updateRequestChatRecepit(helpRequest: HelpRequestDoc, userId: string, lastMessageId: number): Promise<HelpRequestDoc> {
-        const prevLastMessageId = helpRequest.chat.userReceipts[userId];
+        console.log(helpRequest.chat)
+        
+        const prevLastMessageId = helpRequest.chat.userReceipts.get(userId)
+
+        console.log(prevLastMessageId + ' < ' + lastMessageId)
         
         if (!prevLastMessageId || (prevLastMessageId < lastMessageId)) {
+            console.log('updating')
             this.updateHelpRequestChat(helpRequest, (chat: Chat) => {
-                chat.userReceipts[userId] = lastMessageId;
+                chat.userReceipts.set(userId, lastMessageId)
                 return chat;
             })
+
+            console.log('before save:')
+            console.log(helpRequest.chat.userReceipts.get(userId))
         }
 
-        return await helpRequest.save()
+        const saved = await helpRequest.save()
+
+        console.log('after save')
+        console.log(saved.chat.userReceipts.get(userId))
+
+        return saved
     }
 
     async notifyRespondersAboutRequest(requestId: string | HelpRequestDoc, notifierId: string, to: string[]) {
@@ -1657,7 +1583,6 @@ export class DBManager {
         const position = request.positions.find(pos => pos.id == positionId);
         const prefix = (await this.resolveOrganization(request.orgId)).requestPrefix;
 
-        // TODO: move to strings.ts ... what's up with the double quotes?
         if (!position) {
             throw STRINGS.REQUESTS.errorMessages.positionNotOnRequest(prefix, request.displayId); 
         }
@@ -1687,6 +1612,11 @@ export class DBManager {
         return await request.save();
     }
 
+    async deleteRequest(requestId: string) {
+        // remove the entry in the requests map under the request key
+        await this.requests.findByIdAndDelete(requestId);
+    }
+
     // HELPERS
 
     findByIds<M extends Model<any>, D=DocFromModel<M>>(model: M, ids: string[]): Query<D[], D> {
@@ -1710,7 +1640,7 @@ export class DBManager {
         
         let retVal;
 
-        await this.db.get().transaction(async (freshSession) => {
+        await this.connection.transaction(async (freshSession) => {
             retVal = await ops(freshSession);
         });
 
@@ -1811,344 +1741,4 @@ export class DBManager {
             console.error(e)
         }
     }
-
-    // @Every('5 minutes', { name: `Repopulating` })
-    async rePopulateDb() {
-        try {
-            const oldUsers = await this.getUsers({});
-            const oldRequests = await this.getRequests({});
-            const oldOrgs = await this.getOrganizations({});
-
-            console.log('deleting old users')
-            await this.bulkDelete(this.users, oldUsers);
-
-            console.log('deleting old requests')
-            await this.bulkDelete(this.requests, oldRequests);
-
-            console.log('deleting old organizations')
-            await this.bulkDelete(this.orgs, oldOrgs);
-
-            console.log('creating users/org')
-
-            let user1 = await this.createUser({ 
-                email: 'Charlie@test.com', 
-                password: 'Test', 
-                displayColor: "#25db00",
-                name: "Charlie Lipford",
-                race: "nunya",
-                phone: "8045166822",
-                // skills: [ RequestSkill.CPR, RequestSkill.ConflictResolution, RequestSkill.MentalHealth ]
-            });
-
-            let [ org, admin1 ] = await this.createOrganization({
-                name: 'Community Response Program'
-            }, user1.id);
-
-
-            let user2 = await this.createUser({ 
-                email: 'Nadav@test.com', 
-                password: 'Test',
-                name: 'Nadav Savio',
-            });
-
-            let user3 = await this.createUser({ 
-                email: 'Cosette@test.com', 
-                password: 'Test',
-                name: 'Cosette Ayele',
-            });
-
-            let user4 = await this.createUser({ 
-                email: 'Tevn@test.com', 
-                password: 'Test',
-                name: `Tev'n Powers`,
-            });
-
-            let userAdmin = await this.createUser({ 
-                email: 'admin@test.com', 
-                password: 'Test',
-                name: 'Admin',
-            });
-
-            let userDispatcher = await this.createUser({ 
-                email: 'dispatcher@test.com', 
-                password: 'Test',
-                name: 'Dispatcher',
-            });
-
-            let userResponder = await this.createUser({ 
-                email: 'responder@test.com', 
-                password: 'Test',
-                name: 'Responder',
-            });
-
-            let user5 = await this.createUser({ 
-                email: 'Tevn2@test.com', 
-                password: 'Test',
-                name: 'Tevy Tev2',
-            });
-
-            [ org, user2 ] = await this.addUserToOrganization(org, user2, [], []);
-            [ org, user3 ] = await this.addUserToOrganization(org, user3, [], []);
-            [ org, user4 ] = await this.addUserToOrganization(org, user4, [], []);
-            [ org, user5 ] = await this.addUserToOrganization(org, user5, [], []);
-            [ org, userAdmin ] = await this.addUserToOrganization(org, userAdmin, [], []);
-            [ org, userDispatcher ] = await this.addUserToOrganization(org, userDispatcher, [], []);
-            [ org, userResponder ] = await this.addUserToOrganization(org, userResponder, [], []);
-
-            user1 = await this.addRolesToUser(org.id, user1.id, [ DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
-            user2 = await this.addRolesToUser(org.id, user2.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
-            user3 = await this.addRolesToUser(org.id, user3.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ])
-            user4 = await this.addRolesToUser(org.id, user4.id, [ DefaultRoleIds.Admin, DefaultRoleIds.Dispatcher, DefaultRoleIds.Responder ]);
-
-            let trainingsAttribute: AttributeCategory, 
-                cprAttribute: Attribute, 
-                firstAidAttribute: Attribute,
-                copWatchAttribute: Attribute;
-
-            let languageAttribute: AttributeCategory, 
-                spanishAttribute: Attribute, 
-                japaneseAttribute: Attribute,
-                swahiliAttribute: Attribute;
-
-            [org, trainingsAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
-                name: 'Trainings'
-            });
-
-            [org, cprAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
-                name: 'CPR'
-            });
-
-            [org, firstAidAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
-                name: 'First Aid'
-            });
-
-            [org, copWatchAttribute] = await this.addAttributeToOrganization(org.id, trainingsAttribute.id, {
-                name: 'Cop Watch'
-            });
-
-            [org, languageAttribute] = await this.addAttributeCategoryToOrganization(org.id, {
-                name: 'Languages'
-            });
-
-            [org, spanishAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
-                name: 'Spanish'
-            });
-
-            [org, japaneseAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
-                name: 'Japanese'
-            });
-
-            [org, swahiliAttribute] = await this.addAttributeToOrganization(org.id, languageAttribute.id, {
-                name: 'Swahili'
-            });
-
-            let weaponCategory: TagCategory, 
-                gunTag: Tag, 
-                knifeTag: Tag,
-                molotovTag: Tag;
-
-            [org, weaponCategory] = await this.addTagCategoryToOrganization(org.id, {
-                name: 'Weapons'
-            });
-
-            [org, gunTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
-                name: 'Gun'
-            });
-
-            [org, knifeTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
-                name: 'Knife'
-            });
-
-            [org, molotovTag] = await this.addTagToOrganization(org.id, weaponCategory.id, {
-                name: 'Molotov cocktail'
-            });
-
-            console.log('Assigning attributes to users');
-
-            const allAttributes: CategorizedItem[] = [
-                { categoryId: trainingsAttribute.id, itemId: cprAttribute.id },
-                { categoryId: trainingsAttribute.id, itemId: firstAidAttribute.id },
-                { categoryId: trainingsAttribute.id, itemId: copWatchAttribute.id },
-
-                { categoryId: languageAttribute.id, itemId: spanishAttribute.id },
-                { categoryId: languageAttribute.id, itemId: swahiliAttribute.id },
-                { categoryId: languageAttribute.id, itemId: japaneseAttribute.id },
-            ]
-
-            user1 = await this.updateUser(org.id, user1, {
-                attributes: allAttributes.slice(2, 4)
-            })
-
-            user2 = await this.updateUser(org.id, user2, {
-                attributes: allAttributes.slice(0, 1)
-            })
-
-            user3 = await this.updateUser(org.id, user3, {
-                attributes: allAttributes.slice(0, -2)
-            })
-
-            user4 = await this.updateUser(org.id, user4, {
-                attributes: allAttributes.slice(4, 5)
-            })
-
-            user5 = await this.updateUser(org.id, user5, {
-                attributes: allAttributes.slice(1, 3)
-            })
-
-            const allPositionSetups: Position[] = [
-                {
-                    id: 'catchall',
-                    attributes: [],
-                    min: 1,
-                    max: -1,
-                    role: DefaultRoleIds.Anyone,
-                    joinedUsers: []
-                },
-                {
-                    id: 'specific',
-                    attributes: [{ itemId: cprAttribute.id, categoryId: trainingsAttribute.id }],
-                    min: 2,
-                    max: 2,
-                    role: DefaultRoleIds.Responder,
-                    joinedUsers: []
-                },
-                {
-                    id: 'dispatcher',
-                    attributes: [{ itemId: firstAidAttribute.id, categoryId: trainingsAttribute.id }],
-                    min: 1,
-                    max: 3,
-                    role: DefaultRoleIds.Dispatcher,
-                    joinedUsers: []
-                }
-            ]
-
-            const minRequests: MinHelpRequest[] = [
-                {
-                    type: [RequestType.CallerInDanger, RequestType.DirectActionAssistance],
-                    location: {
-                        latitude: 40.69776419999999,
-                        longitude: -73.9303333,
-                        address: "960 Willoughby Avenue, Brooklyn, NY, USA"
-                    },
-                    tagHandles: [{ categoryId: weaponCategory.id, itemId: molotovTag.id }],
-                    positions: allPositionSetups.slice(0, 2),
-                    notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                },
-                {
-                    type: [RequestType.CallerInDanger, RequestType.Fireworks, RequestType.SelfHarming],
-                    location: {
-                        latitude: 40.70107496314848,
-                        longitude: -73.90470642596483,
-                        address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
-                    },
-                    positions: allPositionSetups.slice(1, 2),
-                    notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                },
-                {
-                    type: [RequestType.CallerInDanger],
-                    location: {
-                        latitude: 40.70107496314848,
-                        longitude: -73.90470642596483,
-                        address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
-                    },
-                    positions: allPositionSetups.slice(-1),
-                    notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                },
-                {
-                    type: [RequestType.Carjacking],
-                    location: {
-                        latitude: 40.70107496314848,
-                        longitude: -73.90470642596483,
-                        address: "Seneca Av/Cornelia St, Queens, NY 11385, USA"
-                    },
-                    positions: allPositionSetups.slice(0, 1),
-                    notes: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut',
-                    status: RequestStatus.Done
-                }
-            ];
-
-            const fullReqs: HelpRequestDoc[] = [];
-            
-            console.log('creating requests')
-            for (const req of minRequests) {
-                fullReqs.push(await this.createRequest(req, org.id, admin1.id))
-            }
-
-            let reqWithMessage = await this.sendMessageToReq(user1, fullReqs[0], 'Message one...blah blah blah')
-            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Two!')
-            reqWithMessage = await this.sendMessageToReq(user2, reqWithMessage, 'Message Three!...blah blah blah...blah blah blah blah blah bliggity blah')
-
-            // notify people 
-            reqWithMessage = await this.notifyRespondersAboutRequest(reqWithMessage, user1.id, [user2.id, user3.id, user4.id, user5.id])
-
-            // ack notification
-            reqWithMessage = await this.ackRequestNotification(reqWithMessage, user2.id);
-
-            // join
-            reqWithMessage = await this.joinRequest(org.id, reqWithMessage, user4.id, reqWithMessage.positions[0].id)
-
-            // leave
-
-            // request
-            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[0].id)
-            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[0].id)
-
-            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user5.id, reqWithMessage.positions[1].id)
-            reqWithMessage = await this.requestToJoinRequest(reqWithMessage, user3.id, reqWithMessage.positions[1].id)
-            
-            // ack request
-            reqWithMessage = await this.ackRequestsToJoinNotification(reqWithMessage, user1.id, [
-                { userId: user5.id, positionId: reqWithMessage.positions[0].id },
-                { userId: user3.id, positionId: reqWithMessage.positions[0].id }
-            ])
-
-            // accept
-            reqWithMessage =  await this.confirmRequestToJoinPosition(org.id, reqWithMessage, user1.id, user5.id, reqWithMessage.positions[0].id)
-
-            // deny request
-            reqWithMessage =  await this.declineRequestToJoinPosition(reqWithMessage, user1.id, user3.id, reqWithMessage.positions[0].id)
-
-            console.log('finished populating')
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    // @Every('30 seconds', { name: `E2E Test` })
-    // async test() {
-    //     try {
-    //         let user = await this.getUser({ email: 'Test@test.com' });
-    //         const helpReq = await this.getRequest({ _id: '6153999a517b7c7d53411e46' });
-
-    //         console.log(await this.sendMessageToReq(user, helpReq, 'testing testing 123'));
-            // let user = await this.createUser({ email: 'Test@test.com', password: 'Test' });
-
-            // let [ org, admin ] = await this.createOrganization({
-            //     name: 'Foo Org'
-            // }, user.id);
-
-            // admin = await this.addUserRoles(org.id, admin, [ UserRole.Dispatcher, UserRole.Responder ]);
-
-            // admin = await this.addUserRoles(org.id, admin, [2, 3, 4, 5])
-            // admin = await this.removeUserRoles(org.id, admin, [2, 3])
-
-            // console.log(inspect(admin.toObject(), null, 4));
-            // console.log(inspect((await this.getOrganization({ _id: org.id })).toObject(), null, 4));
-
-            // [ org, admin ] = await this.removeUserFromOrganization(org, admin);
-
-            // console.log(inspect([org, admin], null, 5));
-
-            // console.log((await this.getUser({ _id: user.id })).toJSON());
-            // console.log((await this.getOrganization({ _id: org.id })).toJSON())
-
-            // await Promise.all([
-            //     admin.delete(),
-            //     org.delete()
-            // ])
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
-    // }
 }
-

@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { HelpRequestFilter, HelpRequestFilterToLabelMap, HelpRequestSortBy, HelpRequestSortByToLabelMap } from "../../../common/models";
+import { HelpRequestFilter, HelpRequestFilterToLabelMap, HelpRequestSortBy, HelpRequestSortByToLabelMap } from "../../../common/front";
 import { allEnumValues } from "../../../common/utils";
 import HelpRequestCard from "../components/requestCard/helpRequestCard";
 import ListHeader, { ListHeaderOptionConfig, ListHeaderProps } from "../components/listHeader";

@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/models";
+import { PendingUser, UserRole, UserRoleToInfoLabelMap, UserRoleToLabelMap } from "../../../../../common/front";
 import { allEnumValues } from "../../../../../common/utils";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { resolveErrorMessage } from "../../../errors";
@@ -78,7 +78,7 @@ export default class AddUser extends React.Component {
 
     formProps = (): FormProps => {
         return {
-            headerLabel: STRINGS.ACCOUNT.inviteTitle, 
+            headerLabel: () => STRINGS.ACCOUNT.inviteTitle, 
             homeScreen: this.formHomeScreen,
             testID: TestIds.addUser.form,
             inputs: [

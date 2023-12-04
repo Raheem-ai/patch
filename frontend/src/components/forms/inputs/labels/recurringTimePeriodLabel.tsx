@@ -3,10 +3,11 @@ import { observer } from "mobx-react"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { IconButton, Text } from "react-native-paper"
-import { RecurringPeriod } from "../../../../../../common/models"
+import { RecurringPeriod } from "../../../../../../common/front"
 import { dateToEndDateLabel, dateToEndRepititionsLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../../common/utils"
 import { SectionLabelViewProps } from "../../types"
 import moment from 'moment'
+import SelectableText from "../../../helpers/selectableText"
 
 const RecurringTimePeriodLabel = observer(({ config, expand }: SectionLabelViewProps<'RecurringTimePeriod'>) => {
 
@@ -106,7 +107,7 @@ export default RecurringTimePeriodLabel;
 
 const Row = ({ text }: { text: string }) => {
     return <View style={styles.row}>
-        <Text style={styles.label}>{text}</Text>
+        <SelectableText style={styles.label}>{text}</SelectableText>
     </View>
 }
 

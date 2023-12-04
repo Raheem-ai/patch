@@ -2,7 +2,7 @@ import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef, useState } from "react";
 import { Dimensions, Keyboard, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
-import { PatchPermissions, RequestStatus } from "../../../../common/models";
+import { PatchPermissions, RequestStatus } from "../../../../common/front";
 import { alertStore, bottomDrawerStore, requestStore, userStore } from "../../stores/interfaces";
 import { iHaveAnyPermissions } from "../../utils";
 import KeyboardAwareArea from "../helpers/keyboardAwareArea";
@@ -12,6 +12,7 @@ import PatchButton from "../../components/patchButton";
 import { ICONS, Colors } from "../../types";
 import TestIds from "../../test/ids";
 import { resolveErrorMessage } from "../../errors";
+import SelectableText from "../helpers/selectableText";
 
 type Props =  {
     inTabbedScreen?: boolean
@@ -20,6 +21,8 @@ type Props =  {
 const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
     const request = requestStore().currentRequest;
     const chat = request.chat;
+
+    console.log(JSON.stringify(chat, null, 4))
 
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -55,7 +58,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                             <View style={[styles.messageRow, isMe ? styles.myMessageRow : null]}>
                                 <UserIcon userId={message.userId} style={[styles.userIcon, isMe ? styles.myUserIcon : null]}/>
                                 <View style={[styles.messageBubble, isMe ? styles.myMessageBubble : null, { maxWidth: bubbleWidth }]}>
-                                    <Text style={styles.messageText}>{message.message}</Text>
+                                    <SelectableText style={styles.messageText}>{message.message}</SelectableText>
                                 </View>
                             </View>
                         )
@@ -152,7 +155,7 @@ const RequestChatChannel = observer(({ inTabbedScreen }: Props) => {
                                     uppercase={false}
                                     label={STRINGS.REQUESTS.TOGGLE.toggleRequest(false)}
                                     onPress={reopenRequest}/>
-                                : <Text style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</Text>
+                                : <SelectableText style={styles.disabledChatMessage}>{STRINGS.REQUESTS.requestIsClosed}</SelectableText>
                             }
                     </View>
                 </View>

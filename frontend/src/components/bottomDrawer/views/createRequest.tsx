@@ -3,7 +3,7 @@ import { createRequestStore, alertStore, bottomDrawerStore, organizationStore } 
 import { observable, runInAction } from 'mobx';
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
-import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
+import { categorizedItemsToRequestType, HelpRequest, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/front";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
@@ -110,7 +110,7 @@ class CreateHelpRequest extends React.Component<Props> {
     formProps = (): FormProps => {
 
         return {
-            headerLabel: this.headerLabel(), 
+            headerLabel: this.headerLabel, 
             homeScreen: this.formHomeScreen,
             testID: TestIds.createRequest.form,
             inputs: [

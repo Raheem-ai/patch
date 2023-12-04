@@ -10,7 +10,7 @@ import Notifications, { NotificationMetadata } from '../services/notifications';
 import { APIController, OrgId } from ".";
 import { Required } from "@tsed/schema";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import { PubSubService } from "../services/pubSubService";
 import { MySocketService } from "../services/socketService";
 
@@ -25,7 +25,7 @@ export class DispatcherController implements APIController<
     @Inject(UserModel) users: MongooseModel<UserModel>;
     
     @Inject(Notifications) notifications: Notifications;
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
     @Inject(PubSubService) pubSub: PubSubService;
     @Inject(MySocketService) socket: MySocketService;
 

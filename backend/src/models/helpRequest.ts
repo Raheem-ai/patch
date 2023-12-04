@@ -1,11 +1,9 @@
 import { Model, ObjectID, Schema } from "@tsed/mongoose";
-import { CollectionOf, Enum, Property, Required } from "@tsed/schema";
+import { CollectionOf, Enum, MapOf, Property, Required } from "@tsed/schema";
 import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, Position, RequestPriority, RequestStatus, RequestTeamEvent, RequestType, RequestStatusEvent } from "common/models";
 import { Document } from "mongoose";
-// import { inspect } from "util";
-// import { WithRefs } from ".";
-// import { UserModel } from './user';
-// import utils from 'util'
+import { Collections } from "../common/dbConfig";
+import { CategorizedItemSchema } from "./common";
 
 @Schema()
 class ChatMessageSchema  implements ChatMessage {
@@ -15,11 +13,12 @@ class ChatMessageSchema  implements ChatMessage {
     @Required() timestamp: number
 }
 
-// TODO: this should probably be in a common schema file
 @Schema()
-class CategorizedItemSchema implements CategorizedItem {
-    @Required() categoryId: string
-    @Required() itemId: string
+class ChatSchema  implements Chat {
+    @Required() id: string
+    @Required() @CollectionOf(ChatMessageSchema) messages: ChatMessage[];
+    @Required() lastMessageId: number;
+    @Required() @MapOf(Number) userReceipts: Map<string, number>
 }
 
 @Schema()
@@ -29,7 +28,7 @@ class PositionSchema implements Position {
     @Required() min: number
     @Required() max: number
 
-    @Required() attributes: CategorizedItem[]
+    @CollectionOf(CategorizedItemSchema) attributes: CategorizedItem[]
     @Required() joinedUsers: string[]
 }
 
@@ -42,7 +41,7 @@ class RequestStatusEventSchema implements RequestStatusEvent {
 
 // timestamps are handled by db
 @Model({ 
-    collection: 'help_requests',
+    collection: Collections.HelpRequest,
     schemaOptions: {
         timestamps: true
     }
@@ -69,12 +68,7 @@ export class HelpRequestModel implements Omit<HelpRequest, 'createdAt' | 'update
     @Property()
     notes: string
 
-    @Property({
-        id: String,
-        messages: [ChatMessageSchema],
-        lastChatId: Number,
-        userRecepits: Object
-    })
+    @Property(ChatSchema)
     chat: Chat
 
     @Property()

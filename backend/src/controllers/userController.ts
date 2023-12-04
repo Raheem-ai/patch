@@ -12,7 +12,7 @@ import * as uuid from 'uuid';
 import { APIController, OrgId } from ".";
 import { OrganizationController } from "./organizationController";
 import { User } from "../protocols/jwtProtocol";
-import { DBManager } from "../services/dbManager";
+import { DBManagerService } from "../services/dbManagerService";
 import { PubSubService } from "../services/pubSubService";
 import { userHasPermissions, getLinkUrl } from "./utils";
 import config from "../config";
@@ -119,8 +119,9 @@ export class UsersController implements APIController<
     | 'sendResetCode'
     | 'updatePassword'
     | 'deleteMyAccount'
+    | 'getDynamicConfig'
 > {
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
     @Inject(UserModel) users: MongooseModel<UserModel>;
     @Inject(PubSubService) pubSub: PubSubService;
     @Inject(EmailService) emailService: EmailService;
@@ -308,6 +309,11 @@ export class UsersController implements APIController<
         return {
             googleMapsApiKey
         }
+    }
+
+    @Get(API.server.getDynamicConfig())
+    async getDynamicConfig() {
+        return this.db.getDynamicConfig()
     }
 
     @Post(API.server.editMe())

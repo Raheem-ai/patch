@@ -144,19 +144,9 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,6 +159,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -176,11 +180,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">17x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { makeAutoObservable, when } from 'mobx';
@@ -203,28 +203,28 @@ export default class HeaderStore implements IHeaderStore {
     async init() {
         await connectionStore().init()
 &nbsp;
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (connectionStore().isConnected) {
-<span class="cstat-no" title="statement not covered" >            this.hideConnectionAnnouncement()</span>
-        } else {
-            this.showConnectionAnnouncement()
+        if (connectionStore().isConnected) {
+            this.hideConnectionAnnouncement()
+        } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >            this.showConnectionAnnouncement()</span>
         }
 &nbsp;
     }
 &nbsp;
-    showConnectionAnnouncement = () =&gt; {
-        when(() =&gt; connectionStore().isConnected, this.hideConnectionAnnouncement)
+    showConnectionAnnouncement = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >        when(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >connectionStore().isConnected,</span> this.hideConnectionAnnouncement)</span>
     
-        Animated.timing(this.announcementHeight, {
+<span class="cstat-no" title="statement not covered" >        Animated.timing(this.announcementHeight, {</span>
             toValue: HeaderAnnouncementHeight,
             duration: 300,
             useNativeDriver: false
         }).start()
     }
 &nbsp;
-    hideConnectionAnnouncement = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >        when(<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >!connectionStore().isConnected,</span> this.showConnectionAnnouncement)</span>
+    hideConnectionAnnouncement = () =&gt; {
+        when(() =&gt; !connectionStore().isConnected, this.showConnectionAnnouncement)
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        Animated.timing(this.announcementHeight, {</span>
+        Animated.timing(this.announcementHeight, {
             toValue: 0,
             duration: 300,
             useNativeDriver: false
@@ -250,7 +250,7 @@ export default class HeaderStore implements IHeaderStore {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-06T15:57:02.984Z
+                at 2023-07-25T18:36:01.814Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

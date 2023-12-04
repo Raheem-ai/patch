@@ -8,6 +8,17 @@ export interface AuthTokens {
     accessToken: string
 }
 
+export type DynamicAppVersionConfig = {
+    latestIOS: string,
+    latestAndroid: string,
+    requiresUpdate: boolean,
+    testing: boolean
+}
+
+export type DynamicConfig = {
+    appVersion: DynamicAppVersionConfig[]
+}
+
 export interface User {
     id: string;
     name: string;
@@ -90,10 +101,7 @@ export type AttributeCategory = {
 export type MinAttributeCategory = AtLeast<AttributeCategory, 'name'>
 export type AttributeCategoryUpdates = AtLeast<Omit<AttributeCategory, 'attributes'>, 'id'>
 
-export type Attribute = {
-    id: string,
-    name: string
-}
+export type Attribute = CategorizedItemDefinition
 
 export type MinAttribute = AtLeast<Attribute, 'name'>
 
@@ -108,6 +116,11 @@ export type Category = {
 export type CategorizedItem = {
     categoryId: string,
     itemId: string
+}
+
+export type CategorizedItemDefinition = {
+    id: string,
+    name: string
 }
 
 export type CategorizedItemUpdates = {
@@ -133,10 +146,7 @@ export type TagCategory = {
 export type MinTagCategory = AtLeast<TagCategory, 'name'>
 export type TagCategoryUpdates = AtLeast<Omit<TagCategory, 'tags'>, 'id'>
 
-export type Tag = {
-    id: string,
-    name: string
-}
+export type Tag = CategorizedItemDefinition
 
 // export type TagsMap = { [key: string]: string[] }
 export type AttributesMap = { [key: string]: string[] }
@@ -186,6 +196,12 @@ export type HelpRequestAssignment = {
     responderIds: string[]
 }
 
+/**
+ * Type that removes any, possibly nested, types that conflict
+ * between the frontend/backend representation of a HelpRequest
+ */
+export type CommonHelpRequest = Omit<HelpRequest, 'chat'> & { chat?: Omit<HelpRequest['chat'], 'userReceipts'> }
+
 export type HelpRequest = {
     // virtual fields proviced by db
     createdAt: string
@@ -202,7 +218,6 @@ export type HelpRequest = {
     chat?: Chat
     dispatcherId: string
     status: RequestStatus
-
     callerName: string,
     callerContactInfo: string,
     callStartedAt: string,
@@ -210,53 +225,7 @@ export type HelpRequest = {
     priority: RequestPriority,
     tagHandles: CategorizedItem[],
     positions: Position[]
-    /**
-     * 
-     * Optioon 1: array of these events that we use mobx computed caching to project into a map of what people should be in what sections in the ui
-     * 
-     * Events for
-     * - sent
-     *  - by: string 
-     *  - to: string[]
-     *  - sentAt: string
-     * - seen
-     *  - by: string
-     *  - seenAt: string
-     * - joined
-     *  - user: string
-     *  - position: string
-     *  - joinedAt: string
-     * - requested to join
-     *  - id: string
-     *  - requester: string
-     *  - position: string
-     *  - requestedAt: string
-     * - request denied
-     *  - requestId: string
-     *  - by: string
-     *  - deniedAt: string
-     * - request accepted
-     *  - requestId: string
-     *  - by: string
-     *  - acceptedAt: string
-     * - left
-     *  - user: string
-     *  - position: string
-     *  - leftAt: string
-     * - kicked
-     *  - user: string
-     *  - by: string
-     *  - kickedAt: string 
-     * 
-     * option 2:
-     * have those events only on the object the db sees but never sent to the frontend...the backend computes the new frontend model 
-     * pros: ui doesn't have data about other users activity details
-     * cons: slower api calls doing cpu bound checks
-     * 
-     * recommendation do it in ui and can port that to backend if need be
-     */
     teamEvents: RequestTeamEvent[]
-
     statusEvents: RequestStatusEvent[]
 }
 
@@ -361,7 +330,7 @@ export enum HelpRequestSortBy {
     // ByDistance = 'bd'
 };
 
-export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
+export type MinHelpRequest = AtLeast<CommonHelpRequest, 'type'>
 
 export enum TeamFilter {
     Everyone = 'ev',
@@ -378,7 +347,7 @@ export type Chat = {
     id: string,
     messages: ChatMessage[],
     lastMessageId: number,
-    userReceipts: { [userId: string]: number }
+    userReceipts?: Map<string, number>
 }
 
 export type ChatMessage = {
@@ -1094,7 +1063,7 @@ export enum PatchEventType {
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: no
      */
-     RequestRespondersNotificationAck = '1.1.1',
+    RequestRespondersNotificationAck = '1.1.1',
 
     /**
      * SENT TO: request admins 
@@ -1102,48 +1071,48 @@ export enum PatchEventType {
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersRequestToJoin = '1.1.2',  
+    RequestRespondersRequestToJoin = '1.1.2',  
      /**
      * SENT TO: nobody currently
      * SENT VIA WEBSOCKET: n/a
      * SENT VIA NOTIFICATION: n/a
      * SHOULD SHOW NOTIFICATION: n/a
      */
-      RequestRespondersRequestToJoinAck = '1.1.3',  
+    RequestRespondersRequestToJoinAck = '1.1.3',  
     /**
      * SENT TO: requester...NOTE: already joined users get same as joined notification 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersAccepted =	'1.1.4',  
+    RequestRespondersAccepted =	'1.1.4',  
     /**
      * SENT TO: already joined users + request admins 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersJoined =	'1.1.5',  
+    RequestRespondersJoined =	'1.1.5',  
     /**
      * SENT TO: requester 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersDeclined =	'1.1.6',  
+    RequestRespondersDeclined =	'1.1.6',  
     /**
      * SENT TO: already joined users + request admins 
      * SENT VIA WEBSOCKET: yes 
      * SENT VIA NOTIFICATION: yes
      */
-     RequestRespondersLeft =	'1.1.7',      
+    RequestRespondersLeft =	'1.1.7',      
     /**
      * SENT TO: the kicked user...NOTE: already joined users get same as left notification 
      * SENT VIA WEBSOCKET: yes
      * SENT VIA NOTIFICATION: yes
      * SHOULD SHOW NOTIFICATION: yes
      */
-     RequestRespondersRemoved =	'1.1.8',  
+    RequestRespondersRemoved =	'1.1.8',  
 
     // Request.Chat.<_>
     RequestChatNewMessage =	'1.2.0',
@@ -1162,6 +1131,11 @@ export enum PatchEventType {
 
     // Organization.Tags.<_>
     OrganizationTagsUpdated = '2.3.0',
+
+    // TODO(Shift): will need their own events
+
+    // System.DynamicConfig.<_>
+    SystemDynamicConfigUpdated = '3.0.0'
 }
 
 // PatchEventType Convenience Type
@@ -1177,14 +1151,22 @@ export type RequestTeamEventTypes =
     | PatchEventType.RequestRespondersDeclined;
 
 // PatchEventType Convenience Type
-export type RequestEventType = RequestTeamEventTypes
+export type IndividualRequestEventType = RequestTeamEventTypes
     | PatchEventType.RequestChatNewMessage
     | PatchEventType.RequestCreated
     | PatchEventType.RequestDeleted
     | PatchEventType.RequestEdited;
 
 // PatchEventType Convenience Type
-export type UserEventType = PatchEventType.UserCreated
+// these deletes/updates might affect multiple 
+// requests that need to be refreshed
+export type BulkRequestEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
+    | PatchEventType.OrganizationTagsUpdated
+
+// PatchEventType Convenience Type
+export type IndividualUserEventType = PatchEventType.UserCreated
     | PatchEventType.UserEdited
     | PatchEventType.UserDeleted
     | PatchEventType.UserAddedToOrg
@@ -1192,6 +1174,13 @@ export type UserEventType = PatchEventType.UserCreated
     | PatchEventType.UserChangedRolesInOrg
     | PatchEventType.UserOnDuty
     | PatchEventType.UserOffDuty
+
+// PatchEventType Convenience Type
+// these deletes/updates might affect multiple 
+// users that need to be refreshed
+export type BulkUserEventType = 
+    PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.OrganizationAttributesUpdated
 
 // PatchEventType Convenience Type
 export type OrgEventType = PatchEventType.OrganizationEdited
@@ -1214,12 +1203,14 @@ export type SilentNotificationEventType = PatchEventType.UserForceLogout
     | PatchEventType.UserAddedToOrg
     | PatchEventType.RequestCreated
     | PatchEventType.RequestEdited
+    | PatchEventType.RequestDeleted
     | PatchEventType.OrganizationEdited
     | PatchEventType.OrganizationTagsUpdated
     | PatchEventType.OrganizationAttributesUpdated
     | PatchEventType.OrganizationRoleCreated
     | PatchEventType.OrganizationRoleEdited
     | PatchEventType.OrganizationRoleDeleted
+    | PatchEventType.SystemDynamicConfigUpdated
 
 // PatchEventType Convenience Type
 export type NoisyNotificationEventType = PatchEventType.RequestRespondersJoined
@@ -1278,7 +1269,8 @@ export type PatchEventParams = {
     }, 
     [PatchEventType.RequestDeleted]: {
         orgId:string,
-        requestId: string
+        requestId: string,
+        deleterId: string
     }, 
     [PatchEventType.RequestRespondersNotified]: {
         // orgId: string,
@@ -1358,15 +1350,25 @@ export type PatchEventParams = {
     },
     [PatchEventType.OrganizationRoleDeleted]: {
         orgId: string,
-        roleId: string
+        roleId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[]
     },
-    // could add the CategorizedItemUpdates tyoe here if we want more granular logging/updating around 
-    // the updates
     [PatchEventType.OrganizationAttributesUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        updatedUserIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
     },
     [PatchEventType.OrganizationTagsUpdated]: {
-        orgId: string
+        orgId: string,
+        updatedRequestIds: string[],
+        deletedCategoryIds: CategorizedItemUpdates['deletedCategories'],
+        deletedItems: CategorizedItemUpdates['deletedItems']
+    },
+    [PatchEventType.SystemDynamicConfigUpdated]: {
+
     }
 }
 
@@ -1778,4 +1780,48 @@ export type AggregatePositionStats = {
     totalMinFilled: number,
     totalMinToFill: number,
     totalFilled: number
+}
+
+/**
+ * The set of changes you can make to an array of items without
+ * editing the actual items themselves
+ */
+export type ArrayCollectionUpdate<Added, Removed=Added> = {
+    addedItems: Added[],
+    removedItems: Removed[]
+}
+
+/**
+ * The set of changes you can make to an array of items including
+ * editing the actual items themselves (which might require a separate `Update` type
+ * tailored to the items the array is holding)
+ */
+export type ArrayItemUpdate<Added, Update=Added, Removed=Added> = ArrayCollectionUpdate<Added, Removed> & {
+    itemUpdates: Update[]
+}
+
+// Position Diff Types
+export type ReplaceablePositionProps = Pick<Position, 'role' | 'min' | 'max'>
+
+export type PositionUpdate = {
+    id: string,
+    replacedProperties: {
+        [key in keyof ReplaceablePositionProps]?: Position[key]
+    }
+    attributeUpdates: ArrayCollectionUpdate<CategorizedItem>
+}
+
+// convenience type tying Position to PositionUpdate 
+export type PositionSetUpdate = ArrayItemUpdate<Position, PositionUpdate>
+
+// Request Diff Types
+export type ReplaceableRequestProps = Pick<HelpRequest, 'location' | 'notes' | 'callerName' | 'callerContactInfo' | 'callStartedAt' | 'callEndedAt' | 'priority'>
+
+export type RequestUpdates = {
+    replacedProperties: {
+        [key in keyof ReplaceableRequestProps]?: HelpRequest[key]
+    },
+    tagUpdates: ArrayCollectionUpdate<CategorizedItem>,
+    typeUpdates: ArrayCollectionUpdate<RequestType>,
+    positionUpdates: PositionSetUpdate
 }

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { observer } from "mobx-react";
 import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../../common/models";
+import { HelpRequest, RequestPriority, RequestStatus, RequestStatusToLabelMap, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../../common/front";
 import { requestStore, userStore, organizationStore } from "../../stores/interfaces";
 import { navigateTo } from "../../navigation";
 import { routerNames, Colors, ICONS } from "../../types";
@@ -12,6 +12,7 @@ import { StatusIcon, StatusSelector } from "../statusSelector";
 import STRINGS from "../../../../common/strings";
 import TestIds from "../../test/ids";
 import { positionStats } from "../../../../common/utils/requestUtils";
+import SelectableText from "../helpers/selectableText";
 
 type Props = {
     testID: string,
@@ -64,7 +65,7 @@ const HelpRequestCard = observer(({
         return (
 
             <View style={styles.headerRow}>
-                <Text style={[styles.idText, dark ? styles.darkText : null]}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</Text>
+                <SelectableText style={[styles.idText, dark ? styles.darkText : null]}>{STRINGS.REQUESTS.requestDisplayName(prefix, id)}</SelectableText>
                 {
                     address
                         ? <View style={styles.locationContainer}>
@@ -73,7 +74,7 @@ const HelpRequestCard = observer(({
                                 icon={ICONS.mapMarker} 
                                 color={styles.locationIcon.color}
                                 size={styles.locationIcon.width} />
-                            <Text style={[styles.locationText, dark ? styles.darkText : null]}>{address}</Text>
+                            <SelectableText style={[styles.locationText, dark ? styles.darkText : null]}>{address}</SelectableText>
                         </View>
                         : null
                 }
@@ -87,10 +88,10 @@ const HelpRequestCard = observer(({
 
         return (
             <View style={styles.detailsRow}>
-                <Text numberOfLines={minimal ? 1 : onMapView ? 3 : 4} style={dark ? styles.darkDetailsText : {}}>
-                    <Text style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type ? type + ': ' : null}</Text>
-                    <Text style={dark ? styles.darkDetailsText : {}}>{notes}</Text>
-                </Text>
+                <SelectableText numberOfLines={minimal ? 1 : onMapView ? 3 : 4} style={dark ? styles.darkDetailsText : {}}>
+                    <SelectableText style={[styles.typeText, dark ? styles.darkDetailsText : {}]}>{type ? type + ': ' : null}</SelectableText>
+                    <SelectableText style={dark ? styles.darkDetailsText : {}}>{notes}</SelectableText>
+                </SelectableText>
             </View>
         )
     }
@@ -154,9 +155,9 @@ const HelpRequestCard = observer(({
                     icon={ICONS.responder} 
                     color={Colors.nocolor}
                     size={12} />);
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</Text>)        
+                unAssignedResponders.push(<SelectableText style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{unfilledSpotsForRequest}</SelectableText>)        
             } else {
-                unAssignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
+                unAssignedResponders.push(<SelectableText style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></SelectableText>)
             }
         } 
 
@@ -188,12 +189,12 @@ const HelpRequestCard = observer(({
                 size={12} />);
 
             // ...and the total number
-            assignedResponders.push(<Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{i}</Text>)        
+            assignedResponders.push(<SelectableText style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_LAST } ]}>{i}</SelectableText>)        
 
         } else if (joinedResponders.size > 0) {
             // if we're showing everyone who has joined (and it's more than 0) add spacing
             assignedResponders.push(
-                <Text style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></Text>)
+                <SelectableText style={[ styles.responderCount, { marginRight: RESPONDER_SPACING_BASIC } ]}></SelectableText>)
         }
  
         const potentialLabel = RequestStatusToLabelMap[request.status];
@@ -202,8 +203,9 @@ const HelpRequestCard = observer(({
             ? potentialLabel
             : potentialLabel(positionStats(request.positions, userStore().usersRemovedFromOrg.map(u => u.id)));
 
+        //TODO: this shouldn't show/click through for requests I'm not on if I don't have the right perms
         const hasUnreadMessages = (request.chat && request.chat.messages.length) 
-            && (!request.chat.userReceipts[userStore().user.id] 
+            && (!request.chat.userReceipts?.[userStore().user.id] 
                 || (request.chat.userReceipts[userStore().user.id] < request.chat.lastMessageId));
 
         return (
@@ -230,7 +232,7 @@ const HelpRequestCard = observer(({
                     statusOpen
                         ? <StatusSelector dark={dark} style={[styles.statusSelector, dark ? styles.darkStatusSelector : null]} requestId={request.id} onStatusUpdated={closeStatusSelector} />
                         : <Pressable style={styles.statusContainer} onPress={openStatusSelector}>
-                            <Text style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</Text>
+                            <SelectableText style={[styles.statusText, dark ? styles.darkStatusText : null]}>{label}</SelectableText>
                             {
                                 request.status == RequestStatus.Unassigned 
                                     ? null  

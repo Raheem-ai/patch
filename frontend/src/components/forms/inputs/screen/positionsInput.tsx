@@ -6,8 +6,8 @@ import Form, { CustomFormHomeScreenProps } from "../../form"
 import BackButtonHeader, { BackButtonHeaderProps } from "../backButtonHeader"
 import { InlineFormInputConfig, ScreenFormInputConfig, SectionScreenViewProps } from "../../types"
 import { VisualArea } from '../../../helpers/visualArea';
-import { unwrap } from "../../../../../../common/utils"
-import { DefaultRoleIds, Position } from "../../../../../../common/models"
+import { mergeArrayCollectionUpdates, unwrap } from "../../../../../../common/utils"
+import { DefaultRoleIds, Position, PositionSetUpdate, PositionUpdate } from "../../../../../../common/front"
 import { manageAttributesStore, organizationStore } from "../../../../stores/interfaces"
 import * as uuid from 'uuid';
 import { AttributesListInput } from "../defaults/defaultAttributeListInputConfig"
@@ -30,6 +30,20 @@ const PositionsInput = observer(({
         min: 2,
         max: -1
     }) as Position))
+
+    // if we're in create mode, don't need to track updates
+    const [ updates ] = useState(observable.box(
+        !!paramsFromLabel 
+            ? { 
+                id: (paramsFromLabel as Position).id,
+                replacedProperties: {},
+                attributeUpdates: {
+                    addedItems: [],
+                    removedItems: []
+                }
+            } as PositionUpdate
+            : null
+    ))
     
     const wrappedTestID = TestIds.inputs.positions.wrapper(config.testID);
 
@@ -42,7 +56,30 @@ const PositionsInput = observer(({
                 }
             },
             onChange: (val) => { 
-                const cpy = Object.assign({}, position.get(), { min: val.min, max: val.max }) as Position
+                const curr = position.get();
+                const currUpdate = updates.get()
+
+                // if in edit mode, update the diff for min/max if either changed
+                if (currUpdate) {
+                    const currDiff = Object.assign({}, currUpdate)
+                    let changed = false
+
+                    if (val.max != curr.max) {
+                        currDiff.replacedProperties.max = val.max
+                        changed = true
+                    }
+
+                    if (val.min != curr.min) {
+                        currDiff.replacedProperties.min = val.min
+                        changed = true
+                    }
+
+                    if (changed) {
+                        updates.set(currDiff)
+                    }
+                }
+
+                const cpy = Object.assign({}, curr, { min: val.min, max: val.max }) as Position
                 position.set(cpy) 
             },
             isValid: () => true,
@@ -55,9 +92,31 @@ const PositionsInput = observer(({
             }
         },
         {
-            val: () => [position.get().role],
+            val: () => {
+                const roleId = position.get().role
+                
+                // default to any if role has been deleted (locally or remotely)
+                return [
+                    organizationStore().roles.get(roleId)
+                        ? roleId
+                        : DefaultRoleIds.Anyone
+                ]
+            },
             onSave: (val) => { 
-                const cpy = Object.assign({}, position.get(), { role: val[0] || null }) as Position
+                const curr = position.get();
+                const currUpdate = updates.get()
+
+                // if in edit mode, update diff with role change
+                if (currUpdate) {
+                    if (val[0] != curr.role) {
+                        const currDiff = Object.assign({}, currUpdate)
+
+                        currDiff.replacedProperties.role = val[0]
+                        updates.set(currDiff)
+                    }
+                }
+
+                const cpy = Object.assign({}, curr, { role: val[0] || null }) as Position
                 position.set(cpy) 
             },
             isValid: () => true,
@@ -75,8 +134,18 @@ const PositionsInput = observer(({
         AttributesListInput({
             testID: TestIds.inputs.positions.inputs.attributes(wrappedTestID),
             val: () => (position.get().attributes || []).filter(attr => !!manageAttributesStore().getAttribute(attr.categoryId, attr.itemId)),
-            onSave: (val) => { 
-                const cpy = Object.assign({}, position.get(), { attributes: val }) as Position
+            onSave: (val, diff) => {
+                const curr = position.get();
+                const currUpdate = updates.get()
+
+                // if in edit morde, update diff with changes to attribute selection
+                if (currUpdate) {
+                    const currDiff = Object.assign({}, currUpdate)
+                    mergeArrayCollectionUpdates(currDiff.attributeUpdates, diff, (a, b) => a.categoryId == b.categoryId && a.itemId == b.itemId)
+                    updates.set(currDiff)
+                }
+
+                const cpy = Object.assign({}, curr, { attributes: val }) as Position
                 position.set(cpy) 
             },
             isValid: () => true,
@@ -109,15 +178,24 @@ const PositionsInput = observer(({
 
                         const pos = Object.assign({}, position.get()) as Position;
 
+                        const diff: PositionSetUpdate = {
+                            addedItems: [],
+                            itemUpdates: [],
+                            removedItems: []
+                        }
+
+                        // one we're saving is new 
                         if (idx == -1) {
                             pos.id = uuid.v1()
 
                             updatedPositions.unshift(pos)
+                            diff.addedItems.push(pos)
                         } else {
                             updatedPositions[idx] = pos
+                            diff.itemUpdates.push(Object.assign({}, updates.get()))
                         }
 
-                        config.onSave(updatedPositions);
+                        config.onSave(updatedPositions, diff);
                         back();
                     },
                     outline: true
@@ -141,9 +219,17 @@ const PositionsInput = observer(({
 
                 const idx = updatedPositions.findIndex(pos => pos.id == position.get().id);
 
+                const removed = updatedPositions[idx];
+                
                 updatedPositions.splice(idx, 1)
 
-                config.onSave(updatedPositions);
+                const diff: PositionSetUpdate = {
+                    addedItems: [],
+                    itemUpdates: [],
+                    removedItems: [removed]
+                }
+
+                config.onSave(updatedPositions, diff);
                 
                 back();
             }

@@ -11,33 +11,19 @@ import {
 	servicesJsonPath
 } from './eas_build/constants';
 
+import {
+	VERSION,
+	ANDROID_VERSION_CODE,
+	IOS_VERSION_CODE
+} from './version'
+
 // NOTE: put your ngrok url here for development
 let apiHost = ''
 
-/**
- * ONLY NEEDED FOR BUILD TIME
- * ie. publish will have this be blank in the manifest and that's okay
- * For Apple:
- * - corresponds to "CFBundleShortVersionString"
- * 
- * For Android: 
- * - corresponds to "versionName"
- * 
- * NOTE: increment every time you make a change that requires
- * a new build because of native code changes or build time native 
- * config changes
- */
-const VERSION = `1.0.1`
-// NOTE: this needs to be a positive integer that gets incremented along side VERSION
-let ANDROID_VERSION_CODE = 12
 // provided by local runner
 const DEV_ENV = process.env._DEV_ENVIRONMENT 
 // provided by whatever script is running update
 const UPDATE_ENVIRONMENT = process.env._UPDATE_ENVIRONMENT
-
-// this value shouldn't need to change 
-let IOS_BUILD_NUMBER = "1"
-
 
 let SENTRY_AUTH_TOKEN = ''
 let SENTRY_DSN = ''
@@ -102,11 +88,14 @@ if (inEASBuild) { // running eas build on ci server
 	if (!ENV) {
 		throw 'Missing _ENVIRONMENT env variable'
 	}
+
+	// treat preprod as prod for apihost and secrets
+	const easEnv = ENV == 'preprod' ? 'prod' : ENV
 	
 	// make sure api is pointing to the right environment
-	resolveApiHost(ENV)
+	resolveApiHost(easEnv)
 
-	resolveSecrets(ENV)
+	resolveSecrets(easEnv)
 
 } else if (!!DEV_ENV) { // running expo start locally against an env
 
@@ -121,19 +110,23 @@ if (inEASBuild) { // running eas build on ci server
 } else if (!!UPDATE_ENVIRONMENT) {
 	// running eas update locally or otherwise
 
+	// use prod env settings for preprod
+	const localEnv = UPDATE_ENVIRONMENT == 'preprod' ? 'prod' : UPDATE_ENVIRONMENT
+
 	// try and load secrets from local .env files if they exist
 	try {
-		loadLocalEnv(UPDATE_ENVIRONMENT)
+		// use prod env for preprod
+		loadLocalEnv(localEnv)
 	} catch (e) {
 
 	}
 	
 	// make sure api is pointing to the right environment
-	resolveApiHost(UPDATE_ENVIRONMENT)
+	resolveApiHost(localEnv)
 
 	// resolve secrets either pulled from local .env
 	// or provided by env
-	resolveSecrets(UPDATE_ENVIRONMENT)
+	resolveSecrets(localEnv)
 } else {
 	// throw `This file shouldn't be used without providing either _ENVIRONMENT, _DEV_ENVIRONMENT, or _UPDATE_ENV env variable`
 }
@@ -145,9 +138,11 @@ function appName() {
 
 	return env == 'prod'
 		? 'patch'
-		: env == 'staging'
-			? 'patch (staging)'
-			: 'patch (dev)'
+		: env == 'preprod' 
+			? 'patch (preprod)'
+			: env == 'staging'
+				? 'patch (staging)'
+				: 'patch (dev)'
 }
 
 function appId() {
@@ -155,9 +150,11 @@ function appId() {
 
 	return env == 'prod'
 		? 'ai.raheem.patch'
-		: env == 'staging'
-			? 'ai.raheem.patch.staging'
-			: 'ai.raheem.patch.dev'
+		: env == 'preprod'
+			? 'ai.raheem.patch.preprod'
+			: env == 'staging'
+				? 'ai.raheem.patch.staging'
+				: 'ai.raheem.patch.dev'
 }
 
 function appEnv() {
@@ -188,7 +185,7 @@ function branchConfig() {
 		// as it is used in a config plugin which apparently does it's validation 
 		// before being on the build server -_-...real value gets set in the build
 		"apiKey": BRANCH_KEY || 'FAKE',
-		"appDomain": env == 'prod'
+		"appDomain": env == 'prod' // TODO: this won't work for preprod because of the appId
 			? "hla1z.app.link"
 			: "hla1z.test-app.link",
 		"exhaustiveAppDomains": env == 'prod'
@@ -272,7 +269,7 @@ const config = {
 			"remote-notification"
 		  ]
 		},
-		"buildNumber": IOS_BUILD_NUMBER,
+		"buildNumber": IOS_VERSION_CODE,
 		"bundleIdentifier": appId(),
 		"config": {
 		  "googleMapsApiKey": GOOGLE_MAPS_KEY

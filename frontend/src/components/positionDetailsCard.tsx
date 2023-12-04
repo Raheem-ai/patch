@@ -4,9 +4,9 @@ import React, { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/models";
+import { CategorizedItem, DefaultRoleIds, PatchPermissions, Position, PositionStatus, ProtectedUser, RequestStatus } from "../../../common/front";
 import { resolveErrorMessage } from "../errors";
-import { alertStore, manageAttributesStore, organizationStore, requestStore, userStore } from "../stores/interfaces";
+import { alertStore, manageAttributesStore, requestStore, userStore } from "../stores/interfaces";
 import { Colors, ICONS } from "../types";
 import { iHaveAllPermissions } from "../utils";
 import PositionCard from "./positionCard";
@@ -14,10 +14,14 @@ import UserIcon from "./userIcon";
 import STRINGS from "../../../common/strings";
 import PatchButton from "../components/patchButton";
 import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 type PositionDetailsCardProps = { 
+    // TODO(Shifts): right now this allways comes from request but will need to be generalized for 
+    // shifts...ie passing in some interface that handles displaying all of the actions around a 
+    // position for a Requests vs Shifts
     requestId: string,
-    pos: Position,
+    positionId: string,
     edit?: {
         permissions: PatchPermissions[],
         handler: () => void
@@ -27,10 +31,16 @@ type PositionDetailsCardProps = {
 // Note: this is tied to requests right now vs being a general position details card
 const PositionDetailsCard = observer(({ 
     requestId,
-    pos,
+    positionId,
     edit
 }: PositionDetailsCardProps) => {
+    const positionHandle = () => {
+        const request = requestStore().requests.get(requestId);
+        return request.positions.find(p => p.id == positionId)
+    }
+
     const request = requestStore().requests.get(requestId);
+    const pos = positionHandle()
     const requestIsClosed = request.status == RequestStatus.Closed
 
     const positionMetadata = requestStore().getPositionScopedMetadata(userStore().user.id, requestId, pos.id);
@@ -194,9 +204,10 @@ const PositionDetailsCard = observer(({
             <View style={{ flexDirection: 'row' }}>
                 <View style={{ flex: 1 }}>
                     <PositionCard 
+                        testID={TestIds.positionDetailsCard.card}
                         onlyMissingUsers 
                         containerStyle={{ borderBottomWidth: 0 }} 
-                        pos={pos} 
+                        positionHandle={positionHandle}
                         edit={edit} />
                 </View>
                 <View style={{ marginTop: 20, marginRight: 20 }}>{ actions() }</View>
@@ -209,17 +220,17 @@ const PositionDetailsCard = observer(({
                                 <View key={details.userId} style={{ marginTop: 20, flexDirection: 'row', width: '100%'}}>
                                     <UserIcon userId={details.userId} style={{marginTop: 2, flexGrow: 0}}/>
                                     <View style={{ marginLeft: 6, flexDirection: 'column', flexShrink: 1 }}>
-                                        <Text style={{ fontWeight: 'bold' }}>{details.name}</Text>
+                                        <SelectableText style={{ fontWeight: 'bold' }}>{details.name}</SelectableText>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                             {
                                                 details.attributes.map((attr, i) => {
                                                     const addDelim = i < details.attributes.length - 1;
                                                     return addDelim 
                                                         ? <>
-                                                            <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>
-                                                            <Text style={styles.visualDelim}>{STRINGS.visualDelim}</Text>
+                                                            <SelectableText key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</SelectableText>
+                                                            <SelectableText style={styles.visualDelim}>{STRINGS.visualDelim}</SelectableText>
                                                         </>
-                                                        : <Text key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</Text>                                                        
+                                                        : <SelectableText key={attr.name} style={attr.isDesired ? styles.desiredAttribute : styles.attribute }>{attr.name}</SelectableText>                                                        
                                                 })
                                             }
                                         </View>

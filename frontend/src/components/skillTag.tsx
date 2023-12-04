@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
-import { RequestSkill, RequestSkillToLabelMap } from '../../../common/models';
+import { RequestSkill, RequestSkillToLabelMap } from '../../../common/front';
+import SelectableText from './helpers/selectableText';
 
 type Props = {
     skill: RequestSkill,
@@ -30,11 +31,11 @@ export default function SkillTag(props: Props) {
                 props.style
             ]}
         >
-            <Text style={[
+            <SelectableText style={[
                 styles.tagText,
                 props.large ? styles.largeTagText : null,
                 !!props.type ? { color: styles[props.type].color } : null
-            ]}>{label}</Text>
+            ]}>{label}</SelectableText>
         </View>
     )
                 

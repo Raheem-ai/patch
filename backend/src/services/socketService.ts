@@ -5,7 +5,7 @@ import { notificationLabel } from 'common/utils/notificationUtils'
 import * as SocketIO from "socket.io";
 import { verifyRefreshToken } from "../auth";
 import { UserDoc, UserModel } from "../models/user";
-import { DBManager } from "./dbManager";
+import { DBManagerService } from "./dbManagerService";
 import Notifications, { NotificationMetadata } from "./notifications";
 import { PubSubService } from "./pubSubService";
 import { RedisAdapter } from "@socket.io/redis-adapter";
@@ -25,7 +25,7 @@ type SendConfig = {
 @Service()
 export class MySocketService {
 
-    @Inject(DBManager) db: DBManager;
+    @Inject(DBManagerService) db: DBManagerService;
 
     @Nsp nsp: SocketIO.Namespace;
     
@@ -87,8 +87,8 @@ export class MySocketService {
         console.log(`Socket disconnected ${socket.id}`)
     }
 
-    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) {
-            switch (event) {
+    async handleUIUpdateFromSystemEvent<T extends PatchEventType>(event: T, params: PatchEventParams[T]) { 
+        switch (event) {
             // case PatchEventType.UserCreated:
             // case PatchEventType.UserDeleted: // TODO: How should we handle this?
             //         // noop
@@ -121,7 +121,9 @@ export class MySocketService {
             case PatchEventType.RequestEdited:
                 await this.handleRequestEdited(params as PatchEventParams[PatchEventType.RequestEdited])
                 break;
-            // TODO: case PatchEventType.RequestDeleted:
+            case PatchEventType.RequestDeleted:
+                await this.handleRequestDeleted(params as PatchEventParams[PatchEventType.RequestDeleted])
+                break;
             case PatchEventType.RequestRespondersRequestToJoin: 
                 await this.handleRequestRespondersRequestToJoin(params as PatchEventParams[PatchEventType.RequestRespondersRequestToJoin])
                 break;
@@ -161,6 +163,9 @@ export class MySocketService {
                 break;
             case PatchEventType.OrganizationRoleDeleted:
                 await this.handleOrganizationRoleDeleted(params as PatchEventParams[PatchEventType.OrganizationRoleDeleted])
+                break;
+            case PatchEventType.SystemDynamicConfigUpdated:
+                await this.handleDynamicConfigUpdate(params as PatchEventParams[PatchEventType.SystemDynamicConfigUpdated])                
                 break;
         }
     }
@@ -579,6 +584,10 @@ export class MySocketService {
         await this.updateUsersInOrg(PatchEventType.RequestEdited, payload, payload.orgId, notificationLabel(PatchEventType.RequestEdited))
     }
 
+    async handleRequestDeleted(payload: PatchEventParams[PatchEventType.RequestDeleted]) {
+        await this.updateUsersInOrg(PatchEventType.RequestDeleted, payload, payload.orgId, notificationLabel(PatchEventType.RequestDeleted), [payload.deleterId])
+    }
+
     async handleUserEdited(payload: PatchEventParams[PatchEventType.UserEdited]) {
         await this.updateUsersInOrg(PatchEventType.UserEdited, payload, payload.orgId, notificationLabel(PatchEventType.UserEdited))
     }
@@ -623,15 +632,41 @@ export class MySocketService {
         await this.updateUsersInOrg(PatchEventType.OrganizationRoleDeleted, params, params.orgId, notificationLabel(PatchEventType.OrganizationRoleDeleted))
     }
 
+    async handleDynamicConfigUpdate(params: PatchEventParams[PatchEventType.SystemDynamicConfigUpdated]) {
+        await this.updateAllUsers(PatchEventType.SystemDynamicConfigUpdated, params, notificationLabel(PatchEventType.SystemDynamicConfigUpdated))
+    }
+
+    async updateAllUsers<Event extends PatchEventType>(
+        event: Event,
+        params: PatchEventParams[Event],
+        body: string
+    ) {
+        const allUserConfigs = (await this.db.users.find({})).map(u => {
+            return {
+                userId: u.id,
+                userName: u.name,
+                pushToken: u.push_token,
+                body: body
+            } as SendConfig
+        })
+
+        await this.send(allUserConfigs, { event, params })
+    }
+
     async updateUsersInOrg<Event extends PatchEventType>(
         event: Event,
         params: PatchEventParams[Event],
         orgId: string,
-        body: string
+        body: string,
+        toExclude?: string[]
     ) {
         const org = await this.db.resolveOrganization(orgId)
         const fullOrg = await this.db.fullOrganization(org)
         const usersInOrg = await this.usersInOrg(fullOrg)
+
+        for (const userToExclude of (toExclude || [])) {
+            usersInOrg.delete(userToExclude)
+        }
 
         const configs: SendConfig[] = [];
 

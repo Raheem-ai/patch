@@ -3,7 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
-import { PatchPermissions } from "../../../common/models";
+import { PatchPermissions } from "../../../common/front";
 import Form, { CustomFormHomeScreenProps } from "../components/forms/form";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import MangeRolesForm from "../components/forms/editRolesForm";
@@ -19,6 +19,7 @@ import { navigateTo } from "../navigation";
 import UpdatePasswordForm from "./UpdatePassword";
 import STRINGS from "../../../common/strings";
 import TestIds from "../test/ids";
+import SelectableText from "../components/helpers/selectableText";
 
 type Props = ScreenProps<'Settings'>;
 
@@ -281,7 +282,7 @@ const Settings = ({ navigation, route }: Props) => {
                                 color={Colors.icons.dark}
                                 size={20} 
                                 style={styles.headerIcon} />
-                            <Text style={styles.headerText}>{'Personal'}</Text>
+                            <SelectableText style={styles.headerText}>{'Personal'}</SelectableText>
                         </View>
                         <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs([personalSettings])}
@@ -294,7 +295,7 @@ const Settings = ({ navigation, route }: Props) => {
                                         color={Colors.icons.dark}
                                         size={20} 
                                         style={styles.headerIcon} />
-                                    <Text style={styles.headerText}>{'Organization'}</Text>
+                                    <SelectableText style={styles.headerText}>{'Organization'}</SelectableText>
                                 </View>
                                 <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                                     { params.renderInputs([orgSettings])}

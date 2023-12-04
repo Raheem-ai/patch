@@ -9,11 +9,12 @@ import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { Camera, MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
-import { AddressableLocation } from "../../../../../../common/models";
+import { AddressableLocation } from "../../../../../../common/front";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import TestIds from "../../../../test/ids";
 import { Colors, ICONS } from "../../../../types";
 import { when } from "mobx";
+import SelectableText from "../../../helpers/selectableText";
 
 const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
     const wrappedTestID = TestIds.inputs.mapInput.wrapper(config.testID)
@@ -286,11 +287,11 @@ const MapInput = observer(({ back, config }: SectionScreenViewProps<'Map'>) => {
                         width: dimensions.width - (2 * 24),
                         justifyContent: 'center'
                 }}>
-                    <Text style={{ 
+                    <SelectableText style={{ 
                         alignSelf: 'center', 
                         color: isSaveable ? '#fff' : '#999',
                         fontWeight: '700'
-                    }}>Save this location</Text>
+                    }}>Save this location</SelectableText>
                 </Pressable>
             </View>
         </KeyboardAwareArea>
@@ -305,13 +306,13 @@ const Suggestion = ({ suggestion, onPress, testID }: { suggestion: PlaceAutocomp
             marginBottom: 16,
             paddingHorizontal: 16
         }} onTouchStart={onPress} testID={testID}>
-            <Text style={{
+            <SelectableText style={{
                 fontSize: 16
-            }}>{suggestion.structured_formatting.main_text}</Text>
-            <Text style={{
+            }}>{suggestion.structured_formatting.main_text}</SelectableText>
+            <SelectableText style={{
                 fontSize: 12,
                 color: '#666'
-            }}>{suggestion.structured_formatting.secondary_text}</Text>
+            }}>{suggestion.structured_formatting.secondary_text}</SelectableText>
         </View>
     )
 }

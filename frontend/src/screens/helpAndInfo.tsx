@@ -7,8 +7,9 @@ import { NavigationFormInputConfig } from "../components/forms/types";
 import { VisualArea } from "../components/helpers/visualArea";
 import { ScreenProps, Colors } from "../types";
 import TestIds from "../test/ids";
-import { appVersion } from "../config";
+import { appRuntimeVersion } from "../config";
 import STRINGS from "../../../common/strings";
+import SelectableText from "../components/helpers/selectableText";
 
 type Props = ScreenProps<'HelpAndInfo'>;
 
@@ -72,7 +73,7 @@ const HelpAndInfo = ({ navigation, route }: Props) => {
                 <ScrollView showsVerticalScrollIndicator={false} style={[{ flex: 1 }, styles.pageContainer]}>
                     <Pressable onPress={params.onContainerPress} style={{ flex: 1 }}>
                         <View style={styles.versionContainer}>
-                            <Text style={styles.versionText}>{STRINGS.HELP_AND_INFO.version(appVersion)}</Text>
+                            <SelectableText style={styles.versionText}>{STRINGS.HELP_AND_INFO.version(appRuntimeVersion)}</SelectableText>
                         </View>
                         <View style={{ borderTopColor: Colors.borders.formFields, borderTopWidth: 1 }}>
                             { params.renderInputs(params.inputs())}

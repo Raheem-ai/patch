@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { ICreateRequestStore, requestStore, userStore } from './interfaces';
 import { OrgContext } from '../../../common/api';
-import { AddressableLocation, CategorizedItem, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/models';
+import { AddressableLocation, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, MinHelpRequest, Position, RequestPriority, RequestType } from '../../../common/front';
 import { api } from '../services/interfaces';
 
 
@@ -29,6 +29,18 @@ export default class CreateRequestStore implements ICreateRequestStore  {
             token: userStore().authToken,
             orgId: userStore().currentOrgId
         }
+    }
+
+    // need to edit these to make sure we're sending the right params to the server
+    // ie. a role is set, then it is deleted while i'm still in the create flow
+    // now i'm referencing an old role and even though positionsInput handles defaulting to
+    // Anyone visually
+    onRoleDeletedUpdate(roleId: string) {
+        this.positions.forEach(pos => {
+            if (pos.role == roleId) {
+                pos.role = DefaultRoleIds.Anyone
+            }
+        })
     }
 
     get locationValid() {

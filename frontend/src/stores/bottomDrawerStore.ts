@@ -11,7 +11,7 @@ import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
-import { RequestDetailsTabs } from '../../../common/models';
+import { RequestDetailsTabs } from '../../../common/front';
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 /**
@@ -263,9 +263,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         const currentIsMinimizeable = this.minimizable;
         const newIsMinimizeable = this.isMinimizable(Config[view]);
 
-        console.log('show - currentIsMinimizeable: ', currentIsMinimizeable)
-        console.log('show - newIsMinimizeable: ', newIsMinimizeable)
-
         if (currentIsMinimizeable && newIsMinimizeable){
             if (this.viewId == view) {
                 runInAction(() => {
@@ -308,8 +305,6 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
             })
         }
 
-        console.log(this.viewId, this.showing, this.expanded)
-
         Animated.timing(this.bottomDrawerTabTop, {
             toValue: !!expanded 
                 ? 0 + (newIsMinimizeable
@@ -325,17 +320,50 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
         this.view.onShow?.()
     }
 
-    hide = async () => {
+    hideSync = async () => {
+        await nativeEventStore().hideKeyboard()
+        if (this.viewIdStack.length > 1) {
+            return new Promise<void>((resolve, _) => {
+                runInAction(() => {
+                    const oldView = this.viewIdStack.pop();
+                    this._minimize(() => {
+                        runInAction(() => {
+                            Config[oldView].onHide?.()
+                        })
+                        resolve()
+                    })
+                })
+            })
+        } else {
+            return new Promise<void>((resolve, _) => {
+                Animated.timing(this.bottomDrawerTabTop, {
+                    toValue: dimensions.height,
+                    duration: 300,
+                    useNativeDriver: false // native can't handle layout animations
+                }).start((res) => {
+                    this.view.onHide?.()
+                    runInAction(() => {
+                        this.viewId = null
+                    })
+                    resolve()
+                })
+                runInAction(() => {
+                    this.showing = false
+                    this.expanded = false
+                })
+            })
+        }
+    }
+
+    hide = async (cb?:() => void) => {
         await nativeEventStore().hideKeyboard()
 
-        console.log(`hide - viewIdStack: ${this.viewIdStack}`)
         if (this.viewIdStack.length > 1) {
             runInAction(() => {
                 const oldView = this.viewIdStack.pop();
 
                 this._minimize(() => {
                     runInAction(() => {
-                        console.log(`hide - oldView: ${oldView}`)
                         Config[oldView].onHide?.()
                     })
                 })
@@ -353,15 +381,12 @@ export default class BottomDrawerStore implements IBottomDrawerStore {
 
             runInAction(() => {
                 this.viewId = null
-                console.log(`hide - viewId: ${this.viewId}`)
             })
         })
 
         runInAction(() => {
             this.showing = false
             this.expanded = false
-
-            console.log('hide showing/expanded')
         })
     }
 

@@ -7,6 +7,7 @@ import { TabbedScreenHeaderHeight } from "../constants";
 import { navigationStore } from "../stores/interfaces";
 import { runInAction } from "mobx";
 import TestIds from "../test/ids";
+import SelectableText from "./helpers/selectableText";
 
 type TabConfig = {
     label : string,
@@ -86,10 +87,10 @@ const TabbedScreen: React.FC<Props> = ({
                     i == tabs.length - 1 ? styles.lastSection : null,
                     selected ? styles.selectedSection : null
                 ]}>
-                    <Text style={[
+                    <SelectableText style={[
                         styles.headerLabel,
                         selected ? styles.selectedHeaderLabel : null
-                    ]}>{t.label}</Text>
+                    ]}>{t.label}</SelectableText>
                 </Pressable>
             )
         })

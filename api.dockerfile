@@ -44,12 +44,14 @@ COPY frontend/package.json .
 COPY frontend/yarn.lock .
 
 COPY frontend/eas_build/ /app/frontend/eas_build/
-# TODO: get this to only install the locked expo-cli
+
 RUN yarn install
 
 COPY frontend .
 
 RUN yarn run test
+# install deps that can't live in the frontend's package.json but the ci needs
+RUN $(node ./install_ci_deps.js)
 
 # /app
 WORKDIR ..
@@ -59,8 +61,17 @@ COPY ci ./ci
 
 COPY .git /app/.git
 
+COPY changelog.yaml /app/changelog.yaml
+
 # /app/backend
 WORKDIR backend
+
+# setup backend cli
+RUN mkdir bin
+
+COPY backend/cli.js ./bin/run
+
+RUN chmod 755 ./bin/run
 
 # Build locally with > docker build -f api.dockerfile .
 # Run locally with > docker run --rm -it --env-file ./backend/env/.env.local <imageId>
