@@ -1585,7 +1585,7 @@ export enum DefaultRoleIds {
 }
 
 export enum RequestDetailsTabs {
-    Overview = 'Overview', 
+    Overview = 'Request', 
     Channel = 'Channel',
     Team = 'Team'
 }
@@ -1733,6 +1733,7 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
         id: DefaultAttributeCategoryIds.Languages,
         name: 'Languages',
         attributes: [
+            { name: 'American Sign Language', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan19' },
             { name: 'Amharic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan01' },
             { name: 'Arabic', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan02' },
             { name: 'Bengali', id: DefaultAttributeCategoryIds.Languages + Delimiters.Enum + 'lan03' },
@@ -1763,7 +1764,6 @@ export const DefaultAttributeCategories: AttributeCategory[] = [
             { name: 'first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills03' },
             { name: 'mental health first aid', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills04' },
             { name: 'substance use support', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills05' },
-            { name: 'strenuous physical activity', id: DefaultAttributeCategoryIds.Skills + Delimiters.Enum + 'skills06' },
         ]
     },
     {
