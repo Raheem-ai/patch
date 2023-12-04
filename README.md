@@ -303,3 +303,84 @@ NOTE:
         - have their commit message be a list of changes (to be included in the changelog) where each line starts with '- '
     - Release creation branches should not be squashed when they merge into staging
     - Release approval branches should not be squashed when they merge into master
+
+
+# Deployment V2 (FINAL)
+
+## TERMINOLOGY: 
+    - Base Version: the native version of the front end that non breaking changes to either the frontend/backend will be applied to
+    - Runtime Version: the version in time that an app is using which could be N iterations of non breaking changes to the front/backend...runtime versions are always tied to a Base Version (Expo will only publish over the air updates to a single Base Version at a time so once we increment our Base Version, older Base versions will not recieve any updates unless they come through a hotfix or non-breaking changes to the backend that doesn't affect the logic of the frontend)
+
+
+## ASSUMPTIONS: any breaking backend change will be accompanied by a front end change (that consumes the new API signature)
+
+## GOALS:
+    - No Runtime Version of the app on a user's phone ever run against an incompatible backend
+        - We have a way to notify users that a new Base Version is ready for them to update to
+        - We jave a way to force users to upgrade to the newest Base Version
+        - Our deployment process is aware of both breaking changes (which necessitate an upgrade) and new Base versions (which stem from new native code but may not require an upgrade)
+    - We can deploy any commit from staging (well currently any of the last 5 since we cleanup old builds as the code base iterates)
+    - When we do need to bump the Base Version we can test new app builds against a PreProd environment that a) mirrors Prod so we have confidence our changes will land well and b) allows app store testers to use the new BaseVersion before we have finished fulling rolling it out (they have to approve us before we can finish releaseing a new app build)
+    - Deployment procedures should tie into git so we can kick them off from our local machines safely
+
+## PROCESS:
+At a high level, the deployment process is as follows:
+1) Create a release pointing at a target commit on staging and deploying to preprod
+2) Test any/all OTA updates, backend changes, and native changes (new app build) in the preprod environment
+3) If the release requires a new app build, get approval from each app store (their test accounts will run against preprod)
+4) Release the newer versions to the appstore
+5) Approve the release to promote it from preprod to prod 
+6) Merge the `release branch` into staging and the `approve branch` into prod
+
+### Creating a Release
+Use the cli in `backend/infra` to create a new release. 
+
+```sh
+$> cd <path_to_patch_repo_root>
+$> git fetch
+$> git checkout staging
+$> git pull
+$> cd backend/infra
+$> ./bin/run release:create
+```
+
+Creating a new release does the following on your local machine:
+    - Makes sure your local branch is up to date with origin staging (to make sure you have the most update version of infra code)
+    - Asks you to confirm a `target commit` to release
+    - Creates a new `release branch` that uses the `target commit` as its base branch
+    - Asks you to confirm that the version info in `frontend/version.js` is up to date. If it isn't you can edit and save it in your editor and then confirm the prompt in the cli. NOTE: this is the step where you should update the `REQUIRES_UPDATE` flag in `frontend/version.js` if the backend has breaking changes.
+    - Asks you to confirm if there were native changes involved in this release
+    - Collects the changes from all the git commit logs between the `target commit` and the last approved release that start with `- ` and creates a new changelog entry that saves all the data we just confirmed to `changelog.yaml`
+    - Stages and commits the changes to `changelog.yaml` and (possibly) `frontend/version.js` on the new `release branch` while also making sure you didn't change any other files (They wouldn't get updated anyway but we'll get to that later)
+    - Tags the `release branch` with `rel-pre-<targetCommit>` and pushes the branch and it's tag to origin so we can create a PR with at against `staging` BUT NOT MERGE IT (yet)
+    - The push of the tag starts the CICD job in `ci/jobs/build_deploy_preprod.json`
+
+* If you run into an error creating a release, run the command again with the `--cleanup` flag to reset the local/remote state for the branches/tags involved in the `release:create` command *
+
+TODO: what the CICD job does
+
+### Approving a Release
+Use the cli in `backend/infra` to approve a previously created release. 
+
+```sh
+$> cd <path_to_patch_repo_root>
+$> git fetch
+$> cd backend/infra
+$> ./bin/run release:approve -c <target_commit>
+```
+
+Approving a new release does the following on your local machine:
+    - Checks out the remote `release branch` that was created by the `release:create` command
+    - Makes sure the target commit you passed is in the changelog and asks you to confirm it is the correct release you want to approve
+    - Creates an `approve branch` based on the remote `release branch` (to make sure no local changes can slip in)
+    - Merges `origin/master` into the new `approve branch` 
+    - Tags the branch with `rel-prod-<targetCommit>`
+    - Pushes the `approve branch` and it's tag to the remote so that we can create a PR with it against `master` BUT NOT MERGE IT (yet)
+    - The push of the tag starts the CICD job in `ci/jobs/aprrove_release.json`
+
+TODO: Detail what the CICD job does
+
+## Caveats/Scenarios not covered
+1) Because `prod` and `preprod` are actually the same env in terms of their resources in GCP (db, secrets, etc) doing a deployment that includes a DB migration would mean running it against prod even if we're just trying to test in preprod. This means that any migrations should either be additive at the record level or create new collections vs changing old ones. Other options include, actually separating prod/preprod out to be separate envs but then we lose the confidence of working against a mirror of prod. Could also dynamically have preprod's DB get populated from prods so the data is the same before testing but I'm not sure what that would actually look like
+
+2) Hot fix scenario as older Base Versions of the app would need their OTA updates to be deployed from a docker image that has the code (version info, front end features, etc) from their release + the new code changes. I'm not exactly sure how to add the new code into an existing image and then save it to deploy from but I think it's doable (similar to part of the CICD steps for creating a release image). If nothing else, OTA updates could be done from someones local if they are on a branch that matches the `approve branch` with the new hotfix changes merged in. They would just have to be EXTRA careful that their dependencies are up to date locally etc.
