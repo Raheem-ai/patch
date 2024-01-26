@@ -2,6 +2,7 @@ import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import Picker from 'react-native-wheel-picker-expo';
 import { useWhenParamsChange } from "../hooks/useWhenParamsChange";
+import { Colors } from '../types'
 
 export type PickerOption<T = any> = {
     label: string,
@@ -29,6 +30,7 @@ const WheelPicker = ({
                 initialSelectedIndex={0}
                 items={items}
                 onChange={scrollPickerCB(onChange)}
+                selectedStyle={{borderColor: Colors.borders.formFields, borderWidth: 1}}
                 // flatListProps={{nestedScrollEnabled: true}}
                 />
         </View>

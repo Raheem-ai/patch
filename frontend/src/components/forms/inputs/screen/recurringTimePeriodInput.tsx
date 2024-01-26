@@ -49,6 +49,10 @@ const NUMBER_OF_REPITITIONS = numberRange(1, 999)
 
 const DAY_PICKER_OPTIONS: PickerOption<number>[] = [
     {
+        label: 'S',
+        value: 0
+    },
+    {
         label: 'M',
         value: 1
     }, 
@@ -71,10 +75,6 @@ const DAY_PICKER_OPTIONS: PickerOption<number>[] = [
     {
         label: 'S',
         value: 6
-    },
-    {
-        label: 'S',
-        value: 0
     }
 ]
 
@@ -342,13 +342,13 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
 
         return (
             <>
-                <View style={{ flexDirection: 'row', justifyContent: 'center'}}>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 48 }}>
                     <WheelPicker
                         initialSelectedIndex={initialNumberOf == -1 ? 0 : initialNumberOf}
                         items={numberOfOptions}
                         onChange={setNumberOf} />
                     <WheelPicker
-                        style={{ width: 80 }}
+                        style={{ width: 120 }}
                         initialSelectedIndex={initialPeriod == -1 ? 0 : initialPeriod}
                         items={RECURRING_PERIODS}
                         onChange={setRecurringPeriod} />
@@ -453,7 +453,7 @@ const RecurringTimePeriodInput = ({ back, config }: RecurringTimePeriodInputProp
                             selected={hasEndRepititions}/>
                         {
                             hasEndRepititions && endOnRepititionOpen
-                                ? <View style={{ flexDirection: 'row', justifyContent: 'center'}}>
+                                ? <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 48 }}>
                                     <WheelPicker
                                         initialSelectedIndex={state.until.repititions - 1}
                                         items={NUMBER_OF_REPITITIONS.map(r => ({ label: r, value: r }))}

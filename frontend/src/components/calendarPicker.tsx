@@ -37,8 +37,8 @@ const CalendarPicker = ({
 
     // note that minDate and maxDate have to be set
     // if they're not desired, set them far off :-/
-    const minDate=moment().date(1) // first of this month
-    const maxDate=moment().add(1, 'y') // a year from now
+    const minDate=moment().date() // today
+    const maxDate=moment().add(1, 'y').endOf('month') // a year from now (but go all the way to the end of the month)
 
     const [currentMonth, setCurrentMonth] = useState<number>(initialDate.getMonth());
     const [hidePreviousButton, setHidePreviousButton] = useState<boolean>(moment(initialDate).isSameOrBefore(minDate, 'month'));
@@ -52,7 +52,7 @@ const CalendarPicker = ({
     const monthChanged = (mDate) => {
         // called whenever the view is moved to a new month
         // used to keep local state in sync with CalendarPicker internal state
-        setCurrentMonth(mDate.month() + 1);
+        setCurrentMonth(mDate.month());
 
         // disable nav at min/max months
         setHidePreviousButton(moment(mDate).isSameOrBefore(minDate, 'month'));
@@ -89,7 +89,7 @@ const CalendarPicker = ({
                     size={24} />
             </View>
             <View  style={[styles.calendarNavCurrent, styles.calendarNavItem]}>
-                <Text style={styles.calendarNavMonth}>{monthNames[currentMonth-1]}</Text>
+                <Text style={styles.calendarNavMonth}>{monthNames[currentMonth]}</Text>
             </View>
             <View  style={[styles.calendarNavNext, styles.calendarNavItem]}>
                 <IconButton
