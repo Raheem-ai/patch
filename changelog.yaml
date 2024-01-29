@@ -68,3 +68,13 @@
   updates:
     - updating create/approve scripts
   nativeChanges: false
+- requiresUpdate: true
+  nativeIOSVersion: 1.0.5(1)
+  nativeAndroidVersion: 1.0.5(16)
+  commit: f402080
+  timestamp: '2024-01-29T18:33:15.195Z'
+  updates:
+    - adding test suite for delete request scenarios
+    - adding ability to remove a request
+    - preprod app builds now always points to preprod
+  nativeChanges: true
