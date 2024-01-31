@@ -11,9 +11,9 @@
  * a new build because of native code changes or build time native 
  * config changes
  */
-exports.VERSION = `1.0.4`
+exports.VERSION = `2.0.0`
 // NOTE: this needs to be a positive integer that gets incremented along side VERSION
-exports.ANDROID_VERSION_CODE = 15
+exports.ANDROID_VERSION_CODE = 16
 // NOTE: this never needs to change
 exports.IOS_VERSION_CODE = "1"
 /**
