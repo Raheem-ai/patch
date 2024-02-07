@@ -1328,7 +1328,7 @@ export class DBManager {
                 const chat = possibleChat|| {
                     id: `req:${helpRequest.id}`,
                     messages: [],
-                    userReceipts: {},
+                    userReceipts: new Map(),
                     lastMessageId: 0
                 };
 
@@ -1342,7 +1342,7 @@ export class DBManager {
                 chat.messages.push(chatMsg);
                 console.log(chat.messages.length)
 
-                chat.userReceipts[user.id] = chat.lastMessageId;
+                chat.userReceipts.set(user.id, chat.lastMessageId)
                 
                 return chat
             })
@@ -1352,16 +1352,29 @@ export class DBManager {
     }
 
     async updateRequestChatRecepit(helpRequest: HelpRequestDoc, userId: string, lastMessageId: number): Promise<HelpRequestDoc> {
-        const prevLastMessageId = helpRequest.chat.userReceipts[userId];
+        console.log(helpRequest.chat)
+        
+        const prevLastMessageId = helpRequest.chat.userReceipts.get(userId)
+
+        console.log(prevLastMessageId + ' < ' + lastMessageId)
         
         if (!prevLastMessageId || (prevLastMessageId < lastMessageId)) {
+            console.log('updating')
             this.updateHelpRequestChat(helpRequest, (chat: Chat) => {
-                chat.userReceipts[userId] = lastMessageId;
+                chat.userReceipts.set(userId, lastMessageId)
                 return chat;
             })
+
+            console.log('before save:')
+            console.log(helpRequest.chat.userReceipts.get(userId))
         }
 
-        return await helpRequest.save()
+        const saved = await helpRequest.save()
+
+        console.log('after save')
+        console.log(saved.chat.userReceipts.get(userId))
+
+        return saved
     }
 
     async notifyRespondersAboutRequest(requestId: string | HelpRequestDoc, notifierId: string, to: string[]) {
@@ -1597,6 +1610,11 @@ export class DBManager {
         request.status = resolveRequestStatus(request, org.removedMembers as string[])
 
         return await request.save();
+    }
+
+    async deleteRequest(requestId: string) {
+        // remove the entry in the requests map under the request key
+        await this.requests.findByIdAndDelete(requestId);
     }
 
     // HELPERS

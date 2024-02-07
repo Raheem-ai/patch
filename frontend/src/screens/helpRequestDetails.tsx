@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, TextStyle, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ICONS, ScreenProps } from "../types";
-import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/front";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";
@@ -41,10 +41,6 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
 
     const [initialTab, setInitialTab] = useState(RequestDetailsTabs.Overview);
 
-    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
-    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
-    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
-
     useEffect(() => {
         (async () => {
             const params = route.params;
@@ -70,6 +66,14 @@ const HelpRequestDetails = observer(({ navigation, route }: Props) => {
             await requestStore().ackRequestNotification(request().id)
         })();
     }, []);
+
+    if(!request()){
+        return null;
+    }
+
+    const userIsOnRequest = !isLoading && userOnRequest(userStore().user.id, request());
+    const userIsRequestAdmin = iHaveAnyPermissions([PatchPermissions.RequestAdmin]);
+    const userHasCloseRequestPermission = iHaveAnyPermissions([PatchPermissions.CloseRequests]);
 
     const notesSection = () => {
         const notes = requestStore().currentRequest.notes;

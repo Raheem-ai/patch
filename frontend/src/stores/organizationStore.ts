@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction, when } from 'mobx';
 import { Store } from './meta';
 import { IOrganizationStore, userStore } from './interfaces';
 import { api } from '../services/interfaces';
-import { Attribute, AttributeCategory, MinRole, OrganizationMetadata, PatchPermissions, Role, Tag, TagCategory } from '../../../common/models';
+import { Attribute, AttributeCategory, MinRole, OrganizationMetadata, PatchPermissions, Role, Tag, TagCategory } from '../../../common/front';
 import { OrgContext } from '../../../common/api';
 import { resolvePermissionsFromRoles } from '../../../common/utils/permissionUtils';
 

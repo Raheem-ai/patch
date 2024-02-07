@@ -1,26 +1,34 @@
 import React from "react";
-import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore } from "../../../stores/interfaces";
+import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organizationStore, userStore, navigationStore } from "../../../stores/interfaces";
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
+import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/front";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
-import { ScrollView, View } from "react-native";
-import { observable, runInAction } from "mobx";
+import { ScrollView, View, StyleSheet } from "react-native";
+import { observable, runInAction, when } from "mobx";
 import { TagsListInput } from "../../forms/inputs/defaults/defaultTagListInputConfig";
 import BackButtonHeader, { BackButtonHeaderProps } from "../../forms/inputs/backButtonHeader";
 import KeyboardAwareArea from "../../helpers/keyboardAwareArea";
 import STRINGS from "../../../../../common/strings";
-import { ICONS } from "../../../types";
+import { ICONS, routerNames } from "../../../types";
 import TestIds from "../../../test/ids";
 import { rightNow } from "../../../../../common/utils";
+import PatchButton from "../../patchButton";
+import { iHaveAllPermissions } from "../../../utils";
+import { navigationRef } from "../../../navigation";
+import { useIsFocused } from "@react-navigation/native";
 
 type Props = {}
 
 @observer
 class EditHelpRequest extends React.Component<Props> {
     formInstance = observable.box<Form>(null);
+
+    get canDeleteRequest(){
+        return iHaveAllPermissions([PatchPermissions.RoleAdmin]);
+    }
 
     static onShow() {
         editRequestStore().loadRequest(requestStore().currentRequest.id);
@@ -87,6 +95,18 @@ class EditHelpRequest extends React.Component<Props> {
                     <View style={{ paddingBottom: 20 }}>
                         { renderHeader() }
                         { renderInputs(inputs()) }
+                        { this.canDeleteRequest
+                            ? <View style={styles.actionButtonsContainer}>
+                                <PatchButton 
+                                    testID={TestIds.editRequest.deleteRequest}
+                                    mode='text'
+                                    style={ styles.actionButton }
+                                    label={STRINGS.REQUESTS.deleteRequest}
+                                    onPress={this.promptToDeleteRequest}
+                                />
+                            </View>
+                            : null
+                        }
                     </View>
                 </ScrollView>
             </KeyboardAwareArea>
@@ -316,9 +336,77 @@ class EditHelpRequest extends React.Component<Props> {
         }
     }
 
+    deleteRequest = async () => {
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            organizationStore().metadata.requestPrefix, 
+            requestStore().currentRequest.displayId
+        )
+
+        try {
+
+            const reqToDelete = requestStore().currentRequest;
+
+            bottomDrawerStore().startSubmitting();
+
+            const deleteInMemory = await requestStore().deleteRequest(reqToDelete.id);
+
+            await navigationStore().navigateToSync(routerNames.helpRequestList);
+        
+            bottomDrawerStore().endSubmitting();
+
+            await bottomDrawerStore().hideSync(); 
+
+            deleteInMemory();
+
+            alertStore().toastSuccess(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
+
+        } catch (e) {
+            alertStore().toastError(resolveErrorMessage(e));
+        } 
+    }
+
+    promptToDeleteRequest = () => {
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            organizationStore().metadata.requestPrefix, 
+            requestStore().currentRequest.displayId
+        )
+
+        alertStore().showPrompt({
+            title:  STRINGS.REQUESTS.deleteRequestTitle,
+            message: STRINGS.REQUESTS.deleteRequestDialog,
+            actions: [
+                {
+                    testID: TestIds.editRequest.cancelDeleteRequest,
+                    label: STRINGS.REQUESTS.deleteRequestOptionNo(),
+                    onPress: () => {}
+                },
+                {   
+                    testID: TestIds.editRequest.confirmDeleteRequest,
+                    label: STRINGS.REQUESTS.deleteRequestOptionYes(reqName),
+                    onPress: this.deleteRequest,
+                    confirming: true
+                }
+            ]
+        })
+    }
+
     render() {
         return <Form ref={this.setRef} {...this.formProps()}/>
     }
 }
+
+const styles = StyleSheet.create({
+    actionButtonsContainer: {
+        display: "flex",
+        flexDirection: "column",
+        alignContent: 'flex-start',
+        margin: 20,
+        marginTop: 8,
+        marginBottom: 36,
+    },
+    actionButton: {
+        paddingVertical: 16,
+    }
+})
 
 export default EditHelpRequest

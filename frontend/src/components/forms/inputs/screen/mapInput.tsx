@@ -9,7 +9,7 @@ import { SectionScreenViewProps } from "../../types";
 import { GeocodeResult, LatLngLiteral, LatLngLiteralVerbose, PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import MapView, { Camera, MapEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { debounce } from "lodash";
-import { AddressableLocation } from "../../../../../../common/models";
+import { AddressableLocation } from "../../../../../../common/front";
 import KeyboardAwareArea from "../../../helpers/keyboardAwareArea";
 import TestIds from "../../../../test/ids";
 import { Colors, ICONS } from "../../../../types";

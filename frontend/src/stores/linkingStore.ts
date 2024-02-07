@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { Store } from './meta';
 import { alertStore, ILinkingStore, linkingStore, navigationStore, userStore } from './interfaces';
 import * as Linking from 'expo-linking'
-import { LinkExperience, LinkParams } from '../../../common/models';
+import { LinkExperience, LinkParams } from '../../../common/front';
 import { navigateTo, navigationRef } from '../navigation';
 import { routerNames } from '../types';
 import { resolveErrorMessage } from '../errors';

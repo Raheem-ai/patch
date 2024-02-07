@@ -43,10 +43,12 @@ const TestIds = {
             profile: 'header::profile',
             settings: 'header::settings',
             helpAndInfo: 'header::helpAndInfo',
-            signOut: 'header::signOut'
+            signOut: 'header::signOut',
+            helpRequestDetails: 'header::helpRequestDetails'
         },
         actions: {
             createRequest: 'headerActionsCreateRequest',
+            editRequest: 'headerActionsEditRequest',
             editProfile: 'headerActionsEditProfile',
             addTeamMember: 'headerActionsAddTeamMember',
             goToHelpRequestList: 'headerActionsGoToHelpRequestList',
@@ -307,6 +309,9 @@ const TestIds = {
     },
     editRequest: {
         form: 'editRequestForm',
+        deleteRequest: 'editRequestForm::delete',
+        confirmDeleteRequest: 'editRequestForm::confirmDelete',
+        cancelDeleteRequest: 'editRequestForm::cancelDelete',
         inputs: {
             description: 'editRequestForm::description',
             type: 'editRequestForm::type',

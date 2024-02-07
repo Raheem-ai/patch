@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { IManageTagsStore, organizationStore, updateStore, userStore } from './interfaces';
-import { CategorizedItemUpdates, Category, PatchPermissions, Tag } from '../../../common/models';
+import { CategorizedItemUpdates, Category, PatchPermissions, Tag } from '../../../common/front';
 import EditCategorizedItemStore from './editCategorizedItemStore';
 import { api } from '../services/interfaces';
 import { OrgContext } from '../../../common/api';

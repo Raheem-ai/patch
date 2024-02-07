@@ -1,5 +1,5 @@
 import { releaseChannel } from "expo-updates";
-import { PatchPermissions } from "../../../common/models";
+import { PatchPermissions } from "../../../common/front";
 import { organizationStore, userStore } from "../stores/interfaces";
 
 export const runningOnProd = releaseChannel == 'prod';

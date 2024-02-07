@@ -1,4 +1,4 @@
-import { AggregatePositionStats, DefaultRoleIds, HelpRequest, Organization, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
+import { AggregatePositionStats, CommonHelpRequest, DefaultRoleIds, HelpRequest, Organization, PatchEventType, Position, ProtectedUser, RequestStatus, RequestTeamEvent, RequestTeamEventTypes, Role } from "../models";
 
 export function resolveRequestStatus(request: Pick<HelpRequest, 'status' | 'positions'>, usersRemovedFromOrg: string[]): RequestStatus {
     const shouldAutoUpdate = request.status == RequestStatus.Unassigned 
@@ -124,7 +124,7 @@ export function userQualifiedForPosition(
 // and just updating it whenever we update the team events on the backend
 // so the ui can just use the latest set associated to this version of the
 // req
-export function usersAssociatedWithRequest(req: Pick<HelpRequest, 'dispatcherId' | 'teamEvents' | 'chat'>) {
+export function usersAssociatedWithRequest(req: Pick<CommonHelpRequest, 'dispatcherId' | 'teamEvents' | 'chat'>) {
     const users = new Set<string>();
 
     // add dispatcher id

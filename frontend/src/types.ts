@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
-import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/models";
+import { LinkExperience, LinkParams, PatchEventPacket, PatchEventType, RequestTeamEventTypes, RequestDetailsTabs } from "../../common/front";
 
 export type NotificationRouteParams<T extends PatchEventType, P = {}> = {
     // notification?: PatchEventTypes<T>

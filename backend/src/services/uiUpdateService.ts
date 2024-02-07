@@ -11,7 +11,8 @@ export class UIUpdateService {
     @Inject(PubSubService) pubSubService: PubSubService;
 
     // runs after $onInit() so pubsub service dependency can initialize properly before we try to use it
-    async $onAfterInit() {
+    async $afterInit() {
+        
         this.pubSubService.uiUpdateSub.on('message', async (msg: Message) => {
             msg.ack()
         

@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button } from "react-native-paper";
-import { PatchPermissions } from "../../../../../common/models";
+import { PatchPermissions } from "../../../../../common/front";
 import STRINGS from "../../../../../common/strings";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../../components/forms/form";
 import { resolveErrorMessage } from "../../../errors";

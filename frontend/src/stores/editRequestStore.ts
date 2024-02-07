@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Store } from './meta';
 import { CreateReqData, IRequestStore, IEditRequestStore, IUserStore, userStore, requestStore, organizationStore } from './interfaces';
-import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, HelpRequest, MinHelpRequest, Position, PositionUpdate, PositionSetUpdate, ReplaceableRequestProps, RequestPriority, RequestType, RequestUpdates } from '../../../common/models';
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, CategorizedItemUpdates, DefaultRoleIds, HelpRequest, MinHelpRequest, Position, PositionUpdate, PositionSetUpdate, ReplaceableRequestProps, RequestPriority, RequestType, RequestUpdates } from '../../../common/front';
 import { OrgContext, RequestContext } from '../../../common/api';
 import { projectArrayUpdates, projectPositionUpdates, applyUpdateToPosition, categorizedItemToString, mergeArrayCollectionUpdates, mergePositionUpdates, mergePositionSetUpdates } from '../../../common/utils';
 import { api } from '../services/interfaces';
