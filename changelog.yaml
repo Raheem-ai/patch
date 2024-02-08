@@ -68,3 +68,10 @@
   updates:
     - updating create/approve scripts
   nativeChanges: false
+- requiresUpdate: true
+  nativeIOSVersion: 2.0.1(1)
+  nativeAndroidVersion: 2.0.1(17)
+  commit: c284d1a
+  timestamp: '2024-02-08T23:16:45.768Z'
+  updates: []
+  nativeChanges: true
