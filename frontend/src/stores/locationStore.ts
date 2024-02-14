@@ -8,7 +8,7 @@ import { TaskManagerTaskBody } from 'expo-task-manager';
 import * as uuid from 'uuid';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Location } from '../../../common/models';
+import { Location } from '../../../common/front';
 import { api } from '../services/interfaces';
 import { Camera } from 'react-native-maps';
 

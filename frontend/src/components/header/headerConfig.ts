@@ -1,4 +1,4 @@
-import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/models"
+import { PatchPermissions, RequestStatus, UserRole } from "../../../../common/front"
 import { navigateTo, navigationRef } from "../../navigation"
 import { bottomDrawerStore, BottomDrawerView, editRequestStore, editUserStore, IBottomDrawerStore, IEditUserStore, ILinkingStore, IRequestStore, IUserStore, organizationStore, requestStore, userStore } from "../../stores/interfaces"
 import TestIds from "../../test/ids"
@@ -128,6 +128,7 @@ const HeaderConfig: {
         const rightActions = iHaveAllPermissions([PatchPermissions.EditRequestData]) && requestStore().currentRequest?.status != RequestStatus.Closed
             ? [
                 {
+                    testId: TestIds.header.actions.editRequest,
                     icon: ICONS.edit,
                     callback: async () => {
                         bottomDrawerStore().show(BottomDrawerView.editRequest, true);

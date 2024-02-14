@@ -1,5 +1,5 @@
 import { Model, ObjectID, Schema } from "@tsed/mongoose";
-import { CollectionOf, Enum, Property, Required } from "@tsed/schema";
+import { CollectionOf, Enum, MapOf, Property, Required } from "@tsed/schema";
 import { AddressableLocation, CategorizedItem, Chat, ChatMessage, HelpRequest, Position, RequestPriority, RequestStatus, RequestTeamEvent, RequestType, RequestStatusEvent } from "common/models";
 import { Document } from "mongoose";
 import { Collections } from "../common/dbConfig";
@@ -18,9 +18,7 @@ class ChatSchema  implements Chat {
     @Required() id: string
     @Required() @CollectionOf(ChatMessageSchema) messages: ChatMessage[];
     @Required() lastMessageId: number;
-    @Required() @CollectionOf(Number) userReceipts: {
-        [userId: string]: number;
-    };
+    @Required() @MapOf(Number) userReceipts: Map<string, number>
 }
 
 @Schema()

@@ -52,8 +52,9 @@ import App from './App';
 import {hideAsync} from 'expo-splash-screen';
 import TestIds from './src/test/ids';
 import {APIClient} from './src/api'
-import { MockActiveRequests, MockAuthTokens, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
-import { headerStore, navigationStore, userStore } from './src/stores/interfaces';
+import { MockActiveRequests, MockAuthTokens, MockDeleteEventPacket, MockDynamicConfig, MockOrgMetadata, MockRequests, MockUsers } from './src/test/mocks';
+import { bottomDrawerStore, headerStore, navigationStore, requestStore, updateStore, userStore } from './src/stores/interfaces';
+import { PatchEventType, PatchEventPacket, PatchEventParams} from '../common/models';
 import { routerNames } from './src/types';
 import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 // import PersistentStorage, { PersistentPropConfigs } from './src/meta/persistentStorage';
@@ -62,7 +63,7 @@ import MockedSocket from 'socket.io-mock';
 import { clearAllStores } from './src/stores/utils';
 import { clearAllServices } from './src/services/utils';
 import * as commonUtils from '../common/utils';
-import { AdminEditableUser, CategorizedItem, DefaultRoles, DynamicConfig, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/models';
+import { AdminEditableUser, CategorizedItem, DefaultRoles, DynamicConfig, HelpRequest, HelpRequestFilter, HelpRequestFilterToLabelMap, LinkExperience, LinkParams, Me, PendingUser, RequestStatus } from '../common/front';
 import STRINGS from '../common/strings';
 import * as testUtils from './src/test/utils/testUtils'
 import { OrgContext } from './api';
@@ -1063,5 +1064,168 @@ describe('Signed in Scenarios', () => {
         const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
         expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.createdRequestSuccess(reqName));
         await act(async() => fireEvent(toastTextComponent, 'press'));
+        }, 10000)
+    })
+
+describe('Deleted Request Scenarios', () => {
+    afterEach(() => {
+        cleanup()
+        clearAllStores()
+        clearAllServices()
+    })
+
+    test('Current user deletes request', async () => {
+        const {
+            getByTestId,
+            queryByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Open Edit Request form
+        const editRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.editRequest));
+        await act(async () => {
+            fireEvent(editRequestButton, 'click');
+        })
+
+        // Delete Request
+        const deleteRequestButton = await waitFor(() => getByTestId(TestIds.editRequest.deleteRequest));
+        await act(async () => {
+            fireEvent(deleteRequestButton, 'press');
+        })
+
+        const reqName = STRINGS.REQUESTS.requestDisplayName(
+            MockOrgMetadata().requestPrefix, 
+            requests[0].displayId
+        )
+
+        const deleteDialogToast = await waitFor(() => getByTestId(TestIds.alerts.prompt));
+        expect(deleteDialogToast).toHaveTextContent(STRINGS.REQUESTS.deleteRequestDialog);
+
+        // Press 'Yes' for 'Are you sure?'
+        const deleteRequestMock = jest.spyOn(APIClient.prototype, 'deleteRequest').mockResolvedValue();
+        const confirmDeleteButton = await waitFor(() => getByTestId(TestIds.editRequest.confirmDeleteRequest));
+        await act(async () => {
+            fireEvent(confirmDeleteButton, 'press');
+        })
+
+        const toastTextComponent = await waitFor(() => getByTestId(TestIds.alerts.toast));
+        expect(toastTextComponent).toHaveTextContent(STRINGS.REQUESTS.deleteRequestSuccess(reqName));
+        await act(async() => fireEvent(toastTextComponent, 'press'));
+
+        expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
+        expect(bottomDrawerStore().expanded === false);
+        expect(queryByTestId(requestTestID)).toEqual(null);
+        
+
     }, 10000)
+        
+    test('Different user deletes request, current user has request open', async () => {
+        const {
+            getByTestId,
+            queryByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Simulate another user deleting the request
+        const mockEventPacket = MockDeleteEventPacket(requestID);
+        await act(() => updateStore().onEvent(mockEventPacket));
+
+        expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
+        expect(queryByTestId(requestTestID)).toEqual(null);
+        
+
+    }, 10000)
+
+    test('Different user deletes request, current user is editing request', async () => {
+        const {
+            getByTestId,
+            queryByTestId
+        } = await testUtils.mockSignIn()
+
+        // After sign in, app should reroute user to the userHomePage
+        await waitFor(() => getByTestId(TestIds.home.screen));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.userHomePage));
+
+        // Open menu
+        const openMenuButton = await waitFor(() => getByTestId(TestIds.header.menu));
+        await act(async() => fireEvent(openMenuButton, 'click'));
+
+        // Navigate to the Request List screen
+        const navToRequestButton = await waitFor(() => getByTestId(TestIds.header.navigation.requests));
+        await act(async () => fireEvent(navToRequestButton, 'press'));
+        await waitFor(() => !headerStore().isOpen && navigationStore().currentRoute == routerNames.helpRequestList);
+        await waitFor(() => getByTestId(TestIds.requestList.screen));
+
+
+        // Navigate to Request Details screen for first active request
+        const requests = MockActiveRequests();
+        const requestID = requests[0].id;
+        const requestTestID = TestIds.requestCard(TestIds.requestList.screen, requestID);
+        const requestCard = await waitFor(() => getByTestId(requestTestID));
+        await act(async () => fireEvent(requestCard, 'press'));
+        await waitFor(() => expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestDetails));
+        await waitFor(() => getByTestId(TestIds.requestDetails.overview));
+
+        // Open Edit Request form
+        const editRequestButton = await waitFor(() => getByTestId(TestIds.header.actions.editRequest));
+        await act(async () => {
+            fireEvent(editRequestButton, 'click');
+        })
+
+        // Simulate another user deleting the request
+        const mockEventPacket = MockDeleteEventPacket(requestID);
+        await act(() => updateStore().onEvent(mockEventPacket));
+
+        expect(navigationStore().currentRoute).toEqual(routerNames.helpRequestList);
+        expect(bottomDrawerStore().expanded === false);
+        expect(queryByTestId(requestTestID)).toEqual(null);
+    
+    }, 10000)
+        
 })

@@ -65,20 +65,30 @@ export type ServerSide<Req, User> = {
 // an object on the client
 type MapJson<T = Map<string | number, any>> = T extends Map<any, infer V> ? { [key: string]: V } : never;
 
+// TODO: wrap all references to requests on the frontend with this
 export type ClientSideFormat<T> = {
     [key in keyof T]: T[key] extends Map<any, any> 
         ? MapJson<T[key]>
-        : T[key]
+        : T[key] extends Object
+            ? ClientSideFormat<T[key]>
+            : T[key]
 }
  
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : never;
 
-type ClientSide<T extends (...args: any) => Promise<any>> = (...args: Parameters<T>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+type ClientSideParams<T extends (...args: any) => any> = T extends (...args: infer P) => any ? ClientSideFormat<P> : never;
 
-export type ClientSideApi<ToChange extends keyof IApiClient> = {
-    [ api in keyof IApiClient ]: api extends ToChange
-        ? ClientSide<IApiClient[api]>
-        : IApiClient[api]
+type ClientSide<T extends (...args: any) => Promise<any>> = Parameters<T> extends []
+    // if no parameters, just wrap the output
+    ? () => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+    : Parameters<T>[0] extends TokenContext
+        // if uses an auth scheme, skip the auth parameter but wrap everything else
+        ? (auth: Parameters<T>[0], ...args: Rest<ClientSideParams<T>>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+        // default is to wrap everything
+        : (...args: ClientSideParams<T>) => Promise<ClientSideFormat<UnwrapPromise<ReturnType<T>>>>
+
+export type ClientSideApi = {
+    [ api in keyof IApiClient ]: ClientSide<IApiClient[api]>
 }
 
 export interface IApiClient {

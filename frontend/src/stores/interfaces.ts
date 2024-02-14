@@ -3,7 +3,7 @@ import React from 'react';
 import { Animated, TextStyle } from 'react-native';
 import { Camera } from 'react-native-maps';
 import { ClientSideFormat } from '../../../common/api';
-import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig } from '../../../common/models'
+import { Location, Me, HelpRequest, ProtectedUser, ResponderRequestStatuses, HelpRequestFilter, HelpRequestSortBy, AppSecrets, TeamFilter, TeamSortBy, UserRole, MinUser, User, EditableUser, EditableMe, PendingUser, OrganizationMetadata, Role, PatchPermissions, AttributeCategory, Attribute, TagCategory, Tag, AttributesMap, Category, AdminEditableUser, CategorizedItem, StatusOption, EligibilityOption, PatchEventPacket, PatchNotification, IndividualRequestEventType, CategorizedItemUpdates, ArrayCollectionUpdate, RequestType, PositionSetUpdate, DynamicConfig } from '../../../common/front'
 import { FormInputViewMap } from '../components/forms/types';
 import { RootStackParamList } from '../types';
 import { getStore } from './meta';
@@ -538,7 +538,7 @@ export interface IUpdateStore extends IBaseStore {
     // NOTE: this method is only called by the store that does the delete or internally when responding to an update
     // then the update store notifies the other affected stores...don't need it for tags/attributes because they are 
     // are purely optional and get filtered out anyway
-    onRoleDeleted(roleId: string): void   
+    onRoleDeleted(roleId: string): void
 }
 
 export namespace IUpsertRoleStore {

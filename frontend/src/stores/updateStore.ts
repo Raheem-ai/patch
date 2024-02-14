@@ -1,7 +1,7 @@
 import { makeAutoObservable, when } from 'mobx';
 import { Store } from './meta';
 import { appUpdateStore, createRequestStore, editRequestStore, editUserStore, IUpdateStore, newUserStore, organizationStore, requestStore, userStore } from './interfaces';
-import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/models';
+import { PatchEventType, PatchEventPacket, IndividualRequestEventType, OrgEventType, BulkRequestEventType, IndividualUserEventType, BulkUserEventType, CategorizedItem, CategorizedItemUpdates } from '../../../common/front';
 import { isOrgEventPacket, isIndividualRequestEventPacket, isUserEventPacket, isBulkRequestEventPacket, isBulkUserEventPacket } from '../../../common/utils/eventUtils';
 import { stateFullMemoDebounce } from '../utils/debounce';
 
@@ -54,6 +54,11 @@ export default class UpdateStore implements IUpdateStore {
             if (packet.event == PatchEventType.SystemDynamicConfigUpdated) {
                 // TODO: should this be debounced like the rest?!?!
                 await appUpdateStore().updateDynamicConfig()
+                return
+            }
+
+            if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
+                await this.onRequestDeleted(packet.params.requestId)
                 return
             }
 
@@ -114,10 +119,6 @@ export default class UpdateStore implements IUpdateStore {
 
         if (this.isEvent(packet, PatchEventType.OrganizationRoleDeleted)) {
             this.onRoleDeleted(packet.params.roleId)
-        }
-
-        if (this.isEvent(packet, PatchEventType.RequestDeleted)) {
-            await this.onRequestDeleted(packet.params.requestId)
         }
     }
 

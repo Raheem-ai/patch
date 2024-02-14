@@ -3,7 +3,7 @@ import React from "react";
 import { Pressable, View, ViewStyle } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { ClientSideFormat } from "../../../common/api";
-import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/models";
+import { PatchPermissions, Position, PositionStatus, ProtectedUser } from "../../../common/front";
 import { manageAttributesStore, organizationStore, userStore } from "../stores/interfaces";
 import { iHaveAllPermissions } from "../utils";
 import UserIcon from "./userIcon";

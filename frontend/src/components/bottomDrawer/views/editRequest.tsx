@@ -3,7 +3,7 @@ import { editRequestStore, requestStore, bottomDrawerStore, alertStore, organiza
 import { observer } from "mobx-react";
 import { resolveErrorMessage } from "../../../errors";
 import Form, { CustomFormHomeScreenProps, FormProps } from "../../forms/form";
-import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/models";
+import { categorizedItemsToRequestType, DefaultRoleIds, PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestTypeCategories, requestTypesToCategorizedItems } from "../../../../../common/front";
 import { allEnumValues } from "../../../../../common/utils";
 import { InlineFormInputConfig, ScreenFormInputConfig } from "../../forms/types";
 import { ScrollView, View, StyleSheet } from "react-native";
@@ -376,10 +376,12 @@ class EditHelpRequest extends React.Component<Props> {
             message: STRINGS.REQUESTS.deleteRequestDialog,
             actions: [
                 {
+                    testID: TestIds.editRequest.cancelDeleteRequest,
                     label: STRINGS.REQUESTS.deleteRequestOptionNo(),
                     onPress: () => {}
                 },
                 {   
+                    testID: TestIds.editRequest.confirmDeleteRequest,
                     label: STRINGS.REQUESTS.deleteRequestOptionYes(reqName),
                     onPress: this.deleteRequest,
                     confirming: true

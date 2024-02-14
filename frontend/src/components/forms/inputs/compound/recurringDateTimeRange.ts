@@ -1,4 +1,4 @@
-import { DateTimeRange, RecurringTimeConstraints } from "../../../../../../common/models";
+import { DateTimeRange, RecurringTimeConstraints } from "../../../../../../common/front";
 import { ICONS } from "../../../../types";
 import { CompoundFormInputFactory, CompoundFormInputFactoryParams, InlineFormInputConfig, ScreenFormInputConfig } from "../../types";
 

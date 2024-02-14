@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Dimensions, Pressable, ScrollView, StyleProp, StyleSheet, TextStyle, View } from "react-native";
 import { Button, IconButton, Text } from "react-native-paper";
 import { Colors, ICONS, ScreenProps } from "../types";
-import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/models";
+import { PatchPermissions, RequestPriority, RequestPriorityToLabelMap, RequestStatus, RequestTypeToLabelMap, RequestDetailsTabs } from "../../../common/front";
 import { useState } from "react";
 import { alertStore, bottomDrawerStore, BottomDrawerView, manageTagsStore, organizationStore, requestStore, updateStore, userStore } from "../stores/interfaces";
 import { observer } from "mobx-react";

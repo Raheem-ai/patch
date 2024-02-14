@@ -11,7 +11,7 @@ import Constants from 'expo-constants';
 import AddUser from '../components/bottomDrawer/views/addUser';
 import EditUser from '../components/bottomDrawer/views/editUser';
 import { BOTTOM_BAR_HEIGHT } from '../utils/dimensions';
-import { RequestDetailsTabs } from '../../../common/models';
+import { RequestDetailsTabs } from '../../../common/front';
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 /**

@@ -3,7 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { IconButton, Text } from "react-native-paper";
-import { PatchPermissions } from "../../../common/models";
+import { PatchPermissions } from "../../../common/front";
 import Form, { CustomFormHomeScreenProps } from "../components/forms/form";
 import DescriptiveNavigationLabel from "../components/forms/inputs/descriptiveNavigationLabel";
 import MangeRolesForm from "../components/forms/editRolesForm";

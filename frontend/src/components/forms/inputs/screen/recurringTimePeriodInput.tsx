@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../../common/models";
+import { DateTimeRange, RecurringPeriod, RecurringTimeConstraints, RecurringTimePeriod } from "../../../../../../common/front";
 import { dateToDateYearString, dateToEndDateLabel, dateToEndRepititionsLabel, dayNumToDayNameLabel, daysToRecurringDaysLabel, dayToNthDayOfMonthLabel, dayToNthDayOfWeekLabel } from "../../../../../../common/utils";
 import CalendarPicker from "../../../calendarPicker";
 import WheelPicker, { PickerOption } from "../../../wheelPicker";

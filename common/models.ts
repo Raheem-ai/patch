@@ -196,6 +196,12 @@ export type HelpRequestAssignment = {
     responderIds: string[]
 }
 
+/**
+ * Type that removes any, possibly nested, types that conflict
+ * between the frontend/backend representation of a HelpRequest
+ */
+export type CommonHelpRequest = Omit<HelpRequest, 'chat'> & { chat?: Omit<HelpRequest['chat'], 'userReceipts'> }
+
 export type HelpRequest = {
     // virtual fields proviced by db
     createdAt: string
@@ -212,7 +218,6 @@ export type HelpRequest = {
     chat?: Chat
     dispatcherId: string
     status: RequestStatus
-
     callerName: string,
     callerContactInfo: string,
     callStartedAt: string,
@@ -220,53 +225,7 @@ export type HelpRequest = {
     priority: RequestPriority,
     tagHandles: CategorizedItem[],
     positions: Position[]
-    /**
-     * 
-     * Optioon 1: array of these events that we use mobx computed caching to project into a map of what people should be in what sections in the ui
-     * 
-     * Events for
-     * - sent
-     *  - by: string 
-     *  - to: string[]
-     *  - sentAt: string
-     * - seen
-     *  - by: string
-     *  - seenAt: string
-     * - joined
-     *  - user: string
-     *  - position: string
-     *  - joinedAt: string
-     * - requested to join
-     *  - id: string
-     *  - requester: string
-     *  - position: string
-     *  - requestedAt: string
-     * - request denied
-     *  - requestId: string
-     *  - by: string
-     *  - deniedAt: string
-     * - request accepted
-     *  - requestId: string
-     *  - by: string
-     *  - acceptedAt: string
-     * - left
-     *  - user: string
-     *  - position: string
-     *  - leftAt: string
-     * - kicked
-     *  - user: string
-     *  - by: string
-     *  - kickedAt: string 
-     * 
-     * option 2:
-     * have those events only on the object the db sees but never sent to the frontend...the backend computes the new frontend model 
-     * pros: ui doesn't have data about other users activity details
-     * cons: slower api calls doing cpu bound checks
-     * 
-     * recommendation do it in ui and can port that to backend if need be
-     */
     teamEvents: RequestTeamEvent[]
-
     statusEvents: RequestStatusEvent[]
 }
 
@@ -371,7 +330,7 @@ export enum HelpRequestSortBy {
     // ByDistance = 'bd'
 };
 
-export type MinHelpRequest = AtLeast<HelpRequest, 'type'>
+export type MinHelpRequest = AtLeast<CommonHelpRequest, 'type'>
 
 export enum TeamFilter {
     Everyone = 'ev',
@@ -388,7 +347,7 @@ export type Chat = {
     id: string,
     messages: ChatMessage[],
     lastMessageId: number,
-    userReceipts?: { [userId: string]: number }
+    userReceipts?: Map<string, number>
 }
 
 export type ChatMessage = {

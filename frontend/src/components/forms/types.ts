@@ -1,6 +1,6 @@
 import { ComponentType } from "react"
 import { KeyboardType, StyleProp, ViewStyle } from "react-native";
-import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/models"
+import { AddressableLocation, ArrayCollectionUpdate, CategorizedItem, Category, DateTimeRange, PatchPermissionGroups, PatchPermissions, Position, PositionSetUpdates, RecurringDateTimeRange, RecurringTimeConstraints } from "../../../../common/front"
 import { IEditCategorizedItemStore, ISelectCategorizedItemStore } from "../../stores/interfaces";
 
 export type Grouped<T> = T | T[];
