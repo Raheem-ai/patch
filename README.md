@@ -285,7 +285,9 @@ breaking changes to the frontend...except their would be a time period where peo
 
 2) Manual steps
 - if nativeChanges
-    - test new PreProd/Prod builds
+    - test new PreProd/Prod builds using Expo Go
+    - IMPORTANT: create an update with the correct changes in your local repository using `eas update --branch prod -p all --message "<summary of what was updated here>"`
+    - upload the new build using Transporter and test the new build in Testflight
     - submit Prod build to app stores
     - wait for BOTH iOS and Android app stores to approve the build
 - if !nativeChanges 
