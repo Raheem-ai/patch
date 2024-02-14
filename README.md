@@ -14,16 +14,16 @@ git clone --recurse-submodules https://github.com/Raheem-ai/patch.git
 
 ## Dependencies/Setup
 - [Docker](https://www.docker.com/products/docker-desktop)
-- [Node/NPM 16.9.1+](https://nodejs.org/en/download/)
+- [Node/NPM 18.17.1+](https://nodejs.org/en/download/)
 - [Expo cli](https://docs.expo.dev/)
 - [Ngrok](https://ngrok.com/download)
 - [Yarn](https://yarnpkg.com/getting-started/install) (just run the commands under "Install Corepack")
     then run 
     ```
     $> yarn set version berry
-    $> yarn install
+    $> yarn install // from /backend and /frontend and in the patch root
     ```
-- add provided env specific credentials for certain GCP apis in `$RAHEEM_INFRA_ROOT/config/raheem-<env>-adc.json`
+- add provided env specific credentials for certain GCP apis in `$RAHEEM_INFRA_ROOT/config/raheem-<env>-adc.json` (needs to be sent manually)
 
 ## Infra project
 A seperate github project that is pulled in as a git submodule, the infra project is a centralized abstraction around system level resources like secrets/config that tie into technical resources like a 3rd party api key or redis cache. It simultaneously handles the creation/update of config/secrets, automating dev ops tasks around their management via a CLI, and backend services consuming them in code. Because the project is brought in as a submodule, changes to infrastructure can be deployed in lockstep with the features that depend on them.
@@ -42,7 +42,7 @@ As a one off step, you need to generate the dev (local) config for the backend t
 Once you have generated `backend/env/.env.dev`, there are 5 commands that need to be run in different shells to simulate an environment locally
 
 
-Start ngrok to get a public url for your local dev server
+Start ngrok to get a public url for your local dev server (keep in mind the free version expires after 2 hours so if things get weird you may need to restart it)
 ```sh
 # from anywhere
 $> ngrok http 9000
@@ -51,7 +51,7 @@ $> ngrok http 9000
 Start mock GCP PubSub instance for backend events -> ui updates
 ```sh
 # from anywhere
-$> docker run --rm -it -p 8681:8681 gcr.io/google.com/cloudsdktool/cloud-sdk gcloud beta emulators pubsub start --project=fake
+$> - docker run --rm -it -p 8085:8085 gcr.io/google.com/cloudsdktool/cloud-sdk gcloud beta emulators pubsub start --project=fake —host-port=0.0.0.0:8085
 ```
 
 Start mock redis instance (for socket.io websocket adapter to use)
@@ -60,9 +60,11 @@ Start mock redis instance (for socket.io websocket adapter to use)
 $> docker run --rm -it -p 6379:6379 redis
 ```
 
-Start backend 
+Start backend and set gcloud environment variables to connect to the emulator
 ```sh
 # from `backend/`
+$> yarn install
+$> $(gcloud beta emulators pubsub env-init)
 $> yarn run dev
 ```
 
@@ -73,12 +75,16 @@ $> yarn install
 $> yarn run dev
 ``` 
 
-## Testing locally on a phone
+## Testing locally on a phone (first time setup)
 - spin up dev environment
 - copy the https url that ngrok outputs (in the form of `https://<hash>.ngrok.io`) and change the initial value of `apiHost` in `frontend/app.config.js` (*Don't check in changes to the initialization of apiHost*)
 - download [expo go app](https://expo.dev/client)
-- create account?
-- scan qr code produced by `$> expo start --no-https` and follow the link
+- create account or sign in to existing account that has access to Raheem builds
+- if using an iphone, register device with a provisioning account then scan QR code for internal dev build on expo
+- make sure developer mode is enabled in settings
+- if using an android, install internal build binaries directly onto phone
+- scan qr code produced by `$> expo start --no-https` (or `$> yarn dev build` from /frontend) and follow the link
+- notes: make sure your phone and computer are using the same wifi, if the QR code doesn't work then you may need to enter the URL manually
 
 ## Build/Deployment
 
@@ -279,7 +285,9 @@ breaking changes to the frontend...except their would be a time period where peo
 
 2) Manual steps
 - if nativeChanges
-    - test new PreProd/Prod builds
+    - test new PreProd/Prod builds using Expo Go
+    - IMPORTANT: create an update with the correct changes in your local repository using `eas update --branch prod -p all --message "<summary of what was updated here>"`
+    - upload the new build using Transporter and test the new build in Testflight
     - submit Prod build to app stores
     - wait for BOTH iOS and Android app stores to approve the build
 - if !nativeChanges 
